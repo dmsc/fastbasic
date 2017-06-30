@@ -1,0 +1,2 @@
+TYPE README
+DIR *.BAS

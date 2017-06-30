@@ -1,0 +1,38 @@
+
+        ------------------------
+            B  W  -  D  O  S
+        ------------------------
+              Version 1.30
+
+              By  BEWESOFT
+
+            (Released 12/95)
+
+BW-DOS is a disk operating system for
+8-bit ATARI computers with at least
+48kB RAM, and at least one disk drive.
+It is designed to be compatible with
+SpartaDOS, and to use as little memory
+as possible. In addition, several small
+bugs known from SpartaDOS are not in
+BW-DOS, especially problems with XF551.
+BW-DOS may be used separately, or as a
+"junior version" for SpartaDOS users.
+
+BW-DOS may be freely used and distri-
+buted under following conditions:
+
+- Only the whole and unchanged master
+  disk may be distributed,
+- It may not be sold, excepting little
+  costs in PD services,
+- When used as a part of another
+  software package, the whole package
+  may be marked with a "(C)", sold
+  etc.; in this case it's possible
+  to exclude files from BW-DOS, but
+  all distributed files still must be
+  unchanged, and an information where
+  the whole BW-DOS is available must
+  be included.
+

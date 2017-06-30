@@ -1,0 +1,9 @@
+obj/
+bin/
+gen/
+disk/
+temp/
+src/basic.asm
+fastbasic.atr
+.hg/
+.hg*

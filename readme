@@ -1,0 +1,8 @@
+-- FastBasic - by dmsc --
+
+Type FB to load the interpreter, FILE
+menu to load a file, then PARSE / RUN
+
+See MANUAL.TXT for a little help.
+
+Available programs:

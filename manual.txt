@@ -1,0 +1,92 @@
+FastBasic - by DMSC
+-------------------
+
+All statements and variable names can be lower or uppercase,
+the parser is case insensitive.
+
+No line numbers are allowed.
+
+Supported integer operators, in order of precedence:
+ +  -           : addition, subtraction
+ *  /  MOD      : multiplication, division, modulus
+ &  !  EXOR     : binary AND, OR and EXOR
+ +  -           : unary "+" and "-"
+
+Supported functions:
+ TIME           : time in jiffies
+ ABS(N)
+ SGN(N)
+ PEEK(N)
+ PADDLE(N)
+ PTRIG(N)
+ STICK(N)
+ STRIG(N)
+ RAND(N)        : random from 0 to N
+ DPEEK(N)
+ FRE()          : free memory
+ ERR()          : last I/O error
+ ADR(array)     : address of array in memory
+ ADR(string)
+ LEN(string)
+ VAL(string)
+ ASC(string)
+
+Supported boolean operators, in order of precedence:
+ OR     : Logical OR
+ AND    : Logical AND
+ NOT    : Logical NOT
+ <= >= <> <  >  =       : Integer comparison
+
+Strings:
+ String variables don't need DIM, are of max 255 bytes length.
+ String constants can have embedded " by duplicating (" my string ""hello"" ")
+
+Arrays:
+ Arrays must be DIM before use.
+ After array name, you can specify "WORD" or "BYTE" to give a type.
+    DIM Array1(10) Word, SmallArray(32) Byte
+
+Variables:
+ Variables are always INT (from -32768 to 32767), must be assigned before use.
+
+Statements:
+ '              : Comment (REM)
+ .              : Comment (REM)
+ ?              : PRINT
+ BGET #
+ BPUT #
+ CLOSE #
+ COLOR
+ DIM
+ DO / LOOP
+ DPOKE
+ DRAWTO
+ END            : Terminates parsing, go to command mode
+ EXEC
+ EXIT           : Exits from DO, REPEAT, WHILE or FOR
+ FILLTO
+ FOR / TO / NEXT
+ FOR / TO / STEP / NEXT
+ GET            : Get from Keyboard
+ GET #
+ GRAPHICS
+ IF / ELSE / ENDIF
+ IF / THEN
+ INC
+ INPUT
+ MOVE / -MOVE
+ OPEN #
+ PAUSE
+ PLOT
+ POKE
+ POSITION
+ PRINT
+ PROC / ENDPROC
+ PUT            : Put to E:
+ PUT #
+ REPEAT / UNTIL
+ SETCOLOR
+ SOUND          : With no parameters silences all sounds.
+ WHILE / WEND
+ XIO #
+
