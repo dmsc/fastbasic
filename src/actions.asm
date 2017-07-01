@@ -32,7 +32,7 @@
         .export         check_labels
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
         .exportzp       loop_sp
-        .importzp       bpos, blen, bmax, bptr, tmp1, tmp2, tmp3, opos
+        .importzp       bpos, blen, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
         .import         umul16, sdiv16, read_word
         ; From vars.asm
@@ -97,7 +97,6 @@ new_y:  sta     (prog_ptr),y
         ; Accept all the line
         ldy     blen
         sty     bpos
-        sty     bmax
 ok:     clc
         rts
 .endproc
@@ -139,10 +138,6 @@ nloop:
 
 digit:
         iny             ; Accept
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:
         sta     tmp1    ; and save digit
 
         ; Check OF
@@ -189,10 +184,7 @@ xit:
         ldy     bpos
         jsr     read_word
         bcs     xit
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
+        sty     bpos
         jmp     emit_AX
 xit:    rts
 .endproc
@@ -211,12 +203,8 @@ nloop:
         ldy     bpos
         cpy     blen
         beq     err
+        inc     bpos
         lda     (bptr), y
-        iny
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
         cmp     #'"'
         beq     eos
         ; Store
@@ -230,7 +218,8 @@ err:    ; Restore opos and exit
         sta     opos
         sec
         rts
-eos:    lda     (bptr), y
+eos:    iny
+        lda     (bptr), y
         iny
         cmp     #'"'    ; Check for "" to encode one ".
         beq     store
@@ -310,11 +299,7 @@ exit:
         lda     bpos
         clc
         adc     var_namelen
-        tay
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
+        sta     bpos
         jsr     parser_skipws
         clc
         rts

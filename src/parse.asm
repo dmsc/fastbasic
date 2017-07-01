@@ -241,10 +241,7 @@ no_eol:
         ; Matched a dot (abbreviated statement), skips over all remaining chars
 matched_dot:
         iny
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
+        sty     bpos
 skip_chars:
         jsr     parser_fetch
         bmi     ploop_nofetch
@@ -310,10 +307,7 @@ match:
         cmp     (bptr),y
         bne     ploop_nextline
         iny
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
+        sty     bpos
 go_ploop:
         jmp     ploop
 
@@ -369,8 +363,13 @@ pexit_err:
         sta     pptr+1
         ; fall through
 
-        ; Match failed, unroll go to next line or exit
+        ; Match failed, save position, unroll and go to next line or exit
 ploop_nextline:
+        ldy     bpos
+        cpy     bmax
+        bcc     :+
+        sty     bmax
+:
         pla
         sta     opos
         pla
@@ -410,10 +409,7 @@ set_parse_error:
 .proc   parser_skipws
         ldy     bpos
         jsr     skipws
-        cpy     bmax
-        bcc     :+
-        sty     bmax
-:       sty     bpos
+        sty     bpos
         rts
 .endproc
 

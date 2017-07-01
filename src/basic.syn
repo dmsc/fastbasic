@@ -107,6 +107,7 @@ T_EXPR:
 	"$" emit TOK_NUM E_HEXNUMBER
         "-" NEG_EXPR
         "+" T_EXPR
+        NOT_TOK
         # Special (predefined) variables
         "TIME"   emit TOK_TIME
         # Variables as R-Values, push value into stack
@@ -138,29 +139,36 @@ RD_PORT:
 PAR_EXPR:
         "(" EXPR ")"
 
+# Parses a continuation of an INT to BOOLean expression
+OR_AND_BOOL:
+        OR_EXPR_RIGHT
+        AND_EXPR_RIGHT
+
+OR_AND_COMP_BOOL:
+        OR_EXPR_RIGHT
+        AND_EXPR_RIGHT
+        COMP_EXPR_MORE
+
 # Test if an INT needs to be converted to BOOL
 TEST_BOOL_EXPR:
-        emit TOK_COMP_0  OR_EXPR_RIGHT
-        emit TOK_COMP_0 AND_EXPR_RIGHT
-        COMP_EXPR_RIGHT COMP_EXPR_MORE
+        emit TOK_COMP_0 OR_AND_BOOL
+        COMP_EXPR_RIGHT OR_AND_COMP_BOOL
         pass
 
 # Test if an INT needs to be converted to BOOL
 SET_BOOL_EXPR:
-        emit TOK_COMP_0  OR_EXPR_RIGHT
-        emit TOK_COMP_0 AND_EXPR_RIGHT
-        COMP_EXPR_RIGHT COMP_EXPR_MORE
+        emit TOK_COMP_0 OR_AND_BOOL
+        COMP_EXPR_RIGHT OR_AND_COMP_BOOL
         emit TOK_COMP_0
 
 # General Expression - Can be INT or BOOL
 EXPR:
         INT_EXPR TEST_BOOL_EXPR
-        AND_EXPR_BOOL OR_EXPR_MORE
 
 # Forced BOOL expressions, convert to BOOL always
 FORCE_BOOL_EXPR:
-        INT_EXPR SET_BOOL_EXPR
         AND_EXPR_BOOL OR_EXPR_MORE
+        INT_EXPR SET_BOOL_EXPR
 
 OR_EXPR_RIGHT:
         "OR" AND_EXPR_BOOL emit TOK_L_OR OR_EXPR_MORE
@@ -174,19 +182,20 @@ AND_EXPR_BOOL:
         INT_EXPR emit TOK_COMP_0
 
 AND_EXPR_RIGHT:
-        "AND" NOT_EXPR_BOOL emit TOK_L_AND AND_EXPR_MORE
+        "AND" NOT_EXPR emit TOK_L_AND AND_EXPR_MORE
 
 AND_EXPR_MORE:
+        OR_EXPR_RIGHT
         AND_EXPR_RIGHT
         pass
 
 NOT_EXPR:
-        "NOT" NOT_EXPR_BOOL emit TOK_L_NOT
+        NOT_TOK
         "(" EXPR ")"
-
-NOT_EXPR_BOOL:
-        NOT_EXPR
         INT_EXPR COMP_OR_BOOL
+
+NOT_TOK:
+        "NOT" NOT_EXPR emit TOK_L_NOT
 
 COMP_OR_BOOL:
         COMP_EXPR_RIGHT COMP_EXPR_MORE

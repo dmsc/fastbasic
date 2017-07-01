@@ -1,6 +1,6 @@
 #!/usr/bin/awk -f
 BEGIN {
-    while( getline < "fastbasic.lbl" ) {
+    while( getline < "bin/fastbasic.lbl" ) {
         gsub(/^\./,"",$3)
         lbl[$2]=$3
     }
