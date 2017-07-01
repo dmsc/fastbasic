@@ -344,6 +344,17 @@ adjust_cptr:
 :       jmp     next_instruction
 .endproc
 
+.proc   TOK_CDATA       ; AX = address of data
+        jsr     pushAX
+        ldx     cptr+1
+        lda     cptr
+        clc
+        adc     #2
+        bcc     :+
+        inx
+:       jmp     TOK_JUMP
+.endproc
+
         ; Array dimensioning - assigns an address to given array variable
 .proc   TOK_DIM         ; AX = array size, (SP) = variable address
         ldy     array_ptr
@@ -1145,7 +1156,7 @@ OP_JUMP:
         ; Copied from basyc.syn, must be in the same order:
         .word   TOK_END
         ; Constant and variable loading
-        .word   TOK_NUM, TOK_CSTRING, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
+        .word   TOK_NUM, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
         ; Numeric operators
         .word   TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
         ; Bitwise operators

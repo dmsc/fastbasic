@@ -21,7 +21,7 @@
 
 TOKENS {
  # Constant and variable loading
- TOK_NUM, TOK_CSTRING, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
+ TOK_NUM, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
  # Bitwise operators
@@ -58,7 +58,7 @@ TOKENS {
 }
 
 EXTERN {
- E_REM, E_NUMBER, E_HEXNUMBER, E_EOL
+ E_REM, E_NUMBER, E_HEXNUMBER, E_REMOVE_BYTE, E_EOL
  E_PUSH_LOOP, E_POP_LOOP, E_PUSH_REPEAT, E_POP_REPEAT
  E_PUSH_IF, E_POP_IF, E_ELSE, E_EXIT_LOOP
  E_PUSH_WHILE, E_PUSH_WHILE2, E_POP_WHILE, E_PUSH_PROC, E_POP_PROC
@@ -375,6 +375,31 @@ EXPR_AB:
 XIO_EXPR:
         EXPR "," EXPR emit TOK_SHL8 emit TOK_ADD "," STR_EXPR emit TOK_XIO
 
+# Parses a "DATA" expression, get's binary data in memory
+DATA_WORD:
+        "$" E_HEXNUMBER
+        E_NUMBER
+
+DATA_WORDS:
+        "," DATA_WORD DATA_WORDS
+        pass
+
+DATA_BYTES:
+        # To store bytes, simply remove upper part
+        "," DATA_WORD E_REMOVE_BYTE DATA_BYTES
+        pass
+
+DATA_FIRST:
+        E_VAR_SET_TYPE "=" DATA_WORD
+
+DATA_TYPE:
+        "Byte" emit VT_ARRAY_BYTE DATA_FIRST E_REMOVE_BYTE DATA_BYTES
+        "Word" emit VT_ARRAY_WORD DATA_FIRST DATA_WORDS
+
+DATA_END:
+        ","
+        E_POP_PROC emit TOK_DPOKE
+
 # Parse a line
 PARSE_LINE:
 	"'" E_REM
@@ -421,6 +446,8 @@ PARSE_LINE:
         "PROc" emit TOK_JUMP E_PUSH_PROC E_LABEL_DEF
         "ENDProc" emit TOK_RET E_POP_PROC
         "EXEC" emit TOK_CALL E_LABEL
+        "Data" emit TOK_VAR_ADDR E_VAR_CREATE "()" emit TOK_CDATA E_PUSH_PROC DATA_TYPE DATA_END
+        "Data" DATA_TYPE DATA_END
         "END" EOS E_END_PARSE
         VAR_WORD_LVALUE ASSIGN_EXPR emit TOK_DPOKE
         VAR_BYTE_LVALUE ASSIGN_EXPR emit TOK_POKE

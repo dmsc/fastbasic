@@ -25,7 +25,7 @@
         .export         E_PUSH_WHILE, E_PUSH_WHILE2, E_POP_WHILE
         .export         E_PUSH_PROC, E_POP_PROC
         .export         E_PUSH_FOR, E_PUSH_FOR2, E_POP_FOR
-        .export         E_CONST_STRING
+        .export         E_CONST_STRING, E_REMOVE_BYTE
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
@@ -187,6 +187,12 @@ xit:
         sty     bpos
         jmp     emit_AX
 xit:    rts
+.endproc
+
+.proc   E_REMOVE_BYTE
+        dec     opos
+        clc
+        rts
 .endproc
 
 .proc   E_CONST_STRING

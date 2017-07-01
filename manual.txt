@@ -57,6 +57,7 @@ Statements:
  BPUT #
  CLOSE #
  COLOR
+ DATA
  DIM
  DO / LOOP
  DPOKE
@@ -89,4 +90,18 @@ Statements:
  SOUND          : With no parameters silences all sounds.
  WHILE / WEND
  XIO #
+
+
+Data Statements:
+ Data statements create an array with the numeric data:
+
+  DATA var() word = 123, 467, $1234
+
+ You must specify the type (word or byte). If the DATA statement
+ ends in a comma, you must continue in the next line with the
+ same type:
+
+  DATA big() byte = $12,$23,$45,$00,$15,
+  DATA       byte = $08,$09,$15
+
 
