@@ -30,6 +30,7 @@ Supported functions:
  LEN(string)
  VAL(string)
  ASC(string)
+ USR(address[,N1 ...])
 
 Supported boolean operators, in order of precedence:
  OR     : Logical OR
@@ -104,4 +105,14 @@ Data Statements:
   DATA big() byte = $12,$23,$45,$00,$15,
   DATA       byte = $08,$09,$15
 
+USR Function:
+ This calls M/L routines, passing parameters in the CPU stack. The value
+ returned is the value in the A/X registers (A = low part, X = high part)
+
+ This is a sample usage:
+   ' PLA / EOR $FF / TAX / PLA / EOR $FF / RTS
+   DATA ml() byte = $68,$49,$FF,$AA,$68,$49,$FF,$60
+   FOR i=0 TO 1000 STEP 100
+    ? i, USR(ADR(ml),i)
+   NEXT i
 

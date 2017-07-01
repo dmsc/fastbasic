@@ -1148,6 +1148,32 @@ wait:   lda     RTCLOK+2
         jmp     pop_stack
 .endproc
 
+; USR support
+.proc   TOK_USR_PARAM   ; Stores AX as an usr parameter
+        pha
+        txa
+        pha
+        jmp     pop_stack
+.endproc
+
+.proc   TOK_USR_ADDR
+        ; Store out return address into the CPU stack
+        tay
+        lda     #>(next_instruction - 1)
+        pha
+        lda     #<(next_instruction - 1)
+        pha
+        tya
+        jmp     next_instruction
+.endproc
+
+.proc   TOK_USR_CALL
+        ; Calls the routine, address is in AX
+        sta     jump+1
+        stx     jump+2
+jump:   jmp     $FFFF
+.endproc
+
         ; From parse.asm - MUST KEEP IN SAME ORDER!
 
         .segment "JUMPTAB"
@@ -1190,6 +1216,8 @@ OP_JUMP:
         ; Sound off - could be implemented as simple POKE expressions, but it's shorter this way
         .word   TOK_SOUND_OFF
         .word   TOK_PAUSE
+        ; USR, calls ML routinr
+        .word   TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
 
         .code
 

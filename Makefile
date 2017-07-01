@@ -21,6 +21,7 @@ FILES=\
     disk/testio.bas \
     disk/testloop.bas \
     disk/testproc.bas \
+    disk/testusr.bas \
 
 # BW-DOS files to copy inside the ATR
 DOSDIR=disk/dos/

@@ -55,6 +55,8 @@ TOKENS {
  # Sound off - could be implemented as simple POKE expressions, but it's shorter this way
  TOK_SOUND_OFF
  TOK_PAUSE
+ # USR, calls ML routinr
+ TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
 }
 
 EXTERN {
@@ -102,6 +104,14 @@ ADR_EXPR:
         emit TOK_VAR_LOAD E_VAR_ARRAY_WORD
         emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE
 
+USR_PARAMS:
+        # First parameter is the ML address
+        EXPR emit TOK_USR_ADDR USR_EXPR_MORE
+
+USR_EXPR_MORE:
+        "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
+        pass
+
 T_EXPR:
 	emit TOK_NUM E_NUMBER
 	"$" emit TOK_NUM E_HEXNUMBER
@@ -126,6 +136,7 @@ T_EXPR:
         "DPEEK"  PAR_EXPR emit TOK_DPEEK
         "FRE()"  emit TOK_FRE
         "ERR()"  emit TOK_NUM word IOERROR emit TOK_PEEK
+        "USR("   USR_PARAMS ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
         "LEN("   STR_EXPR ")" emit TOK_PEEK # First byte of string is the length
         "VAL("   STR_EXPR ")" emit TOK_VAL
