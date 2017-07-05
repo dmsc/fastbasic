@@ -65,14 +65,14 @@ Statements:
  DRAWTO
  END            : Terminates parsing, go to command mode
  EXEC
- EXIT           : Exits from DO, REPEAT, WHILE or FOR
+ EXIT           : Exits from DO, REPEAT, WHILE, FOR or PROC
  FILLTO
  FOR / TO / NEXT
  FOR / TO / STEP / NEXT
  GET            : Get from Keyboard
  GET #
  GRAPHICS
- IF / ELSE / ENDIF
+ IF / ELIF / ELSE / ENDIF
  IF / THEN
  INC
  INPUT
@@ -115,4 +115,46 @@ USR Function:
    FOR i=0 TO 1000 STEP 100
     ? i, USR(ADR(ml),i)
    NEXT i
+
+IF Statements:
+ The general form of IF statements is:
+
+   IF condition_1
+     ' Perform if condition 1 is true
+   ELIF condition_2
+     ' Perform if condition_1 is false and condition 2 is true
+   ELIF condition_3
+     ' Also, if condition 1 and 2 are false and condition 3 is true
+   ELSE
+     ' Perform if all of the above are false
+   ENDIF
+
+PROC Statements:
+ PROC defines a subroutine, called with "EXEC". You can return
+ early from a subroutine with "EXIT".
+
+ PROCs can be defined befor or after usage, it's recommended to
+ write them at the end of the program to allow use of variables
+ defined in the main program.
+
+ Example:
+
+   x = 7524
+   EXEC Sqrt
+   x = -7
+   EXEC Sqrt
+
+   PROC Sqrt
+     if x < 0
+       ? "Needs x positive"
+       exit
+     endif
+     ? "Square Root of "; x;
+     y = 0
+     while x > 0
+       inc y
+       x = x - y - y - 1
+     wend
+     ? " is "; y
+   ENDPROC
 

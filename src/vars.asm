@@ -19,9 +19,9 @@
 ; Handles a list of names (variables or labels)
 ; --------------------------------------------
 
-        .export         var_getlen, var_search, var_new, var_set_type, var_count
+        .export         var_getlen, var_search, var_new, var_set_type
         .export         label_search, label_new, label_count
-        .exportzp       var_namelen
+        .exportzp       var_namelen, var_count
 
         ; From parser.asm
         .importzp       bptr, bpos
@@ -42,6 +42,9 @@
 name:   .res 2
 var:    .res 2
 len:    .res 1
+var_count:      .res 1
+label_count:    .res 1
+
 ; Use a longer name for external references
 var_namelen=    len
 
@@ -83,10 +86,8 @@ char_ok:
 .proc   label_search
         lda     label_buf
         ldx     label_buf+1
-        ldy     #<label_count
+        ldy     #label_count
         sty     search_count
-        ldy     #>label_count
-        sty     search_count+1
         jmp     list_search
 .endproc
 
@@ -97,10 +98,8 @@ char_ok:
         ; Pointer to var list to "var"
         lda     var_buf
         ldx     var_buf+1
-        ldy     #<var_count
+        ldy     #var_count
         sty     search_count
-        ldy     #>var_count
-        sty     search_count+1
 .endproc        ; Fall through
 
         ; Search a list of names - used for variables or labels
@@ -141,7 +140,7 @@ next_var:
 search_start:
         inx
 ::search_count=   * + 1
-        cpx     $1234
+        cpx     $12
         bne     search_loop
 
 not_found:
@@ -223,8 +222,7 @@ loop:
         jsr     alloc_var
         bcs     exit
         jsr     copy_name
-nvar:   ldx     #0
-::var_count=    nvar + 1
+        ldx     var_count
         inc     var_count
         clc
 exit:
@@ -245,8 +243,7 @@ exit:
         jsr     alloc_label
         bcs     exit
         jsr     copy_name
-nlab:   ldx     #0
-::label_count=  nlab + 1
+        ldx     label_count
         inc     label_count
         clc
 exit:

@@ -17,7 +17,7 @@ poke GRACTL, 2
 
 ' P/M data and blank (to clear P/M)
 DATA PMdata()  byte = $38,$44,$54,$44,$38
-DATA PMclear() word = $00,$00,$00,$00,$00
+DATA PMclear() byte = $00,$00,$00,$00,$00
 
 ' Initial Conditions
 xPos = 6400 : yPos = 2560

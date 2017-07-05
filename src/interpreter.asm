@@ -327,6 +327,16 @@ adjust_cptr:
         jmp     next_instruction
 .endproc
 
+.proc   TOK_BYTE  ; AX = read 1 byte from op
+        jsr     pushAX
+        ldy     #0
+        lda     (cptr), y
+        ldx     #0
+        inc     cptr
+        beq     TOK_NUM::adjust_cptr
+        jmp     next_instruction
+.endproc
+
 .proc   TOK_CSTRING     ; AX = address of string
         jsr     pushAX
         lda     cptr
@@ -436,16 +446,6 @@ cloop:  lda     (tmp1), y
         bne     cloop
 nil:    jmp     pop_stack_3
 .endproc
-
-;.proc   TOK_BYTE ; AX = read from op (1 byte)
-;        jsr     pushAX
-;        ldy     #0
-;        lda     (cptr), y
-;        inc     cptr
-;        bne     :+
-;        inc     cptr+1
-;:       jmp     next_instruction
-;.endproc
 
 .proc   TOK_PEEK  ; AX = *(AX)
 .if 0
@@ -1182,7 +1182,7 @@ OP_JUMP:
         ; Copied from basyc.syn, must be in the same order:
         .word   TOK_END
         ; Constant and variable loading
-        .word   TOK_NUM, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
+        .word   TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
         ; Numeric operators
         .word   TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
         ; Bitwise operators

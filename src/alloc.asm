@@ -37,7 +37,7 @@
         ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn
         ; From vars.asm
-        .import         var_count
+        .importzp       var_count
         ; Common vars
         .importzp       tmp1, tmp2
         ; Linker vars

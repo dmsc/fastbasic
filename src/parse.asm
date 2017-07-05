@@ -29,6 +29,8 @@
         .exportzp       opos
         ; From actions.asm
         .importzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
+        .importzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
+        .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp
         .import         check_labels
         ; From alloc.asm

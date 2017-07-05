@@ -19,18 +19,17 @@
 ; State machine actions (external subs)
 ; -------------------------------------
 
-        .export         E_REM, E_EOL, E_NUMBER, E_HEXNUMBER
-        .export         E_PUSH_LOOP, E_POP_LOOP, E_PUSH_REPEAT, E_POP_REPEAT
-        .export         E_PUSH_IF, E_POP_IF, E_ELSE, E_EXIT_LOOP
-        .export         E_PUSH_WHILE, E_PUSH_WHILE2, E_POP_WHILE
-        .export         E_PUSH_PROC, E_POP_PROC
-        .export         E_PUSH_FOR, E_PUSH_FOR2, E_POP_FOR
-        .export         E_CONST_STRING, E_REMOVE_BYTE
+        .export         E_REM, E_EOL, E_NUMBER_WORD, E_NUMBER_BYTE
+        .export         E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
+        .export         E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
+        .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
+        .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
         .export         check_labels
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
+        .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .exportzp       loop_sp
         .importzp       bpos, blen, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
@@ -62,6 +61,27 @@
                 LBL_UNDEF       = 0
                 LBL_PROC
         .endenum
+        ; Types of loops
+        .enum
+                ; First entries can't use "EXIT"
+                LT_PROC_1
+                LT_DATA
+                LT_EXIT
+                ; From here, loops don't push jump destinations
+                LT_LAST_JUMP = 32
+                LT_PROC_2
+                LT_DO_LOOP
+                LT_REPEAT
+                LT_WHILE_1
+                LT_FOR_1
+                ; And from here, loops push destinations and are ignored by EXIT
+                LT_WHILE_2= 128 ; Pushes
+                LT_FOR_2        ; Pushes
+                LT_IF           ; Pushes
+                LT_ELSE         ; Pushes
+                LT_ELIF         ; Pushes
+        .endenum
+
 ;----------------------------------------------------------
         .zeropage
 loop_sp:        .res    1
@@ -110,15 +130,28 @@ ok:     clc
         beq     E_REM::ok
         cmp     #$0A ; ASCII EOL
         beq     E_REM::ok
-        sec
+xit:    sec
         rts
 .endproc
 
-.proc   E_HEXNUMBER
+.proc   E_NUMBER_WORD
+        jsr     parser_skipws
+        bcs     E_EOL::xit
+
         ldx     #0
         stx     tmp1+1
 
-        ldy     bpos
+        cmp     #'$'
+        beq     read_hex
+
+        jsr     read_word
+        bcs     E_EOL::xit
+        sty     bpos
+        jmp     emit_AX
+
+read_hex:
+        sty     bpos
+        iny
 
 nloop:
         ; Check length
@@ -140,22 +173,20 @@ digit:
         iny             ; Accept
         sta     tmp1    ; and save digit
 
-        ; Check OF
-        cpx     #<$FFF
-        lda     tmp1+1
-        sbc     #>$FFF
-        bcs     ebig
-
         ; Multiply tmp by 16
         txa
         asl
         rol     tmp1+1
+        bcs     ebig
         asl
         rol     tmp1+1
+        bcs     ebig
         asl
         rol     tmp1+1
+        bcs     ebig
         asl
         rol     tmp1+1
+        bcs     ebig
 
         ; Add new digit
         ora     tmp1
@@ -177,22 +208,12 @@ xit:
         jmp     emit_AX
 .endproc
 
-.proc   E_NUMBER
-        ldx     #0
-        stx     tmp1+1
-
-        ldy     bpos
-        jsr     read_word
+.proc   E_NUMBER_BYTE
+        jsr     E_NUMBER_WORD
         bcs     xit
-        sty     bpos
-        jmp     emit_AX
-xit:    rts
-.endproc
-
-.proc   E_REMOVE_BYTE
         dec     opos
-        clc
-        rts
+        cpx     #1
+xit:    rts
 .endproc
 
 .proc   E_CONST_STRING
@@ -518,10 +539,17 @@ error:  sec
         rts     ; C is cleared on exit!
 .endproc
 
+.proc   E_PUSH_LT
+        ; Push current position, don't emit
+        dec     opos            ; Remove LOOP TYPE from stack
+        ldy     opos
+        lda     (prog_ptr),y    ; Get the LOOP TYPE
+.endproc        ; Fall through
 .proc   push_codep
         ; Saves current code position in loop stack
         ldy     loop_sp
         sta     loop_stk, y
+        pha
         iny
         lda     prog_ptr
         clc
@@ -534,6 +562,13 @@ error:  sec
         iny
         bmi     loop_error
         sty     loop_sp
+        pla
+        and     #$7F
+        cmp     #LT_LAST_JUMP+1
+        bcs     xit
+        inc     opos
+        inc     opos
+xit:    clc
         rts     ; C is cleared on exit!
 .endproc
 
@@ -554,9 +589,9 @@ error:  sec
 retry:  cmp     loop_stk, y
         beq     ok
         ; If loop type is "ELSE", accept also "IF"
-        cmp     #'E'
+        cmp     #LT_ELSE
         bne     loop_error
-        lda     #'I'
+        lda     #LT_IF
         bne     retry
 ok:     ; Get saved position
         iny
@@ -569,6 +604,11 @@ rtsclc: clc
         rts     ; C is cleared on exit!
 .endproc
 
+.proc   E_POP_PROC_2
+        ; Pop saved position, store
+        lda     #LT_PROC_2
+        jsr     pop_codep
+.endproc        ; Falls through
 .proc   check_loop_exit
         ; Checks if there is an "EXIT" in the stack, and adjust target pointer
         ldy     loop_sp
@@ -577,7 +617,7 @@ rtsclc: clc
         dey
         bmi     pop_codep::rtsclc
         lda     loop_stk, y
-        cmp     #'X'
+        cmp     #LT_EXIT
         bne     pop_codep::rtsclc
         ; Yes, pop and patch
         sty     loop_sp
@@ -592,53 +632,28 @@ rtsclc: clc
         jmp     check_loop_exit
 .endproc
 
-.proc   E_POP_PROC
-        ; Pop saved "jump to end" position
-        lda     #'P'
-        jsr     pop_codep
-        jsr     patch_codep
-        ; Checks for an "EXIT"
-        jmp     check_loop_exit
-.endproc
-
-.proc   E_PUSH_LOOP
-        ; Push current position, don't emit
-        lda     #'D'
-        jmp     push_codep
-.endproc
-
-.proc   E_POP_LOOP
+.proc   E_POP_DATA
         ; Pop saved position, store
-        lda     #'D'
+        lda     #LT_DATA
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
+.proc   E_POP_PROC_1
+        ; Pop saved "jump to end" position
+        lda     #LT_PROC_1
         jsr     pop_codep
-        jsr     emit_AX
-        ; Checks for an "EXIT"
-        jmp     check_loop_exit
-.endproc
-
-.proc   E_PUSH_WHILE
-        ; Push current position (loop reentry)
-        lda     #'W'
-        jmp     push_codep
-.endproc
-
-.proc   E_PUSH_WHILE2
-        ; Push current position (jump to exit), emit spare bytes (to be filled)
-        lda     #'W'
-        jsr     push_codep
-        jmp     emit_AX
+        jmp     patch_codep
 .endproc
 
 .proc   E_POP_WHILE
         ; Pop saved "jump to end" position
-        lda     #'W'
+        lda     #LT_WHILE_2
         jsr     pop_codep
         ; Save current position + 2 (skip over jump)
         inc     opos
         inc     opos
         jsr     patch_codep
         ; Pop saved "loop reentry" position
-        lda     #'W'
+        lda     #LT_WHILE_1
         jsr     pop_codep
         ; And store
         dec     opos
@@ -648,43 +663,29 @@ rtsclc: clc
         jmp     check_loop_exit
 .endproc
 
-.proc   E_PUSH_REPEAT
-        ; Push current position
-        lda     #'R'
-        jmp     push_codep
-.endproc
-
+.proc   E_POP_LOOP
+        ; Pop saved position, store
+        lda     #LT_DO_LOOP
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
 .proc   E_POP_REPEAT
         ; Pop saved position, store
-        lda     #'R'
+        lda     #LT_REPEAT
         jsr     pop_codep
         jsr     emit_AX
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
 
-.proc   E_PUSH_FOR
-        ; Push current position (loop reentry)
-        lda     #'F'
-        jmp     push_codep
-.endproc
-
-.proc   E_PUSH_FOR2
-        ; Push current position (jump to exit), emit spare bytes (to be filled)
-        lda     #'F'
-        jsr     push_codep
-        jmp     emit_AX
-.endproc
-
 .proc   E_POP_FOR
         ; Pop saved "jump to end" position
-        lda     #'F'
+        lda     #LT_FOR_2
         jsr     pop_codep
         ; Save current position + 1 (skip over jump)
         inc     opos
         jsr     patch_codep
         ; Pop saved "loop reentry" position
-        lda     #'F'
+        lda     #LT_FOR_1
         jsr     pop_codep
         ; And store
         dec     opos
@@ -694,40 +695,51 @@ rtsclc: clc
         jmp     check_loop_exit
 .endproc
 
-.proc   E_PUSH_PROC
-        ; Jumps over the procedure!
-        lda     #'P'
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_PUSH_IF
-        ; Push current position, emit spare bytes (to be filled)
-        lda     #'I'
-        jsr     push_codep
-        jmp     emit_AX
-.endproc
-
 .proc   E_POP_IF
         ; Patch IF/ELSE with current position
-        lda     #'E'
+        lda     #LT_ELSE
+        jsr     pop_codep
+        jsr     patch_codep
+.endproc        ; Fall through
+.proc   check_elif
+        ldy     loop_sp
+        dey
+        dey
+        dey
+        bmi     no_elif
+        lda     #LT_ELIF
+        cmp     loop_stk, y
+        bne     no_elif
+        ; ELIF, remove from stack and patch
         jsr     pop_codep
         jmp     patch_codep
+no_elif:
+        clc
+        rts
 .endproc
 
+.proc   E_ELIF
+        ldy     #LT_ELIF
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
 .proc   E_ELSE
+        ldy     #LT_ELSE
+        sty     type+1
         ; Pop the old position to patch (from IF)
-        lda     #'I'
+        lda     #LT_IF
         jsr     pop_codep
-        sta     tmp1
-        stx     tmp1+1
+        sta     tmp2
+        stx     tmp2+1
+        ; Test if there is an ELIF to pop here
+        dec     opos
+        jsr     check_elif
+        inc     opos
         ; Emit a jump to a new position
-        lda     #'E'
+type:   lda     #LT_ELSE
         jsr     push_codep
-        ; Emit two dummy bytes
-        inc     opos
-        inc     opos
         ; Parch current position + 2 (over jump)
-        lda     tmp1
-        ldx     tmp1+1
+        lda     tmp2
+        ldx     tmp2+1
         jmp     patch_codep
 .endproc
 
@@ -740,52 +752,39 @@ retry:  dey
         dey
         bmi     loop_error
         lda     loop_stk, y
-        cmp     #'I'
-        beq     retry
-        cmp     #'E'
-        beq     retry
-        cmp     #'F'
-        beq     dec3
-        cmp     #'W'
-        bne     ok
-dec3:   dey     ; While and FOR loops use two slots!
-        dey
-        dey
+        bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
+        cmp     #LT_DATA+1      ; PROC/DATA
+        bcc     loop_error
 ok:
         ; Store slot
         sty     comp_y+1
         ; Check if enough stack
-        ldy     loop_sp
-        iny
-        iny
-        iny
+        ldx     loop_sp
+        inx
+        inx
+        inx
         bmi     loop_error
 
         ; Move all stack 3 positions up
-        ldx     #2
-move_1:
         ldy     loop_sp
+        stx     loop_sp
 move:
         dey
         lda     loop_stk, y
-        iny
-        sta     loop_stk, y
-        dey
+        dex
+        sta     loop_stk, x
 comp_y: cpy     #$FF
         bne     move
-
-        inc     loop_sp
-        dex
-        bpl     move_1
 
         ; Store our new stack entry
         ldx     loop_sp
         ldy     comp_y+1
         sty     loop_sp
-        lda     #'X'
+        lda     #LT_EXIT
         jsr     push_codep
         stx     loop_sp
-        jmp     emit_AX
+        clc
+        rts
 loop_error:
         jmp     ::loop_error
 .endproc
