@@ -21,100 +21,108 @@
 
         .export start
 
-        ; From io.asm
-        .import print, getline, line_buf
         ; From runtime.asm
-        .import putc, getkey, print_word, graphics
-        .importzp IOCHN, tabpos
+        .import putc
+        .importzp IOCHN, IOERROR, tabpos
         ; From parser.asm
-        .import parser_start, input_file
+        .import parser_start
+        .importzp buf_ptr, linenum, end_ptr, bpos, bmax
         ; From intrepreter.asm
         .import interpreter_run
-        ; From errors.asm
-        .import print_error
+        .importzp interpreter_cptr
+        ; From alloc.asm
+        .importzp  prog_ptr, prog_buf, var_buf
+        .import parser_alloc_init
+        ; From vars.asm
+        .importzp  var_count
+        ; Linker vars
+        .import   __BSS_RUN__, __BSS_SIZE__
 
         .include "atari.inc"
 
-        .data
-parsed_ok:      .res 1
+        ; Start of HEAP
+heap_start=     __BSS_RUN__+__BSS_SIZE__
 
+BMAX=bmax
         .code
 
+bytecode_start:
+        .include "editor.asm"
 start:
         lda     #0
         sta     IOCHN
         sta     tabpos
-        sta     parsed_ok
-        sta     input_file
-        jsr     graphics
-        jsr     print
-        .byte   "FastBasic - (c) 2017 dmsc", $9b, 0
 
-main_menu:
-        jsr     print
-        .byte   $9b, "menu: ", 'F'+$80, "ILE  ", 'P'+$80, "ARSE  ", 0
-        lda     parsed_ok
-        beq     :+
-        jsr     print
-        .byte   'R'+$80, "UN  ", 0
-:       jsr     print
-        .byte   'D'+$80, "OS", $9b, 0
+        jsr     load_editor
 
-        jsr     getkey
-
-        ; Parse program
-        cmp     #'P'
-        bne     :+
-        lda     #0
-        sta     parsed_ok
-        jsr     parser_start
-        bcs     main_menu
-        inc     parsed_ok
-        bne     main_menu
-
-        ; Run program
-:       cmp     #'R'
-        bne     :+
-        lda     parsed_ok
-        beq     main_menu
         jsr     interpreter_run
-        lda     #0
-        sta     IOCHN
-        jmp     main_menu
-
-        ; Go to DOS
-:       cmp     #'D'
-        bne     :+
         jmp     (DOSVEC)
 
-        ; Open input file
-:       cmp     #'F'
-        bne     main_menu
-        jsr     print
-        .byte   "Filename?", 0
-        jsr     getline
+        ; Called from editor
+COMPILE_BUFFER:
+        ; Buffer end pointer
+        pla
+        sta     end_ptr+1
+        tay
+        pla
+        sta     end_ptr
+        jsr     parser_alloc_init
+        ; Buffer address
+        pla
+        sta     buf_ptr+1
+        pla
+        sta     buf_ptr
+        ; Save interpreter position
+        lda     bpos
+        pha
+        ; Parse
+        jsr     parser_start
+        bcs     err
 
-        ldx     #$70
-        stx     input_file
-        lda     #CLOSE
-        sta     ICCOM, x
-        jsr     CIOV
-        lda     #4
-        sta     ICAX1, x
-        lda     #0
-        sta     ICAX2, x
-        lda     #OPEN
-        sta     ICCOM, x
-        lda     #<line_buf
-        sta     ICBAL, x
-        lda     #>line_buf
-        sta     ICBAH, x
-        jsr     CIOV
-        tya
-        bpl     menu_2
-        jsr     print_error
+        ; Runs current parsed program
+run_program:
+        lda     interpreter_cptr
+        pha
+        lda     interpreter_cptr+1
+        pha
+
+        lda     #125
+        jsr     putc
+
+        jsr     interpreter_run
+
+        pla
+        sta     interpreter_cptr+1
+        pla
+        sta     interpreter_cptr
+
         ldx     #0
-        stx     input_file
-menu_2: jmp     main_menu
+        stx     linenum+1
+        inx
+        stx     linenum
+
+err:    jsr     load_editor
+
+        pla
+        sta     bpos
+        lda     linenum
+        ldx     linenum+1
+        rts
+
+        ; Load all pointer to execute the editor
+load_editor:
+        lda     #NUM_VARS
+        sta     var_count
+        lda     #<bytecode_start
+        sta     prog_buf
+        lda     #>bytecode_start
+        sta     prog_buf+1
+        lda     #<heap_start
+        sta     prog_ptr
+        sta     var_buf
+        lda     #>heap_start
+        sta     prog_ptr+1
+        sta     var_buf+1
+        rts
 
 ; vi:syntax=asm_ca65

@@ -20,7 +20,7 @@
 ; --------------------------------------------
 
 
-        .export print, getline, getline_file, line_buf
+        .export getline, getline_file, line_buf
         ; From runtime.asm
         .import putc
 
@@ -47,28 +47,5 @@ file:   lda     #>line_buf
 xit:    rts
 .endproc
 getline_file    = getline::file
-
-.proc   print
-        jsr     get_ml_byte
-        beq     getline::xit
-        jsr     putc
-        jmp     print
-.endproc
-
-
-.proc   get_ml_byte
-        stx     read_x+1        ; 4
-        tsx                     ; 2
-        inc     $103,x          ; 7
-        lda     $103,x          ; 4
-        sta     read_a+1        ; 4
-        bne     :+              ; 2 3
-        inc     $104,x          ; 7 0
-:       lda     $104,x          ; 4
-        sta     read_a+2        ; 4
-read_x: ldx     #0              ; 2
-read_a: lda     $FF00           ; 4  = 44 (38)
-        rts
-.endproc
 
 ; vi:syntax=asm_ca65

@@ -22,17 +22,13 @@
         .export         print_error
 
         ; From runtime.asm
-        .import         print_word, putc
+        .import         putc
 
 
 ; Prints an error message
 .proc   print_error
-        pha
         tax
-        bpl     :+
-        ; I/O error (>128), print ERR_IO instead
-        ldx     #ERR_IO
-:       ldy     #$FF
+        ldy     #$FF
 nxt:    iny
         lda     error_msg, y
         bpl     nxt
@@ -46,15 +42,8 @@ ploop:  iny
         jsr     putc
         pla
         bpl     ploop
-        ; Check if I/O error
-        pla
-        bpl     ok
-        ; Print I/O error number
-        ldx     #0
-        jsr     print_word
-        ; EOL and exit
-ok:     lda     #$9b
-        jmp     putc
+        sec
+        rts
 .endproc
 
         ; Keep in line with error definitions
@@ -76,8 +65,6 @@ error_msg:
         def_error ERR_PARSE,    "parse error"
         def_error ERR_NO_ELOOP, "no end loop/proc/if"
         def_error ERR_LABEL,    "undef label"
-        def_error ERR_BRK,      "BREAK key pressed"
-        def_error ERR_IO,       "I/O error #"
 
 .if (* - error_msg) > 255
         .error  "Error, too many error messages"

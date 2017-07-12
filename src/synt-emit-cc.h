@@ -1,0 +1,113 @@
+/*
+ * FastBasic - Fast basic interpreter for the Atari 8-bit computers
+ * Copyright (C) 2017 Daniel Serpell
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+// Emit parser as a C++ file
+// -------------------------
+
+#pragma once
+
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+class cc_emit
+{
+    public:
+        static constexpr const char *hex_prefix = "0x";
+        static std::string emit_literal(std::vector<std::string> &list)
+        {
+            static int lbl_num = 0;
+            std::string ret;
+            bool used_lbl = false;
+            for(auto &ch: list)
+            {
+                if( ch.length() == 3 && ch[0] == '\'' && ch[1] >= 'a' && ch[1] <= 'z' )
+                {
+                    ch[1] = ch[1] - 'a' + 'A';
+                    ret += "\t\tif( !s.expect(" + ch + ") )"
+                           " { if( !s.expect('.') ) break; "
+                           "goto accept_char_" + std::to_string(lbl_num) + "; }\n";
+                    used_lbl = true;
+                }
+                else
+                    ret += "\t\tif( !s.expect(" + ch + ") ) break;\n";
+                ret += "\t\ts.debug(\"GOT " + ch + "\");\n";
+            }
+            if( used_lbl )
+            {
+                ret += "accept_char_" + std::to_string(lbl_num) + ":\n";
+                lbl_num ++;
+            }
+            return ret;
+        }
+        static std::string emit_bytes(bool last, std::vector<std::string> &ebytes)
+        {
+            if( 0 == ebytes.size() )
+                return std::string();
+
+            std::stringstream os;
+            for(auto &s: ebytes)
+            {
+                if( s.empty() )
+                    continue;
+                if( s[1] == '<' )
+                    continue;
+                if( s[1] == '>' )
+                    os << "\t\ts.emit_word(\"" << s.substr(1) << "\");\n";
+                else
+                    os << "\t\ts.emit(\"" << s << "\");\n";
+            }
+            os << "\n";
+
+            if( last )
+                os << "\t\ts.debug(\"<-- OK!\");\n"
+                      "\t\ts.lvl--;\n"
+                      "\t\treturn true;\n";
+            return os.str();
+        }
+        static std::string emit_ret()
+        {
+            return "\t\ts.debug(\"<-- OK!\");\n"
+                   "\t\ts.lvl--;\n"
+                   "\t\treturn true;\n";
+        }
+        static std::string emit_call(std::string sub)
+        {
+            return "\t\tif( !SMB_" + sub + "(s) ) break;\n";
+        }
+        static std::string emit_line(std::string line)
+        {
+            return "\tdo {\n" + line +
+                   "\t} while(0);\n"
+                   "\ts.debug(\"--------\");\n"
+                   "\ts.restore(spos);\n";
+        }
+        static void print(std::ostream &os, std::string name, const std::string &code, bool ok)
+        {
+            os << "static bool SMB_" << name << "(parse &s) {\n"
+                  "\ts.debug(\"" << name << "\");\n"
+                  "\ts.lvl++;\n"
+                  "\ts.skipws();\n"
+                  "\tauto spos = s.save();\n"
+               << code;
+            os << "\ts.lvl--;\n"
+                  "\treturn false;\n}\n"
+                  "\n";
+        }
+};

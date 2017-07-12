@@ -20,13 +20,13 @@
 ; ----------------------
 
         .export         interpreter_run
-        .exportzp       IOERROR
+        .exportzp       interpreter_cptr
 
         ; From allloc.asm
         .importzp       prog_buf, var_buf, array_ptr, mem_end
         .import         clear_data, alloc_array
         ; From parser.asm
-        .importzp       bptr, bpos, blen, COLOR, IOCHN
+        .importzp       bptr, bpos, blen
 
         ; From runtime.asm
         .import         umul16, sdiv16, smod16, neg_AX, read_word
@@ -35,14 +35,17 @@
         .import         move_dwn_src, move_dwn_dst, move_dwn
         .import         graphics, cio_close, close_all, sound_off
         .importzp       tmp1, tmp2, tmp3, tabpos
+        .importzp       IOCHN, COLOR, IOERROR
 
         ; From io.asm
         .import         getline, getline_file, line_buf
         ; Define our segment
         .import         __INTERP_LOAD__, __INTERP_RUN__, __INTERP_SIZE__
+
+
+
         .zeropage
-sptr    =       bpos    ; And bpos as stack pointe
-IOERROR: .res   2
+sptr    =       bpos    ; Use bpos as stack pointe
 
         .bss
 
@@ -88,6 +91,7 @@ jump:   jmp     (OP_JUMP)       ;5 = 25 cycles per call
 cptr                    =       interpreter::cload+1
 next_instruction        =       interpreter::nxtins
 next_ins_incsp          =       interpreter::nxt_incsp
+interpreter_cptr        =       cptr
 
         ; Main interpreter call
 .proc   interpreter_run

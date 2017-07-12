@@ -19,12 +19,12 @@
 ; Parser state machine interpreter
 ; --------------------------------
 
-        .export         parser_start, parser_error, input_file, parser_skipws
+        .export         parser_start, parser_error, parser_skipws
         .import         __PINIT_RUN__
         ; Common vars
-        .exportzp       tmp1, tmp2, tmp3, COLOR
+        .exportzp       tmp1, tmp2, tmp3
         ; Parser state
-        .exportzp       bptr, bpos, blen, bmax
+        .exportzp       bptr, bpos, blen, bmax, linenum, buf_ptr, end_ptr
         ; Output state
         .exportzp       opos
         ; From actions.asm
@@ -37,19 +37,21 @@
         .import         alloc_prog
         .importzp       prog_ptr
         ; From runtime.asm
-        .import         print_word, putc, skipws
-        .importzp       IOCHN, IOERROR
+        .import         putc, skipws
+        .importzp       IOCHN, COLOR, IOERROR
         ; From io.asm
-        .import         print, getline_file, line_buf
+        .import         line_buf
         ; From errors.asm
         .import         print_error
-        .importzp       ERR_PARSE, ERR_BRK, ERR_IO, ERR_NO_ELOOP, ERR_LABEL
+        .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL
         ; Export used tokens values to the interpreter
         .exportzp       TOK_CSTRING
 
 TOK_END = 0
 
         .zeropage
+buf_ptr:.res 2
+end_ptr:.res 2
 bptr:   .res 2
 bpos:   .res 1
 bmax:   .res 1
@@ -60,7 +62,6 @@ tmp1:   .res 2
 tmp2:   .res 2
 tmp3:   .res 2
 linenum:.res 2
-COLOR:  .res 1
 
         .code
         .include "atari.inc"
@@ -103,10 +104,6 @@ SM_EMIT=        SM_EMIT_1
         sta     linenum+1
         tsx
         stx     saved_stack
-        lda     #<line_buf
-        sta     bptr
-        lda     #>line_buf
-        sta     bptr+1
         jmp     parse_line
 
 parser_start    = __PINIT_RUN__
@@ -118,53 +115,11 @@ parser_start    = __PINIT_RUN__
         ; Restore stack
 ldstk:  ldx     #$ff
         txs
-        ; Get error message
-        pha
         ; Check if error == parse error
         cmp     #ERR_PARSE+1
-        bcs     no_show_line
-
-        ; Show input line
-        ldy     #0
-perror:
-        lda     (bptr),y
-        cpy     bmax
-        bne     :+
-        eor     #$80
-:       jsr     putc
-        iny
-        cpy     blen
-        bne     perror
-
-        cpy     bmax
-        bne     :+
-        lda     #' '+$80
-        jsr     putc
-:       lda     #$9b
-        jsr     putc
-
-no_show_line:
-        ; And shows line number
-        jsr     print
-        .byte   "At line ",0
-        lda     linenum
-        ldx     linenum+1
-        jsr     print_word
-        jsr     print
-        .byte   ": ", 0
-
-        pla
         jmp     print_error
 .endproc
 saved_stack = parser_error::ldstk + 1
-
-.proc   input_error
-        lda     #ERR_BRK
-        cpy     #$80    ; BREAK
-        beq     parser_error
-        tya
-        bne     parser_error
-.endproc
 
 .proc parse_eof
         ; Check if parser stack is empty
@@ -206,32 +161,39 @@ line_ok:
 
 .proc parse_line
         lda     #0
-        sta     blen
         sta     bpos
         sta     bmax
         sta     opos
+
+        lda     buf_ptr
+        cmp     end_ptr
+        lda     buf_ptr+1
+        sbc     end_ptr+1
+        bcs     parse_eof
 
         ; Reads a line
         inc     linenum
         bne     :+
         inc     linenum+1
 :
-        lda     #'>'
-        jsr     putc
-        ldx     #0
-::input_file = *-1
-        jsr     getline_file
-        sta     blen
-        beq     parse_eof
-        cpy     #$88
-        beq     no_eol
-        tya
-        bmi     input_error
-        dec     blen
-no_eol:
-        ; Convert to uppercase
-        jsr     ucase_buffer
 
+        ; Point parsing buffer pointer to line buffer
+        lda     #<line_buf
+        sta     bptr
+        lda     #>line_buf
+        sta     bptr+1
+
+        ; Convert to uppercase and copy to line buffer
+        jsr     ucase_buffer
+        sty     blen
+        tya
+        sec
+        adc     buf_ptr
+        sta     buf_ptr
+        bcc     :+
+        inc     buf_ptr+1
+:
+        ; Parse line
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
         lda     #0
@@ -301,12 +263,12 @@ match_char:
         bcs     match
         tax
         lda     #'.'
-        cmp     (bptr),y
+        cmp     line_buf,y
         beq     matched_dot
         txa
         eor     #32 ; To uppercase
 match:
-        cmp     (bptr),y
+        cmp     line_buf,y
         bne     ploop_nextline
         iny
         sty     bpos
@@ -425,27 +387,32 @@ xit:    rts
 
         ; Transforms the line to uppercase
 .proc   ucase_buffer
-        ldy     blen
+        ldy     #$FF
 loop:
-        dey
-        bmi     xit
-        lda     (bptr), y
+        iny
+        lda     (buf_ptr), y
+        sta     line_buf, y
+        cmp     #$9B
+        beq     xit
+
         cmp     #'"'
         beq     skip_str        ; Skip string constants
         sbc     #'a'
         cmp     #'z'-'a'+1
         bcs     loop
         adc     #'A'
-        sta     (bptr), y
+        sta     line_buf, y
         bcc     loop
 
 skip_str:
-        dey
-        bmi     xit
-        lda     (bptr), y
+        iny
+        lda     (buf_ptr), y
+        sta     line_buf, y
         cmp     #'"'
-        bne     skip_str
         beq     loop
+        cmp     #$9b
+        bne     skip_str
+        rts
 .endproc
 
 ; vi:syntax=asm_ca65

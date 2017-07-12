@@ -24,7 +24,7 @@
         ; simple I/O
         .export         getkey, getc, putc, print_hex_byte, print_hex_word, print_word
         .export         cio_close, close_all, sound_off
-        .exportzp       IOCHN, tabpos
+        .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
         .export         skipws, read_word
         ; memory move
@@ -39,6 +39,8 @@
         .zeropage
 sign:   .res    1
 IOCHN:  .res    1
+IOERROR:.res    2
+COLOR:  .res    1
 tabpos: .res    1
 
         .code

@@ -31,6 +31,7 @@
 ;  top_mem:     TOP OF MEMORY
 ;
         .export         alloc_var, alloc_prog, alloc_array, alloc_label, alloc_laddr, clear_data
+        .export         parser_alloc_init
         .exportzp       prog_buf, prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
@@ -82,11 +83,8 @@ heap_start=     __BSS_RUN__+__BSS_SIZE__
 
 ;----------------------------------------------------------
 ; Parser initialization here:
-        .segment "PINIT"
 .proc   parser_alloc_init
         ; Init all pointer at start of HEAP
-        lda     #<heap_start
-        ldy     #>heap_start
         ldx     #(mem_end-mem_start)
 loop:
         sta     mem_start, x
@@ -100,7 +98,7 @@ loop:
         stx     alloc_size
         inx
         stx     alloc_size+1
-        jsr     add_pointers
+        jmp     add_pointers
 .endproc
 
 ;----------------------------------------------------------

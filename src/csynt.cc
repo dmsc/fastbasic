@@ -16,10 +16,10 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// Translates the syntax file to an assembly file for CA65
-// -------------------------------------------------------
+// Translates the syntax file to a C++ file
+// ----------------------------------------
 
-#include "synt-emit-asm.h"
+#include "synt-emit-cc.h"
 #include "synt-parse.h"
 #include "synt-wlist.h"
 #include "synt-sm.h"
@@ -32,16 +32,20 @@
 bool p_file(parseState &p)
 {
     // Output header
-    std::cout << "; Syntax state machine\n\n";
+    std::cout << "// Syntax state machine\n\n";
 
     while(1)
     {
         wordlist tok(p, "TOKENS", 1);
         if( !tok.parse() )
             break;
+        std::cout << "static const char * TOKENS[" << 1 + tok.next() << "] {\n";
+        std::vector<std::string> sorted_toks(tok.next());
         for(auto i: tok.map())
-            std::cout << i.first << "\t= " << i.second << " * 2\n";
-        std::cout << "\n";
+            sorted_toks[i.second] = i.first;
+        for(auto i: sorted_toks)
+            std::cout << "    \"" << i << "\",\n";
+        std::cout << "\t\"LAST_TOKEN\"\n};\n";
         std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
     }
 
@@ -50,20 +54,18 @@ bool p_file(parseState &p)
     {
         int n = 128;
         for(auto i: ext.map())
-            std::cout << " .global " << i.first << "\n";
+            std::cout << "extern bool SMB_" << i.first << "(parse &s);\n";
         for(auto i: ext.map())
         {
             i.second = n++;
-            std::cout << "SMB_" << i.first << "\t= " << i.second << "\n";
         }
-        std::cout << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
     }
 
-    std::map<std::string, std::unique_ptr<statemachine<asm_emit>>> sm_list;
+    std::map<std::string, std::unique_ptr<statemachine<cc_emit>>> sm_list;
 
     while( !p.eof() )
     {
-        auto sm = std::make_unique<statemachine<asm_emit>>(p);
+        auto sm = std::make_unique<statemachine<cc_emit>>(p);
         if( sm->parse() )
         {
             sm_list[sm->name()] = std::move(sm);
@@ -78,13 +80,7 @@ bool p_file(parseState &p)
     // Emit labels table
     int ns = ext.next();
     for(auto &sm: sm_list)
-        std::cout << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
-    // Emit array with addresses
-    std::cout << "\nSM_TABLE_ADDR:\n";
-    for(auto i: ext.map())
-        std::cout << "\t.word " << i.first << " - 1\n";
-    for(auto &sm: sm_list)
-        std::cout << "\t.word " << sm.second->name() << " - 1\n";
+        std::cout << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << ns++ << "\n";
     // Emit state machine tables
     std::cout << "\n";
     for(auto &sm: sm_list)

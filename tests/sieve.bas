@@ -8,13 +8,11 @@ FOR Iter= 1 TO NumIter
     A(I) = 1
   NEXT I
   FOR I = 0 TO 8190
-    IF A(I) = 1
+    IF A(I)
       Prime = I + I + 3
-      K = I + Prime
-      WHILE K <= 8190
+      FOR K = I + Prime TO 8190 STEP Prime
         A(K) = 0
-        K = K + Prime
-      WEND
+      NEXT K
       INC Count
     ENDIF
   NEXT I

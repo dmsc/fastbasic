@@ -6,6 +6,7 @@ CL65OPTS=-g -tatari -Csrc/fastbasic.cfg --asm-include-dir gen
 
 ATR=fastbasic.atr
 PROG=bin/fastbasic.xex
+NATIVE=bin/fastbasic
 
 # Output files inside the ATR
 FILES=\
@@ -15,6 +16,7 @@ FILES=\
     disk/startup.bat \
     disk/carrera3d.bas \
     disk/draw.bas \
+    disk/help.txt \
     disk/pmtest.bas \
     disk/sieve.bas \
     disk/testif.bas \
@@ -47,11 +49,12 @@ LSTS=$(AS_SRC:src/%.asm=obj/%.lst)
 MAP=$(PROG:.xex=.map)
 LBL=$(PROG:.xex=.lbl)
 SYNT=gen/synt
+CSYNT=gen/csynt
 
-all: $(ATR)
+all: $(ATR) $(NATIVE)
 
 clean:
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROG) $(MAP) $(LBL) $(SYNT)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROG) $(MAP) $(LBL) $(SYNT) $(CSYNT) $(NATIVE)
 
 distclean: clean
 	rm -f gen/basic.asm
@@ -73,19 +76,36 @@ disk/%: %
 disk/fb.com: $(PROG)
 	cp $< $@
 
-# Parser generator
-$(SYNT): src/synt.cc gen
+# Parser generator for 6502
+$(SYNT): src/synt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-# Generator for syntax file
-gen/%.asm: src/%.syn $(SYNT) gen
+# Parser generator for C++
+$(CSYNT): src/csynt.cc | gen
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+# Native compiler
+$(NATIVE): src/native.cc gen/basic.cc | bin
+	$(CXX) $(CXXFLAGS) -Igen -o $@ $<
+
+# Generator for syntax file - 6502 version
+gen/%.asm: src/%.syn $(SYNT) | gen
 	$(SYNT) < $< > $@
 
+# Generator for syntax file - C++ version
+gen/%.cc: src/%.syn $(CSYNT) | gen
+	$(CSYNT) < $< > $@
+
 # Main program file
-$(PROG): $(OBJS) bin
+$(PROG): $(OBJS) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $(OBJS)
 
-obj/%.o: src/%.asm obj
+# Generates basic bytecode from source file
+gen/%.asm: src/%.bas $(NATIVE)
+	$(NATIVE) $< $@
+
+# Object file rules
+obj/%.o: src/%.asm | obj
 	cl65 $(CL65OPTS) -c -l $(@:.o=.lst) -o $@ $<
 
 gen obj bin:
@@ -93,4 +113,8 @@ gen obj bin:
 
 # Dependencies
 obj/parse.o: src/parse.asm gen/basic.asm
+obj/menu.o: src/menu.asm gen/editor.asm
+
+$(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h
+$(SYNT): src/synt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-asm.h
 
