@@ -8,8 +8,8 @@ do
 
 ' Initializes E: device
 close #0 : open #0, 12, 0, "E:"
-dpoke 82, $2700
-poke 730, 3
+dpoke @@LMARGN, $2700
+poke @KEYREP, 3
 
 ' M/L routines
 data CountLines() byte = $68,$68,$AA,$68,$85,$FD,$68,$85,$FC,$68,$85,$FF,$68,$85,$FE,$E6,$FC,
@@ -75,15 +75,15 @@ do
     ' Process normal keys
     escape = 0
     if linLen > 126
-      put 253 : ' ERROR, line too long
+      put @@ATBEL : ' ERROR, line too long
     else
       exec InsertChar
       inc column
       if linLen = column and scrColumn < 38
         inc scrColumn
-        poke 766, 1
+        poke @DSPFLG, 1
         put key
-        poke 766, 0
+        poke @DSPFLG, 0
       else
         hDraw = -1
         exec DrawCurrentLine
@@ -123,7 +123,7 @@ do
         inc scrLine
         ' Move screen down!
         pos. 0, scrLine+1
-        poke 766, 0
+        poke @DSPFLG, 0
         put 157
         ' Adjust all screen pointers
         for y = 21 to scrLine step -2
@@ -148,7 +148,7 @@ do
       column = 0
       ' Delete line from screen
       pos. 0, scrLine+1
-      poke 766, 0
+      poke @DSPFLG, 0
       put 156
       ' Delete from entire file!
       ptr = ScrAdr(scrLine)
@@ -287,7 +287,7 @@ do
       ? "œ Parsing:";
       pos. 11,0
       line = USR( @compile_buffer, Adr(MemStart), MemEnd ) - 1
-      column = peek( @bmax )
+      column = peek( @@bmax )
       get key
       hLine = line / 10
       scrLine = line mod 10
@@ -306,7 +306,7 @@ do
     '
     '--------- Control-L (load) -----
     elif key = $0C
-      poke 766, 0
+      poke @DSPFLG, 0
       pos. 0, 0
       ? "œ Load?";
       exec InputFileName
@@ -324,7 +324,7 @@ do
         exec CopyToEdit
         exec DrawCurrentLine
       else
-        put 253
+        put @@ATBEL
       endif
     '
     '--------- Escape ---------------
@@ -452,7 +452,7 @@ PROC ChgLine
 
   ' Print status
   pos. 35, 0 : ? line;
-  poke $5D, $52
+  poke @@OLDCHR, $52
 
   ' Redraw line
   hDraw = 0
@@ -465,15 +465,15 @@ ENDPROC
 '
 PROC DrawLine
 
-  poke 766, 1
-  poke 752, 1
+  poke @DSPFLG, 1
+  poke @CRSINH, 1
 
   pos. 0, y+1
   ptr = ptr + hdraw
   if lLen < 0
     put $FD
     bput #0, adr(Blanks), 38
-    poke $5D, $00
+    poke @@OLDCHR, $00
   else
     max = 39
     if hDraw
@@ -484,7 +484,7 @@ PROC DrawLine
 
     if lLen > max
       bput #0, ptr, max
-      poke $5D, $DF
+      poke @@OLDCHR, $DF
     else
       if lLen > 0
         bput #0, ptr, lLen
@@ -492,7 +492,7 @@ PROC DrawLine
       if lLen < max
         bput #0, adr(Blanks), max - lLen
       endif
-      poke $5D, $00
+      poke @@OLDCHR, $00
     endif
   endif
 ENDPROC
@@ -522,8 +522,8 @@ PROC DrawCurrentLine
   endif
   lDraw = scrLine
 
-  poke 766, 0
-  poke 752, 0
+  poke @DSPFLG, 0
+  poke @CRSINH, 0
   pos. scrColumn, scrLine+1
   ? "";
 ENDPROC
@@ -545,8 +545,8 @@ PROC RedrawScreen
   line = 10 * hline + scrLine
 
   ' Print screen
-  poke 752, 1
-  poke 766, 0
+  poke @CRSINH, 1
+  poke @DSPFLG, 0
   put 125
   exec ShowInfo
   ptr = LineAdr(hline)
@@ -569,7 +569,7 @@ ENDPROC
 '
 PROC ShowInfo
   pos. 0, 0 : ? "";
-  poke $5D, $52
+  poke @@OLDCHR, $52
   pos. 2, 0 : ? FileName$;"(";MemEnd-Adr(MemStart);")";
   pos. scrColumn, scrLine+1
   ? "";
@@ -608,7 +608,7 @@ PROC InputFilename
       exit
     elif key = 155
       pos. 6, 0
-      poke 764, 12: ' Force ENTER
+      poke @CH, 12: ' Force ENTER
       input #0, FileName$
       exit
     elif key >= 30 and key <= 124 or key = 126
@@ -621,7 +621,7 @@ ENDPROC
 ' Save edited file
 '
 PROC AskSaveFile
-  poke 766, 0
+  poke @DSPFLG, 0
   pos. 0, 0
   ? "œ Save?";
   exec InputFileName
@@ -643,7 +643,7 @@ PROC AskSaveFile
 
   pos. 1,0
   ? "SAVE ERROR: "; err(); " (press any key)";
-  put 253
+  put @@ATBEL
   close #1
   get key
 ENDPROC
@@ -665,7 +665,7 @@ PROC LoadFile
   if err() > 127
     pos. 1,0
     ? "LOAD ERROR: "; err(); " (press any key)";
-    put 253
+    put @@ATBEL
     close #1
     get key
   endif

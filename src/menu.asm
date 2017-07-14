@@ -19,7 +19,8 @@
 ; Main menu system
 ; ----------------
 
-        .export start
+        .export start, COMPILE_BUFFER
+        .export BMAX
 
         ; From runtime.asm
         .import putc
@@ -31,10 +32,13 @@
         .import interpreter_run
         .importzp interpreter_cptr
         ; From alloc.asm
-        .importzp  prog_ptr, prog_buf, var_buf
+        .importzp  prog_ptr, var_buf
         .import parser_alloc_init
         ; From vars.asm
         .importzp  var_count
+        ; From bytecode
+        .import bytecode_start
+        .importzp NUM_VARS
         ; Linker vars
         .import   __BSS_RUN__, __BSS_SIZE__
 
@@ -46,8 +50,6 @@ heap_start=     __BSS_RUN__+__BSS_SIZE__
 BMAX=bmax
         .code
 
-bytecode_start:
-        .include "editor.asm"
 start:
         lda     #0
         sta     IOCHN
@@ -55,6 +57,8 @@ start:
 
         jsr     load_editor
 
+        lda     #<bytecode_start
+        ldx     #>bytecode_start
         jsr     interpreter_run
         jmp     (DOSVEC)
 
@@ -89,6 +93,8 @@ run_program:
         lda     #125
         jsr     putc
 
+        lda     end_ptr
+        ldx     end_ptr+1
         jsr     interpreter_run
 
         pla
@@ -113,10 +119,6 @@ err:    jsr     load_editor
 load_editor:
         lda     #NUM_VARS
         sta     var_count
-        lda     #<bytecode_start
-        sta     prog_buf
-        lda     #>bytecode_start
-        sta     prog_buf+1
         lda     #<heap_start
         sta     prog_ptr
         sta     var_buf

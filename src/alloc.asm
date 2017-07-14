@@ -20,8 +20,7 @@
 ; ----------------
 
 ; The memory areas are arranged as:
-;  prog_buf:    PROGRAM_AREA
-;  prog_ptr:    -> next output pos
+;  prog_ptr:    -> current program output pos
 ;               Buffer zone (at least 0x100 free bytes)
 ;  array_buf:   STRING/ARRAY AREA
 ;  array_ptr:   -> next available pos
@@ -32,7 +31,7 @@
 ;
         .export         alloc_var, alloc_prog, alloc_array, alloc_label, alloc_laddr, clear_data
         .export         parser_alloc_init
-        .exportzp       prog_buf, prog_ptr, array_ptr, var_buf, var_ptr, mem_end
+        .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
         ; From runtime.asm
@@ -41,8 +40,6 @@
         .importzp       var_count
         ; Common vars
         .importzp       tmp1, tmp2
-        ; Linker vars
-        .import         __BSS_RUN__, __BSS_SIZE__
 
         .zeropage
 
@@ -50,7 +47,6 @@
         ;           ---------------------------------------------
         ; Pointer to program buffer        / current program
 mem_start:
-prog_buf:       .res    2
 prog_ptr:       .res    2
 prog_end:       .res    2
         ; Pointer to variable name table   / variable value table
@@ -76,15 +72,12 @@ MEMTOP=         $2E5
         ; Allocation size
 alloc_size=     tmp1
 
-        ; Start of HEAP
-heap_start=     __BSS_RUN__+__BSS_SIZE__
-
         .code
 
 ;----------------------------------------------------------
 ; Parser initialization here:
 .proc   parser_alloc_init
-        ; Init all pointer at start of HEAP
+        ; Init all pointers to AY
         ldx     #(mem_end-mem_start)
 loop:
         sta     mem_start, x

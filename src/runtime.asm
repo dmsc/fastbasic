@@ -22,7 +22,7 @@
         ; 16bit math
         .export         umul16, sdiv16, smod16, neg_AX
         ; simple I/O
-        .export         getkey, getc, putc, print_hex_byte, print_hex_word, print_word
+        .export         getkey, getc, putc, print_word
         .export         cio_close, close_all, sound_off
         .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
@@ -59,32 +59,6 @@ tabpos: .res    1
         rts
 .endproc
 
-; Adjust sign for SIGNED div operations
-; INPUT: OP1:    A / X
-;        OP2: tmp1 / tmp1+1
-;        P flag : from "X"
-.proc   sign_adjust
-        ldy     #0
-        cpx     #0
-        bpl     x_pos
-        dey
-        dey
-        dey
-        jsr     neg_AX
-x_pos:  sta     tmp3
-        stx     tmp3+1
-        ldx     tmp1+1
-        bpl     y_pos
-        lda     tmp1
-        iny
-        jsr     neg_AX
-        sta     tmp1
-        stx     tmp1+1
-y_pos:  sty     sign
-        jsr     udiv16
-        rts
-.endproc
-
 ; Signed 16x16 division
 .proc   sdiv16
         jsr     sign_adjust
@@ -100,9 +74,8 @@ ret:    rts
         lda     tmp2
         ldx     tmp2+1
         asl     sign
-        bcc     ret
+        bcc     sdiv16::ret
         jmp     neg_AX
-ret:    rts
 .endproc
 
 ;
@@ -140,6 +113,30 @@ ret:    rts
         ldx     tmp1+1
         rts                     ; Done
 .endproc
+
+; Adjust sign for SIGNED div operations
+; INPUT: OP1:    A / X
+;        OP2: tmp1 / tmp1+1
+;        P flag : from "X"
+.proc   sign_adjust
+        ldy     #0
+        cpx     #0
+        bpl     x_pos
+        dey
+        dey
+        dey
+        jsr     neg_AX
+x_pos:  sta     tmp3
+        stx     tmp3+1
+        ldx     tmp1+1
+        bpl     y_pos
+        lda     tmp1
+        iny
+        jsr     neg_AX
+        sta     tmp1
+        stx     tmp1+1
+y_pos:  sty     sign
+.endproc        ; Fall through
 
 ; Divide TMP3 / TMP2, result in AX and remainder in TMP2
 .proc   udiv16
@@ -218,31 +215,6 @@ lrts:   rts
         rts
 .endproc
 
-.proc   print_hex_byte
-
-        .data
-hex_table:
-        .byte   "0123456789ABCDEF"
-        .code
-
-        pha
-        lda     #'$'
-        jsr     ::putc
-only:   pla
-        pha
-        lsr
-        lsr
-        lsr
-        lsr
-        jsr     print_hex
-        pla
-print_hex:
-        and     #$0F
-        tax
-        lda     hex_table,x
-        ; Fall through
-.endproc
-
         ; Falls from print_byte!
 .proc   putc_nosave
         tay
@@ -268,13 +240,6 @@ save_y: ldy     #0
         sta     tabpos
 :       pla
         rts
-.endproc
-
-.proc   print_hex_word
-        pha
-        txa
-        jsr     print_hex_byte
-        jmp     print_hex_byte::only
 .endproc
 
 .proc   print_word
@@ -347,30 +312,6 @@ ploop:  iny
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Convert string to integer (word)
 
-; Multiply "tmp1" by 10 - uses A,X, keeps Y
-.proc   mul10
-        lda     tmp1
-        ldx     tmp1+1
-
-        asl
-        rol     tmp1+1
-        bcs     xit
-        asl
-        rol     tmp1+1
-        bcs     xit
-
-        adc     tmp1
-        sta     tmp1
-        txa
-        adc     tmp1+1
-        bcs     xit
-
-        asl     tmp1
-        rol     a
-
-        sta     tmp1+1
-xit:    rts
-.endproc
 
 .scope  skipws
 skipws_loop:
@@ -421,7 +362,26 @@ loop:
 
         sta     tmp2    ; and save digit
 
-        jsr     mul10
+        ; Multiply "tmp1" by 10 - uses A,X, keeps Y
+        lda     tmp1
+        ldx     tmp1+1
+
+        asl
+        rol     tmp1+1
+        bcs     ebig
+        asl
+        rol     tmp1+1
+        bcs     ebig
+
+        adc     tmp1
+        sta     tmp1
+        txa
+        adc     tmp1+1
+        bcs     ebig
+
+        asl     tmp1
+        rol     a
+        sta     tmp1+1
         bcs     ebig
 
         ; Add new digit

@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <map>
 #include <vector>
 
 enum VarType {
@@ -60,6 +61,9 @@ class parse {
             public:
                 enum { tok, byte, word, label, comment } type;
                 std::string value;
+                bool operator<(const codew &c) const {
+                    return (type == c.type) ? (value < c.value) : (type < c.type);
+                }
         };
         class saved_pos {
             public:
@@ -347,18 +351,39 @@ static unsigned long get_number(parse &s)
     }
 }
 
-static bool get_asm_constant(parse &s)
+static bool get_asm_word_constant(parse &s)
 {
+    auto start = s.pos;
     if( s.expect('@') )
     {
         std::string name;
         // Reads ASM constant
-        if( !s.get_ident(name) )
-            return false;
-        s.emit_word( name );
-        s.skipws();
-        return true;
+        if( s.get_ident(name) )
+        {
+            s.emit_word( name );
+            s.skipws();
+            return true;
+        }
     }
+    s.pos = start;
+    return false;
+}
+
+static bool get_asm_byte_constant(parse &s)
+{
+    auto start = s.pos;
+    if( s.expect('@') && s.expect('@') )
+    {
+        std::string name;
+        // Reads ASM constant
+        if( s.get_ident(name) )
+        {
+            s.emit( name );
+            s.skipws();
+            return true;
+        }
+    }
+    s.pos = start;
     return false;
 }
 
@@ -366,7 +391,7 @@ static bool SMB_E_NUMBER_WORD(parse &s)
 {
     s.debug("E_NUMBER_WORD");
     s.skipws();
-    if( get_asm_constant(s) )
+    if( get_asm_word_constant(s) )
         return true;
     auto num = get_number(s);
     if( num > 65535 )
@@ -380,6 +405,8 @@ static bool SMB_E_NUMBER_BYTE(parse &s)
 {
     s.debug("E_NUMBER_BYTE");
     s.skipws();
+    if( get_asm_byte_constant(s) )
+        return true;
     auto num = get_number(s);
     if( num > 255 )
         return false;
@@ -736,6 +763,43 @@ static bool readLine(std::string &r, std::istream &is)
  return false;
 }
 
+// Opcode statistics!
+class opstat
+{
+    private:
+        std::vector<parse::codew> &code;
+        std::map<parse::codew, int> c1;
+        std::map<std::pair<parse::codew, parse::codew>, int> c2;
+    public:
+        opstat(std::vector<parse::codew> &code):
+            code(code)
+        {
+            parse::codew old{ parse::codew::byte, std::string() };
+            for(auto &c: code)
+            {
+                if( c.type == parse::codew::tok )
+                {
+                    std::pair<parse::codew, parse::codew> p{c, old};
+                    c1[c] ++;
+                    if( old.type == parse::codew::tok )
+                        c2[{c, old}]++;
+                    old = c;
+                }
+                else if( c.type == parse::codew::byte && old.type == parse::codew::tok
+                         && old.value == "TOK_BYTE" )
+                    c1[old = { parse::codew::tok, "TOK_BYTE " + c.value }]++;
+                else if( c.type == parse::codew::word && old.type == parse::codew::tok
+                        && old.value == "TOK_NUM" )
+                    c1[old = { parse::codew::tok, "TOK_NUM " + c.value }]++;
+            }
+            // Show results
+            for(auto &c: c1)
+                std::cerr << "\t" << c.second << "\t" << c.first.value << "\n";
+            for(auto &c: c2)
+                std::cerr << "\t" << c.second << "\t" << c.first.second.value << "\t" << c.first.first.value << "\n";
+        }
+};
+
 // Implements a simple peephole optimizer
 class peephole
 {
@@ -785,6 +849,10 @@ class peephole
         {
             code.erase( code.begin() + idx + current);
         }
+        void ins(size_t idx)
+        {
+            code.insert(code.begin() + idx + current, {parse::codew::tok, "invalid"});
+        }
         void set_w(size_t idx, int16_t x)
         {
             code[idx+current].type = parse::codew::word;
@@ -800,11 +868,61 @@ class peephole
             code[idx+current].type = parse::codew::tok;
             code[idx+current].value = tok;
         }
+        // Transforms all "numeric" tokens to TOK_NUM, so that the next phases can
+        // optimize
+        void expand_numbers()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                // Sequences:
+                //   TOK_BYTE / x
+                if( mtok(0,"TOK_BYTE") && mbyte(1) )
+                {
+                    set_tok(0, "TOK_NUM"); set_w(1, val(1)); i++;
+                }
+                //   TOK_1
+                else if( mtok(0,"TOK_1") )
+                {
+                    set_tok(0, "TOK_NUM"); ins(1); set_w(1, 1); i++;
+                }
+                //   TOK_0
+                else if( mtok(0,"TOK_0") )
+                {
+                    set_tok(0, "TOK_NUM"); ins(1); set_w(1, 0); i++;
+                }
+            }
+        }
+        // Transforms small "numeric" tokens to TOK_BYTE, TOK_1 and TOK_0
+        void shorten_numbers()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                // Sequences:
+                //   TOK_NUM / x == 0
+                if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 0 )
+                {
+                    del(1); set_tok(0, "TOK_0");
+                }
+                //   TOK_NUM / x == 1
+                else if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 1 )
+                {
+                    del(1); set_tok(0, "TOK_1");
+                }
+                //   TOK_NUM / x < 256
+                else if( mtok(0,"TOK_NUM") && mword(1) && 0 == (val(1) & ~0xFF) )
+                {
+                    set_tok(0, "TOK_BYTE"); set_b(1, val(1));
+                }
+            }
+        }
     public:
         peephole(std::vector<parse::codew> &code):
             code(code), current(0)
         {
             bool changed;
+            expand_numbers();
             do
             {
                 changed = false;
@@ -822,79 +940,56 @@ class peephole
                     //   TOK_NUM / x / TOK_SHL8  -> TOK_NUM / 256*x
                     if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_SHL8") )
                     {
+
                         del(2); set_w(1, 256 * val(1)); i--; changed = true;
                         continue;
                     }
-                    //   TOK_NUM / x<256         -> TOK_BYTE / x
-                    if( mtok(0,"TOK_NUM") && mword(1) && ( (val(1) & ~0xFF) ==  0) )
-                    {
-                        set_tok(0, "TOK_BYTE"); set_b(1, val(1)); i--; changed = true;
-                        continue;
-                    }
-                    //   TOK_BYTE / x / TOK_SHL8  -> TOK_NUM / 256*x
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && mtok(2,"TOK_SHL8") )
-                    {
-                        del(2); set_tok(0, "TOK_NUM"); set_w(1, 256 * val(1)); i--; changed = true;
-                        continue;
-                    }
-                    //   TOK_BYTE / x / TOK_USHL  -> TOK_NUM / 2*x
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && mtok(2,"TOK_USHL") )
-                    {
-                        del(2); set_tok(0, "TOK_NUM"); set_w(1, 2 * val(1)); i--; changed = true;
-                        continue;
-                    }
-                    //   TOK_BYTE / 4 / TOK_MUL   -> TOK_USHL TOK_USHL
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 4 && mtok(2,"TOK_MUL") )
+                    //   TOK_NUM / 4 / TOK_MUL   -> TOK_USHL TOK_USHL
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 4 && mtok(2,"TOK_MUL") )
                     {
                         del(2); set_tok(1, "TOK_USHL"); set_tok(0, "TOK_USHL"); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 2 / TOK_MUL   -> TOK_USHL
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 2 && mtok(2,"TOK_MUL") )
+                    //   TOK_NUM / 2 / TOK_MUL   -> TOK_USHL
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 2 && mtok(2,"TOK_MUL") )
                     {
                         del(2); del(1); set_tok(0, "TOK_USHL"); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 1 / TOK_MUL   -> -
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 1 && mtok(2,"TOK_MUL") )
+                    //   TOK_NUM / 1 / TOK_MUL   -> -
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 1 && mtok(2,"TOK_MUL") )
                     {
                         del(2); del(1); del(0); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 1 / TOK_DIV   -> -
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 1 && mtok(2,"TOK_DIV") )
+                    //   TOK_NUM / 1 / TOK_DIV   -> -
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 1 && mtok(2,"TOK_DIV") )
                     {
                         del(2); del(1); del(0); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 0 / TOK_ADD   -> -
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 0 && mtok(2,"TOK_ADD") )
+                    //   TOK_NUM / 0 / TOK_ADD   -> -
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 0 && mtok(2,"TOK_ADD") )
                     {
                         del(2); del(1); del(0); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 0 / TOK_SUB   -> -
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 0 && mtok(2,"TOK_SUB") )
+                    //   TOK_NUM / 0 / TOK_SUB   -> -
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 0 && mtok(2,"TOK_SUB") )
                     {
                         del(2); del(1); del(0); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / 0 / TOK_NEQ   -> TOK_COMP_0
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 0 && mtok(2,"TOK_NEQ") )
+                    //   TOK_NUM / 0 / TOK_NEQ   -> TOK_COMP_0
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 0 && mtok(2,"TOK_NEQ") )
                     {
                         del(2); del(1); set_tok(0,"TOK_COMP_0"); i--; changed = true;
                         continue;
                     }
                     //   TOK_BYTE / 0 / TOK_EQ   -> TOK_COMP_0 TOK_L_NOT
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && val(1) == 0 && mtok(2,"TOK_EQ") )
+                    if( mtok(0,"TOK_NUM") && mword(1) && val(1) == 0 && mtok(2,"TOK_EQ") )
                     {
                         del(2); set_tok(0,"TOK_COMP_0"); set_tok(1, "TOK_L_NOT"); i--; changed = true;
-                        continue;
-                    }
-                    //   TOK_BYTE / x / TOK_BYTE / y / TOK_ADD   -> TOK_NUM (x+y)
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && mtok(2,"TOK_BYTE") && mbyte(3) && mtok(4,"TOK_ADD") )
-                    {
-                        set_tok(0, "TOK_NUM"); set_w(1, val(1)+val(3)); del(4); del(3); del(2); i--; changed = true;
                         continue;
                     }
                     //   TOK_NUM / x / TOK_NUM / y / TOK_ADD   -> TOK_NUM (x+y)
@@ -903,20 +998,34 @@ class peephole
                         set_tok(0, "TOK_NUM"); set_w(1, val(1)+val(3)); del(4); del(3); del(2); i--; changed = true;
                         continue;
                     }
-                    //   TOK_BYTE / x / TOK_BYTE / y / TOK_SUB   -> TOK_NUM (x-y)
-                    if( mtok(0,"TOK_BYTE") && mbyte(1) && mtok(2,"TOK_BYTE") && mbyte(3) && mtok(4,"TOK_SUB") )
-                    {
-                        set_tok(0, "TOK_NUM"); set_w(1, val(1)-val(3)); del(4); del(3); del(2); i--; changed = true;
-                        continue;
-                    }
                     //   TOK_NUM / x / TOK_NUM / y / TOK_SUB   -> TOK_NUM (x-y)
                     if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_SUB") )
                     {
                         set_tok(0, "TOK_NUM"); set_w(1, val(1)-val(3)); del(4); del(3); del(2); i--;
                         continue; changed = true;
                     }
+                    //  VAR + VAR    ==>   2 * VAR
+                    //   TOK_VAR / x / TOK_VAR / x / TOK_ADD   -> TOK_VAR / x / TOK_USHL
+                    if( mtok(0,"TOK_VAR_LOAD") && mbyte(1) && mtok(2,"TOK_VAR_LOAD") && mbyte(3) && mtok(4,"TOK_ADD") && val(1) == val(3) )
+                    {
+                        set_tok(2, "TOK_USHL"); del(4); del(3); i--; changed = true;
+                        continue;
+                    }
+                    //  VAR = VAR + 1   ==>  INC VAR
+                    //   TOK_VAR_A / x / TOK_VAR / x / TOK_NUM / 1 / TOK_ADD / TOK_DPOKE
+                    //        -> TOK_VAR_A / x / TOK_INC
+                    if( mtok(0,"TOK_VAR_ADDR") && mbyte(1) &&
+                        mtok(2,"TOK_VAR_LOAD") && mbyte(3) &&
+                        mtok(4,"TOK_NUM") && mword(5) && val(5) == 1 &&
+                        mtok(6,"TOK_ADD") && mtok(7,"TOK_DPOKE") &&
+                        val(1) == val(3) )
+                    {
+                        set_tok(2, "TOK_INC"); del(7); del(6); del(5); del(4); del(3); i--; changed = true;
+                        continue;
+                    }
                 }
             } while(changed);
+            shorten_numbers();
         }
 };
 
@@ -933,6 +1042,7 @@ static int show_help()
                  "\n"
                  "Options:\n"
                  " -d\tenable parser debug options (only useful to debug parser)\n"
+                 " -prof\tshow token usage statistics\n"
                  " -v\tshow version and exit\n"
                  " -h\tshow this help\n";
     return 0;
@@ -950,11 +1060,14 @@ int main(int argc, char **argv)
     std::string iname;
     std::ifstream ifile;
     std::ofstream ofile;
+    bool show_stats = false;
 
     for(auto &arg: args)
     {
         if( arg == "-d" )
             do_debug = true;
+        else if( arg == "-prof" )
+            show_stats = true;
         else if( arg == "-v" )
             return show_version();
         else if( arg == "-h" )
@@ -1021,6 +1134,22 @@ int main(int argc, char **argv)
     s.emit("TOK_END");
     // Optimize
     peephole pp(s.code);
+    // Statistics
+    if( show_stats )
+        opstat op(s.code);
+
+    // Write global symbols
+    for(auto &c: s.code)
+    {
+        if( c.type == parse::codew::word && c.value[0] >= 'A' && c.value[0] <= '_' )
+            ofile << "\t.global " << c.value << "\n";
+        else if( c.type == parse::codew::byte && c.value[0] >= 'A' && c.value[0] <= '_' )
+            ofile << "\t.globalzp " << c.value << "\n";
+    }
+    // Export common symbols and include atari defs
+    ofile << "\t.export bytecode_start\n"
+             "\t.exportzp NUM_VARS\n"
+             "\n\t.include \"atari.inc\"\n\n";
 
     // Write tokens
     ofile << "; TOKENS:\n";
@@ -1032,7 +1161,8 @@ int main(int argc, char **argv)
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"
              ";-----------------------------\n"
-             "; Bytecode\n";
+             "; Bytecode\n"
+             "bytecode_start:\n";
     for(auto c: s.code)
     {
         switch(c.type)

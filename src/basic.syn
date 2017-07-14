@@ -21,7 +21,8 @@
 
 TOKENS {
  # Constant and variable loading
- TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
+ TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
+ TOK_SHL8, TOK_0, TOK_1
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
  # Bitwise operators
@@ -139,7 +140,7 @@ T_EXPR:
         "ADR("   ADR_EXPR ")"
         "LEN("   STR_EXPR ")" emit TOK_PEEK # First byte of string is the length
         "VAL("   STR_EXPR ")" emit TOK_VAL
-        "ASC("   STR_EXPR ")" emit TOK_BYTE emit 1 emit TOK_ADD emit TOK_PEEK # TODO: does not check for empty strings.
+        "ASC("   STR_EXPR ")" emit TOK_1 emit TOK_ADD emit TOK_PEEK # TODO: does not check for empty strings.
         PAR_EXPR
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
@@ -294,7 +295,7 @@ ASSIGN_STR:
 # Parse optional "STEP" in for
 STEP_OPTIONAL:
         "STEP" EXPR
-        emit TOK_BYTE emit 1
+        emit TOK_1
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
@@ -353,7 +354,7 @@ IO_CHAN_OPT:
         IO_CHAN_0
 
 IO_CHAN_0:
-        emit TOK_BYTE emit IOCHN emit TOK_BYTE emit 0 emit TOK_POKE
+        emit TOK_BYTE emit IOCHN emit TOK_0 emit TOK_POKE
 
 # Get from keyboard expression
 GETK_EXPR:
@@ -440,7 +441,7 @@ PARSE_LINE:
         "DRawto" POSITION emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_FILLTO
         "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD "," EXPR_AB emit TOK_POKE
-        "SOund" EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD "," EXPR "," EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_BYTE emit 0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
+        "SOund" EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD "," EXPR "," EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
         "SOund" emit TOK_SOUND_OFF
         "DIm" DIM_LIST
         "CLose" IO_CHAN emit TOK_CLOSE

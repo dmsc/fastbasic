@@ -23,14 +23,14 @@
         .exportzp       interpreter_cptr
 
         ; From allloc.asm
-        .importzp       prog_buf, var_buf, array_ptr, mem_end
+        .importzp       var_buf, array_ptr, mem_end
         .import         clear_data, alloc_array
         ; From parser.asm
         .importzp       bptr, bpos, blen
 
         ; From runtime.asm
         .import         umul16, sdiv16, smod16, neg_AX, read_word
-        .import         print_word, print_hex_word, getkey, getc, putc
+        .import         print_word, getkey, getc, putc
         .import         move_up_src, move_up_dst, move_up
         .import         move_dwn_src, move_dwn_dst, move_dwn
         .import         graphics, cio_close, close_all, sound_off
@@ -96,12 +96,9 @@ interpreter_cptr        =       cptr
         ; Main interpreter call
 .proc   interpreter_run
 
-        ; Copy interpreter code to ZP
-        ldx     #<(__INTERP_SIZE__ - 1)
-copy:   lda     __INTERP_LOAD__, x
-        sta     <__INTERP_RUN__, x
-        dex
-        bpl     copy
+        ; Init code pointer
+        sta     cptr
+        stx     cptr+1
 
         ; Get memory for all variables and clear the values
         jsr     clear_data
@@ -121,12 +118,6 @@ copy:   lda     __INTERP_LOAD__, x
         ; Init stack-pointer
         lda     #$80
         sta     sptr
-
-        ; Init code pointer
-        lda     prog_buf
-        sta     cptr
-        lda     prog_buf+1
-        sta     cptr+1
 
         ; Interpret opcodes
         jmp     next_instruction
@@ -618,12 +609,18 @@ xit:    ldx     tmp2
         jmp     next_ins_incsp
 .endproc
 
+TOK_0:
+        jsr     pushAX
+        dec     sptr
 .proc   set0
         lda     #0
         tax
         jmp     next_ins_incsp
 .endproc
 
+TOK_1:
+        jsr     pushAX
+        dec     sptr
 .proc   set1
         lda     #1
         ldx     #0
@@ -1186,7 +1183,8 @@ OP_JUMP:
         ; Copied from basyc.syn, must be in the same order:
         .word   TOK_END
         ; Constant and variable loading
-        .word   TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD, TOK_SHL8
+        .word   TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
+        .word   TOK_SHL8, TOK_0, TOK_1
         ; Numeric operators
         .word   TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
         ; Bitwise operators
