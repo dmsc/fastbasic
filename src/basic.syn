@@ -236,10 +236,6 @@ PRINT_SEP:
         "," emit TOK_PRINT_TAB
         ";"
 
-PRINT_SEP_LAST:
-        PRINT_SEP PRINT_SEP_MORE
-        emit TOK_PRINT_EOL
-
 PRINT_SEP_MORE:
         PRINT_SEP PRINT_SEP_MORE
         pass
@@ -254,7 +250,8 @@ PRINT_EXPR:
 
 PRINT_NEXT:
 	PRINT_SEP PRINT_SEP_MORE PRINT_ONE PRINT_NEXT
-        PRINT_SEP_LAST
+        PRINT_SEP PRINT_SEP_MORE IO_CHAN_0
+        emit TOK_PRINT_EOL
 
 EOS:
 	E_EOL
@@ -319,9 +316,9 @@ DIM_MORE:
 # INPUT
 INPUT_STR:
         IO_CHAN ","                                                # I/O channel, don't print prompt
-        IO_CHAN_0 "\"" E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
-        IO_CHAN_0 PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
-        IO_CHAN_0 emit TOK_CSTRING emit 1 emit 63 emit 0 emit TOK_PRINT_STR      # Prints a '?' by default
+        "\"" E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
+        PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
+        emit TOK_BYTE emit 63 emit TOK_PUT               # Prints a '?' by default
 
 INPUT_VAR_LIST:
         INPUT_VAR INPUT_VAR_MORE
@@ -351,7 +348,7 @@ IO_CHAN:
 
 IO_CHAN_OPT:
         IO_CHAN ","
-        IO_CHAN_0
+        pass
 
 IO_CHAN_0:
         emit TOK_BYTE emit IOCHN emit TOK_0 emit TOK_POKE
@@ -413,7 +410,7 @@ PARSE_LINE:
 	"." E_REM
 	"?" IO_CHAN_OPT PRINT_EXPR
 	"PRint" IO_CHAN_OPT PRINT_EXPR
-        "Input" INPUT_STR INPUT_VAR_LIST
+        "Input" INPUT_STR INPUT_VAR_LIST IO_CHAN_0
         "GEt" GETK_EXPR
         "GEt" IO_CHAN "," GET_EXPR
         "PUt" IO_CHAN_OPT PUT_EXPR
@@ -422,7 +419,7 @@ PARSE_LINE:
         "Move" EXPR "," EXPR "," EXPR emit TOK_MOVE
         "-move" EXPR "," EXPR "," EXPR emit TOK_NMOVE
         "DO" emit LT_DO_LOOP E_PUSH_LT
-        "LOOP" emit TOK_JUMP E_POP_LOOP
+        "Loop" emit TOK_JUMP E_POP_LOOP
         "REPeat" emit LT_REPEAT E_PUSH_LT
         "Until" FORCE_BOOL_EXPR emit TOK_CJUMP E_POP_REPEAT
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT

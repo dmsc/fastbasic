@@ -29,7 +29,7 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bpos, bmax
         ; From intrepreter.asm
-        .import interpreter_run
+        .import interpreter_run, saved_cpu_stack
         .importzp interpreter_cptr
         ; From alloc.asm
         .importzp  prog_ptr, var_buf
@@ -89,6 +89,8 @@ run_program:
         pha
         lda     interpreter_cptr+1
         pha
+        lda     saved_cpu_stack
+        pha
 
         lda     #125
         jsr     putc
@@ -97,6 +99,8 @@ run_program:
         ldx     end_ptr+1
         jsr     interpreter_run
 
+        pla
+        sta     saved_cpu_stack
         pla
         sta     interpreter_cptr+1
         pla

@@ -19,7 +19,7 @@
 ; The opcode interpreter
 ; ----------------------
 
-        .export         interpreter_run
+        .export         interpreter_run, saved_cpu_stack
         .exportzp       interpreter_cptr
 
         ; From allloc.asm
@@ -38,7 +38,7 @@
         .importzp       IOCHN, COLOR, IOERROR
 
         ; From io.asm
-        .import         getline, getline_file, line_buf
+        .import         getline, line_buf
         ; Define our segment
         .import         __INTERP_LOAD__, __INTERP_RUN__, __INTERP_SIZE__
 
@@ -132,6 +132,17 @@ pop_stack_2:
         lda     stack_l, y
         ldx     stack_h, y
         jmp     next_ins_incsp
+.endproc
+
+        ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
+.proc   CIOV_POP
+        jsr     CIOV
+ioerr:
+        sty     IOERROR
+iochn0:
+        lda     #0
+        sta     IOCHN
+        beq     pop_stack
 .endproc
 
         ; Reads one byte from the opcode stream.
@@ -375,9 +386,6 @@ ret_x:  ldx     #0
 
 .proc  memory_error
         ; Show message and ends
-        lda     #0
-        sta     IOCHN
-
         ldx     #len
 
 :       lda     msg, x
@@ -609,6 +617,31 @@ xit:    ldx     tmp2
         jmp     next_ins_incsp
 .endproc
 
+.proc   TOK_GEQ  ; AX = (SP+) >= AX
+        sta     tmp1
+        stx     tmp1+1
+        ldy     sptr
+        lda     stack_l, y
+        cmp     tmp1
+        lda     stack_h, y
+        sbc     tmp1+1
+        bvc     :+
+        eor     #$80
+:       bpl     set1
+        bmi     set0
+.endproc
+
+.proc   TOK_LEQ  ; AX = (SP+) <= AX
+        ldy     sptr
+        cmp     stack_l, y
+        txa
+        sbc     stack_h, y
+        bvc     :+
+        eor     #$80
+:       bmi     set0
+        bpl     set1
+.endproc
+
 TOK_0:
         jsr     pushAX
         dec     sptr
@@ -624,41 +657,6 @@ TOK_1:
 .proc   set1
         lda     #1
         ldx     #0
-        jmp     next_ins_incsp
-.endproc
-
-.proc   TOK_GEQ  ; AX = (SP+) >= AX
-        sta     tmp1
-        stx     tmp1+1
-        ldx     #0
-        ldy     sptr
-        lda     stack_l, y
-        cmp     tmp1
-        lda     stack_h, y
-        sbc     tmp1+1
-        bvc     :+
-        eor     #$80
-:       bmi     result_0
-        lda     #1
-        jmp     next_ins_incsp
-result_0:
-        txa
-        jmp     next_ins_incsp
-.endproc
-
-.proc   TOK_LEQ  ; AX = (SP+) <= AX
-        ldy     sptr
-        cmp     stack_l, y
-        txa
-        ldx     #0
-        sbc     stack_h, y
-        bvc     :+
-        eor     #$80
-:       bmi     result_0
-        lda     #1
-        jmp     next_ins_incsp
-result_0:
-        txa
         jmp     next_ins_incsp
 .endproc
 
@@ -680,9 +678,7 @@ result_0:
         txa
         eor     stack_h, y
         bne     set0
-        tax
-        lda     #1
-        jmp     next_ins_incsp
+        beq     set1
 .endproc
 
 .proc   TOK_LE  ; AX = (SP+) < AX
@@ -696,12 +692,8 @@ result_0:
         sbc     tmp1+1
         bvc     :+
         eor     #$80
-:       bmi     result_1
-        txa
-        jmp     next_ins_incsp
-result_1:
-        lda     #1
-        jmp     next_ins_incsp
+:       bmi     set1
+        bpl     set0
 .endproc
 
 .proc   TOK_GT  ; AX = (SP+) > AX
@@ -712,12 +704,8 @@ result_1:
         sbc     stack_h, y
         bvc     :+
         eor     #$80
-:       bmi     result_1
-        txa
-        jmp     next_ins_incsp
-result_1:
-        lda     #1
-        jmp     next_ins_incsp
+:       bmi     set1
+        bpl     set0
 .endproc
 
 .proc   TOK_COMP_0  ; AX = AX != 0
@@ -758,7 +746,7 @@ nil:    jmp     pop_stack
 .endproc        ; Fall through
 .proc   TOK_PUT
         jsr     putc
-        jmp     pop_stack
+        jmp     CIOV_POP::iochn0
 .endproc
 
 .proc   TOK_PRINT_TAB   ; PRINT TAB
@@ -776,13 +764,14 @@ nil:    jmp     pop_stack
         jsr     getc
         sty     IOERROR
         ldx     #0
+        stx     IOCHN
         jmp     next_instruction
 .endproc
 
 .proc   TOK_INPUT_STR   ; INPUT to string buffer (INBUFF)
         jsr     pushAX
         ldx     IOCHN
-        jsr     getline_file
+        jsr     getline
         sty     IOERROR
         sta     line_buf - 1    ; Assume that this location is available
         beq     no_eol  ; EOF
@@ -1060,17 +1049,14 @@ TOK_FILLTO:
         sta     ICAX1, x
         lda     #$00
         sta     ICAX2, x
-        jsr     CIOV
-        sty     IOERROR
-        jmp     pop_stack
+        jmp     CIOV_POP
 .endproc
 
 .proc   TOK_CLOSE
         jsr     pushAX
         ldx     IOCHN
         jsr     cio_close
-        sty     IOERROR
-        jmp     pop_stack
+        jmp     CIOV_POP::ioerr
 .endproc
 
 .proc   TOK_BPUT
@@ -1096,9 +1082,8 @@ save_x: lda     #0
 
 setcom: lda     #0
         sta     ICCOM, x
-        jsr     CIOV
-        sty     IOERROR
-        jmp     pop_stack_2
+        inc     sptr
+        jmp     CIOV_POP
 .endproc
 
 .proc   TOK_XIO
@@ -1123,9 +1108,9 @@ setcom: lda     #0
         sta     ICAX2, x
         lda     stack_l+1, y
         sta     ICCOM, x
-        jsr     CIOV
-        sty     IOERROR
-        jmp     pop_stack_3
+        inc     sptr
+        inc     sptr
+        jmp     CIOV_POP
 .endproc
 
 .proc   TOK_SOUND_OFF

@@ -22,8 +22,8 @@
         ; 16bit math
         .export         umul16, sdiv16, smod16, neg_AX
         ; simple I/O
-        .export         getkey, getc, putc, print_word
-        .export         cio_close, close_all, sound_off
+        .export         getkey, getc, putc, print_word, getline
+        .export         line_buf, cio_close, close_all, sound_off
         .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
         .export         skipws, read_word
@@ -240,6 +240,25 @@ save_y: ldy     #0
         sta     tabpos
 :       pla
         rts
+.endproc
+
+line_buf        = LBUFF
+.proc   getline
+        lda     #>line_buf
+        sta     ICBAH, x
+.assert (>line_buf) = GETREC, error, "invalid optimization"
+        ;lda     #GETREC
+        sta     ICCOM, x
+        lda     #<line_buf
+        sta     ICBAL, x
+.assert (<line_buf) = $80, error, "invalid optimization"
+        ;lda     #$80
+        sta     ICBLL, x
+        lda     #0
+        sta     ICBLH, x
+        jsr     CIOV
+        lda     ICBLL, x
+xit:    rts
 .endproc
 
 .proc   print_word

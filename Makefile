@@ -57,7 +57,6 @@ COMMON_AS_SRC=\
     src/alloc.asm\
     src/exehdr.asm\
     src/interpreter.asm\
-    src/io.asm\
     src/runtime.asm\
 
 # BAS editor source

@@ -8,16 +8,13 @@ do
 
 ' Initializes E: device
 close #0 : open #0, 12, 0, "E:"
-dpoke @@LMARGN, $2700
+poke @@LMARGN, $00
 poke @KEYREP, 3
 
 ' M/L routines
 data CountLines() byte = $68,$68,$AA,$68,$85,$FD,$68,$85,$FC,$68,$85,$FF,$68,$85,$FE,$E6,$FC,
 data              byte = $E6,$FD,$A0,$00,$B1,$FE,$C6,$FC,$D0,$04,$C6,$FD,$F0,$0D,$E6,$FE,$D0,
 data              byte = $02,$E6,$FF,$C9,$9B,$D0,$EC,$CA,$10,$E9,$A5,$FE,$A6,$FF,$60
-
-data Blanks() word = $2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020,
-data          word = $2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020,$2020
 
 ' We store an array with the location of each block of 10 lines, for faster scrolling
 dim LineAdr(256), ScrAdr(24), ScrLen(24)
@@ -79,7 +76,7 @@ do
     else
       exec InsertChar
       inc column
-      if linLen = column and scrColumn < 38
+      if linLen = column and scrColumn < peek(@@RMARGN)-1
         inc scrColumn
         poke @DSPFLG, 1
         put key
@@ -206,7 +203,7 @@ do
     elif key = $1F
       if column < linLen
         inc column
-        if scrColumn < 38
+        if scrColumn < peek(@@RMARGN)-1
           inc scrColumn
           put key
         else
@@ -452,13 +449,17 @@ PROC ChgLine
 
   ' Print status
   pos. 35, 0 : ? line;
-  poke @@OLDCHR, $52
+  put $12
 
   ' Redraw line
   hDraw = 0
   exec DrawCurrentLine
 
 ENDPROC
+
+proc PutBlanks
+  for max = max to 1 step -1 : put 32 : next max
+endproc
 
 '-------------------------------------
 ' Draws line 'Y' scrolled by hDraw
@@ -470,16 +471,17 @@ PROC DrawLine
 
   pos. 0, y+1
   ptr = ptr + hdraw
+  max = peek(@@RMARGN) - 1
   if lLen < 0
     put $FD
-    bput #0, adr(Blanks), 38
+    exec PutBlanks
     poke @@OLDCHR, $00
   else
-    max = 39
     if hDraw
       lLen = lLen - hDraw
-      max = 38
       put $9E
+    else
+      inc max
     endif
 
     if lLen > max
@@ -490,7 +492,8 @@ PROC DrawLine
         bput #0, ptr, lLen
       endif
       if lLen < max
-        bput #0, adr(Blanks), max - lLen
+        max = max - lLen
+        exec PutBlanks
       endif
       poke @@OLDCHR, $00
     endif
@@ -506,7 +509,7 @@ PROC DrawCurrentLine
   hColumn = 0
   scrColumn = column
 
-  while scrColumn > 38
+  while scrColumn >= peek(@@RMARGN)
     hColumn = hColumn + 8
     scrColumn = column - hColumn + 1
   wend
@@ -524,8 +527,8 @@ PROC DrawCurrentLine
 
   poke @DSPFLG, 0
   poke @CRSINH, 0
-  pos. scrColumn, scrLine+1
-  ? "";
+  pos. scrColumn, scrLine
+  put 29
 ENDPROC
 
 '-------------------------------------
@@ -568,11 +571,12 @@ ENDPROC
 ' Prints line info and changes line
 '
 PROC ShowInfo
-  pos. 0, 0 : ? "";
+  pos. 0, 0
+  for max=1 to peek(@@RMARGN) : put $12 : next max
   poke @@OLDCHR, $52
   pos. 2, 0 : ? FileName$;"(";MemEnd-Adr(MemStart);")";
-  pos. scrColumn, scrLine+1
-  ? "";
+  pos. scrColumn, scrLine
+  put 29
 ENDPROC
 
 '-------------------------------------
@@ -618,6 +622,17 @@ PROC InputFilename
 ENDPROC
 
 '-------------------------------------
+' Shows file error
+'
+PROC FileError
+  pos. 1,0
+  ? "ERROR: "; err(); " (press any key)";
+  put @@ATBEL
+  close #1
+  get key
+ENDPROC
+
+'-------------------------------------
 ' Save edited file
 '
 PROC AskSaveFile
@@ -641,11 +656,7 @@ PROC AskSaveFile
     endif
   endif
 
-  pos. 1,0
-  ? "SAVE ERROR: "; err(); " (press any key)";
-  put @@ATBEL
-  close #1
-  get key
+  exec FileError
 ENDPROC
 
 '-------------------------------------
@@ -663,11 +674,7 @@ PROC LoadFile
   endif
 
   if err() > 127
-    pos. 1,0
-    ? "LOAD ERROR: "; err(); " (press any key)";
-    put @@ATBEL
-    close #1
-    get key
+    exec FileError
   endif
 
   exec FillPagePointers
