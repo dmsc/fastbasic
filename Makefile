@@ -110,6 +110,9 @@ disk/%.bas: tests/%.bas
 disk/%: %
 	tr '\n' '\233' < $< > $@
 
+disk/%.txt: %.md
+	tr '\n' '\233' < $< > $@
+
 # Copy ".XEX" as ".COM"
 disk/fb.com: $(PROG)
 	cp $< $@

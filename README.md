@@ -16,7 +16,7 @@ http://atariage.com/forums/topic/267197-preview-new-integer-basic-interpreter/
 Manual
 ------
 
-There is information of the supported syntax in the file [manual.txt](manual.txt).
+There is information of the supported syntax in the file [manual.md](manual.md).
 
 Sample files
 ------------

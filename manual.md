@@ -162,9 +162,11 @@ parenthesis.
 Boolean Operators
 -----------------
 
-Boolean operators return a "true" or "false" value instead of a numeric value, useful as conditions in loops and IF statements.
+Boolean operators return a "true" or "false" value instead of a numeric value,
+useful as conditions in loops and IF statements.
 
-Note that any boolean value can also be used as a numeric value, in this case, "true" is converted to 1 and "false" converted to 0.
+Note that any boolean value can also be used as a numeric value, in this case,
+"true" is converted to 1 and "false" converted to 0.
 
 The supported boolean operators, in order of precedence, are:
 
