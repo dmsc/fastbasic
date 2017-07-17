@@ -291,8 +291,14 @@ ASSIGN_STR:
 
 # Parse optional "STEP" in for
 STEP_OPTIONAL:
-        "STEP" EXPR
+        "Step" EXPR
         emit TOK_1
+
+# Parse variable name in "NEXT"
+NEXT_VARNAME:
+        E_VAR_WORD
+        E_VAR_ARRAY_WORD
+        emit 0 pass
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
@@ -426,13 +432,14 @@ PARSE_LINE:
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "IF" FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT THEN_OR_MULTILINE
         "For" VAR_WORD_LVALUE ASSIGN_EXPR emit TOK_FOR_START "TO" EXPR STEP_OPTIONAL emit LT_FOR_1 E_PUSH_LT emit TOK_FOR emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT
-        "Next" emit TOK_FOR_NEXT emit TOK_JUMP E_VAR_WORD E_POP_FOR emit TOK_FOR_EXIT
+        "Next" emit TOK_FOR_NEXT emit TOK_JUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "ELSE" emit TOK_JUMP E_ELSE
         "ELIF" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "GRaphics" EXPR emit TOK_GRAPHICS
         "Color" emit TOK_BYTE emit COLOR EXPR emit TOK_POKE
+        "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
         "DRawto" POSITION emit TOK_DRAWTO

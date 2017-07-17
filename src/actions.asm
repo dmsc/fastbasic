@@ -246,12 +246,14 @@ err:    ; Restore opos and exit
         sec
         rts
 eos:    iny
+        cpy     blen
+        beq     eos_ok
         lda     (bptr), y
-        iny
+        inc     bpos
         cmp     #'"'    ; Check for "" to encode one ".
         beq     store
         ; Store token and length
-        ldy     tmp1
+eos_ok: ldy     tmp1
         lda     #TOK_CSTRING
         sta     (prog_ptr), y
         iny
