@@ -732,22 +732,6 @@ static bool SMB_E_LABEL(parse &s)
     return true;
 }
 
-static bool SMB_E_END_PARSE(parse &s)
-{
-    s.debug("E_END_PARSE");
-    return true;
-}
-
-#define COLOR   0x009F
-#define IOCHN   0x00A0
-#define COLOR0  0x02C4
-#define ROWCRS  0x54
-#define COLCRS  0x55
-#define OPEN    0x03
-#define AUDF1   0xD200
-#define AUDCTL  0xD208
-#define SKCTL   0xD20F
-
 #include "basic.cc"
 
 

@@ -252,6 +252,7 @@ eos:    iny
         inc     bpos
         cmp     #'"'    ; Check for "" to encode one ".
         beq     store
+        dec     bpos
         ; Store token and length
 eos_ok: ldy     tmp1
         lda     #TOK_CSTRING

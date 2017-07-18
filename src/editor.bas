@@ -4,16 +4,14 @@
 '
 
 '-------------------------------------
-' M/L routines
-data CountLines() byte = $68,$68,$AA,$68,$85,$FD,$68,$85,$FC,$68,$85,$FF,$68,$85,$FE,$E6,$FC,
-data              byte = $E6,$FD,$A0,$00,$B1,$FE,$C6,$FC,$D0,$04,$C6,$FD,$F0,$0D,$E6,$FE,$D0,
-data              byte = $02,$E6,$FF,$C9,$9B,$D0,$EC,$CA,$10,$E9,$A5,$FE,$A6,$FF,$60
+' M/L routine to search the end of line
+data CountLines() byte = $68,$85,$FD,$68,$85,$FC,$68,$85,$FF,$68,$85,$FE,$E6,$FC,$E6,$FD,$A0,
+data              byte = $00,$B1,$FE,$C6,$FC,$D0,$04,$C6,$FD,$F0,$0A,$E6,$FE,$D0,$02,$E6,$FF,
+data              byte = $C9,$9B,$D0,$EC,$A5,$FE,$A6,$FF,$60
 
 '-------------------------------------
 ' Array definitions
-'
-' We store an array with the location of each block of 10 lines, for faster scrolling
-dim LineAdr(256), ScrAdr(24), ScrLen(24)
+dim ScrAdr(24), ScrLen(24)
 ' And an array with the current line being edited
 dim EditBuf(128) byte
 
@@ -30,12 +28,12 @@ MemEnd = Adr(MemStart)
 ' column:       Logical cursor position (in the file)
 ' scrLine:
 ' scrColumn:    Cursor position in the screen
-' hLine:        Line at top of screen, divided by 10.
-'               We always have "line = 10 * hLine + scrLine"
 ' hDraw:        Column at left of screen, and last "updated" column
 ' lDraw:        Number of the line last drawn, and being edited.
 ' linLen:       Current line length.
 ' edited:       0 if not currently editing a line
+' ScrAdr():     Address in the file of screen line
+' ScrLen():     Length of screen line
 
 
 '-------------------------------------
@@ -74,7 +72,6 @@ ENDPROC
 ' Save edited file
 '
 PROC AskSaveFile
-  poke @DSPFLG, 0
   pos. 0, 0
   ? "úù Save?";
   exec InputFileName
@@ -115,34 +112,12 @@ PROC LoadFile
     exec FileError
   endif
 
-  exec FillPagePointers
   column = 0
   line = 0
   scrLine = 0
   edited = 0
   exec RedrawScreen
 
-ENDPROC
-
-'-------------------------------------
-' Calculate all page pointers
-'
-PROC FillPagePointers
-  ptr = adr(MemStart)
-  if MemEnd = ptr
-    poke ptr, $9b
-    MemEnd = MemEnd + 1
-  endif
-  y = 0
-  while ptr <> MemEnd and y < 255
-    LineAdr(y) = ptr
-    inc y
-    ptr = USR(adr(CountLines), ptr, MemEnd - ptr, 9)
-  wend
-  ' Fill two more slots with 0 to signal end of file
-  LineAdr(y) = 0
-  inc y
-  LineAdr(y) = 0
 ENDPROC
 
 '-------------------------------------
@@ -188,13 +163,11 @@ PROC DrawCurrentLine
     y = scrLine
     ptr = Adr(EditBuf)
     lLen = linLen
-    exec DrawLine
+    exec DrawLinePtr
 
   endif
   lDraw = scrLine
 
-  poke @DSPFLG, 0
-  poke @CRSINH, 0
   pos. scrColumn, scrLine
   put 29
 ENDPROC
@@ -221,13 +194,6 @@ PROC SaveLine
     move Adr(EditBuf), ptr, linLen
     ' Adjust all pointers
     ScrLen(lDraw) = linLen
-    for y = (edited + 11) / 10 to 255
-      if LineAdr(y)
-        LineAdr(y) = LineAdr(y) + dif
-      else
-        Exit
-      endif
-    next y
     for y = lDraw + 1 to 22
       ScrAdr(y) = ScrAdr(y) + dif
     next y
@@ -273,10 +239,7 @@ PROC ChgLine
   ' Restore last line, if needed
   if hDraw <> 0
     y = lDraw
-    ptr = ScrAdr(y)
-    lLen = ScrLen(y)
-    hDraw = 0
-    exec DrawLine
+    exec DrawLineOrig
   endif
 
   ' Keep new line in range
@@ -302,9 +265,20 @@ proc PutBlanks
 endproc
 
 '-------------------------------------
-' Draws line 'Y' scrolled by hDraw
+' Draws line 'Y' from file buffer
 '
-PROC DrawLine
+PROC DrawLineOrig
+  ptr = ScrAdr(y)
+  lLen = ScrLen(y)
+  hDraw = 0
+  exec DrawLinePtr
+ENDPROC
+
+'-------------------------------------
+' Draws line 'Y' scrolled by hDraw
+' with data from ptr and lLen.
+'
+PROC DrawLinePtr
 
   poke @DSPFLG, 1
   poke @CRSINH, 1
@@ -338,6 +312,10 @@ PROC DrawLine
       poke @@OLDCHR, $00
     endif
   endif
+
+  poke @DSPFLG, 0
+  poke @CRSINH, 0
+
 ENDPROC
 
 '-------------------------------------
@@ -350,6 +328,114 @@ PROC ShowInfo
   pos. 2, 0 : ? FileName$;"(";MemEnd-Adr(MemStart);")";
   pos. scrColumn, scrLine
   put 29
+ENDPROC
+
+'-------------------------------------
+' Scrolls screen Down (like page-up)
+PROC ScrollDown
+  ' Don't scroll if already at beginning of file
+  if Adr(MemStart) = ScrAdr(0) then Exit
+
+  ' Scroll screen image inserting a line
+  poke @CRSINH, 1
+  pos. 0, 1
+  put 157
+  ' Move screen pointers
+  -move adr(ScrLen), adr(ScrLen)+2, 44
+  -move adr(ScrAdr), adr(ScrAdr)+2, 44
+  ' Get first screen line by searching last '$9B'
+  llen = 0
+  for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
+    if peek(ptr) = $9B then Exit
+  next ptr
+  inc ptr
+  ScrLen(0) = ScrAdr(0) - ptr - 1
+  ScrAdr(0) = ptr
+
+  ' Adjust line
+  line = line - 1
+
+  ' Draw first line
+  y = 0
+  exec DrawLineOrig
+
+ENDPROC
+
+'-------------------------------------
+' Calls 'CountLines
+PROC CountLines
+  nptr = USR(adr(CountLines), ptr, MemEnd - ptr)
+ENDPROC
+
+'-------------------------------------
+' Scrolls screen Up (like page-down)
+PROC ScrollUp
+  ' Don't scroll if already in last position
+  if MemEnd = ScrAdr(1) then Exit
+
+  ' Scroll screen image deleting the first line
+  poke @CRSINH, 1
+  pos. 0, 1
+  put 156
+  ' Move screen pointers
+  move adr(ScrLen)+2, adr(ScrLen), 44
+  move adr(ScrAdr)+2, adr(ScrAdr), 44
+
+  ' Get last screen line length by searching next EOL
+  ptr = ScrAdr(22) + ScrLen(22) + 1
+  exec CountLines
+  ScrAdr(22) = ptr
+  ScrLen(22) = nptr - ptr - 1
+
+  ' Adjust line
+  line = line + 1
+
+  ' Draw last line
+  y = 22
+  exec DrawLineOrig
+ENDPROC
+
+'-------------------------------------
+' Redraws entire screen
+'
+PROC RedrawScreen
+
+  ' Fix empty files
+  if MemEnd = adr(MemStart)
+    poke adr(MemStart), $9b
+    MemEnd = MemEnd + 1
+  endif
+
+  ' Search given line
+  ptr = Adr(MemStart)
+  for y=1 to line
+   exec CountLines
+   if nptr = MemEnd
+     '  Line is outside of current file, go to last line
+     line = y - 1
+     exit
+   endif
+   ptr = nptr
+  next y
+
+  ' Draw all screen lines
+  put 125
+  exec ShowInfo
+  hdraw = 0
+  y = 0
+  while y < 23
+    exec CountLines
+    lLen = nptr - ptr - 1
+    ScrLen(y) = lLen
+    ScrAdr(y) = ptr
+    exec DrawLinePtr
+    ptr = nptr
+    inc y
+  wend
+
+  line = line + scrLine
+
+  exec ChgLine
 ENDPROC
 
 '-------------------------------------
@@ -424,79 +510,62 @@ do
       newPtr = ScrAdr(scrLine) + column
       ' Go to column 0
       column = 0
-      ' Adjust all page pointers
-      exec FillPagePointers
+      ' Scroll screen if we are in the last line
       if scrLine > 21
-        scrLine = scrLine - 8
-        inc hLine
-        exec RedrawScreen
-      else
-        ' Redraw old line
-        hDraw = 0
-        y = scrLine
-        ptr = ScrAdr(y)
-        lLen = ScrLen(y)
-        exec DrawLine
-        ' Go to next line
-        inc line
-        inc scrLine
-        ' Move screen down!
-        pos. 0, scrLine+1
-        poke @DSPFLG, 0
-        put 157
-        ' Adjust all screen pointers
-        for y = 21 to scrLine step -2
-          lLen = ScrLen(y)
-          ptr  = ScrAdr(y)
-          inc y
-          ScrLen(y) = lLen
-          ScrAdr(y) = ptr
-        next y
-        ' Save new line position
-        inc y
-        ScrAdr(y) = newPtr
-        ScrLen(y) = newLen
-        lDraw = y
-        hDraw = -1
-        exec ChgLine
+        exec ScrollUp
+        scrLine = 21
       endif
+      ' Redraw old line
+      hDraw = 0
+      y = scrLine
+      exec DrawLineOrig
+      ' Go to next line
+      inc line
+      inc scrLine
+      ' Move screen down!
+      poke @CRSINH, 1
+      pos. 0, scrLine+1
+      put 157
+      ' Move screen pointers
+      -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + scrLine * 2 + 2, (22 - scrLine) * 2
+      -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + scrLine * 2 + 2, (22 - scrLine) * 2
+      ' Save new line position
+      ScrAdr(scrLine) = newPtr
+      ScrLen(scrLine) = newLen
+      lDraw = scrLine
+      hDraw = -1
+      exec ChgLine
     '
     '--------- Delete Line ----------
     elif key = 156
       ' Go to beginning of line
       column = 0
       ' Delete line from screen
+      poke @CRSINH, 1
       pos. 0, scrLine+1
-      poke @DSPFLG, 0
       put 156
       ' Delete from entire file!
       ptr = ScrAdr(scrLine)
       nptr = ptr + ScrLen(scrLine) + 1
       move nptr, ptr, MemEnd - nptr
       MemEnd = MemEnd - nptr + ptr
-      ' Redraw screen
-      exec FillPagePointers
-      if LineAdr(hline) = 0
-        hline = hline - 1
-        scrLine = scrLine + 9
-        exec RedrawScreen
-      else
-        nptr = ScrAdr(scrLine)
-        for y = scrLine to 22
-          ptr = nptr
-          nptr = USR(adr(CountLines), ptr, MemEnd - ptr, 0)
-          lLen = nptr - ptr - 1
-          ScrLen(y) = lLen
-          ScrAdr(y) = ptr
-          if y = scrLine
-            exec DrawLine
-          endif
-        next y
-        edited = 0
-        hDraw = -1
-        lDraw = 22
-        exec ChgLine
+      ' Scroll screen if we are in the first line
+      if not scrLine and ptr = MemEnd
+        exec ScrollDown
       endif
+      nptr = ScrAdr(scrLine)
+      for y = scrLine to 22
+        ptr = nptr
+        exec CountLines
+        ScrLen(y) = nptr - ptr - 1
+        ScrAdr(y) = ptr
+      next y
+      y = scrLine
+      exec DrawLineOrig
+      edited = 0
+      hDraw = -1
+      lDraw = 22
+      exec ChgLine
     '
     '--------- Backspace ------------
     elif key = 126
@@ -547,49 +616,58 @@ do
     '
     '--------- Control-U (page up)---
     elif key = $15
-      hline = hline - 2
-      scrLine = 0
-      exec RedrawScreen
+      for i=0 to 18
+        if scrLine > 0
+          scrLine = scrLine - 1
+          line = line - 1
+        else
+          exec ScrollDown
+        endif
+      next i
+      exec ChgLine
     '
     '--------- Control-V (page down)-
     elif key = $16
-      hline = hline + 2
-      scrLine = 22
-      exec RedrawScreen
+      for i=0 to 18
+        if scrLine < 22
+          scrLine = scrLine + 1
+          line = line + 1
+        else
+          exec ScrollUp
+        endif
+      next i
+      exec ChgLine
     '
     '--------- Down -----------------
     elif key = $1D
       if linLen >= 0
-        if scrLine < 22
+        if scrLine = 22
+          exec ScrollUp
+        else
           inc line
           inc scrLine
-          exec ChgLine
-        else
-          inc hline
-          scrLine = scrLine - 8
-          exec RedrawScreen
         endif
+        exec ChgLine
       endif
     '
     '--------- Up -------------------
     elif key = $1C
       if line > 0
-        if scrLine > 0
+        if not scrLine
+          exec ScrollDown
+        else
           line = line - 1
           scrLine = scrLine - 1
-          exec ChgLine
-        else
-          hline = hline - 1
-          scrLine = scrLine + 8
-          exec RedrawScreen
         endif
+        exec ChgLine
       endif
     '
     '--------- Control-Q (exit) -----
     elif key = $11
       exec SaveLine
       exec AskSaveFile
-      exit
+      put 125
+      end
     '
     '--------- Control-S (save) -----
     elif key = $13
@@ -607,8 +685,12 @@ do
       line = USR( @compile_buffer, Adr(MemStart), MemEnd ) - 1
       column = peek( @@bmax )
       get key
-      hLine = line / 10
-      scrLine = line mod 10
+      if line < 10
+        scrLine = line
+      else
+        scrLine = 10
+      endif
+      line = line - scrLine
       exec InitScreen
       exec RedrawScreen
     '
@@ -617,7 +699,7 @@ do
       exec AskSaveFile
       FileName$="D:"
       MemEnd = Adr(MemStart)
-      exec FillPagePointers
+      poke MemEnd, $9B
       column = 0
       line = 0
       scrLine = 0
@@ -625,7 +707,6 @@ do
     '
     '--------- Control-L (load) -----
     elif key = $0C
-      poke @DSPFLG, 0
       pos. 0, 0
       ? "úù Load?";
       exec InputFileName
@@ -654,40 +735,4 @@ do
     endif
   endif
 loop
-
-'-------------------------------------
-' Redraws entire screen
-'
-PROC RedrawScreen
-
-  exec SaveLine
-
-  ' Get new current line
-  while LineAdr(hline) = 0
-    hline = hline - 1
-  wend
-  if hline < 0
-    hline = 0
-  endif
-  line = 10 * hline + scrLine
-
-  ' Print screen
-  poke @CRSINH, 1
-  poke @DSPFLG, 0
-  put 125
-  exec ShowInfo
-  ptr = LineAdr(hline)
-  hdraw = 0
-  y = 0
-  while y < 23
-    nptr = USR(adr(CountLines), ptr, MemEnd - ptr, 0)
-    lLen = nptr - ptr - 1
-    ScrLen(y) = lLen
-    ScrAdr(y) = ptr
-    exec DrawLine
-    ptr = nptr
-    inc y
-  wend
-  exec ChgLine
-ENDPROC
 

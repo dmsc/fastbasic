@@ -142,7 +142,6 @@ ok:     lda     #TOK_END
         clc
         rts
 .endproc
-E_END_PARSE=    parse_eof
 
 .proc parser_fetch
         inc     pptr
