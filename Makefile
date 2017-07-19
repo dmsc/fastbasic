@@ -111,7 +111,7 @@ disk/%: %
 	tr '\n' '\233' < $< > $@
 
 disk/%.txt: %.md
-	tr '\n' '\233' < $< > $@
+	sed -e 's/`\(.*\)`/\1/g' < $< | tr '\n' '\233' > $@
 
 # Copy ".XEX" as ".COM"
 disk/fb.com: $(PROG)

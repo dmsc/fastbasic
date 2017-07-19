@@ -49,12 +49,14 @@ sptr    =       bpos    ; Use bpos as stack pointe
 
         .bss
 
-        ; Our execution stack 128 words max, aligned for maximum speed
-        .align  128
+.define STACK_SIZE      64
+
+        ; Our execution stack 64 words max, aligned for maximum speed
+        .align  STACK_SIZE
 stack_l:
-        .res    128
+        .res    STACK_SIZE
 stack_h:
-        .res    128
+        .res    STACK_SIZE
 
 ;----------------------------------------------------------------------
 
@@ -116,7 +118,7 @@ interpreter_cptr        =       cptr
         stx     saved_cpu_stack
 
         ; Init stack-pointer
-        lda     #$80
+        lda     #STACK_SIZE
         sta     sptr
 
         ; Interpret opcodes
@@ -681,33 +683,6 @@ TOK_1:
         beq     set1
 .endproc
 
-.proc   TOK_LE  ; AX = (SP+) < AX
-        sta     tmp1
-        stx     tmp1+1
-        ldx     #0
-        ldy     sptr
-        lda     stack_l, y
-        cmp     tmp1
-        lda     stack_h, y
-        sbc     tmp1+1
-        bvc     :+
-        eor     #$80
-:       bmi     set1
-        bpl     set0
-.endproc
-
-.proc   TOK_GT  ; AX = (SP+) > AX
-        ldy     sptr
-        cmp     stack_l, y
-        txa
-        ldx     #0
-        sbc     stack_h, y
-        bvc     :+
-        eor     #$80
-:       bmi     set1
-        bpl     set0
-.endproc
-
 .proc   TOK_COMP_0  ; AX = AX != 0
         stx     tmp1
         ora     tmp1
@@ -1180,7 +1155,7 @@ OP_JUMP:
         ; Boolean operators
         .word   TOK_L_NOT, TOK_L_OR, TOK_L_AND
         ; Comparisons
-        .word   TOK_GEQ, TOK_LEQ, TOK_NEQ, TOK_EQ, TOK_GT, TOK_LE
+        .word   TOK_GEQ, TOK_LEQ, TOK_NEQ, TOK_EQ
         ; Convert from int to bool
         .word   TOK_COMP_0
         ; Low level statements

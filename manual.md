@@ -32,7 +32,7 @@ image, simply type `FB` at the DOS
 prompt. This will load the IDE and
 present you with a little help text:
 
-    --D:HELP.TXT-(387)-------------0--
+    --D:HELP.TXT-------------------0--
     '    FastBasic  -  (c) 2017 dmsc
     '
     ' Editor Help
@@ -53,9 +53,8 @@ present you with a little help text:
 You are now in the integrated editor.
 In the first line of the screen the
 name of the currently edited file is
-shown, followed by its size in bytes,
-and at the right the line of the
-cursor. Note that lines that show an
+shown, and at the right the line of the
+cursor.  Note that lines that show an
 arrow pointing to the top-left are
 empty lines beyond the last line of the
 current file.

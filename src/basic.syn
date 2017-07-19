@@ -33,7 +33,7 @@ TOKENS {
  # Boolean operators
  TOK_L_NOT, TOK_L_OR, TOK_L_AND
  # Comparisons
- TOK_GEQ, TOK_LEQ, TOK_NEQ, TOK_EQ, TOK_GT, TOK_LE
+ TOK_GEQ, TOK_LEQ, TOK_NEQ, TOK_EQ
  # Convert from int to bool
  TOK_COMP_0
  # Low level statements
@@ -215,8 +215,8 @@ COMP_EXPR_RIGHT:
         "<=" INT_EXPR emit TOK_LEQ
         ">=" INT_EXPR emit TOK_GEQ
         "<>" INT_EXPR emit TOK_NEQ
-        "<"  INT_EXPR emit TOK_LE
-        ">"  INT_EXPR emit TOK_GT
+        "<"  INT_EXPR emit TOK_GEQ emit TOK_L_NOT
+        ">"  INT_EXPR emit TOK_LEQ emit TOK_L_NOT
         "="  INT_EXPR emit TOK_EQ
 
 COMP_EXPR_MORE:
@@ -261,16 +261,16 @@ THEN_OR_MULTILINE:
         "THEN" PARSE_LINE E_POP_IF
         pass
 
+VAR_CREATE_TYPE:
+        "$" emit VT_STRING
+        emit VT_WORD
+
 # Parse variable as L-VALUE, stores the *address* in the stack, this creates the
 # variable if not exist.
-# NOTE: the creation rules are meant to fail, so next rule actually uses the created
+# NOTE: the creation rules is meant to fail, so next rule actually uses the created
 #       variable.
-VAR_CREATE_TYPE:
-        "$" emit VT_STRING E_VAR_SET_TYPE
-        emit VT_WORD E_VAR_SET_TYPE
-
 VAR_WORD_LVALUE:
-        E_VAR_CREATE VAR_CREATE_TYPE E_EOL "."
+        E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE E_EOL "."
         emit TOK_VAR_ADDR E_VAR_WORD
         ARRAY_WORD_ADDR
 

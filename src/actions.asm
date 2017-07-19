@@ -312,7 +312,6 @@ exit:
         bcc     E_VAR_WORD::not_found ; Exit with error if already exists
         ; Create new variable - exits on error
         jsr     var_new
-        stx     last_var_num
         ; Fall through
 .endproc
         ; Emits the variable, advancing pointers.
@@ -340,8 +339,6 @@ exit:
         dec     opos            ; Remove variable TYPE from stack
         ldy     opos
         lda     (prog_ptr),y    ; The variable TYPE
-        ldx     #$00            ; The variable NUMBER
-::last_var_num= * - 1
         jmp     var_set_type
 .endproc
 

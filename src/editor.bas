@@ -72,6 +72,7 @@ ENDPROC
 ' Save edited file
 '
 PROC AskSaveFile
+  exec SaveLine
   pos. 0, 0
   ? "úù Save?";
   exec InputFileName
@@ -251,7 +252,7 @@ PROC ChgLine
   exec CopyToEdit
 
   ' Print status
-  pos. 35, 0 : ? line;
+  pos. 32, 0 : ? line;
   put $12
 
   ' Redraw line
@@ -325,7 +326,7 @@ PROC ShowInfo
   pos. 0, 0
   for max=1 to peek(@@RMARGN) : put $12 : next max
   poke @@OLDCHR, $52
-  pos. 2, 0 : ? FileName$;"(";MemEnd-Adr(MemStart);")";
+  pos. 2, 0 : ? FileName$;
   pos. scrColumn, scrLine
   put 29
 ENDPROC
@@ -400,11 +401,7 @@ ENDPROC
 '
 PROC RedrawScreen
 
-  ' Fix empty files
-  if MemEnd = adr(MemStart)
-    poke adr(MemStart), $9b
-    MemEnd = MemEnd + 1
-  endif
+  exec CheckEmptyBuf
 
   ' Search given line
   ptr = Adr(MemStart)
@@ -436,6 +433,15 @@ PROC RedrawScreen
   line = line + scrLine
 
   exec ChgLine
+ENDPROC
+
+'-------------------------------------
+' Fix empty buffer
+PROC CheckEmptyBuf
+  if MemEnd = adr(MemStart)
+    poke adr(MemStart), $9b
+    MemEnd = MemEnd + 1
+  endif
 ENDPROC
 
 '-------------------------------------
@@ -549,8 +555,9 @@ do
       nptr = ptr + ScrLen(scrLine) + 1
       move nptr, ptr, MemEnd - nptr
       MemEnd = MemEnd - nptr + ptr
+      exec CheckEmptyBuf
       ' Scroll screen if we are in the first line
-      if not scrLine and ptr = MemEnd
+      if scrLine = 0 and ptr = MemEnd
         exec ScrollDown
       endif
       nptr = ScrAdr(scrLine)
@@ -664,14 +671,12 @@ do
     '
     '--------- Control-Q (exit) -----
     elif key = $11
-      exec SaveLine
       exec AskSaveFile
       put 125
       end
     '
     '--------- Control-S (save) -----
     elif key = $13
-      exec SaveLine
       exec AskSaveFile
       exec ShowInfo
     '

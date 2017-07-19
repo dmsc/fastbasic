@@ -250,40 +250,19 @@ exit:
         rts
 .endproc
 
-        ; Sets the type of already defined variable
-        ; X = var number, A = type
+        ; Sets the type of the lase defined variable
+        ; A = type
 .proc   var_set_type
-        pha
-
         ; Pointer to var list to "var"
-        lda     var_buf
-        sta     var
-        lda     var_buf+1
-        sta     var+1
-
-        inx
-        ldy     #0
-        beq     start
-
-search_loop:
-        ; Advance pointer to next var
-        clc
-        adc     #2      ; No carry, as len is max 128
-        adc     var
-        sta     var
-        bcc     :+
-        inc     var+1
-:
-start:  lda     (var), y
+        ldx     var_ptr
+        stx     var
+        ldx     var_ptr+1
         dex
-        bne     search_loop
+        stx     var+1
 
-found:
-        ; Set type
-        tay
-        iny
-        pla
+        ldy     #$FF
         sta     (var), y
+
         clc
         rts
 .endproc
