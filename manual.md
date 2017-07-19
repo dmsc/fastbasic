@@ -15,13 +15,26 @@ similar to newer programming
 environments, giving the programmer a
 lot of flexibility.
 
-Another big difference is that all
-operations are performed on integer
-numbers, this is one of the reasons
-that the programs run so fast. The
-other reason is that the program is
+Another big difference is that default
+variables and operations are done using
+integer numbers, this is one of the
+reasons that the programs run so fast.
+The other reason is that the program is
 parsed on run, generating optimized
 code for very fast execution.
+
+Currently, FastBasic support:
+- Integer and floating point variables,
+  including all standard arithmetic
+  operators.
+- All graphic, sound and color commands
+  from Atari Basic, plus some
+  extensions from Turbo Basic.
+- All control flow structures from
+  Atari Basic and Turbo Basic.
+- Minimal string support.
+- Arrays with "word" and "byte" types.
+- User defined procedures.
 
 
 First Steps
@@ -148,10 +161,16 @@ calculations in the language.
 There are numeric expressions, boolean
 expressions and string expressions.
 
-In FastBasic, all numeric expressions
-are evaluated as integers from -32768
-to 32767, this is called 16 bit signed
-integer values.
+In FastBasic, standard  numeric
+expressions are evaluated as integers
+from -32768 to 32767, this is called 16
+bit signed integer values.
+
+Floating point expressions are used
+*only* if numbers have a decimal point.
+Floating point numbers are stored with
+standard Atari BCD representation, with
+a range from 1E-98 to 1E+98.
 
 Boolean expressions are "true" or
 "false", represented as the numbers 1
@@ -171,15 +190,23 @@ hexadecimal numbers with a $ sign
 before (like $1C0, $A00, etc.) or by
 using the name of a variable.
 
+Floating point values are written with
+a decimal dot and an optional exponent
+(like 1.0E+10, or -3.2)
+
 
 Numeric Variables
 -----------------
 
 Variable names must begin with a letter
 or the symbol _, and can contain any
-letter, number or the symbol _. Valid
-variable names are "COUNTER", "My_Var",
-"num1".
+letter, number or the symbol _.
+Examples of valid variable names are
+"COUNTER", "My_Var", "num1".
+
+Floating point variables have an "%" as
+last character in the name. Examples of
+valid names are "MyNum%", "x1%".
 
 
 Numeric Operators
@@ -188,8 +215,8 @@ Numeric Operators
 There are various "operators" the
 perform calculation in expressions, the
 operators with higher precedence always
-execute first. These are the operators
-in order of precedence:
+execute first. These are the *integer*
+operators in order of precedence:
 
 - `+` `-`      : addition, subtraction,
                  from left to right.
@@ -221,6 +248,41 @@ If there is need to alter the
 precedence, you can put the expression
 between parenthesis.
 
+When using floating point expressions,
+the operators are:
+
+- `+` `-` : addition, subtraction, from
+            left to right.
+- `*` `/` : multiplication, division,
+            from left to right.
+- `+` `-` : positive / negative.
+
+Note that integer expressions are
+automatically converted to floating
+point if needed, this allows mixing
+integers and floating point in some
+calculations, but you must have care
+to force floating point calculations to
+avoid integer overflows.
+
+Example: the expression
+
+    a% = 1000 * 1000 + 1.2
+
+gives correct result as "1000" is
+converted to floating point before
+calculation, but:
+
+    x=1000: a% = x * x + 1.2
+
+gives incorrect results as the
+multiplication result is bigger tan
+32767.
+
+Note that after any floating point
+errors (division by 0 and overflow),
+ERR() returns 3.
+
 
 Boolean Operators
 -----------------
@@ -245,9 +307,16 @@ order of precedence, are:
 - NOT    : Logical NOT, true only if
            operand is false.
 - <=  >=  <>  <  >  =
-  Integer comparison, compare the two
-  integers and return true or false.
-  Note that "<>" is "not equal".
+  Integer or floating point comparison,
+  compare the two numbers and return
+  true or false.  Note that "<>" is
+  "not equal".
+  You can only compare two values of
+  the same type, so an expression like
+  "x = 1.2" is invalid, but "1.2 = x"
+  is valid as the second operand is
+  converted to floating point before
+  comparison.
 
 
 Arrays
@@ -321,12 +390,23 @@ functions supported by FastBasic.
          in PAL systems.
 
 - ABS(_num_) : Returns the absolute
-               value of _num_.
+               value of _num_. Can be
+               used with integers and
+               floating point.
 
 - SGN(_num_) ; Returns the sign of
                _num_, this is 1 if
                positive, -1 if negative
-               or 0 if _num_ is 0.
+               or 0 if _num_ is 0. Can
+               be used with integers
+               and floating point.
+
+- INT(_num_) : Converts the floating
+               point number _num_ to
+               the nearest integer from
+               -32768 to 32767. In case
+               of error, ERR() returns
+               3.
 
 - PADDLE(_n_): Returns the value of the
                PADDLE controller _n_.
@@ -363,12 +443,33 @@ functions supported by FastBasic.
                   number. If no
                   conversion is
                   possible, ERR() is
-                  set to 18.
+                  set to 18. Can be
+                  used with integers
+                  and floatign point.
 
 - ASC(*string*) : Returns the ATASCI
                   code of the first
                   character of the
                   *string*.
+
+
+Floating Point functions
+------------------------
+
+This functions return a floating point
+value.
+
+- EXP(_n_) : Natural exponentiation.
+
+- EXP10(_n_) : Returns ten raised to _n_.
+
+- LOG(_n_) : Natural logarithm of _n_.
+
+- LOG10(_n_): Decimal logarithm of _n_.
+
+Note that, as any floating point
+calculation, in case of error ERR()
+returns 3.
 
 
 Low level Functions

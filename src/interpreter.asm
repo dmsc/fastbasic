@@ -29,8 +29,8 @@
         .importzp       bptr, bpos, blen
 
         ; From runtime.asm
-        .import         umul16, sdiv16, smod16, neg_AX, read_word
-        .import         print_word, getkey, getc, putc
+        .import         umul16, sdiv16, smod16, neg_AX, read_word, read_fp
+        .import         print_word, print_fp, int_to_fp, getkey, getc, putc
         .import         move_up_src, move_up_dst, move_up
         .import         move_dwn_src, move_dwn_dst, move_dwn
         .import         graphics, cio_close, close_all, sound_off
@@ -46,10 +46,12 @@
 
         .zeropage
 sptr    =       bpos    ; Use bpos as stack pointe
+fptr:   .res    1       ; FP stack pointer
 
         .bss
 
 .define STACK_SIZE      64
+.define FPSTK_SIZE      8
 
         ; Our execution stack 64 words max, aligned for maximum speed
         .align  STACK_SIZE
@@ -57,6 +59,18 @@ stack_l:
         .res    STACK_SIZE
 stack_h:
         .res    STACK_SIZE
+fpstk_0:
+        .res    FPSTK_SIZE
+fpstk_1:
+        .res    FPSTK_SIZE
+fpstk_2:
+        .res    FPSTK_SIZE
+fpstk_3:
+        .res    FPSTK_SIZE
+fpstk_4:
+        .res    FPSTK_SIZE
+fpstk_5:
+        .res    FPSTK_SIZE
 
 ;----------------------------------------------------------------------
 
@@ -120,6 +134,8 @@ interpreter_cptr        =       cptr
         ; Init stack-pointer
         lda     #STACK_SIZE
         sta     sptr
+        lda     #FPSTK_SIZE
+        sta     fptr
 
         ; Interpret opcodes
         jmp     next_instruction
@@ -1135,6 +1151,331 @@ wait:   lda     RTCLOK+2
 jump:   jmp     $FFFF
 .endproc
 
+.proc   push_fr1
+        dec     fptr
+        ldy     fptr
+        lda     FR1+0
+        sta     fpstk_0, y
+        lda     FR1+1
+        sta     fpstk_1, y
+        lda     FR1+2
+        sta     fpstk_2, y
+        lda     FR1+3
+        sta     fpstk_3, y
+        lda     FR1+4
+        sta     fpstk_4, y
+        lda     FR1+5
+        sta     fpstk_5, y
+        ; Move FR0 to FR1
+        jmp     FMOVE
+.endproc
+
+.proc   pop_fr0
+        ; Pop full stack, FR1->FR0, pop FR1
+        ldx     #5
+loop:   lda     FR1,x
+        sta     FR0,x
+        dex
+        bpl     loop
+        ; Fall through
+        clc
+.endproc
+.proc   pop_fr1
+        ; Check error from last FP op
+        bcc     ok
+        lda     #3
+        sta     IOERROR
+        ; Pop FP stack into FR1
+ok:     ldy     fptr
+        inc     fptr
+        lda     fpstk_0, y
+        sta     FR1
+        lda     fpstk_1, y
+        sta     FR1+1
+        lda     fpstk_2, y
+        sta     FR1+2
+        lda     fpstk_3, y
+        sta     FR1+3
+        lda     fpstk_4, y
+        sta     FR1+4
+        lda     fpstk_5, y
+        sta     FR1+5
+        ; Restore INT stack
+        pla
+        tax
+        pla
+        jmp     next_instruction
+.endproc
+
+.proc   TOK_INT_FP      ; Convert INT to FP
+        ; Store integer stack.
+        pha
+        txa
+        pha
+        ; Push FP stack
+        jsr     push_fr1
+        ; Restore TOS
+        pla
+        tax
+        pla
+
+        jsr     int_to_fp
+        jmp     pop_stack
+.endproc
+
+.proc   TOK_FP_INT      ; Convert FP to INT, with rounding
+        jsr     pushAX
+        asl     FR0
+        ror     tmp1    ; Store sign in tmp1
+        lsr     FR0
+        jsr     FPI
+        bcs     err3
+        ldx     FR0+1
+        bpl     ok
+        ; Store error #3
+err3:   lda     #3
+        sta     IOERROR
+        ; Negate result if original number was negative
+ok:     lda     FR0
+        ldy     tmp1
+        bpl     pos
+        jsr     neg_AX
+        ; Store and pop FP stack
+pos:    pha
+        txa
+        pha
+        jmp     pop_fr0
+.endproc
+
+.proc   TOK_PRINT_FP  ; PRINT (SP+)
+        pha
+        txa
+        pha
+        jsr     print_fp
+        jmp     pop_fr0
+.endproc
+
+.proc   FP_SWAP_01
+        ldy     #5
+loop:   lda     FR0,y
+        ldx     FR1,y
+        sta     FR1,y
+        stx     FR0,y
+        dey
+        bpl     loop
+        rts
+.endproc
+
+.proc   fp_ldfr0
+        jsr     pushAX
+        lda     FR0
+        rts
+.endproc
+
+.proc   TOK_FP_EQ
+        jsr     fp_ldfr0
+        bne     fp_set0
+        ; Fall through
+.endproc
+.proc   fp_set1
+        lda     #1
+        pha
+        lda     #0
+        pha
+        jmp     pop_fr0
+.endproc
+
+.proc   fp_set0
+        lda     #0
+        pha
+        pha
+        jmp     pop_fr0
+.endproc
+
+.proc   TOK_FP_GEQ
+        jsr     fp_ldfr0
+        bpl     fp_set1
+        bmi     fp_set0
+.endproc
+
+.proc   TOK_FP_GT
+        jsr     fp_ldfr0
+        beq     fp_set0
+        bpl     fp_set1
+        bmi     fp_set0
+.endproc
+
+.proc   TOK_FP_ADD
+        pha
+        txa
+        pha
+        jsr     FADD
+        jmp     pop_fr1
+.endproc
+
+.proc   TOK_FP_SUB
+        pha
+        txa
+        pha
+        jsr     FP_SWAP_01
+        jsr     FSUB
+        jmp     pop_fr1
+.endproc
+
+.proc   TOK_FP_MUL
+        pha
+        txa
+        pha
+        jsr     FMUL
+        jmp     pop_fr1
+.endproc
+
+.proc   TOK_FP_DIV
+        pha
+        txa
+        pha
+        jsr     FP_SWAP_01
+        jsr     FDIV
+        jmp     pop_fr1
+.endproc
+
+.proc   TOK_FP_ABS
+        asl     FR0
+lft:    lsr     FR0
+        jmp     next_instruction
+.endproc
+
+.proc   TOK_FP_NEG
+        asl     FR0
+        beq     ok
+        bcs     TOK_FP_ABS::lft
+        sec
+        ror     FR0
+ok:     jmp     next_instruction
+.endproc
+
+.proc   TOK_FP_SGN
+        asl     FR0
+        beq     zero
+        ldy     #$80
+        sty     FR0
+        ror     FR0
+        ldy     #$10
+        sty     FR0+1
+        ldy     #0
+        sty     FR0+2
+        sty     FR0+3
+        sty     FR0+4
+        sty     FR0+5
+zero:   jmp     next_instruction
+.endproc
+
+.proc   TOK_FLOAT
+        ; Store integer stack.
+        pha
+        txa
+        pha
+
+        jsr     push_fr1
+
+        ldy     #5
+ldloop: lda     (cptr), y
+        sta     FR0,y
+        dey
+        bpl     ldloop
+
+        lda     cptr
+        clc
+        adc     #6
+        sta     cptr
+        bcc     ok
+        inc     cptr+1
+ok:
+        pla
+        tax
+        pla
+        jmp     next_instruction
+.endproc
+
+.proc   TOK_FP_VAL
+        jsr     get_str_eol
+        jsr     push_fr1
+        ldy     #1
+        jsr     read_fp
+        bcc     :+
+        lda     #18
+        sta     IOERROR
+:       pla
+        tax
+        pla
+        jmp     next_ins_incsp
+.endproc
+
+.proc   TOK_FP_LOAD
+        stx     FLPTR+1
+        sta     FLPTR
+        jsr     push_fr1
+        jsr     FLD0P
+        jmp     pop_stack
+.endproc
+
+.proc   TOK_FP_STORE
+        stx     FLPTR+1
+        sta     FLPTR
+        jsr     FST0P
+        ; Pop int stack
+        ldy     sptr
+        inc     sptr
+        lda     stack_l, y
+        pha
+        lda     stack_h, y
+        pha
+        ; Pop FP stack
+        jmp     pop_fr0
+.endproc
+
+.proc   TOK_FP_EXP
+        pha
+        txa
+        pha
+        jsr     EXP
+        ; Fall through
+.endproc
+        ; Check for FP error and exit
+.proc   check_fp_err
+        bcc     ok
+        lda     #3
+        sta     IOERROR
+ok:     pla
+        tax
+        pla
+        jmp     next_instruction
+.endproc
+
+.proc   TOK_FP_EXP10
+        pha
+        txa
+        pha
+        jsr     EXP10
+        jmp     check_fp_err
+.endproc
+
+.proc   TOK_FP_LOG
+        pha
+        txa
+        pha
+        jsr     LOG
+        jmp     check_fp_err
+.endproc
+
+.proc   TOK_FP_LOG10
+        pha
+        txa
+        pha
+        jsr     LOG10
+        jmp     check_fp_err
+.endproc
+
         ; From parse.asm - MUST KEEP IN SAME ORDER!
 
         .segment "JUMPTAB"
@@ -1163,7 +1504,7 @@ OP_JUMP:
         ; Graphic support statements
         .word   TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO, TOK_FILLTO
         ; Print statements
-        .word   TOK_PRINT_NUM, TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
+        .word   TOK_PRINT_NUM, TOK_PRINT_FP, TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
         ; I/O
         .word   TOK_GETKEY, TOK_INPUT_STR, TOK_XIO, TOK_CLOSE, TOK_GET, TOK_PUT
         .word   TOK_BPUT, TOK_BGET
@@ -1180,6 +1521,11 @@ OP_JUMP:
         .word   TOK_PAUSE
         ; USR, calls ML routinr
         .word   TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
+        ; Floating point computations
+        .word   TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
+        .word   TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
+        .word   TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT
+        .word   TOK_FP_GEQ, TOK_FP_GT, TOK_FP_EQ
 
         .code
 

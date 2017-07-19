@@ -19,21 +19,22 @@
 ; State machine actions (external subs)
 ; -------------------------------------
 
-        .export         E_REM, E_EOL, E_NUMBER_WORD, E_NUMBER_BYTE
+        .export         E_REM, E_EOL, E_EOS, E_NUMBER_WORD, E_NUMBER_BYTE
         .export         E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
         .export         E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD
-        .export         E_VAR_SET_TYPE, E_VAR_STRING
+        .export         E_VAR_SET_TYPE, E_VAR_STRING, E_VAR_FP
         .export         E_LABEL, E_LABEL_DEF
+        .export         E_NUMBER_FP
         .export         check_labels
-        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
+        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .exportzp       loop_sp
         .importzp       bpos, blen, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
-        .import         umul16, sdiv16, read_word
+        .import         umul16, sdiv16, read_word, read_fp
         ; From vars.asm
         .import         var_search, var_new, var_getlen, var_set_type
         .import         label_search, label_new
@@ -47,6 +48,7 @@
         ; From error.asm
         .importzp       ERR_LOOP, ERR_VAR
 
+        .include        "atari.inc"
 ;----------------------------------------------------------
         ; Types of variables
         .enum
@@ -55,6 +57,7 @@
                 VT_ARRAY_WORD
                 VT_ARRAY_BYTE
                 VT_STRING
+                VT_FLOAT = 128 ; Value is negative to signal 6bytes per variable!
         .endenum
         ; Types of labels
         .enum
@@ -134,6 +137,34 @@ xit:    sec
         rts
 .endproc
 
+.proc   E_EOS
+        jsr     E_EOL
+        bcc     E_REM::ok
+        cmp     #':'
+        beq     E_REM::ok
+        sec
+        rts
+.endproc
+
+.proc   E_NUMBER_FP
+        jsr     parser_skipws
+        bcs     E_EOL::xit
+
+        ldy     bpos
+        jsr     read_fp
+        bcs     E_EOL::xit
+        sty     bpos
+        lda     FR0
+        ldx     FR0+1
+        jsr     emit_AX
+        lda     FR0+2
+        ldx     FR0+3
+        jsr     emit_AX
+        lda     FR0+4
+        ldx     FR0+5
+        jmp     emit_AX
+.endproc
+
 .proc   E_NUMBER_WORD
         jsr     parser_skipws
         bcs     E_EOL::xit
@@ -146,6 +177,11 @@ xit:    sec
 
         jsr     read_word
         bcs     E_EOL::xit
+        sta     tmp1
+        lda     (bptr), y
+        cmp     #'.'
+        beq     E_EOL::xit
+        lda     tmp1
         sty     bpos
         jmp     emit_AX
 
@@ -272,6 +308,10 @@ eos_ok: ldy     tmp1
 ; Variable marching.
 ; The parser calls the routine to check if there is a variable
 ; with the correct type
+.proc   E_VAR_FP
+        lda     #VT_FLOAT
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
 .proc   E_VAR_STRING
         lda     #VT_STRING
         .byte   $2C   ; Skip 2 bytes over next "LDA"

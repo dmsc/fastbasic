@@ -263,7 +263,24 @@ exit:
         ldy     #$FF
         sta     (var), y
 
-        clc
+        tax
+        bpl     ok
+
+        ; FP variable, allocate two more "invisible" variables
+        ; to adjusto to 6 bytes size.
+        lda     #4
+        jsr     alloc_var
+
+        inc     var+1
+        ldy     #0
+        tya
+        sta     (var), y
+        ldy     #2
+        sta     (var), y
+        inc     var_count
+        inc     var_count
+
+ok:     clc
         rts
 .endproc
 

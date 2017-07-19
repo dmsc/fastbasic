@@ -22,11 +22,11 @@
         ; 16bit math
         .export         umul16, sdiv16, smod16, neg_AX
         ; simple I/O
-        .export         getkey, getc, putc, print_word, getline
-        .export         line_buf, cio_close, close_all, sound_off
+        .export         getkey, getc, putc, print_word, print_fp, getline
+        .export         line_buf, cio_close, close_all, sound_off, int_to_fp
         .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
-        .export         skipws, read_word
+        .export         skipws, read_word, read_fp
         ; memory move
         .export         move_up_src, move_up_dst, move_up
         .export         move_dwn_src, move_dwn_dst, move_dwn
@@ -261,7 +261,7 @@ line_buf        = LBUFF
 xit:    rts
 .endproc
 
-.proc   print_word
+.proc   int_to_fp
 FR0     = $D4
 IFP     = $D9AA
         stx     tmp1
@@ -285,6 +285,12 @@ positive:
         and     #$80
         eor     FR0
         sta     FR0
+        rts
+.endproc
+
+.proc   print_word
+FR0     = $D4
+        jsr     int_to_fp
         ; Fall through
 .endproc
 .proc   print_fp
@@ -344,6 +350,18 @@ skipws_loop:
         clc
 xit:    rts
 .endscope
+
+.proc   read_fp
+        sty     CIX
+        lda     bptr
+        sta     INBUFF
+        lda     bptr+1
+        sta     INBUFF+1
+        jsr     AFP
+        bcs     skipws::xit
+        ldy     CIX
+        rts
+.endproc
 
 .proc   read_word
         ; Skips white space at start

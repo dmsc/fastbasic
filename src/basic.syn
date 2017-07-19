@@ -41,7 +41,7 @@ TOKENS {
  # Graphic support statements
  TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO, TOK_FILLTO
  # Print statements
- TOK_PRINT_NUM, TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
+ TOK_PRINT_NUM, TOK_PRINT_FP, TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
  # I/O
  TOK_GETKEY, TOK_INPUT_STR, TOK_XIO, TOK_CLOSE, TOK_GET, TOK_PUT
  TOK_BPUT, TOK_BGET
@@ -58,17 +58,57 @@ TOKENS {
  TOK_PAUSE
  # USR, calls ML routinr
  TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
+ # Floating point computations
+ TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
+ TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
+ TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT
+ TOK_FP_GEQ, TOK_FP_GT, TOK_FP_EQ
 }
 
 EXTERN {
- E_REM, E_NUMBER_WORD, E_NUMBER_BYTE, E_EOL
+ E_REM, E_NUMBER_WORD, E_NUMBER_BYTE, E_EOL, E_EOS
  E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
  E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
  E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
  E_CONST_STRING
- E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_STRING, E_VAR_SET_TYPE
+ E_VAR_CREATE, E_VAR_SET_TYPE
+ E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_STRING, E_VAR_FP
  E_LABEL, E_LABEL_DEF
+ E_NUMBER_FP
 }
+
+# Floating point expressions
+FP_EXPR:
+        FP_T_EXPR FP_M_EXPR_MORE FP_EXPR_MORE
+
+FP_EXPR_MORE:
+        "+" FP_T_EXPR FP_M_EXPR_MORE emit TOK_FP_ADD FP_EXPR_MORE
+        "-" FP_T_EXPR FP_M_EXPR_MORE emit TOK_FP_SUB FP_EXPR_MORE
+        pass
+
+FP_M_EXPR_MORE:
+        "*" FP_T_EXPR emit TOK_FP_MUL FP_M_EXPR_MORE
+        "/" FP_T_EXPR emit TOK_FP_DIV FP_M_EXPR_MORE
+        pass
+
+FP_T_EXPR:
+	emit TOK_FLOAT E_NUMBER_FP
+        "-" FP_T_EXPR emit TOK_FP_NEG
+        "+" FP_T_EXPR
+        # FP Functions
+        "ABS"   FP_PAR_EXPR emit TOK_FP_ABS
+        "SGN"   FP_PAR_EXPR emit TOK_FP_SGN
+        "EXP10" FP_PAR_EXPR emit TOK_FP_EXP10
+        "EXP"   FP_PAR_EXPR emit TOK_FP_EXP
+        "LOG10" FP_PAR_EXPR emit TOK_FP_LOG10
+        "LOG"   FP_PAR_EXPR emit TOK_FP_LOG
+        "VAL("  STR_EXPR ")" emit TOK_FP_VAL
+        FP_PAR_EXPR
+	emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_FP_LOAD
+        INT_EXPR emit TOK_INT_FP
+
+FP_PAR_EXPR:
+        "(" FP_EXPR ")"
 
 # Normal expressions
 INT_EXPR:
@@ -131,6 +171,7 @@ T_EXPR:
         "PTRIG"  emit TOK_NUM word PTRIG0 emit TOK_BYTE emit 7 RD_PORT
         "STICK"  emit TOK_NUM word STICK0 emit TOK_BYTE emit 3 RD_PORT
         "STRIG"  emit TOK_NUM word STRIG0 emit TOK_BYTE emit 3 RD_PORT
+        "INT"    FP_PAR_EXPR emit TOK_FP_INT
         "RAND"   PAR_EXPR emit TOK_RAND
         "DPEEK"  PAR_EXPR emit TOK_DPEEK
         "FRE()"  emit TOK_FRE
@@ -174,6 +215,7 @@ SET_BOOL_EXPR:
 # General Expression - Can be INT or BOOL
 EXPR:
         INT_EXPR TEST_BOOL_EXPR
+        FP_EXPR COMP_FP_RIGHT
 
 # Forced BOOL expressions, convert to BOOL always
 FORCE_BOOL_EXPR:
@@ -203,6 +245,7 @@ NOT_EXPR:
         NOT_TOK
         "(" EXPR ")"
         INT_EXPR COMP_OR_BOOL
+        FP_EXPR COMP_FP_RIGHT
 
 NOT_TOK:
         "NOT" NOT_EXPR emit TOK_L_NOT
@@ -218,6 +261,14 @@ COMP_EXPR_RIGHT:
         "<"  INT_EXPR emit TOK_GEQ emit TOK_L_NOT
         ">"  INT_EXPR emit TOK_LEQ emit TOK_L_NOT
         "="  INT_EXPR emit TOK_EQ
+
+COMP_FP_RIGHT:
+        "="  FP_EXPR emit TOK_FP_SUB emit TOK_FP_EQ
+        ">"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT
+        ">=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ
+        "<>" FP_EXPR emit TOK_FP_SUB emit TOK_FP_EQ emit TOK_L_NOT
+        "<=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT emit TOK_L_NOT
+        "<"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ emit TOK_L_NOT
 
 COMP_EXPR_MORE:
         COMP_EXPR_RIGHT COMP_EXPR_MORE
@@ -240,17 +291,18 @@ PRINT_SEP_MORE:
         pass
 
 PRINT_ONE:
-	EXPR emit TOK_PRINT_NUM
-        STR_EXPR emit TOK_PRINT_STR
+	EXPR emit TOK_PRINT_NUM PRINT_NEXT
+	FP_EXPR emit TOK_PRINT_FP PRINT_NEXT
+        STR_EXPR emit TOK_PRINT_STR PRINT_NEXT
 
 PRINT_EXPR:
-	PRINT_SEP_MORE PRINT_ONE PRINT_NEXT
+	PRINT_SEP_MORE PRINT_ONE
         emit TOK_PRINT_EOL
 
 PRINT_NEXT:
-	PRINT_SEP PRINT_SEP_MORE PRINT_ONE PRINT_NEXT
+	PRINT_SEP PRINT_SEP_MORE PRINT_ONE
         PRINT_SEP PRINT_SEP_MORE IO_CHAN_0
-        emit TOK_PRINT_EOL
+        E_EOS emit TOK_PRINT_EOL
 
 EOS:
 	E_EOL
@@ -263,11 +315,12 @@ THEN_OR_MULTILINE:
 
 VAR_CREATE_TYPE:
         "$" emit VT_STRING
+        "%" emit VT_FLOAT
         emit VT_WORD
 
 # Parse variable as L-VALUE, stores the *address* in the stack, this creates the
 # variable if not exist.
-# NOTE: the creation rules is meant to fail, so next rule actually uses the created
+# NOTE: the creation rule is meant to fail, so next rule actually uses the created
 #       variable.
 VAR_WORD_LVALUE:
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE E_EOL "."
@@ -280,9 +333,15 @@ VAR_BYTE_LVALUE:
 VAR_STR_LVALUE:
         emit TOK_VAR_ADDR E_VAR_STRING "$"
 
+VAR_FP_LVALUE:
+        emit TOK_VAR_ADDR E_VAR_FP "%"
+
 # Parse variable assignment, used in FOR and LET
 ASSIGN_EXPR:
         "=" EXPR
+
+ASSIGN_FP_EXPR:
+        "=" FP_EXPR
 
 # Parse string assignment
 ASSIGN_STR:
@@ -459,10 +518,11 @@ PARSE_LINE:
         "EXEC" emit TOK_CALL E_LABEL
         "Data" emit TOK_VAR_ADDR E_VAR_CREATE "()" emit TOK_CDATA emit LT_DATA E_PUSH_LT DATA_TYPE DATA_END
         "Data" DATA_TYPE DATA_END
-        "END" EOS emit TOK_END
+        "END" E_EOS emit TOK_END
         VAR_WORD_LVALUE ASSIGN_EXPR emit TOK_DPOKE
         VAR_BYTE_LVALUE ASSIGN_EXPR emit TOK_POKE
         VAR_STR_LVALUE ASSIGN_STR emit TOK_COPY_STR
+        VAR_FP_LVALUE ASSIGN_FP_EXPR emit TOK_FP_STORE
 
 PARSE_START:
         E_EOL
