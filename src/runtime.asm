@@ -26,14 +26,14 @@
         .export         line_buf, cio_close, close_all, sound_off
         .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
-        .export         skipws, read_word
+        .export         read_word
         ; memory move
         .export         move_up_src, move_up_dst, move_up
         .export         move_dwn_src, move_dwn_dst, move_dwn
         ; Graphics
         .export         graphics
 
-        .importzp       tmp1, tmp2, tmp3, bptr, blen
+        .importzp       tmp1, tmp2, tmp3
 
         .include        "atari.inc"
         .zeropage
@@ -43,7 +43,7 @@ IOERROR:.res    2
 COLOR:  .res    1
 tabpos: .res    1
 
-        .code
+        .segment        "RUNTIME"
 
 ; Negate AX value
 .proc   neg_AX
@@ -330,25 +330,10 @@ ploop:  iny
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Convert string to integer (word)
-
-
-.scope  skipws
-skipws_loop:
-        iny
-::skipws:
-        cpy     blen
-        beq     xit
-        lda     (bptr), y
-        cmp     #' '
-        beq     skipws_loop
-        clc
-xit:    rts
-.endscope
-
 .proc   read_word
+SKBLANK = $DBA1
         ; Skips white space at start
-        jsr     skipws
-        bcs     xit     ; End of string and no characters found
+        jsr     SKBLANK
 
         ; Clears result
         ldx     #0
@@ -366,12 +351,8 @@ skip:   iny
 nosign: stx     sign
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
 loop:
-        ; Check length
-        cpy     blen
-        beq     xit_n
-
         ; Reads one character
-        lda     (bptr), y
+        lda     (INBUFF), y
         sec
         sbc     #'0'
         cmp     #10
@@ -560,9 +541,7 @@ move_dwn_dst     = move_dwn::dst+1
         lda     #>device_s
         sta     ICBAH, x
         jmp     CIOV
-        .data
 device_s: .byte "S:", $9B
-        .code
 .endproc
 
 ; vi:syntax=asm_ca65

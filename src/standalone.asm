@@ -23,7 +23,7 @@
         .export         start
         ; Export to runtime.asm
         .exportzp       tmp1, tmp2, tmp3
-        .exportzp       bptr, bpos, blen, var_count
+        .exportzp       bptr, bpos, var_count
 
         ; From runtime.asm
         .importzp       IOCHN, tabpos
@@ -44,12 +44,13 @@ heap_start=     __BSS_RUN__+__BSS_SIZE__
 
         .zeropage
 var_count:      .res 1
-bptr:   .res 2
-bpos:   .res 1
-blen:   .res 1
 tmp1:   .res 2
 tmp2:   .res 2
 tmp3:   .res 2
+
+; Use (INBUFF)+CIX as our parser pointer
+bptr    = INBUFF
+bpos    = CIX
 
         .code
 start:

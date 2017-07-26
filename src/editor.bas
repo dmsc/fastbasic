@@ -687,7 +687,7 @@ do
       poke MemEnd, $9B
       pos. 1,0
       ? "úù Parsing: ";
-      line = USR( @compile_buffer, Adr(MemStart), MemEnd ) - 1
+      line = USR( @compile_buffer, Adr(MemStart), MemEnd+1 ) - 1
       column = peek( @@bmax )
       get key
       if line < 10
@@ -741,3 +741,4 @@ do
   endif
 loop
 
+' vi:syntax=tbxl

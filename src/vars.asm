@@ -20,14 +20,14 @@
 ; --------------------------------------------
 
         .export         var_getlen, var_search, var_new, var_set_type
-        .export         label_search, label_new, label_count
-        .exportzp       var_namelen, var_count
+        .export         label_search, label_new
+        .exportzp       var_namelen, var_count, label_count
 
         ; From parser.asm
         .importzp       bptr, bpos
         ; From alloc.asm
-        .importzp       var_buf, var_ptr, label_buf, label_ptr
-        .import         alloc_var, alloc_label
+        .importzp       var_buf, var_ptr, label_buf, label_ptr, prog_ptr
+        .import         alloc_area_8
 
 
 ; Each variable is stored in the list as:
@@ -47,13 +47,6 @@ label_count:    .res 1
 
 ; Use a longer name for external references
 var_namelen=    len
-
-;----------------------------------------------------------
-; Parser initialization here:
-        .segment "PINIT"
-        lda     #0
-        sta     var_count
-        sta     label_count
 
 ;----------------------------------------------------------
         .code
@@ -84,11 +77,10 @@ char_ok:
         ; Inputs:
         ;  (bptr + bpos) : Variable name, from parsing code, terminated in any invalid char
 .proc   label_search
-        lda     label_buf
-        ldx     label_buf+1
+        ldx     #label_buf - prog_ptr
         ldy     #label_count
         sty     search_count
-        jmp     list_search
+        bne     list_search
 .endproc
 
         ; Search the list of variables by name,
@@ -96,16 +88,19 @@ char_ok:
         ;  (bptr + bpos) : Variable name, from parsing code, terminated in any invalid char
 .proc   var_search
         ; Pointer to var list to "var"
-        lda     var_buf
-        ldx     var_buf+1
+        ldx     #var_buf - prog_ptr
         ldy     #var_count
         sty     search_count
 .endproc        ; Fall through
 
         ; Search a list of names - used for variables or labels
 .proc   list_search
+        ; Pointer to start of var/label list to "var"
+        lda     prog_ptr, x
         sta     var
-        stx     var+1
+        lda     prog_ptr+1, x
+        sta     var+1
+
         ; Variable number
         ldx     #$ff
         bne     search_start
@@ -189,7 +184,20 @@ exit_2:
         rts
 .endproc
 
-.proc   copy_name
+        ; Common proc to add a new label or variable
+        ; X = ZP address of label/var table pointer
+.proc   name_new
+        ; Pointer to end of var/label list to "var"
+        lda     prog_ptr, x
+        sta     var
+        lda     prog_ptr+1, x
+        sta     var+1
+        ; Allocate memory for name
+        lda     len
+        clc
+        adc     #2
+        jsr     alloc_area_8
+        bcs     exit
         ; Copy length and name of var/label
         ldy     #0
         lda     len
@@ -205,48 +213,26 @@ loop:
         lda     #0
         iny
         sta     (var), y
-        rts
+exit:   rts
 .endproc
 
         ; Adds a new variable to the variable table, returns the var index
 .proc   var_new
-        ; Pointer to end of var list to "var"
-        lda     var_ptr
-        ldx     var_ptr+1
-        sta     var
-        stx     var+1
-        ; Allocate memory for name
-        lda     len
-        clc
-        adc     #2
-        jsr     alloc_var
-        bcs     exit
-        jsr     copy_name
+        ldx     #var_ptr - prog_ptr
+        jsr     name_new
         ldx     var_count
         inc     var_count
         clc
-exit:
         rts
 .endproc
 
         ; Adds a new label
 .proc   label_new
-        ; Pointer to end of label list
-        lda     label_ptr
-        ldx     label_ptr+1
-        sta     var
-        stx     var+1
-        ; Allocate memory for name
-        lda     len
-        clc
-        adc     #2
-        jsr     alloc_label
-        bcs     exit
-        jsr     copy_name
+        ldx     #label_ptr - prog_ptr
+        jsr     name_new
         ldx     label_count
         inc     label_count
         clc
-exit:
         rts
 .endproc
 

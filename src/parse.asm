@@ -20,24 +20,25 @@
 ; --------------------------------
 
         .export         parser_start, parser_error, parser_skipws
-        .import         __PINIT_RUN__
         ; Common vars
         .exportzp       tmp1, tmp2, tmp3
         ; Parser state
-        .exportzp       bptr, bpos, blen, bmax, linenum, buf_ptr, end_ptr
+        .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
+        .exportzp       loop_sp
         ; Output state
         .exportzp       opos
         ; From actions.asm
         .importzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
         .importzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
         .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
-        .importzp       loop_sp
         .import         check_labels
         ; From alloc.asm
         .import         alloc_prog
         .importzp       prog_ptr
+        ; From vars.asm
+        .importzp       var_count, label_count
         ; From runtime.asm
-        .import         putc, skipws
+        .import         putc
         .importzp       IOCHN, COLOR, IOERROR
         ; From io.asm
         .import         line_buf
@@ -52,19 +53,25 @@ TOK_END = 0
         .zeropage
 buf_ptr:.res 2
 end_ptr:.res 2
-bptr:   .res 2
-bpos:   .res 1
 bmax:   .res 1
-blen:   .res 1
 opos:   .res 1
 pptr:   .res 2
 tmp1:   .res 2
 tmp2:   .res 2
 tmp3:   .res 2
 linenum:.res 2
+loop_sp:.res 1
 
         .code
         .include "atari.inc"
+
+; Use (INBUFF)+CIX as our parser pointer
+bptr    = INBUFF
+bpos    = CIX
+; And some math-pack routines not exported
+INTLBUF = $DA51
+SKBLANK = $DBA1
+parser_skipws   = SKBLANK
 
 ;; Parser SM commands:
 SM_EXIT =       0
@@ -91,23 +98,6 @@ SM_EMIT=        SM_EMIT_1
 
         .include "basic.asm"
 
-; NOTE: the parser initialization is done using a *magic* segment "PINIT" with
-;       all the routines joined together, and terminated with the code in the
-;       segment "PINIT_RTS", that simply jumps to the start of parsing.
-;
-;       This makes the code simpler, but we can't control the order of
-;       initialization.
-;
-        .segment "PINIT_RTS"
-        lda     #0
-        sta     linenum
-        sta     linenum+1
-        tsx
-        stx     saved_stack
-        jmp     parse_line
-
-parser_start    = __PINIT_RUN__
-
 ; Now, the rest of the code
         .code
 
@@ -130,7 +120,7 @@ saved_stack = parser_error::ldstk + 1
 ok_loop:
         ; Check for missing labels
         jsr     check_labels
-        bcc     ok
+        bcs     ok
         lda     #ERR_LABEL
         bne     parser_error
 ok:     lda     #TOK_END
@@ -152,6 +142,19 @@ ok:     lda     #TOK_END
         rts
 .endproc
 
+
+;       Parser start and initialization
+.proc   parser_start
+        tsx
+        stx     saved_stack
+        lda     #0
+        sta     linenum
+        sta     linenum+1
+        sta     loop_sp
+        sta     var_count
+        sta     label_count
+        beq     parse_line
+.endproc
 
 line_ok:
         ; Increases output buffer
@@ -177,14 +180,10 @@ line_ok:
 :
 
         ; Point parsing buffer pointer to line buffer
-        lda     #<line_buf
-        sta     bptr
-        lda     #>line_buf
-        sta     bptr+1
+        jsr     INTLBUF
 
         ; Convert to uppercase and copy to line buffer
         jsr     ucase_buffer
-        sty     blen
         tya
         sec
         adc     buf_ptr
@@ -368,13 +367,6 @@ skip_ret:
 set_parse_error:
         lda     #ERR_PARSE
         jmp     parser_error
-
-.proc   parser_skipws
-        ldy     bpos
-        jsr     skipws
-        sty     bpos
-        rts
-.endproc
 
 emit_sub:
         jsr     parser_fetch

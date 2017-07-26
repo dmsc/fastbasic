@@ -29,8 +29,8 @@
 ;  var_ptr:     -> next available pos
 ;  top_mem:     TOP OF MEMORY
 ;
-        .export         alloc_var, alloc_prog, alloc_array, alloc_label, alloc_laddr, clear_data
-        .export         parser_alloc_init
+        .export         alloc_prog, alloc_array, alloc_laddr, clear_data
+        .export         parser_alloc_init, alloc_area_8
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
@@ -72,30 +72,38 @@ MEMTOP=         $2E5
         ; Allocation size
 alloc_size=     tmp1
 
-        .code
-
 ;----------------------------------------------------------
-; Parser initialization here:
-.proc   parser_alloc_init
-        ; Init all pointers to AY
-        ldx     #(mem_end-mem_start)
+; Following routines are part of the runtime
+        .segment        "RUNTIME"
+
+        ; Clears data pointers before starting the interpreter
+.proc   clear_data
+        ; Init all pointers to end of program data
+        lda     prog_ptr
+        ldy     prog_ptr+1
+        ldx     #(mem_end-prog_ptr)
 loop:
-        sta     mem_start, x
-        sty     mem_start+1, x
+        sta     prog_ptr, x
+        sty     prog_ptr+1, x
         dex
         dex
         bpl     loop
-        ; Adds 256 bytes as program buffer
-        ldy     #prog_end - mem_start
-        ldx     #0
-        stx     alloc_size
-        inx
-        stx     alloc_size+1
-        jmp     add_pointers
-.endproc
-
-;----------------------------------------------------------
-        .code
+        ; Adds 2 bytes for each variable
+        ldy     #0
+        lda     var_count
+        asl
+        sta     alloc_size
+        bcc     :+
+        iny
+:       sty     alloc_size+1
+        ldx     #var_end - mem_start
+        jsr     add_pointers
+        ; And clears variable area (we have size in "alloc_size")
+        lda     var_buf
+        sta     tmp2
+        lda     var_buf+1
+        sta     tmp2+1
+.endproc        ; Fall through
 
         ; Clears memory from (tmp2) of (alloc_size) size
 .proc   clear_mem
@@ -119,94 +127,41 @@ nxt:    dex
         rts
 .endproc
 
-        ; Clears data pointers before starting the interpreter
-.proc   clear_data
-        ; Init all pointers to end of program data
-        lda     prog_ptr
-        ldy     prog_ptr+1
-        ldx     #(mem_end-prog_ptr)
-loop:
-        sta     prog_ptr, x
-        sty     prog_ptr+1, x
-        dex
-        dex
-        bpl     loop
-        ; Adds 2 bytes for each variable
-        ldx     #0
-        lda     var_count
-        asl
-        sta     alloc_size
-        bcc     :+
-        inx
-:       stx     alloc_size+1
-        ldy     #var_end - mem_start
-        jsr     add_pointers
-        ; And clears variable area (we have size in "alloc_size")
-        lda     var_buf
-        sta     tmp2
-        lda     var_buf+1
-        sta     tmp2+1
-        jmp     clear_mem
-.endproc
+        ; This should be outside of runtime, but it's shorter here
+.proc   alloc_laddr
+        ldx     #laddr_end - mem_start
+.endproc        ; Fall through
 
+        ; Increase program memory area X by A (size in bytes)
 alloc_area_8:
-        ldx     #0
-        ; Increase program memory area Y by AX (size in bytes)
+        ldy     #0
+        ; Increase program memory area X by AY (size in bytes)
 .proc   alloc_area
-        stx     alloc_size+1
-        sta     alloc_size
+        sty     alloc_size+1
+skip_y: sta     alloc_size
 
         clc
         adc     mem_end
-        tax
+        tay
         lda     alloc_size+1
         adc     mem_end+1
-        cpx     MEMTOP
+        cpy     MEMTOP
         sbc     MEMTOP+1
         bcs     err_nomem
 
         ; Move memory up by "alloc_size"
-        sty     save_y+1
+        stx     save_x+1
         jsr     move_mem_up
         ; Adjust pointers
-save_y: ldy     #0
+save_x: ldx     #0
         jmp     add_pointers
 .endproc
 
-        ; Increase program memory area by A (size in bytes)
-.proc alloc_prog
-        ; Move from "prog_end", up by "alloc_size"
-        ldy     #prog_end - mem_start
-        jsr     alloc_area_8
-        ; Special case - we need to adjust prog_ptr, but we
-        ; don't move that areas as it has the current parsed line.
-        lda     prog_ptr
-        clc
-        adc     alloc_size
-        sta     prog_ptr
-        bcc     :+
-        inc     prog_ptr+1
-:       rts
-.endproc
-
-.proc   alloc_laddr
-        ldy     #laddr_end - mem_start
-        .byte   $2C   ; Skip 2 bytes over next "LDY"
-.endproc
-        ; Allocate space for a new variable A = SIZE
-.proc alloc_var
-        ldy     #var_end - mem_start
-        jmp     alloc_area_8
-.endproc
-
-        ; Allocate space for a new label A = SIZE
-.proc alloc_label
-        ldx     #0
-.endproc        ; Fall through
         ; Allocate space for a new array AX = SIZE
 .proc alloc_array
-        ldy     #array_end - mem_start
-        jmp     alloc_area
+        stx     alloc_size + 1
+        ldx     #array_end - mem_start
+        bne     alloc_area::skip_y
 .endproc
 
 .proc   err_nomem
@@ -220,12 +175,12 @@ save_y: ldy     #0
         ;
 .proc   move_mem_up
         ;       Setup pointers
-        lda     mem_start, y
+        lda     mem_start, x
         sta     move_dwn_src
         clc
         adc     alloc_size
         sta     move_dwn_dst
-        lda     mem_start+1, y
+        lda     mem_start+1, x
         sta     move_dwn_src+1
         adc     #0
         sta     move_dwn_dst+1
@@ -233,10 +188,10 @@ save_y: ldy     #0
         ; Get LEN into AX
         lda     mem_end
         sec
-        sbc     mem_start, y
+        sbc     mem_start, x
         pha
         lda     mem_end+1
-        sbc     mem_start+1, y
+        sbc     mem_start+1, x
         tax
         pla
         jmp     move_dwn
@@ -245,18 +200,58 @@ save_y: ldy     #0
         ; Increase all pointers from "Y" to the last by AX
 .proc   add_pointers
 loop:   clc
-        lda     mem_start,y
+        lda     mem_start, x
         adc     alloc_size
-        sta     mem_start,y
-        iny
-        lda     mem_start,y
+        sta     mem_start, x
+        inx
+        lda     mem_start, x
         adc     alloc_size+1
-        sta     mem_start,y
-        iny
-        cpy     #mem_end - mem_start + 2
+        sta     mem_start, x
+        inx
+        cpx     #mem_end - mem_start + 2
         bne     loop
         clc
         rts
+.endproc
+
+;----------------------------------------------------------
+; Following routines are part of the parser/editor
+        .code
+
+;----------------------------------------------------------
+; Parser initialization here:
+.proc   parser_alloc_init
+        ; Init all pointers to AY
+        ldx     #(mem_end-mem_start)
+loop:
+        sta     mem_start, x
+        sty     mem_start+1, x
+        dex
+        dex
+        bpl     loop
+        ; Adds 256 bytes as program buffer
+        ldx     #prog_end - mem_start
+        ldy     #0
+        sty     alloc_size
+        iny
+        sty     alloc_size+1
+        jmp     add_pointers
+.endproc
+
+        ; Increase program memory area by A (size in bytes)
+.proc alloc_prog
+        ; Move from "prog_end", up by "alloc_size"
+        ldx     #prog_end - mem_start
+        jsr     alloc_area_8
+        ; Special case - we need to adjust prog_ptr, but we
+        ; don't move that areas as it has the current parsed line.
+        lda     prog_ptr
+        clc
+        adc     alloc_size
+        sta     prog_ptr
+        bcc     :+
+        inc     prog_ptr+1
+:       rts
 .endproc
 
 ; vi:syntax=asm_ca65
