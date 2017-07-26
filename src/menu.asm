@@ -206,6 +206,9 @@ COMP_TRAILER:
         .export COMP_RT_SIZE
 COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
 
+        ; This is the runtime startup code, copied into the resulting
+        ; executables.
+        ; Note that this code is patched before writing to a file.
         .segment        "RUNTIME"
 compiled_start:
         lda     #0

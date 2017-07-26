@@ -111,7 +111,7 @@ disk/%: %
 	tr '\n' '\233' < $< > $@
 
 disk/%.txt: %.md
-	sed -e 's/`\(.*\)`/\1/g' < $< | tr '\n' '\233' > $@
+	LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' < $< > $@
 
 # Copy ".XEX" as ".COM"
 disk/fb.com: $(PROG)

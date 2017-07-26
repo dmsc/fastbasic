@@ -15,6 +15,14 @@
 ; You should have received a copy of the GNU General Public License along
 ; with this program.  If not, see <http://www.gnu.org/licenses/>
 ;
+; In addition to the permissions in the GNU General Public License, the
+; authors give you unlimited permission to link the compiled version of
+; this file into combinations with other programs, and to distribute those
+; combinations without any restriction coming from the use of this file.
+; (The General Public License restrictions do apply in other respects; for
+; example, they cover modification of the file, and distribution when not
+; linked into a combine executable.)
+
 
 ; Standalone interpreter
 ; ----------------------
