@@ -31,8 +31,7 @@
         .export         check_labels
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
-        .exportzp       loop_sp
-        .importzp       bpos, blen, bptr, tmp1, tmp2, tmp3, opos
+        .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
         .import         umul16, sdiv16, read_word, read_fp
         ; From vars.asm
@@ -47,6 +46,8 @@
         .importzp       TOK_CSTRING
         ; From error.asm
         .importzp       ERR_LOOP, ERR_VAR
+        ; From menu.asm
+        .importzp       reloc_addr
 
         .include        "atari.inc"
 ;----------------------------------------------------------
@@ -86,22 +87,36 @@
         .endenum
 
 ;----------------------------------------------------------
-        .zeropage
-loop_sp:        .res    1
-
         ; TODO: this space should be reclaimed by the interpreter!
         .bss
 loop_stk:       .res    128
 
 ;----------------------------------------------------------
-; Parser initialization here:
-        .segment "PINIT"
-        lda     #0
-        sta     loop_sp
-
-;----------------------------------------------------------
         .code
 
+; Returns the current code pointer in AX
+.proc   get_codep
+        lda     prog_ptr
+        ldx     prog_ptr+1
+        clc
+        adc     opos
+        bcc     ok
+        inx
+        clc
+ok:     rts
+.endproc
+
+; Emits address into codep, relocating if necessary.
+.proc   emit_addr
+        clc
+        adc     reloc_addr
+        pha
+        txa
+        adc     reloc_addr+1
+        tax
+        pla
+.endproc        ; Fall through
+;
 ; Emits 16bit AX into codep
 .proc   emit_AX
         ldy     opos
@@ -118,7 +133,11 @@ new_y:  sta     (prog_ptr),y
 ; Parser external subs
 .proc   E_REM
         ; Accept all the line
-        ldy     blen
+        ldy     bpos
+loop:   iny
+        lda     (bptr), y
+        cmp     #$9b
+        bne     loop
         sty     bpos
 ok:     clc
         rts
@@ -126,8 +145,6 @@ ok:     clc
 
 .proc   E_EOL
         ldy     bpos
-        cpy     blen
-        beq     E_REM::ok
         lda     (bptr),y
         cmp     #$9b ; Atari EOL
         beq     E_REM::ok
@@ -147,13 +164,8 @@ xit:    sec
 .endproc
 
 .proc   E_NUMBER_FP
-        jsr     parser_skipws
-        bcs     E_EOL::xit
-
-        ldy     bpos
         jsr     read_fp
         bcs     E_EOL::xit
-        sty     bpos
         lda     FR0
         ldx     FR0+1
         jsr     emit_AX
@@ -167,11 +179,11 @@ xit:    sec
 
 .proc   E_NUMBER_WORD
         jsr     parser_skipws
-        bcs     E_EOL::xit
 
         ldx     #0
         stx     tmp1+1
 
+        lda     (bptr), y
         cmp     #'$'
         beq     read_hex
 
@@ -186,13 +198,9 @@ xit:    sec
         jmp     emit_AX
 
 read_hex:
-        sty     bpos
         iny
 
 nloop:
-        ; Check length
-        cpy     blen
-        beq     xit
         ; Read a number
         lda     (bptr),y
         sec
@@ -264,12 +272,12 @@ xit:    rts
 nloop:
         ; Check length
         ldy     bpos
-        cpy     blen
-        beq     err
         inc     bpos
         lda     (bptr), y
         cmp     #'"'
         beq     eos
+        cmp     #$9b
+        beq     err
         ; Store
 store:  inx
         ldy     opos
@@ -282,8 +290,6 @@ err:    ; Restore opos and exit
         sec
         rts
 eos:    iny
-        cpy     blen
-        beq     eos_ok
         lda     (bptr), y
         inc     bpos
         cmp     #'"'    ; Check for "" to encode one ".
@@ -382,40 +388,11 @@ exit:
         jmp     var_set_type
 .endproc
 
-        ; Adds a label address pointer to the list
-.proc   add_laddr_list
-        stx     var_n+1
-        sty     var_t+1
-
-        lda     laddr_ptr
-        sta     tmp2
-        lda     laddr_ptr+1
-        sta     tmp2+1
-
-        lda     #4
-        jsr     alloc_laddr
-        bcs     xit
-
-        ldy     #0
-var_t:  lda     #0
-        sta     (tmp2), y
-        iny
-var_n:  lda     #0
-        sta     (tmp2), y
-        ldy     #3
-        lda     prog_ptr
-        clc
-        adc     opos
-        sta     (tmp2), y
-        dey
-        lda     prog_ptr+1
-        adc     #0
-        sta     (tmp2), y
-        clc
-xit:    rts
-.endproc
-
-.proc   inc_laddr
+                ; Loop iteration for label-address,
+        ; increment pointer, compares with end
+        ; and reads values
+.proc   next_laddr
+loop:
         lda     tmp1
         clc
         adc     #4
@@ -427,7 +404,51 @@ comp:
         cmp     laddr_ptr
         lda     tmp1+1
         sbc     laddr_ptr+1
-        rts
+        bcs     xit
+        ldy     #0
+        lda     (tmp1), y       ; Read variable type
+        sta     tmp2
+        iny
+        lda     (tmp1), y       ; Read variable number and compare
+cpnum:  eor     #$00
+        bne     loop            ; Not our variable, retry
+        iny
+        lda     (tmp1), y       ; Yes, read hi address in X
+        tax
+        iny
+        lda     (tmp1), y       ; lo address in A
+        ldy     tmp2            ; And type in Y
+xit:    rts
+.endproc
+
+; Adds a label address pointer to the list
+.proc   add_laddr_list
+        pha
+
+        lda     laddr_ptr
+        sta     tmp2
+        lda     laddr_ptr+1
+        sta     tmp2+1
+
+        lda     #4
+        jsr     alloc_laddr
+
+        pla
+        bcs     xit
+
+        ldy     #0
+        sta     (tmp2), y
+        iny
+        lda     next_laddr::cpnum+1
+        sta     (tmp2), y
+        jsr     get_codep
+        ldy     #3
+        sta     (tmp2), y
+        dey
+        txa
+        sta     (tmp2), y
+        clc
+xit:    rts
 .endproc
 
 .proc   label_create
@@ -438,144 +459,106 @@ comp:
         bcc     xit
         ; Create a new label
         jsr     label_new
-xit:    rts
+xit:
+        lda     laddr_buf
+        ldy     laddr_buf+1
+        sta     tmp1
+        sty     tmp1+1
+        stx     next_laddr::cpnum+1
+        jmp     next_laddr::comp
 .endproc
 
 ; Label search / create (on use)
 .proc   E_LABEL
         jsr     label_create
         ; Emits a label, searching the label address in the label list
-        stx     l_num + 1
-        lda     laddr_buf
-        ldy     laddr_buf+1
-        sta     tmp1
-        sty     tmp1+1
-
-        jsr     inc_laddr::comp
         bcs     nfound
 
         ; Check label number
-cloop:  ldy     #0
-        lda     (tmp1), y
-        bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
-        iny
-        lda     (tmp1), y
-l_num:  cmp     #$00
-        bne     next
+cloop:  bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
-        iny
-        lda     (tmp1), y
-        tax
-        iny
-        lda     (tmp1), y
 emit_end:
-        jsr     emit_AX
+        jsr     emit_addr
         jmp     advance_varn
 next:
-        jsr     inc_laddr
+        jsr     next_laddr
         bcc     cloop
         ; Not found, add to the label address list
-nfound: ldy     #0
+nfound: lda     #0
         jsr     add_laddr_list
-        bcs     ret
-        lda     #0
-        tax
-        beq     emit_end
+        bcc     emit_end
 ret:    rts
 .endproc
 
 ; Label definition search/create
 .proc   E_LABEL_DEF
         jsr     label_create
-        stx     l_num + 1
 
         ; Fills all undefined labels with current position - saved for the label
-        lda     laddr_buf
-        ldy     laddr_buf+1
-        sta     tmp1
-        sty     tmp1+1
-
-        jsr     inc_laddr::comp
         bcs     nfound
 
         ; Check label number
-cloop:  ldy     #1
-        lda     (tmp1), y
-l_num:  cmp     #$00
-        bne     next    ; not our label
-        dey
-        lda     (tmp1), y
-        bmi     error   ; label already defined
-        ; Copy address
-        ldy     #2
-        lda     (tmp1), y
-        sta     tmp2+1
-        iny
-        lda     (tmp1), y
-        sta     tmp2
-        ; Set label as "defined"
-        tya
+cloop:  bmi     error   ; label already defined
+
+        ; Write current codep to AX
+        jsr     patch_codep
         ldy     #0
+        lda     #1
         sta     (tmp1), y
-        ; And fill with current ptr
-        ldy     #0
-        lda     prog_ptr
-        clc
-        adc     opos
-        sta     (tmp2), y
-        iny
-        lda     prog_ptr+1
-        adc     #0
-        sta     (tmp2), y
+
         ; Continue
-next:   jsr     inc_laddr
+next:   jsr     next_laddr
         bcc     cloop
 nfound:
-        ldx     l_num + 1
-        ldy     #128
+        lda     #128
         jsr     add_laddr_list
         bcs     error
         jmp     advance_varn
 error:  sec
-        rts
+xit:    rts
 .endproc
 
 ; Check if all labels are defined
+; Returns C=1 if ok.
 .proc   check_labels
-        lda     laddr_buf
-        ldy     laddr_buf+1
-        sta     tmp1
-        sty     tmp1+1
+        ldy     #0
+        sty     tmp1
+        ldy     laddr_buf
+        lda     laddr_buf+1
+        sta     tmp1+1
+start:
+        cpy     laddr_ptr
+        lda     tmp1+1
+        sbc     laddr_ptr+1
+        bcs     E_LABEL_DEF::xit
 
-        jsr     inc_laddr::comp
-        bcs     ok
-
-        ; Check list
-cloop:  ldy     #0
         lda     (tmp1), y
-        beq     error
-        jsr     inc_laddr
-        bcc     cloop
-ok:     clc
-        rts
-error:  sec
-        rts
+        beq     E_LABEL_DEF::xit
+
+        ; Note: C = 0 from above!
+        tya
+        adc     #4
+        tay
+        bcc     start
+        inc     tmp1+1
+        bcs     start
 .endproc
 
 ; Actions for LOOPS
 .proc   patch_codep
         ; Patches saved position with current position
-        sta     tmp1
-        stx     tmp1+1
+        sta     tmp2
+        stx     tmp2+1
+        jsr     get_codep
         ldy     #0
-        lda     opos
         clc
-        adc     prog_ptr
-        sta     (tmp1),y
+        adc     reloc_addr
+        sta     (tmp2),y
         iny
-        lda     prog_ptr+1
-        adc     #0
-        sta     (tmp1),y
+        txa
+        adc     reloc_addr+1
+        sta     (tmp2),y
+        clc
         rts     ; C is cleared on exit!
 .endproc
 
@@ -590,14 +573,11 @@ error:  sec
         ldy     loop_sp
         sta     loop_stk, y
         pha
+        jsr     get_codep
         iny
-        lda     prog_ptr
-        clc
-        adc     opos
         sta     loop_stk, y
         iny
-        lda     prog_ptr+1
-        adc     #0
+        txa
         sta     loop_stk, y
         iny
         bmi     loop_error
@@ -698,7 +678,7 @@ rtsclc: clc
         ; And store
         dec     opos
         dec     opos
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -712,7 +692,7 @@ rtsclc: clc
         ; Pop saved position, store
         lda     #LT_REPEAT
         jsr     pop_codep
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -730,7 +710,7 @@ rtsclc: clc
         ; And store
         dec     opos
         dec     opos
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -768,8 +748,8 @@ no_elif:
         ; Pop the old position to patch (from IF)
         lda     #LT_IF
         jsr     pop_codep
-        sta     tmp2
-        stx     tmp2+1
+        sta     tmp1
+        stx     tmp1+1
         ; Test if there is an ELIF to pop here
         dec     opos
         jsr     check_elif
@@ -778,8 +758,8 @@ no_elif:
 type:   lda     #LT_ELSE
         jsr     push_codep
         ; Parch current position + 2 (over jump)
-        lda     tmp2
-        ldx     tmp2+1
+        lda     tmp1
+        ldx     tmp1+1
         jmp     patch_codep
 .endproc
 
@@ -817,12 +797,14 @@ comp_y: cpy     #$FF
         bne     move
 
         ; Store our new stack entry
-        ldx     loop_sp
+        lda     loop_sp
+        pha
         ldy     comp_y+1
         sty     loop_sp
         lda     #LT_EXIT
         jsr     push_codep
-        stx     loop_sp
+        pla
+        sta     loop_sp
         clc
         rts
 loop_error:

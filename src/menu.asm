@@ -21,6 +21,7 @@
 
         .export start, COMPILE_BUFFER
         .export BMAX
+        .exportzp       reloc_addr
 
         ; From runtime.asm
         .import putc
@@ -40,12 +41,19 @@
         .import bytecode_start
         .importzp NUM_VARS
         ; Linker vars
-        .import   __BSS_RUN__, __BSS_SIZE__
+        .import __BSS_RUN__, __BSS_SIZE__, __INTERP_START__, __INTERP_SIZE__
+        .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
 
         .include "atari.inc"
 
         ; Start of HEAP
 heap_start=     __BSS_RUN__+__BSS_SIZE__
+        ; Start of relocated bytecode
+BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
+
+        .zeropage
+        ; Relocation amount
+reloc_addr:     .res    2
 
 BMAX=bmax
         .code
@@ -64,6 +72,10 @@ start:
 
         ; Called from editor
 COMPILE_BUFFER:
+        lda     #0
+        sta     reloc_addr
+        sta     reloc_addr+1
+
         ; Buffer end pointer
         pla
         sta     end_ptr+1
@@ -76,12 +88,47 @@ COMPILE_BUFFER:
         sta     buf_ptr+1
         pla
         sta     buf_ptr
+
+        ; Compile / Run
+        pla
+        pla
+        sta     do_run+1
+        beq     no_save
+
+        ; We need to relocate the bytecode, calculate the offset:
+        lda     #<BYTECODE_ADDR
+        sec
+        sbc     end_ptr
+        sta     reloc_addr
+        lda     #>BYTECODE_ADDR
+        sbc     end_ptr+1
+        sta     reloc_addr+1
+no_save:
+
         ; Save interpreter position
         lda     bpos
         pha
+
         ; Parse
         jsr     parser_start
         bcs     err
+
+        lda     prog_ptr
+        sta     COMP_END
+        clc
+        adc     reloc_addr
+        sta     compiled_prog_ptr1+1
+        sta     COMP_HEAD_2+2
+        lda     prog_ptr+1
+        sta     COMP_END+1
+        adc     reloc_addr+1
+        sta     compiled_prog_ptr2+1
+        sta     COMP_HEAD_2+3
+        lda     var_count
+        sta     compiled_var_count+1
+
+do_run: ldx     #$00
+        bne     clr_linenum
 
         ; Runs current parsed program
 run_program:
@@ -106,9 +153,9 @@ run_program:
         pla
         sta     interpreter_cptr
 
+clr_linenum:
         ldx     #0
         stx     linenum+1
-        inx
         stx     linenum
 
 err:    jsr     load_editor
@@ -130,5 +177,57 @@ load_editor:
         sta     prog_ptr+1
         sta     var_buf+1
         rts
+
+
+        ; This is the header for the compiled binaries, included
+        ; here to allow saving the resulting file.
+        .export COMP_HEAD_1
+COMP_HEAD_1:
+        .byte   255, 255
+        .word   __INTERP_START__
+        .word   __INTERP_START__ + __INTERP_SIZE__- 1
+
+        .export COMP_HEAD_2
+COMP_HEAD_2:
+        .word   __JUMPTAB_RUN__
+        .word   0
+
+        .export COMP_END
+COMP_END:
+        .word   0
+
+        .export COMP_TRAILER
+COMP_TRAILER:
+        .word   RUNAD
+        .word   RUNAD+1
+        .word   compiled_start
+
+        ; Number of bytes to write in RUNTIME + JUMPTAB segments
+        .export COMP_RT_SIZE
+COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
+
+        ; This is the runtime startup code, copied into the resulting
+        ; executables.
+        ; Note that this code is patched before writing to a file.
+        .segment        "RUNTIME"
+compiled_start:
+        lda     #0
+        sta     IOCHN
+        sta     tabpos
+
+compiled_var_count:
+        lda     #00
+        sta     var_count
+compiled_prog_ptr1:
+        lda     #00
+        sta     prog_ptr
+compiled_prog_ptr2:
+        lda     #00
+        sta     prog_ptr+1
+
+        lda     #<BYTECODE_ADDR
+        ldx     #>BYTECODE_ADDR
+        jsr     interpreter_run
+        jmp     (DOSVEC)
 
 ; vi:syntax=asm_ca65

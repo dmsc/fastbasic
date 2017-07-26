@@ -1,5 +1,5 @@
 '
-'    FastBasic  -  (c) 2017 dmsc
+'   FastBasic FP -  (c) 2017 dmsc
 '
 ' Editor Help
 ' -----------
@@ -13,6 +13,7 @@
 '   Ctrl-L : Load file
 '   Ctrl-N : New file
 '   Ctrl-R : Parse and run program
+'   Ctrl-W : Compile to binary file
 '
 '  Ğòåóó ÃÏÎÔÒÏÌ­Î « ÅÓÃ ôï âåçéî  
 

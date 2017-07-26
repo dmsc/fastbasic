@@ -15,6 +15,14 @@
 ; You should have received a copy of the GNU General Public License along
 ; with this program.  If not, see <http://www.gnu.org/licenses/>
 ;
+; In addition to the permissions in the GNU General Public License, the
+; authors give you unlimited permission to link the compiled version of
+; this file into combinations with other programs, and to distribute those
+; combinations without any restriction coming from the use of this file.
+; (The General Public License restrictions do apply in other respects; for
+; example, they cover modification of the file, and distribution when not
+; linked into a combine executable.)
+
 
 ; Common runtime between interpreter and parser
 ; ---------------------------------------------
@@ -26,16 +34,21 @@
         .export         line_buf, cio_close, close_all, sound_off, int_to_fp
         .exportzp       IOCHN, COLOR, IOERROR, tabpos
         ; String functions
-        .export         skipws, read_word, read_fp
+        .export         read_word, read_fp
         ; memory move
         .export         move_up_src, move_up_dst, move_up
         .export         move_dwn_src, move_dwn_dst, move_dwn
         ; Graphics
         .export         graphics
 
-        .importzp       tmp1, tmp2, tmp3, bptr, blen
+        .importzp       tmp1, tmp2, tmp3
 
         .include        "atari.inc"
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Convert string to floating point
+read_fp = AFP
+
         .zeropage
 sign:   .res    1
 IOCHN:  .res    1
@@ -43,7 +56,7 @@ IOERROR:.res    2
 COLOR:  .res    1
 tabpos: .res    1
 
-        .code
+        .segment        "RUNTIME"
 
 ; Negate AX value
 .proc   neg_AX
@@ -336,37 +349,10 @@ ploop:  iny
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Convert string to integer (word)
-
-
-.scope  skipws
-skipws_loop:
-        iny
-::skipws:
-        cpy     blen
-        beq     xit
-        lda     (bptr), y
-        cmp     #' '
-        beq     skipws_loop
-        clc
-xit:    rts
-.endscope
-
-.proc   read_fp
-        sty     CIX
-        lda     bptr
-        sta     INBUFF
-        lda     bptr+1
-        sta     INBUFF+1
-        jsr     AFP
-        bcs     skipws::xit
-        ldy     CIX
-        rts
-.endproc
-
 .proc   read_word
+SKBLANK = $DBA1
         ; Skips white space at start
-        jsr     skipws
-        bcs     xit     ; End of string and no characters found
+        jsr     SKBLANK
 
         ; Clears result
         ldx     #0
@@ -384,12 +370,8 @@ skip:   iny
 nosign: stx     sign
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
 loop:
-        ; Check length
-        cpy     blen
-        beq     xit_n
-
         ; Reads one character
-        lda     (bptr), y
+        lda     (INBUFF), y
         sec
         sbc     #'0'
         cmp     #10
@@ -578,9 +560,7 @@ move_dwn_dst     = move_dwn::dst+1
         lda     #>device_s
         sta     ICBAH, x
         jmp     CIOV
-        .data
 device_s: .byte "S:", $9B
-        .code
 .endproc
 
 ; vi:syntax=asm_ca65

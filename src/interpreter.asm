@@ -15,6 +15,14 @@
 ; You should have received a copy of the GNU General Public License along
 ; with this program.  If not, see <http://www.gnu.org/licenses/>
 ;
+; In addition to the permissions in the GNU General Public License, the
+; authors give you unlimited permission to link the compiled version of
+; this file into combinations with other programs, and to distribute those
+; combinations without any restriction coming from the use of this file.
+; (The General Public License restrictions do apply in other respects; for
+; example, they cover modification of the file, and distribution when not
+; linked into a combine executable.)
+
 
 ; The opcode interpreter
 ; ----------------------
@@ -26,7 +34,7 @@
         .importzp       var_buf, array_ptr, mem_end
         .import         clear_data, alloc_array
         ; From parser.asm
-        .importzp       bptr, bpos, blen
+        .importzp       bptr, bpos
 
         ; From runtime.asm
         .import         umul16, sdiv16, smod16, neg_AX, read_word, read_fp
@@ -48,33 +56,20 @@
 sptr    =       bpos    ; Use bpos as stack pointe
 fptr:   .res    1       ; FP stack pointer
 
-        .bss
-
-.define STACK_SIZE      64
+        ; Total stack 128 bytes, 40 * 2 + 8 * 6
+.define STACK_SIZE      40
 .define FPSTK_SIZE      8
-
         ; Our execution stack 64 words max, aligned for maximum speed
-        .align  STACK_SIZE
-stack_l:
-        .res    STACK_SIZE
-stack_h:
-        .res    STACK_SIZE
-fpstk_0:
-        .res    FPSTK_SIZE
-fpstk_1:
-        .res    FPSTK_SIZE
-fpstk_2:
-        .res    FPSTK_SIZE
-fpstk_3:
-        .res    FPSTK_SIZE
-fpstk_4:
-        .res    FPSTK_SIZE
-fpstk_5:
-        .res    FPSTK_SIZE
+stack_l =       $480
+stack_h =       $480 + STACK_SIZE
+fpstk_0 =       stack_h + STACK_SIZE
+fpstk_1 =       fpstk_0 + FPSTK_SIZE
+fpstk_2 =       fpstk_1 + FPSTK_SIZE
+fpstk_3 =       fpstk_2 + FPSTK_SIZE
+fpstk_4 =       fpstk_3 + FPSTK_SIZE
+fpstk_5 =       fpstk_4 + FPSTK_SIZE
 
 ;----------------------------------------------------------------------
-
-        .code
 
 ; This is the main threaded interpreter, jumps to the next
 ; execution opcode from the opcode-stream.
@@ -87,9 +82,10 @@ fpstk_5:
 ; All the execution routines jump back to the next_instruction label,
 ; so the minimum time for an opcode is 28 cycles, this means we could
 ; execute at up to 63k opcodes per second.
-.proc   interpreter
+;
         ; Code in ZP: (16 bytes)
         .segment "INTERP": zeropage
+.proc   interpreter
 nxt_incsp:
         inc     sptr
 nxtins:
@@ -100,14 +96,15 @@ cload:  ldy     $1234           ;4
 adj:    sty     z:jump+1        ;3
 jump:   jmp     (OP_JUMP)       ;5 = 25 cycles per call
 
-        ; Return to main code segment
-        .code
 .endproc
 
 cptr                    =       interpreter::cload+1
 next_instruction        =       interpreter::nxtins
 next_ins_incsp          =       interpreter::nxt_incsp
 interpreter_cptr        =       cptr
+
+        ; Rest of interpreter is in runtime segment
+        .segment        "RUNTIME"
 
         ; Main interpreter call
 .proc   interpreter_run
@@ -141,30 +138,8 @@ interpreter_cptr        =       cptr
         jmp     next_instruction
 .endproc
 
-pop_stack_3:
-        inc     sptr
-pop_stack_2:
-        inc     sptr
-.proc   pop_stack
-        ldy     sptr
-        lda     stack_l, y
-        ldx     stack_h, y
-        jmp     next_ins_incsp
-.endproc
-
-        ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
-.proc   CIOV_POP
-        jsr     CIOV
-ioerr:
-        sty     IOERROR
-iochn0:
-        lda     #0
-        sta     IOCHN
-        beq     pop_stack
-.endproc
-
-        ; Reads one byte from the opcode stream.
-        ; NOTE: must not modify "X"
+        ; Reads variable number from opcode stream, returns
+        ; variable address in AX
 .proc   get_op_var
         jsr     pushAX
         ldy     #0
@@ -417,9 +392,12 @@ len=    * - msg
 
 ; Copy one string to another, allocating the destination if necessary
 .proc   TOK_COPY_STR    ; AX: source string   (SP): destination *variable* address
-        jsr     pushAX  ; Store source
+        ; Store source
+        pha
+        txa
+        pha
         ; Get destination pointer - allocate if 0
-        iny
+        ldy     sptr
         lda     stack_l, y
         sta     tmp1
         lda     stack_h, y
@@ -430,7 +408,6 @@ len=    * - msg
         iny
         lda     (tmp1), y
         sta     tmp2+1
-        ora     tmp2
         bne     ok
         ; Copy current memory pointer to the variable
         lda     array_ptr+1
@@ -447,25 +424,74 @@ len=    * - msg
         bcs     memory_error
 ok:
         ; Get source pointer and check if it is allocated
-        ldy     sptr
-        lda     stack_l, y
-        sta     tmp1
-        lda     stack_h, y
+        pla
         sta     tmp1+1
+        pla
+        sta     tmp1
         ldy     #0
-        ora     tmp1
+        ora     tmp1+1
         beq     nul
         ; Copy len
         lda     (tmp1), y
 nul:    sta     (tmp2), y
         tay
-        beq     nil
+        beq     pop_stack_2
         ; Copy data
 cloop:  lda     (tmp1), y
         sta     (tmp2), y
         dey
         bne     cloop
-nil:    jmp     pop_stack_3
+        beq     pop_stack_2
+.endproc
+
+.proc   TOK_DPOKE  ; DPOKE (SP++), AX
+        pha
+        ldy     sptr
+        lda     stack_h, y
+.if 0
+        sta     tmp1+1
+        lda     stack_l, y
+        sta     tmp1
+        ldy     #0
+        pla
+        sta     (tmp1), y
+        txa
+        iny
+        sta     (tmp1), y
+.else
+        ; Self-modifying code, 4 cycles faster and 1 byte larger than the above
+        sta     save_l+2
+        sta     save_h+2
+        txa
+        ldx     stack_l, y
+save_h: sta     $FF01, x
+        pla
+save_l: sta     $FF00, x
+.endif
+        ; Fall through
+.endproc
+pop_stack_2:
+        inc     sptr
+.proc   pop_stack
+        ldy     sptr
+        lda     stack_l, y
+        ldx     stack_h, y
+        jmp     next_ins_incsp
+.endproc
+
+pop_stack_3:
+        inc     sptr
+        bne     pop_stack_2
+
+        ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
+.proc   CIOV_POP
+        jsr     CIOV
+ioerr:
+        sty     IOERROR
+iochn0:
+        lda     #0
+        sta     IOCHN
+        beq     pop_stack
 .endproc
 
 .proc   TOK_PEEK  ; AX = *(AX)
@@ -527,19 +553,13 @@ loadL:  lda     $FF00, y
         ; Get length
         ldy     #0
         lda     (bptr), y
-        sta     blen
-        inc     blen
-        ; Check last char
-        ldy     blen
-        lda     #$9B
-        cmp     (bptr), y
-        beq     ok
-        ; Not, append a character
+        tay
         iny
-        beq     no_spc
-        dey
-no_spc: sta     (bptr), y
-ok:     ldy     #1
+        bne     ok
+        dey     ; String too long, just overwrite last character
+ok:     lda     #$9B
+        sta     (bptr), y
+        ldy     #1
         rts
 .endproc
 
@@ -635,6 +655,45 @@ xit:    ldx     tmp2
         jmp     next_ins_incsp
 .endproc
 
+.proc   TOK_FOR
+        jsr     pushAX
+        ; In stack we have:
+        ;       y   = step
+        ;       y+1 = limit
+        ;       y+2 = var_address
+        ; Read variable value, compare with limit
+        stx     tmp2
+        lda     stack_h+2, y
+        sta     tmp1+1
+        lda     stack_l+2, y
+        sta     tmp1
+
+        ldy     #1
+        lda     (tmp1), y
+        tax
+        dey
+        lda     (tmp1), y
+        ; Now, compare with limit
+        jsr     pushAX
+        lda     stack_l+2, y
+        ldx     stack_h+2, y
+        asl     tmp2
+        bcs     TOK_GEQ
+positive:
+        ; Fall through
+.endproc
+
+.proc   TOK_LEQ  ; AX = (SP+) <= AX
+        ldy     sptr
+        cmp     stack_l, y
+        txa
+        sbc     stack_h, y
+        bvc     :+
+        eor     #$80
+:       bmi     set0
+        bpl     set1
+.endproc
+
 .proc   TOK_GEQ  ; AX = (SP+) >= AX
         sta     tmp1
         stx     tmp1+1
@@ -647,17 +706,6 @@ xit:    ldx     tmp2
         eor     #$80
 :       bpl     set1
         bmi     set0
-.endproc
-
-.proc   TOK_LEQ  ; AX = (SP+) <= AX
-        ldy     sptr
-        cmp     stack_l, y
-        txa
-        sbc     stack_h, y
-        bvc     :+
-        eor     #$80
-:       bmi     set0
-        bpl     set1
 .endproc
 
 TOK_0:
@@ -798,32 +846,6 @@ save:   sta     $FF00, x
         jmp     pop_stack_2
 .endproc
 
-.proc   TOK_DPOKE  ; DPOKE (SP++), AX
-        pha
-        ldy     sptr
-        lda     stack_h, y
-.if 0
-        sta     tmp1+1
-        lda     stack_l, y
-        sta     tmp1
-        ldy     #0
-        pla
-        sta     (tmp1), y
-        txa
-        iny
-        sta     (tmp1), y
-.else
-        ; Self-modifying code, 4 cycles faster and 1 byte larger than the above
-        sta     save_l+2
-        sta     save_h+2
-        txa
-        ldx     stack_l, y
-save_h: sta     $FF01, x
-        pla
-save_l: sta     $FF00, x
-.endif
-        jmp     pop_stack_2
-.endproc
 
 .proc   TOK_JUMP
         sta     save_a+1
@@ -928,35 +950,6 @@ save_l: sta     $FF00, x
         jmp     next_instruction
 .endproc
 
-.proc   TOK_FOR
-        jsr     pushAX
-        ; In stack we have:
-        ;       y   = step
-        ;       y+1 = limit
-        ;       y+2 = var_address
-        ; Read variable value, compare with limit
-        stx     tmp2
-        lda     stack_h+2, y
-        sta     tmp1+1
-        lda     stack_l+2, y
-        sta     tmp1
-
-        ldy     #1
-        lda     (tmp1), y
-        tax
-        dey
-        lda     (tmp1), y
-        ; Now, compare with limit
-        jsr     pushAX
-        lda     stack_l+2, y
-        ldx     stack_h+2, y
-        asl     tmp2
-        bcc     positive
-        jmp     TOK_GEQ
-positive:
-        jmp     TOK_LEQ
-.endproc
-
         ; Remove the FOR arguments from the stack!
 TOK_FOR_EXIT    = pop_stack_3
 
@@ -967,10 +960,9 @@ TOK_FOR_EXIT    = pop_stack_3
         sta     move_up_dst
         lda     stack_h, y
         sta     move_up_dst+1
-        iny
-        lda     stack_l, y
+        lda     stack_l+1, y
         sta     move_up_src
-        lda     stack_h, y
+        lda     stack_h+1, y
         sta     move_up_src+1
         pla
         jsr     move_up
@@ -984,10 +976,9 @@ TOK_FOR_EXIT    = pop_stack_3
         sta     move_dwn_dst
         lda     stack_h, y
         sta     move_dwn_dst+1
-        iny
-        lda     stack_l, y
+        lda     stack_l+1, y
         sta     move_dwn_src
-        lda     stack_h, y
+        lda     stack_h+1, y
         sta     move_dwn_src+1
         pla
         jsr     move_dwn
@@ -1401,6 +1392,7 @@ ok:
         jsr     get_str_eol
         jsr     push_fr1
         ldy     #1
+        sty     CIX
         jsr     read_fp
         bcc     :+
         lda     #18
@@ -1526,7 +1518,5 @@ OP_JUMP:
         .word   TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
         .word   TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT
         .word   TOK_FP_GEQ, TOK_FP_GT, TOK_FP_EQ
-
-        .code
 
 ; vi:syntax=asm_ca65

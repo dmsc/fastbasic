@@ -15,6 +15,14 @@
 ; You should have received a copy of the GNU General Public License along
 ; with this program.  If not, see <http://www.gnu.org/licenses/>
 ;
+; In addition to the permissions in the GNU General Public License, the
+; authors give you unlimited permission to link the compiled version of
+; this file into combinations with other programs, and to distribute those
+; combinations without any restriction coming from the use of this file.
+; (The General Public License restrictions do apply in other respects; for
+; example, they cover modification of the file, and distribution when not
+; linked into a combine executable.)
+
 
 ; Standalone interpreter
 ; ----------------------
@@ -23,7 +31,7 @@
         .export         start
         ; Export to runtime.asm
         .exportzp       tmp1, tmp2, tmp3
-        .exportzp       bptr, bpos, blen, var_count
+        .exportzp       bptr, bpos, var_count
 
         ; From runtime.asm
         .importzp       IOCHN, tabpos
@@ -44,12 +52,13 @@ heap_start=     __BSS_RUN__+__BSS_SIZE__
 
         .zeropage
 var_count:      .res 1
-bptr:   .res 2
-bpos:   .res 1
-blen:   .res 1
 tmp1:   .res 2
 tmp2:   .res 2
 tmp3:   .res 2
+
+; Use (INBUFF)+CIX as our parser pointer
+bptr    = INBUFF
+bpos    = CIX
 
         .code
 start:
