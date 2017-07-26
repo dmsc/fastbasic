@@ -79,13 +79,19 @@ class parse {
         std::string str;
         size_t pos;
         size_t max_pos;
-        std::vector<codew> code;
+        std::map<std::string, std::vector<codew>> procs;
         std::map<std::string, int> vars;
         std::map<std::string, int> labels;
         std::vector<jump> jumps;
         int label_num;
+        bool finalized;
+        std::vector<codew> *code;
 
-        parse(): lvl(0), maxlvl(0), pos(0), max_pos(0), label_num(0) {}
+        parse():
+            lvl(0), maxlvl(0), pos(0),
+            max_pos(0), label_num(0),
+            finalized(false),
+            code(&procs[std::string()]) { }
 
         std::string new_label()
         {
@@ -134,20 +140,20 @@ class parse {
 
         saved_pos save()
         {
-            return saved_pos{pos, code.size()};
+            return saved_pos{pos, code->size()};
         }
 
         void restore(saved_pos s)
         {
             if( pos > max_pos ) max_pos = pos;
             pos = s.pos;
-            code.resize(s.opos);
+            code->resize(s.opos);
         }
 
         codew remove_last()
         {
-            codew ret = code.back();
-            code.pop_back();
+            codew ret = code->back();
+            code->pop_back();
             return ret;
         }
         void debug(const std::string &c)
@@ -251,19 +257,19 @@ class parse {
         bool emit_word(std::string s)
         {
             codew c{ codew::word, s};
-            code.push_back(c);
+            code->push_back(c);
             return true;
         }
         bool emit_label(std::string s)
         {
             codew c{ codew::label, s};
-            code.push_back(c);
+            code->push_back(c);
             return true;
         }
         bool comment(std::string s)
         {
             codew c{ codew::comment, s};
-            code.push_back(c);
+            code->push_back(c);
             return true;
         }
         bool emit(std::string s)
@@ -271,8 +277,31 @@ class parse {
             codew c{ codew::byte, s};
             if( s.substr(0,4) == "TOK_" )
                 c.type = codew::tok;
-            code.push_back(c);
+            code->push_back(c);
             return true;
+        }
+        void push_proc(std::string l)
+        {
+            code = &procs[l];
+        }
+        void pop_proc(std::string l)
+        {
+            code = &procs[std::string()];
+        }
+        std::vector<codew> &full_code()
+        {
+            std::vector<codew> &p = procs[std::string()];
+            if( !finalized )
+            {
+                finalized = true;
+                // Correctly terminate main code
+                if( !p.size() || p.back().type != codew::tok || p.back().value != "TOK_END" )
+                    p.push_back({codew::tok, "TOK_END"});
+                for(auto &c: procs)
+                    if( !c.first.empty() )
+                        p.insert(std::end(p), std::begin(c.second), std::end(c.second));
+            }
+            return p;
         }
 };
 
@@ -482,7 +511,6 @@ static bool SMB_E_PUSH_LT(parse &s)
         case LT_WHILE_2:
         case LT_FOR_2:
         case LT_IF:
-        case LT_PROC_1:
         case LT_DATA:
             s.emit_word(l);
             break;
@@ -491,6 +519,11 @@ static bool SMB_E_PUSH_LT(parse &s)
         case LT_ELIF:
         case LT_PROC_2:
         case LT_LAST_JUMP:
+            break;
+        case LT_PROC_1:
+            // Optimize by switching codep
+            s.remove_last();
+            s.push_proc(l);
             break;
     }
     return true;
@@ -587,7 +620,7 @@ static bool SMB_E_POP_PROC_1(parse &s)
     auto l = s.pop_loop(LT_PROC_1);
     if( l.empty() )
         return false;
-    s.emit_label(l);
+    s.pop_proc(l);
     return true;
 }
 
@@ -1117,13 +1150,13 @@ int main(int argc, char **argv)
 
     s.emit("TOK_END");
     // Optimize
-    peephole pp(s.code);
+    peephole pp(s.full_code());
     // Statistics
     if( show_stats )
-        opstat op(s.code);
+        opstat op(s.full_code());
 
     // Write global symbols
-    for(auto &c: s.code)
+    for(auto &c: s.full_code())
     {
         if( c.type == parse::codew::word && c.value[0] >= 'A' && c.value[0] <= '_' )
             ofile << "\t.global " << c.value << "\n";
@@ -1147,7 +1180,7 @@ int main(int argc, char **argv)
              ";-----------------------------\n"
              "; Bytecode\n"
              "bytecode_start:\n";
-    for(auto c: s.code)
+    for(auto c: s.full_code())
     {
         switch(c.type)
         {

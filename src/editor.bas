@@ -61,6 +61,7 @@ PROC InputFilename
       pos. 6, 0
       poke @CH, 12: ' Force ENTER
       input #0, FileName$
+      key = 0
       exit
     elif key >= 30 and key <= 124 or key = 126
       put key
@@ -79,7 +80,7 @@ PROC SaveCompiledFile
   pos. 0, 0
   ? "úù Name?";
   exec InputFileName
-  if key <> 155
+  if key
     ' Don't save
     exit
   endif
@@ -115,7 +116,7 @@ PROC AskSaveFile
   pos. 0, 0
   ? "úù Save?";
   exec InputFileName
-  if key <> 155
+  if key
     ' Don't save
     exit
   endif
@@ -164,6 +165,7 @@ ENDPROC
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
+  exec SaveLine
   poke MemEnd, $9B
   pos. 1,0
   ? "úù Parsing: ";
@@ -772,10 +774,10 @@ do
       pos. 0, 0
       ? "úù Load?";
       exec InputFileName
-      if key = 155
-        exec LoadFile
-      else
+      if key
         exec ShowInfo
+      else
+        exec LoadFile
       endif
     '
     '--------- Control-Z (undo) -----
