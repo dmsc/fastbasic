@@ -33,20 +33,21 @@ prompt. This will load the IDE and
 present you with a little help text:
 
     --D:HELP.TXT-------------------0--
-    '    FastBasic  -  (c) 2017 dmsc
+    '   FastBasic  -  (c) 2017 dmsc
     '
     ' Editor Help
     ' -----------
-    '   Ctrl-A : Move to beg of line
-    '   Ctrl-E : Move to end of line
-    '   Ctrl-U : Page up
-    '   Ctrl-V : Page down
-    '   Ctrl-Z : Undo (only curr line)
-    '   Ctrl-Q : Exit to DOS
-    '   Ctrl-S : Save file
-    '   Ctrl-L : Load file
-    '   Ctrl-N : New file
-    '   Ctrl-R : Parse and run program
+    '  Ctrl-A : Move to beg of line
+    '  Ctrl-E : Move to end of line
+    '  Ctrl-U : Page up
+    '  Ctrl-V : Page down
+    '  Ctrl-Z : Undo (only curr line)
+    '  Ctrl-Q : Exit to DOS
+    '  Ctrl-S : Save file
+    '  Ctrl-L : Load file
+    '  Ctrl-N : New file
+    '  Ctrl-R : Parse and run program
+    '  Ctrl-W : Compile to binary file
     '
     '- Press CONTROL-N + ESC to begin -
 
@@ -64,11 +65,12 @@ first column of the first line of the
 file being edited.
 
 As the help text says, just press the
-`CONTROL` key and the letter N (at the
-same time) to begin editing a new file.
-The editor asks if you want to save the
-current file (the help text) to disk,
-to skip saving simply type `ESC`.
+`CONTROL` key and the letter `N` (at
+the same time) to begin editing a new
+file.  The editor asks if you want to
+save the current file (the help text)
+to disk, to skip saving simply type
+`ESC`.
 
 Now, you can start writing your BASIC
 program. Try the following example,
@@ -103,6 +105,35 @@ If you made a mistake in the program,
 instead of running the cursor will be
 moved to the line and column of the
 error so you can correct it and retry.
+
+Remember to save often, pressing the
+`CONTROL` and `S` keys, you need to
+supply a filename. Delete the old file
+with `BACKSPACE` and type the name of
+your new program, and `ENTER` to save.
+As with any prompt, you can press `ESC`
+to cancel the save operation.
+
+
+Compiling the program to disk
+=============================
+
+One of the After you are satisfied with
+your program, you can compile to a disk
+file, producing a program that can be
+run directly from DOS.
+
+Press the `CONTROL` and `W` key, and
+type a name for your compiled program.
+It is common practice to name your
+compiled programs with an extension of
+".COM" or ".XEX", also with ".COM"
+files you don't need to type the
+extension in some DOS.
+
+Compiled programs include the full
+runtime, so you can distribute them
+alone without the IDE.
 
 
 About the syntax

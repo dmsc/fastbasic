@@ -45,6 +45,8 @@
         .importzp       TOK_CSTRING
         ; From error.asm
         .importzp       ERR_LOOP, ERR_VAR
+        ; From menu.asm
+        .importzp       reloc_addr
 
 ;----------------------------------------------------------
         ; Types of variables
@@ -101,6 +103,16 @@ loop_stk:       .res    128
 ok:     rts
 .endproc
 
+; Emits address into codep, relocating if necessary.
+.proc   emit_addr
+        clc
+        adc     reloc_addr
+        pha
+        txa
+        adc     reloc_addr+1
+        tax
+        pla
+.endproc        ; Fall through
 ;
 ; Emits 16bit AX into codep
 .proc   emit_AX
@@ -431,7 +443,7 @@ xit:
 cloop:  bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
 emit_end:
-        jsr     emit_AX
+        jsr     emit_addr
         jmp     advance_varn
 next:
         jsr     next_laddr
@@ -452,19 +464,13 @@ ret:    rts
 
         ; Check label number
 cloop:  bmi     error   ; label already defined
-        ; Copy address
-        sta     tmp2
-        stx     tmp2+1
-        ; Set label as "defined" (assume that X is <> 0)
-        txa
+
+        ; Write current codep to AX
+        jsr     patch_codep
         ldy     #0
+        lda     #1
         sta     (tmp1), y
-        ; And fill with current ptr
-        jsr     get_codep
-        sta     (tmp2), y
-        iny
-        txa
-        sta     (tmp2), y
+
         ; Continue
 next:   jsr     next_laddr
         bcc     cloop
@@ -506,14 +512,18 @@ start:
 ; Actions for LOOPS
 .proc   patch_codep
         ; Patches saved position with current position
-        sta     tmp1
-        stx     tmp1+1
+        sta     tmp2
+        stx     tmp2+1
         jsr     get_codep
         ldy     #0
-        sta     (tmp1),y
+        clc
+        adc     reloc_addr
+        sta     (tmp2),y
         iny
         txa
-        sta     (tmp1),y
+        adc     reloc_addr+1
+        sta     (tmp2),y
+        clc
         rts     ; C is cleared on exit!
 .endproc
 
@@ -633,7 +643,7 @@ rtsclc: clc
         ; And store
         dec     opos
         dec     opos
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -647,7 +657,7 @@ rtsclc: clc
         ; Pop saved position, store
         lda     #LT_REPEAT
         jsr     pop_codep
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -665,7 +675,7 @@ rtsclc: clc
         ; And store
         dec     opos
         dec     opos
-        jsr     emit_AX
+        jsr     emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -703,8 +713,8 @@ no_elif:
         ; Pop the old position to patch (from IF)
         lda     #LT_IF
         jsr     pop_codep
-        sta     tmp2
-        stx     tmp2+1
+        sta     tmp1
+        stx     tmp1+1
         ; Test if there is an ELIF to pop here
         dec     opos
         jsr     check_elif
@@ -713,8 +723,8 @@ no_elif:
 type:   lda     #LT_ELSE
         jsr     push_codep
         ; Parch current position + 2 (over jump)
-        lda     tmp2
-        ldx     tmp2+1
+        lda     tmp1
+        ldx     tmp1+1
         jmp     patch_codep
 .endproc
 

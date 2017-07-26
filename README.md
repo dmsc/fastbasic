@@ -5,13 +5,14 @@ This is a fast interpreter for the BASIC language on the Atari 8-bit computers.
 
 The current features are:
 - Support for 16bit integer variables;
-- Small size (currently less than 6k);
+- Small size (currently the IDE is less than 9k, and the runtime is less than 2k);
 - Fast execution (currently, about 15% faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 3.5 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
-- Feels "alike" TurboBasicXL.
+- Feels "alike" TurboBasicXL, with many of the extended statements.
+- Integrated editor and compiler.
 
 For more support, see the AtariAge thread at:
-http://atariage.com/forums/topic/267197-preview-new-integer-basic-interpreter/
+http://atariage.com/forums/topic/267929-fastbasic-beta-version-available/
 
 Manual
 ------

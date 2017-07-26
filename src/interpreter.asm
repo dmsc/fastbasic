@@ -47,16 +47,10 @@
         .zeropage
 sptr    =       bpos    ; Use bpos as stack pointe
 
-        .bss
-
 .define STACK_SIZE      64
-
         ; Our execution stack 64 words max, aligned for maximum speed
-        .align  STACK_SIZE
-stack_l:
-        .res    STACK_SIZE
-stack_h:
-        .res    STACK_SIZE
+stack_l =       $480
+stack_h =       $480 + STACK_SIZE
 
 ;----------------------------------------------------------------------
 

@@ -69,6 +69,45 @@ PROC InputFilename
 ENDPROC
 
 '-------------------------------------
+' Save compiled file
+'
+PROC SaveCompiledFile
+  ' Save original filename
+  move Adr(FileName$), Adr(EditBuf), 128
+  poke Adr(FileName$) + Len(FileName$), $58
+
+  pos. 0, 0
+  ? "úù Name?";
+  exec InputFileName
+  if key <> 155
+    ' Don't save
+    exit
+  endif
+
+  open #1, 8, 0, FileName$
+  if err() < 128
+    ' Open ok, write header
+    bput #1, @COMP_HEAD_1, 6
+    bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
+    bput #1, @COMP_HEAD_2, 4
+    bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
+    bput #1, MemEnd + 1, dpeek(@COMP_END) - MemEnd
+    if err() < 128
+      bput #1, @COMP_TRAILER, 6
+      ' Save ok, close
+      close #1
+    endif
+  endif
+
+  if err() > 127
+    exec FileError
+  endif
+
+  ' Restore original filename
+  move Adr(EditBuf), Adr(FileName$), 128
+ENDPROC
+
+'-------------------------------------
 ' Save edited file
 '
 PROC AskSaveFile
@@ -119,6 +158,33 @@ PROC LoadFile
   edited = 0
   exec RedrawScreen
 
+ENDPROC
+
+'-------------------------------------
+' Compile (and run) file
+PROC CompileFile
+  ' Compile main file
+  poke MemEnd, $9B
+  pos. 1,0
+  ? "úù Parsing: ";
+  line = USR( @compile_buffer, key, Adr(MemStart), MemEnd+1) - 1
+  column = peek( @@bmax )
+  if key and line < 0
+    exec SaveCompiledFile
+  else
+    get key
+  endif
+  if line < 0
+    line = 0
+  endif
+  if line < 10
+    scrLine = line
+  else
+    scrLine = 10
+  endif
+  line = line - scrLine
+  exec InitScreen
+  exec RedrawScreen
 ENDPROC
 
 '-------------------------------------
@@ -682,22 +748,13 @@ do
     '
     '--------- Control-R (run) -----
     elif key = $12
-      exec SaveLine
-      ' Compile main file
-      poke MemEnd, $9B
-      pos. 1,0
-      ? "úù Parsing: ";
-      line = USR( @compile_buffer, Adr(MemStart), MemEnd+1 ) - 1
-      column = peek( @@bmax )
-      get key
-      if line < 10
-        scrLine = line
-      else
-        scrLine = 10
-      endif
-      line = line - scrLine
-      exec InitScreen
-      exec RedrawScreen
+      key = 0
+      exec CompileFile
+    '
+    '--------- Control-W (write compiled file) -----
+    elif key = $17
+      key = 1
+      exec CompileFile
     '
     '--------- Control-N (new) -----
     elif key = $0E
