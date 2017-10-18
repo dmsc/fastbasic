@@ -36,6 +36,9 @@ Currently, FastBasic support:
 - Arrays with "word" and "byte" types.
 - User defined procedures.
 - Compilation to binary loadable files.
+- Available as a full version `FB.COM`
+  and also as a smaller integer-only
+  `FBI.COM`.
 
 
 First Steps
@@ -47,7 +50,7 @@ prompt. This will load the IDE and
 present you with a little help text:
 
     --D:HELP.TXT-------------------0--
-    '  FastBasic FP -  (c) 2017 dmsc
+    '  FastBasic FP  -  (c) 2017 dmsc
     '
     ' Editor Help
     ' -----------
@@ -132,8 +135,8 @@ to cancel the save operation.
 Compiling the program to disk
 =============================
 
-One of the After you are satisfied with
-your program, you can compile to a disk
+Once you are satisfied with your
+program, you can compile to a disk
 file, producing a program that can be
 run directly from DOS.
 
@@ -168,14 +171,18 @@ the following main rules:
    - an empty line.
 
 2. All statements and variable names
-can be lower or uppercase, as the
-language is case insensitive.
+   can be lower or uppercase, as the
+   language is case insensitive.
 
 3. Statements can be abbreviated to
-reduce typing, each statement have a
-different abbreviation.
+   reduce typing, each statement have a
+   different abbreviation.
 
-4. No line numbers are allowed.
+4. Multiple statements can be put on
+   the same line by placing a semicolon
+   `:` between statements.
+
+5. No line numbers are allowed.
 
 In the following chapters, whenever a
 value can take any numeric expression,
@@ -287,6 +294,8 @@ the operators are:
             left to right.
 - `*` `/` : multiplication, division,
             from left to right.
+- `^`     : exponentiation, from left
+            to right.
 - `+` `-` : positive / negative.
 
 Note that integer expressions are
@@ -461,6 +470,16 @@ functions supported by FastBasic.
                 negative number, less
                 than _num_.
 
+- KEY() : Returns 0 if no key was
+          pressed, or a keycode. The
+          returned value only goes to 0
+          after reading the key in the
+          OS (via a `GET` or `POKE
+          764,0` statement).  _Hint:
+          The value returned is
+          actually the same as_
+          `(PEEK(764) EXOR 255)`.
+
 - FRE() : Returns the free memory
           available in bytes.
 
@@ -491,6 +510,8 @@ Floating Point functions
 This functions return a floating point
 value.
 
+- COS(_n_): Cosine of _n_.
+
 - EXP(_n_) : Natural exponentiation.
 
 - EXP10(_n_) : Returns ten raised to _n_.
@@ -498,6 +519,15 @@ value.
 - LOG(_n_) : Natural logarithm of _n_.
 
 - LOG10(_n_): Decimal logarithm of _n_.
+
+- RND(): Returns a random positive
+         number strictly less than 1.
+
+- SQR(_n_): Square root of _n_.
+
+- SIN(_n_): Sine of _n_.
+
+- ATN(_n_): Arc-Tangent of _n_.
 
 Note that, as any floating point
 calculation, in case of error ERR()
@@ -934,8 +964,8 @@ Device Input and Output Statements
   value of ERR() after close to ensure
   that written data is really on disk.
 
-**Reads a byte from file**  
-**GET #_iochn_, _var_**
+**Reads bytes from file**  
+**GET #_iochn_, _var_, ...**
 
   Reads one byte from channel _iochn_
   and writes the value to _var_.
@@ -1062,7 +1092,16 @@ General Statements
   Note that the array can be modified
   afterwards like a normal array.
 
-**Allicate an array**  
+
+**Decrements variable by 1**  
+**DEC _var_**
+
+  Decrements the variable by 1, this is
+  equivalent to "_var_ = _var_ - 1",
+  but faster.
+
+
+**Allocate an array**  
 **DIM _arr_(_size_) [type], .../ DI.**
 
   The DIM statement allows defining
@@ -1112,6 +1151,31 @@ General Statements
   vertical retrace, this is useful to
   synchronize to the TV and get fluid
   animations.
+
+
+Floating point statements
+-------------------------
+
+Those statements are only available in
+the floating point version.
+
+
+**Sets "degrees" mode**  
+**DEG**
+
+  Makes all trigonometric functions
+  operate in degrees, so that 360 is
+  the full circle.
+
+
+**Sets "radians" mode**  
+**RAD**
+
+  Makes all trigonometric functions
+  operate in radians, so that 2pi is
+  the full circle.
+
+  This mode is the default on startup.
 
 
 Low level statements

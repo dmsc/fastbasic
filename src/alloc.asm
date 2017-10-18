@@ -44,10 +44,9 @@
 
         ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn
-        ; From vars.asm
-        .importzp       var_count
-        ; Common vars
         .importzp       tmp1, tmp2
+        ; From interpreter.asm
+        .importzp       var_count
 
         .zeropage
 

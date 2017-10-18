@@ -4,12 +4,6 @@
 '
 
 '-------------------------------------
-' M/L routine to search the end of line
-data CountLines() byte = $68,$85,$FD,$68,$85,$FC,$68,$85,$FF,$68,$85,$FE,$E6,$FC,$E6,$FD,$A0,
-data              byte = $00,$B1,$FE,$C6,$FC,$D0,$04,$C6,$FD,$F0,$0A,$E6,$FE,$D0,$02,$E6,$FF,
-data              byte = $C9,$9B,$D0,$EC,$A5,$FE,$A6,$FF,$60
-
-'-------------------------------------
 ' Array definitions
 dim ScrAdr(24), ScrLen(24)
 ' And an array with the current line being edited
@@ -169,20 +163,20 @@ PROC CompileFile
   poke MemEnd, $9B
   pos. 1,0
   ? "úù Parsing: ";
-  line = USR( @compile_buffer, key, Adr(MemStart), MemEnd+1) - 1
-  column = peek( @@bmax )
-  if key and line < 0
+  if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
+    ' Parse error, go to error line
+    line = peek(@@linenum) - 1
+    column = peek( @@bmax )
+    if line < 10
+      scrLine = line
+    else
+      scrLine = 10
+    endif
+    get key
+  elif key
     exec SaveCompiledFile
   else
     get key
-  endif
-  if line < 0
-    line = 0
-  endif
-  if line < 10
-    scrLine = line
-  else
-    scrLine = 10
   endif
   line = line - scrLine
   exec InitScreen
@@ -208,6 +202,14 @@ PROC DeleteChar
   linLen = linLen - 1
   ptr = Adr(EditBuf) + column
   move ptr+1, ptr, linLen - column
+  exec ForceDrawCurrentLine
+ENDPROC
+
+'-------------------------------------
+' Draws current line from edit buffer
+' and move cursor to current position
+'
+PROC ForceDrawCurrentLine
   hDraw = -1
   exec DrawCurrentLine
 ENDPROC
@@ -433,7 +435,7 @@ ENDPROC
 '-------------------------------------
 ' Calls 'CountLines
 PROC CountLines
-  nptr = USR(adr(CountLines), ptr, MemEnd - ptr)
+  nptr = USR(@Count_Lines, ptr, MemEnd - ptr)
 ENDPROC
 
 '-------------------------------------
@@ -462,6 +464,28 @@ PROC ScrollUp
   ' Draw last line
   y = 22
   exec DrawLineOrig
+ENDPROC
+
+'-------------------------------------
+' Moves the cursor down 1 line
+PROC CursorDown
+  if scrLine = 22
+    exec ScrollUp
+  else
+    inc line
+    inc scrLine
+  endif
+ENDPROC
+
+'-------------------------------------
+' Moves the cursor up 1 line
+PROC CursorUp
+  if scrLine
+    scrLine = scrLine - 1
+    line = line - 1
+  else
+    exec ScrollDown
+  endif
 ENDPROC
 
 '-------------------------------------
@@ -564,8 +588,7 @@ do
         put key
         poke @DSPFLG, 0
       else
-        hDraw = -1
-        exec DrawCurrentLine
+        exec ForceDrawCurrentLine
       endif
     endif
   else
@@ -601,8 +624,8 @@ do
       pos. 0, scrLine+1
       put 157
       ' Move screen pointers
-      -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + scrLine * 2 + 2, (22 - scrLine) * 2
-      -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + scrLine * 2 + 2, (22 - scrLine) * 2
+      -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + (scrLine+1) * 2, (22 - scrLine) * 2
+      -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (22 - scrLine) * 2
       ' Save new line position
       ScrAdr(scrLine) = newPtr
       ScrLen(scrLine) = newLen
@@ -638,8 +661,8 @@ do
       y = scrLine
       exec DrawLineOrig
       edited = 0
-      hDraw = -1
       lDraw = 22
+      hDraw = -1
       exec ChgLine
     '
     '--------- Backspace ------------
@@ -692,50 +715,26 @@ do
     '--------- Control-U (page up)---
     elif key = $15
       for i=0 to 18
-        if scrLine > 0
-          scrLine = scrLine - 1
-          line = line - 1
-        else
-          exec ScrollDown
-        endif
+        exec CursorUp
       next i
       exec ChgLine
     '
     '--------- Control-V (page down)-
     elif key = $16
       for i=0 to 18
-        if scrLine < 22
-          scrLine = scrLine + 1
-          line = line + 1
-        else
-          exec ScrollUp
-        endif
+        exec CursorDown
       next i
       exec ChgLine
     '
     '--------- Down -----------------
     elif key = $1D
-      if linLen >= 0
-        if scrLine = 22
-          exec ScrollUp
-        else
-          inc line
-          inc scrLine
-        endif
-        exec ChgLine
-      endif
+      exec CursorDown
+      exec ChgLine
     '
     '--------- Up -------------------
     elif key = $1C
-      if line > 0
-        if not scrLine
-          exec ScrollDown
-        else
-          line = line - 1
-          scrLine = scrLine - 1
-        endif
-        exec ChgLine
-      endif
+      exec CursorUp
+      exec ChgLine
     '
     '--------- Control-Q (exit) -----
     elif key = $11
@@ -784,9 +783,8 @@ do
     elif key = $1A
       if edited
         edited = 0
-        hDraw = -1
         exec CopyToEdit
-        exec DrawCurrentLine
+        exec ForceDrawCurrentLine
       else
         put @@ATBEL
       endif

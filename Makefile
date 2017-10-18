@@ -1,19 +1,35 @@
 CXX=g++
 CXXFLAGS=-O2 -Wall
+SYNTFLAGS=
+SYNTFP=-DFASTBASIC_FP
+FPASM=--asm-define FASTBASIC_FP --asm-include-dir gen/fp
+INTASM=--asm-include-dir gen/int
+FPCXX=-DFASTBASIC_FP -Igen/fp
+INTCXX=-Igen/int
 
 # Cross
-CL65OPTS=-g -tatari -Csrc/fastbasic.cfg --asm-include-dir gen
+CL65OPTS=-g -tatari -Csrc/fastbasic.cfg
 
 ATR=fastbasic.atr
-PROG=bin/fastbasic.xex
-NATIVE=bin/fastbasic
+PROGS=bin/fb.xex bin/fbi.xex
+NATIVE_INT=bin/fastbasic-int
+NATIVE_FP=bin/fastbasic
+
+NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 
 # Sample programs
-SAMPLE_BAS=\
-    carrera3d.bas \
-    draw.bas \
-    pmtest.bas \
-    sieve.bas \
+SAMPLE_FP_BAS=\
+    fp/ahlbench.bas \
+    fp/draw.bas \
+
+SAMPLE_INT_BAS=\
+    int/pi.bas \
+    int/carrera3d.bas \
+    int/pmtest.bas \
+    int/sieve.bas \
+
+SAMPLE_BAS=$(SAMPLE_INT_BAS) $(SAMPLE_FP_BAS)
+SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
 
 # Test programs
 TEST_BAS=\
@@ -26,19 +42,21 @@ TEST_BAS=\
 # Output files inside the ATR
 FILES=\
     disk/fb.com \
+    disk/fbi.com \
     disk/readme \
     disk/manual.txt \
     disk/startup.bat \
     disk/help.txt \
     $(TEST_BAS:%=disk/%) \
-    $(SAMPLE_BAS:%=disk/%) \
-    $(SAMPLE_BAS:%.bas=disk/%.com) \
+    $(SAMPLE_X_BAS:%=disk/%) \
+    $(SAMPLE_X_BAS:%.bas=disk/%.com) \
 
 # BW-DOS files to copy inside the ATR
 DOSDIR=disk/dos/
 DOS=\
     xbw130.dos\
     copy.com\
+    pause.com\
 
 # ASM files used in the RUNTIME
 RT_AS_SRC=\
@@ -64,35 +82,39 @@ BAS_SRC=\
     src/editor.bas\
 
 # Object files
-RT_OBJS=$(RT_AS_SRC:src/%.asm=obj/%.o)
-IDE_OBJS=$(IDE_AS_SRC:src/%.asm=obj/%.o)
-COMMON_OBJS=$(COMMON_AS_SRC:src/%.asm=obj/%.o)
-BAS_OBJS=$(BAS_SRC:src/%.bas=obj/%.o)
+RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=obj/fp/%.o)
+IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=obj/fp/%.o)
+COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o)
+BAS_OBJS_FP=$(BAS_SRC:src/%.bas=obj/fp/%.o)
+
+RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=obj/int/%.o)
+IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=obj/int/%.o)
+COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=obj/int/%.o)
+BAS_OBJS_INT=$(BAS_SRC:src/%.bas=obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
 
-# Listing files
-RT_LSTS=$(RT_AS_SRC:src/%.asm=obj/%.lst)
-IDE_LSTS=$(IDE_AS_SRC:src/%.asm=obj/%.lst)
-COMMON_LSTS=$(COMMON_AS_SRC:src/%.asm=obj/%.lst)
-BAS_LSTS=$(BAS_SRC:src/%.bas=obj/%.lst)
-SAMP_LSTS=$(SAMPLE_BAS:%.bas=obj/%.lst)
-
 # All Output files
-OBJS=$(RT_OBJS) $(IDE_OBJS) $(COMMON_OBJS) $(BAS_OBJS) $(SAMP_OBJS)
-LSTS=$(RT_LSTS) $(IDE_LSTS) $(COMMON_LSTS) $(BAS_LSTS) $(SAMP_LSTS)
+OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) \
+     $(RT_OBJS_INT) $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) \
+     $(SAMP_OBJS)
+LSTS=$(OBJS:%.o=%.lst)
 
-MAPS=$(PROG:.xex=.map) $(SAMPLE_BAS:%.bas=bin/%.map)
-LBLS=$(PROG:.xex=.lbl) $(SAMPLE_BAS:%.bas=bin/%.lbl)
+MAPS=$(PROGS:.xex=.map) $(SAMPLE_X_BAS:%.bas=bin/%.map)
+LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=bin/%.lbl)
 SYNT=gen/synt
 CSYNT=gen/csynt
 
-all: $(ATR) $(NATIVE)
+all: $(ATR) $(NATIVES)
 
 clean:
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROG) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(NATIVE)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(NATIVES)
 
 distclean: clean
-	rm -f gen/basic.asm gen/basic.cc $(BAS_SRC:src/%.bas=gen/%.asm) $(SAMPLE_BAS:%.bas=gen/%.asm)
+	rm -f gen/int/basic.asm gen/fp/basic.asm gen/int/basic.cc gen/fp/basic.cc \
+	    $(BAS_SRC:src/%.bas=gen/fp/%.asm) \
+	    $(BAS_SRC:src/%.bas=gen/int/%.asm) \
+	    $(SAMPLE_BAS:%.bas=gen/%.asm)
+	-rmdir gen/fp gen/int obj/fp obj/int
 	-rmdir bin gen obj
 
 # Build an ATR disk image using "mkatr".
@@ -100,7 +122,10 @@ $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES)
 	mkatr $@ $(DOSDIR) -b $^
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
-disk/%.bas: samples/%.bas
+disk/%.bas: samples/fp/%.bas
+	tr '\n' '\233' < $< > $@
+
+disk/%.bas: samples/int/%.bas
 	tr '\n' '\233' < $< > $@
 
 disk/%.bas: tests/%.bas
@@ -114,9 +139,6 @@ disk/%.txt: %.md
 	LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' < $< > $@
 
 # Copy ".XEX" as ".COM"
-disk/fb.com: $(PROG)
-	cp $< $@
-
 disk/%.com: bin/%.xex
 	cp $< $@
 
@@ -129,43 +151,73 @@ $(CSYNT): src/csynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Native compiler
-$(NATIVE): src/native.cc gen/basic.cc | bin
-	$(CXX) $(CXXFLAGS) -Igen -o $@ $<
+$(NATIVE_INT): src/native.cc gen/int/basic.cc | bin
+	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
 
-# Generator for syntax file - 6502 version
-gen/%.asm: src/%.syn $(SYNT) | gen
-	$(SYNT) < $< > $@
+$(NATIVE_FP): src/native.cc gen/fp/basic.cc | bin
+	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
 
-# Generator for syntax file - C++ version
-gen/%.cc: src/%.syn $(CSYNT) | gen
-	$(CSYNT) < $< > $@
+# Generator for syntax file - 6502 version - FLOAT
+gen/fp/%.asm: src/%.syn $(SYNT) | gen/fp
+	$(SYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
+
+# Generator for syntax file - 6502 version - INTEGER
+gen/int/%.asm: src/%.syn $(SYNT) | gen/int
+	$(SYNT) $(SYNTFLAGS) $< -o $@
+
+# Generator for syntax file - C++ version - FLOAT
+gen/fp/%.cc: src/%.syn $(CSYNT) | gen/fp
+	$(CSYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
+
+# Generator for syntax file - C++ version - INTEGER
+gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
+	$(CSYNT) $(SYNTFLAGS) $< -o $@
 
 # Main program file
-$(PROG): $(IDE_OBJS) $(COMMON_OBJS) $(BAS_OBJS) | bin
+bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) | bin
+	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+
+bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
-bin/%.xex: obj/%.o $(RT_OBJS) $(COMMON_OBJS) | bin
+bin/%.xex: obj/fp/%.o $(RT_OBJS_FP) $(COMMON_OBJS_FP) | bin
+	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+
+bin/%.xex: obj/int/%.o $(RT_OBJS_INT) $(COMMON_OBJS_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
-gen/%.asm: src/%.bas $(NATIVE) | gen
-	$(NATIVE) $< $@
+gen/fp/%.asm: src/%.bas $(NATIVE_FP) | gen/fp
+	$(NATIVE_FP) $< $@
 
-gen/%.asm: samples/%.bas $(NATIVE) | gen
-	$(NATIVE) $< $@
+gen/int/%.asm: src/%.bas $(NATIVE_INT) | gen/int
+	$(NATIVE_INT) $< $@
+
+gen/fp/%.asm: samples/fp/%.bas $(NATIVE_FP) | gen/fp
+	$(NATIVE_FP) $< $@
+
+gen/int/%.asm: samples/int/%.bas $(NATIVE_INT) | gen/int
+	$(NATIVE_INT) $< $@
 
 # Object file rules
-obj/%.o: src/%.asm | obj
-	cl65 $(CL65OPTS) -c -l $(@:.o=.lst) -o $@ $<
+obj/fp/%.o: src/%.asm | obj/fp
+	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
 
-obj/%.o: gen/%.asm | obj
-	cl65 $(CL65OPTS) -c -l $(@:.o=.lst) -o $@ $<
+obj/fp/%.o: gen/fp/%.asm | obj/fp
+	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
 
-gen obj bin:
+obj/int/%.o: src/%.asm | obj/int
+	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
+
+obj/int/%.o: gen/int/%.asm | obj/int
+	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
+
+gen obj obj/fp obj/int gen/fp gen/int bin:
 	mkdir -p $@
 
 # Dependencies
-obj/parse.o: src/parse.asm gen/basic.asm
-$(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h
-$(SYNT): src/synt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-asm.h
+obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
+obj/int/parse.o: src/parse.asm gen/int/basic.asm
+$(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h src/synt-read.h
+$(SYNT): src/synt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-asm.h src/synt-read.h

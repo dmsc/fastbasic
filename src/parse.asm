@@ -20,8 +20,6 @@
 ; --------------------------------
 
         .export         parser_start, parser_error, parser_skipws
-        ; Common vars
-        .exportzp       tmp1, tmp2, tmp3
         ; Parser state
         .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
         .exportzp       loop_sp
@@ -38,12 +36,12 @@
         ; From vars.asm
         .importzp       var_count, label_count
         ; From runtime.asm
-        .import         putc
-        .importzp       IOCHN, COLOR, IOERROR
-        ; From io.asm
-        .import         line_buf
+        .importzp       IOCHN, COLOR, IOERROR, tmp1, tmp2, tmp3
+        .import         line_buf, putc
+        ; From interpreter.asm
+        .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
         ; From errors.asm
-        .import         print_error
+        .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL
         ; Export used tokens values to the interpreter
         .exportzp       TOK_CSTRING
@@ -56,9 +54,6 @@ end_ptr:.res 2
 bmax:   .res 1
 opos:   .res 1
 pptr:   .res 2
-tmp1:   .res 2
-tmp2:   .res 2
-tmp3:   .res 2
 linenum:.res 2
 loop_sp:.res 1
 
@@ -105,9 +100,24 @@ SM_EMIT=        SM_EMIT_1
         ; Restore stack
 ldstk:  ldx     #$ff
         txs
-        ; Check if error == parse error
-        cmp     #ERR_PARSE+1
-        jmp     print_error
+        ; Prints error message
+        tax
+        ldy     #$FF
+nxt:    iny
+        lda     error_msg_list, y
+        bpl     nxt
+        dex
+        bpl     nxt
+        ; And print
+ploop:  iny
+        lda     error_msg_list, y
+        pha
+        and     #$7F
+        jsr     putc
+        pla
+        bpl     ploop
+        sec
+        rts
 .endproc
 saved_stack = parser_error::ldstk + 1
 

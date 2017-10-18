@@ -19,36 +19,11 @@
 ; Parser error messages
 ; ---------------------
 
-        .export         print_error
-
-        ; From runtime.asm
-        .import         putc
-
-
-; Prints an error message
-.proc   print_error
-        tax
-        ldy     #$FF
-nxt:    iny
-        lda     error_msg, y
-        bpl     nxt
-        dex
-        bpl     nxt
-        ; And print
-ploop:  iny
-        lda     error_msg, y
-        pha
-        and     #$7F
-        jsr     putc
-        pla
-        bpl     ploop
-        sec
-        rts
-.endproc
+        .export         error_msg_list
 
         ; Keep in line with error definitions
         .data
-error_msg:
+error_msg_list:
         err_count .set -1
 .macro  def_error name, msg
         err_count .set err_count + 1
@@ -61,12 +36,11 @@ error_msg:
 .endmacro
         .byte   $80
         def_error ERR_LOOP,     "bad loop error"
-        def_error ERR_VAR,      "var not defined"
         def_error ERR_PARSE,    "parse error"
         def_error ERR_NO_ELOOP, "no end loop/proc/if"
         def_error ERR_LABEL,    "undef label"
 
-.if (* - error_msg) > 255
+.if (* - error_msg_list) > 255
         .error  "Error, too many error messages"
 .endif
         .code

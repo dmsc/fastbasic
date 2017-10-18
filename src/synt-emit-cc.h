@@ -33,27 +33,38 @@ class cc_emit
         static std::string emit_literal(std::vector<std::string> &list)
         {
             static int lbl_num = 0;
-            std::string ret;
+            std::string ret, dbg;
             bool used_lbl = false;
             for(auto &ch: list)
             {
                 if( ch.length() == 3 && ch[0] == '\'' && ch[1] >= 'a' && ch[1] <= 'z' )
                 {
                     ch[1] = ch[1] - 'a' + 'A';
+                    dbg += ch[1];
                     ret += "\t\tif( !s.expect(" + ch + ") )"
                            " { if( !s.expect('.') ) break; "
                            "goto accept_char_" + std::to_string(lbl_num) + "; }\n";
                     used_lbl = true;
                 }
                 else
+                {
                     ret += "\t\tif( !s.expect(" + ch + ") ) break;\n";
-                ret += "\t\ts.debug(\"GOT " + ch + "\");\n";
+                    if( ch.length() == 3 && ch[0] == '\'' )
+                        dbg += ch[1];
+                    else if( ch == "0x22" )
+                        dbg += "\\\"";
+                    else if( ch == "0x27" )
+                        dbg += "\\\'";
+                    else
+                        dbg += ch;
+                }
             }
             if( used_lbl )
             {
                 ret += "accept_char_" + std::to_string(lbl_num) + ":\n";
                 lbl_num ++;
             }
+            ret += "\t\ts.debug(\"GOT '" + dbg + "'\");\n";
             return ret;
         }
         static std::string emit_bytes(bool last, std::vector<std::string> &ebytes)

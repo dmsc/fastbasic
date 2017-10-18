@@ -583,12 +583,6 @@ static bool SMB_E_EOL(parse &s)
     return( s.eos() || s.expect('\n') || s.expect(0x9b) );
 }
 
-static bool SMB_E_EOS(parse &s)
-{
-    s.debug("E_EOS");
-    return( s.eos() || s.expect('\n') || s.expect(0x9b) || s.peek(':') );
-}
-
 static bool SMB_E_CONST_STRING(parse &s)
 {
     s.debug("E_CONST_STRING");
@@ -789,8 +783,8 @@ static bool SMB_E_POP_FOR(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_FOR");
-    auto l1 = s.pop_loop(LT_FOR_2);
     auto l2 = s.pop_loop(LT_FOR_1);
+    auto l1 = s.pop_loop(LT_FOR_2);
     if( l1.empty() || l2.empty() )
         return false;
     s.remove_last();
@@ -981,6 +975,13 @@ class peephole
             idx += current;
             return ( idx < code.size() &&
                      code[idx].type == parse::codew::tok &&
+                     code[idx].value == name );
+        }
+        bool mcbyte(size_t idx, std::string name)
+        {
+            idx += current;
+            return ( idx < code.size() &&
+                     code[idx].type == parse::codew::byte &&
                      code[idx].value == name );
         }
         bool mword(size_t idx)
@@ -1190,6 +1191,25 @@ class peephole
                         val(1) == val(3) )
                     {
                         set_tok(2, "TOK_INC"); del(7); del(6); del(5); del(4); del(3); i--; changed = true;
+                        continue;
+                    }
+                    //  VAR = VAR - 1   ==>  DEC VAR
+                    //   TOK_VAR_A / x / TOK_VAR / x / TOK_NUM / 1 / TOK_SUB / TOK_DPOKE
+                    //        -> TOK_VAR_A / x / TOK_DEC
+                    if( mtok(0,"TOK_VAR_ADDR") && mbyte(1) &&
+                        mtok(2,"TOK_VAR_LOAD") && mbyte(3) &&
+                        mtok(4,"TOK_NUM") && mword(5) && val(5) == 1 &&
+                        mtok(6,"TOK_SUB") && mtok(7,"TOK_DPOKE") &&
+                        val(1) == val(3) )
+                    {
+                        set_tok(2, "TOK_DEC"); del(7); del(6); del(5); del(4); del(3); i--; changed = true;
+                        continue;
+                    }
+                    //   TOK_BYTE / IOCHN / TOK_NUM / 0 / TOK_POKE  -> TOK_IOCHN0
+                    if( mtok(0,"TOK_BYTE") && mcbyte(1, "IOCHN") &&
+                        mtok(2,"TOK_NUM") && mword(3) && val(3) == 0 && mtok(4,"TOK_POKE") )
+                    {
+                        set_tok(0, "TOK_IOCHN0"); del(4); del(3); del(2); del(1); i--; changed = true;
                         continue;
                     }
                 }
