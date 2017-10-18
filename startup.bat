@@ -1,2 +1,3 @@
 TYPE README
-DIR *.BAS
+PAUSE ;œ
+DIR *.BAS ;œœ

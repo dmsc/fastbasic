@@ -23,16 +23,17 @@
 #include "synt-parse.h"
 #include "synt-wlist.h"
 #include "synt-sm.h"
+#include "synt-read.h"
 
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-bool p_file(parseState &p)
+bool p_file(parseState &p, std::ostream &out)
 {
     // Output header
-    std::cout << "; Syntax state machine\n\n";
+    out << "; Syntax state machine\n\n";
 
     while(1)
     {
@@ -40,8 +41,8 @@ bool p_file(parseState &p)
         if( !tok.parse() )
             break;
         for(auto i: tok.map())
-            std::cout << i.first << "\t= " << i.second << " * 2\n";
-        std::cout << "\n";
+            out << i.first << "\t= " << i.second << " * 2\n";
+        out << "\n";
         std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
     }
 
@@ -50,13 +51,13 @@ bool p_file(parseState &p)
     {
         int n = 128;
         for(auto i: ext.map())
-            std::cout << " .global " << i.first << "\n";
+            out << " .global " << i.first << "\n";
         for(auto i: ext.map())
         {
             i.second = n++;
-            std::cout << "SMB_" << i.first << "\t= " << i.second << "\n";
+            out << "SMB_" << i.first << "\t= " << i.second << "\n";
         }
-        std::cout << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
+        out << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
     }
 
     std::map<std::string, std::unique_ptr<statemachine<asm_emit>>> sm_list;
@@ -78,37 +79,29 @@ bool p_file(parseState &p)
     // Emit labels table
     int ns = ext.next();
     for(auto &sm: sm_list)
-        std::cout << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
+        out << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
     // Emit array with addresses
-    std::cout << "\nSM_TABLE_ADDR:\n";
+    out << "\nSM_TABLE_ADDR:\n";
     for(auto i: ext.map())
-        std::cout << "\t.word " << i.first << " - 1\n";
+        out << "\t.word " << i.first << " - 1\n";
     for(auto &sm: sm_list)
-        std::cout << "\t.word " << sm.second->name() << " - 1\n";
+        out << "\t.word " << sm.second->name() << " - 1\n";
     // Emit state machine tables
-    std::cout << "\n";
+    out << "\n";
     for(auto &sm: sm_list)
-        sm.second->print();
+        sm.second->print(out);
 
     std::cerr << "syntax: " << (ns-128) << " tables in the parser-table.\n";
     return true;
 }
 
-static std::string readInput()
+int main(int argc, const char **argv)
 {
- std::string r;
- int c;
- while( -1 != (c = std::cin.get()) )
-  r += char(c);
- return r;
-}
-
-int main()
-{
- std::string inp = readInput();
+ options opt(argc, argv);
+ std::string inp = readInput(opt.defs, opt.input());
 
  parseState ps(inp.c_str());
- p_file(ps);
+ p_file(ps, opt.output());
 
  return 0;
 }

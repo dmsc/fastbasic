@@ -28,26 +28,36 @@
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
         .export         check_labels
-        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING
+        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
-        .import         umul16, sdiv16, read_word
+        .import         read_word
         ; From vars.asm
-        .import         var_search, var_new, var_getlen, var_set_type
-        .import         label_search, label_new
-        .importzp       var_namelen
+        .import         var_search, name_new, var_getlen
+        .import         label_search
+        .importzp       var_namelen, label_count, var_count
         ; From alloc.asm
         .import         alloc_laddr
-        .importzp       prog_ptr, laddr_ptr, laddr_buf
+        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
         ; From parser.asm
         .import         parser_error, parser_skipws
         .importzp       TOK_CSTRING
         ; From error.asm
-        .importzp       ERR_LOOP, ERR_VAR
+        .importzp       ERR_LOOP
         ; From menu.asm
         .importzp       reloc_addr
 
+.ifdef FASTBASIC_FP
+        ; Exported only in Floating Point version
+        .export         E_VAR_FP, E_NUMBER_FP
+        ; From runtime.asm
+        .import         read_fp
+        ; From alloc.asm
+        .import         alloc_area_8
+.endif ; FASTBASIC_FP
+
+        .include        "atari.inc"
 ;----------------------------------------------------------
         ; Types of variables
         .enum
@@ -56,6 +66,7 @@
                 VT_ARRAY_WORD
                 VT_ARRAY_BYTE
                 VT_STRING
+                VT_FLOAT = 128 ; Value is negative to signal 6bytes per variable!
         .endenum
         ; Types of labels
         .enum
@@ -64,29 +75,35 @@
         .endenum
         ; Types of loops
         .enum
-                ; First entries can't use "EXIT"
-                LT_PROC_1
-                LT_DATA
-                LT_EXIT
-                ; From here, loops don't push jump destinations
+                ; Loop-Types: used to keep the type of loop in the loop
+                ;             parsing stack.
+                ;
+                ; The numeric value is used to signal if we need to push
+                ; a destination address (reserving 2 bytes of program data),
+                ; and if the loop should be ignored by the EXIT statement.
+                ;
+                ;                     ; EXIT?   PUSH?
+                LT_PROC_1             ; error   yes
+                LT_DATA               ; error   yes
+                LT_EXIT               ; error   yes
+                LT_FOR_2              ; yes     yes
                 LT_LAST_JUMP = 32
-                LT_PROC_2
-                LT_DO_LOOP
-                LT_REPEAT
-                LT_WHILE_1
-                LT_FOR_1
-                ; And from here, loops push destinations and are ignored by EXIT
-                LT_WHILE_2= 128 ; Pushes
-                LT_FOR_2        ; Pushes
-                LT_IF           ; Pushes
-                LT_ELSE         ; Pushes
-                LT_ELIF         ; Pushes
+                LT_PROC_2             ; yes     no
+                LT_DO_LOOP            ; yes     no
+                LT_REPEAT             ; yes     no
+                LT_WHILE_1            ; yes     no
+
+                LT_WHILE_2= 128       ; ignore  yes
+                LT_IF                 ; ignore  yes
+                LT_ELSE               ; ignore  yes
+                LT_ELIF               ; ignore  yes
+                LT_FOR_1 = 128 + 33   ; ignore  no
         .endenum
 
 ;----------------------------------------------------------
-        ; TODO: this space should be reclaimed by the interpreter!
-        .bss
-loop_stk:       .res    128
+; Use cassette buffer for loop stack, max 128 bytes
+; Note that at $480 we store the interpreter stack.
+loop_stk        =       $400
 
 ;----------------------------------------------------------
         .code
@@ -103,6 +120,10 @@ loop_stk:       .res    128
 ok:     rts
 .endproc
 
+; Pops code pointer from loop stack and emit
+.proc   pop_emit_addr
+        jsr     pop_codep
+.endproc        ; Fall through
 ; Emits address into codep, relocating if necessary.
 .proc   emit_addr
         clc
@@ -147,6 +168,8 @@ ok:     clc
         beq     E_REM::ok
         cmp     #$0A ; ASCII EOL
         beq     E_REM::ok
+        cmp     #':' ; ':' separates commands
+        beq     E_REM::ok
 xit:    sec
         rts
 .endproc
@@ -163,6 +186,16 @@ xit:    sec
 
         jsr     read_word
         bcs     E_EOL::xit
+
+.ifdef FASTBASIC_FP
+        ; In FP version, fails if number is followed by decimal dot
+        sta     tmp1
+        lda     (bptr), y
+        cmp     #'.'
+        beq     E_EOL::xit
+        lda     tmp1
+.endif ; FASTBASIC_FP
+
         sty     bpos
         jmp     emit_AX
 
@@ -276,11 +309,32 @@ eos_ok: ldy     tmp1
         sta     (prog_ptr),y
         inc     opos
         clc
-        rts
+xrts:   rts
 .endproc
 
+; Following two routines are only used in FP version
+.ifdef FASTBASIC_FP
+.proc   E_NUMBER_FP
+        jsr     read_fp
+        bcs     E_CONST_STRING::xrts
+        lda     FR0
+        ldx     FR0+1
+        jsr     emit_AX
+        lda     FR0+2
+        ldx     FR0+3
+        jsr     emit_AX
+        lda     FR0+4
+        ldx     FR0+5
+        jmp     emit_AX
+.endproc
 
-; Variable marching.
+.proc   E_VAR_FP
+        lda     #VT_FLOAT
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
+.endif ; FASTBASIC_FP
+
+; Variable matching.
 ; The parser calls the routine to check if there is a variable
 ; with the correct type
 .proc   E_VAR_STRING
@@ -298,15 +352,13 @@ eos_ok: ldy     tmp1
 .proc   E_VAR_WORD
         lda     #VT_WORD
         sta     tmp3    ; Store variable type
-        jsr     parser_skipws
         ; Check if we have a valid name - this exits on error!
         jsr     var_getlen
         ; Search existing var
         jsr     var_search
         bcs     exit
         cmp     tmp3
-        bne     not_found
-        jmp     emit_varn
+        beq     emit_varn
 not_found:
         sec
 exit:
@@ -315,14 +367,16 @@ exit:
 
 ; Creates a new variable, with no type (the type will be set by parser next)
 .proc   E_VAR_CREATE
-        jsr     parser_skipws
         ; Check if we have a valid name - this exits on error!
         jsr     var_getlen
         ; Search existing var
         jsr     var_search
         bcc     E_VAR_WORD::not_found ; Exit with error if already exists
         ; Create new variable - exits on error
-        jsr     var_new
+        ldx     #var_ptr - prog_ptr
+        jsr     name_new
+        ldx     var_count
+        inc     var_count
         ; Fall through
 .endproc
         ; Emits the variable, advancing pointers.
@@ -350,7 +404,39 @@ exit:
         dec     opos            ; Remove variable TYPE from stack
         ldy     opos
         lda     (prog_ptr),y    ; The variable TYPE
-        jmp     var_set_type
+        ldy     #$FF
+        dec     var_ptr+1
+        sta     (var_ptr), y    ; Store to (var_ptr - 1)
+        inc     var_ptr+1
+
+.ifdef FASTBASIC_FP
+        ; In FP version, we need to special case FP variables
+        ; that use 3 slots (6 bytes) each.
+
+        tax                     ; Test if variable is FP
+        bpl     ok
+
+        ; FP variable, allocate two more "invisible" variables
+        ; to adjust to 6 bytes size.
+        ldx     #var_ptr - prog_ptr
+        lda     #4
+        jsr     alloc_area_8
+        bcs     err
+
+        ; Set both sizes to 0
+        dec     var_ptr+1
+        ldy     #$FC
+        lda     #0
+        sta     (var_ptr), y
+        ldy     #$FE
+        sta     (var_ptr), y
+        inc     var_ptr+1
+        inc     var_count
+        inc     var_count
+.endif ; FASTBASIC_FP
+
+ok:     clc
+err:    rts
 .endproc
 
                 ; Loop iteration for label-address,
@@ -417,13 +503,15 @@ xit:    rts
 .endproc
 
 .proc   label_create
-        jsr     parser_skipws
         ; Check if we have a valid name - this exits on error!
         jsr     var_getlen
         jsr     label_search
         bcc     xit
         ; Create a new label
-        jsr     label_new
+        ldx     #label_ptr - prog_ptr
+        jsr     name_new
+        ldx     label_count
+        inc     label_count
 xit:
         lda     laddr_buf
         ldy     laddr_buf+1
@@ -510,6 +598,9 @@ start:
 .endproc
 
 ; Actions for LOOPS
+.proc   pop_patch_codep
+        jsr     pop_codep
+.endproc        ; Fall through
 .proc   patch_codep
         ; Patches saved position with current position
         sta     tmp2
@@ -563,7 +654,7 @@ xit:    clc
 .endproc
 
 .proc   pop_codep
-        ; Saves current code position in loop stack
+        ; Reads code position from loop stack
         ldy     loop_sp
         dey
         dey
@@ -581,8 +672,7 @@ retry:  cmp     loop_stk, y
 ok:     ; Get saved position
         iny
         iny
-        lda     loop_stk, y
-        tax
+        ldx     loop_stk, y
         dey
         lda     loop_stk, y
 rtsclc: clc
@@ -608,8 +698,7 @@ rtsclc: clc
         sty     loop_sp
         iny
         iny
-        lda     loop_stk, y
-        tax
+        ldx     loop_stk, y
         dey
         lda     loop_stk, y
         jsr     patch_codep
@@ -625,25 +714,66 @@ rtsclc: clc
 .proc   E_POP_PROC_1
         ; Pop saved "jump to end" position
         lda     #LT_PROC_1
-        jsr     pop_codep
-        jmp     patch_codep
+        jmp     pop_patch_codep
+.endproc
+
+.proc   E_EXIT_LOOP
+        ; Search the loop stack for a loop (not "I"f nor "E"lse) and inserts a
+        ; patching code before
+        ldy     loop_sp
+retry:  dey
+        dey
+        dey
+        bmi     loop_error
+        lda     loop_stk, y
+        bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
+        cmp     #LT_DATA+1      ; PROC(1)/DATA
+        bcc     loop_error
+ok:
+        ; Store slot
+        sty     comp_y+1
+        ; Check if enough stack
+        ldx     loop_sp
+        inx
+        inx
+        inx
+        bmi     loop_error
+
+        ; Move all stack 3 positions up
+        stx     loop_sp
+move:
+        dex
+        lda     loop_stk-3, x
+        sta     loop_stk, x
+comp_y: cpx     #$FC
+        bne     move
+
+        ; Store our new stack entry
+        lda     loop_sp
+        pha
+        ldy     comp_y+1
+        sty     loop_sp
+        lda     #LT_EXIT
+        jsr     push_codep
+        pla
+        sta     loop_sp
+        clc
+        rts
 .endproc
 
 .proc   E_POP_WHILE
         ; Pop saved "jump to end" position
         lda     #LT_WHILE_2
-        jsr     pop_codep
         ; Save current position + 2 (skip over jump)
         inc     opos
         inc     opos
-        jsr     patch_codep
+        jsr     pop_patch_codep
         ; Pop saved "loop reentry" position
         lda     #LT_WHILE_1
-        jsr     pop_codep
         ; And store
         dec     opos
         dec     opos
-        jsr     emit_addr
+        jsr     pop_emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -656,26 +786,22 @@ rtsclc: clc
 .proc   E_POP_REPEAT
         ; Pop saved position, store
         lda     #LT_REPEAT
-        jsr     pop_codep
-        jsr     emit_addr
+        jsr     pop_emit_addr
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
 
 .proc   E_POP_FOR
-        ; Pop saved "jump to end" position
-        lda     #LT_FOR_2
-        jsr     pop_codep
-        ; Save current position + 1 (skip over jump)
-        inc     opos
-        jsr     patch_codep
+        ; Remove unused "variable number" from code
+        dec     opos
         ; Pop saved "loop reentry" position
         lda     #LT_FOR_1
-        jsr     pop_codep
         ; And store
-        dec     opos
-        dec     opos
-        jsr     emit_addr
+        jsr     pop_emit_addr
+        ; Pop saved "jump to end" position
+        lda     #LT_FOR_2
+        ; Save current position
+        jsr     pop_patch_codep
         ; Checks for an "EXIT"
         jmp     check_loop_exit
 .endproc
@@ -683,8 +809,7 @@ rtsclc: clc
 .proc   E_POP_IF
         ; Patch IF/ELSE with current position
         lda     #LT_ELSE
-        jsr     pop_codep
-        jsr     patch_codep
+        jsr     pop_patch_codep
 .endproc        ; Fall through
 .proc   check_elif
         ldy     loop_sp
@@ -696,8 +821,7 @@ rtsclc: clc
         cmp     loop_stk, y
         bne     no_elif
         ; ELIF, remove from stack and patch
-        jsr     pop_codep
-        jmp     patch_codep
+        jmp     pop_patch_codep
 no_elif:
         clc
         rts
@@ -726,54 +850,6 @@ type:   lda     #LT_ELSE
         lda     tmp1
         ldx     tmp1+1
         jmp     patch_codep
-.endproc
-
-.proc   E_EXIT_LOOP
-        ; Search the loop stack for a loop (not "I"f nor "E"lse) and inserts a
-        ; patching code before
-        ldy     loop_sp
-retry:  dey
-        dey
-        dey
-        bmi     loop_error
-        lda     loop_stk, y
-        bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
-        cmp     #LT_DATA+1      ; PROC/DATA
-        bcc     loop_error
-ok:
-        ; Store slot
-        sty     comp_y+1
-        ; Check if enough stack
-        ldx     loop_sp
-        inx
-        inx
-        inx
-        bmi     loop_error
-
-        ; Move all stack 3 positions up
-        ldy     loop_sp
-        stx     loop_sp
-move:
-        dey
-        lda     loop_stk, y
-        dex
-        sta     loop_stk, x
-comp_y: cpy     #$FF
-        bne     move
-
-        ; Store our new stack entry
-        lda     loop_sp
-        pha
-        ldy     comp_y+1
-        sty     loop_sp
-        lda     #LT_EXIT
-        jsr     push_codep
-        pla
-        sta     loop_sp
-        clc
-        rts
-loop_error:
-        jmp     ::loop_error
 .endproc
 
 ; vi:syntax=asm_ca65

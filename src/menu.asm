@@ -19,24 +19,24 @@
 ; Main menu system
 ; ----------------
 
-        .export start, COMPILE_BUFFER
-        .export BMAX
+        .export start
+
+        ; Export to editor.bas
+        .export COMPILE_BUFFER, BMAX, LINENUM
         .exportzp       reloc_addr
 
         ; From runtime.asm
         .import putc
-        .importzp IOCHN, IOERROR, tabpos
+        .importzp IOCHN, IOERROR, tabpos, tmp1, tmp2
         ; From parser.asm
         .import parser_start
-        .importzp buf_ptr, linenum, end_ptr, bpos, bmax
+        .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, saved_cpu_stack
-        .importzp interpreter_cptr
+        .import interpreter_run, saved_cpu_stack, stack_h, stack_l
+        .importzp interpreter_cptr, var_count, sptr
         ; From alloc.asm
         .importzp  prog_ptr, var_buf
         .import parser_alloc_init
-        ; From vars.asm
-        .importzp  var_count
         ; From bytecode
         .import bytecode_start
         .importzp NUM_VARS
@@ -55,14 +55,14 @@ BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
         ; Relocation amount
 reloc_addr:     .res    2
 
+
+        ; Exported to EDITOR.BAS
 BMAX=bmax
+LINENUM=linenum
+
         .code
 
 start:
-        lda     #0
-        sta     IOCHN
-        sta     tabpos
-
         jsr     load_editor
 
         lda     #<bytecode_start
@@ -105,13 +105,10 @@ COMPILE_BUFFER:
         sta     reloc_addr+1
 no_save:
 
-        ; Save interpreter position
-        lda     bpos
-        pha
-
         ; Parse
         jsr     parser_start
-        bcs     err
+        lda     #1
+        bcs     load_editor     ; On error, exit returning 1
 
         lda     prog_ptr
         sta     COMP_END
@@ -128,10 +125,14 @@ no_save:
         sta     compiled_var_count+1
 
 do_run: ldx     #$00
-        bne     clr_linenum
+        bne     return_0
 
         ; Runs current parsed program
 run_program:
+        ; Save interpreter position
+        ; Current EDITOR.BAS does not need saving of stack
+        lda     sptr
+        pha
         lda     interpreter_cptr
         pha
         lda     interpreter_cptr+1
@@ -152,32 +153,61 @@ run_program:
         sta     interpreter_cptr+1
         pla
         sta     interpreter_cptr
-
-clr_linenum:
-        ldx     #0
-        stx     linenum+1
-        stx     linenum
-
-err:    jsr     load_editor
-
         pla
-        sta     bpos
-        lda     linenum
-        ldx     linenum+1
-        rts
+        sta     sptr
+
+        ; Exit to editor returning 0
+return_0:
+        ldx     #0
+        txa
 
         ; Load all pointer to execute the editor
+        ; Does not modify A/X
 load_editor:
-        lda     #NUM_VARS
-        sta     var_count
-        lda     #<heap_start
-        sta     prog_ptr
-        sta     var_buf
-        lda     #>heap_start
-        sta     prog_ptr+1
-        sta     var_buf+1
+        ldy     #NUM_VARS
+        sty     var_count
+        ldy     #<heap_start
+        sty     prog_ptr
+        sty     var_buf
+        ldy     #>heap_start
+        sty     prog_ptr+1
+        sty     var_buf+1
         rts
 
+
+        ; Called from EDITOR.BAS
+        .export COUNT_LINES
+.proc   COUNT_LINES
+sizeH   = tmp1
+ptr     = tmp2
+        pla
+        sta     sizeH
+        pla
+        tax
+        pla
+        sta     ptr+1
+        pla
+        tay
+        inx
+        inc     sizeH
+
+        lda     #0
+        sta     ptr
+
+loop:   lda     (ptr), y
+        dex
+        bne     :+
+        dec     sizeH
+        beq     end
+:       iny
+        bne     :+
+        inc     ptr+1
+:       cmp     #$9B
+        bne     loop
+end:    tya
+        ldx     ptr+1
+        rts
+.endproc
 
         ; This is the header for the compiled binaries, included
         ; here to allow saving the resulting file.
@@ -211,9 +241,6 @@ COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
         ; Note that this code is patched before writing to a file.
         .segment        "RUNTIME"
 compiled_start:
-        lda     #0
-        sta     IOCHN
-        sta     tabpos
 
 compiled_var_count:
         lda     #00

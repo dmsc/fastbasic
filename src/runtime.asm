@@ -28,24 +28,38 @@
 ; ---------------------------------------------
 
         ; 16bit math
-        .export         umul16, sdiv16, smod16, neg_AX
+        .export         umul16, divmod_sign_adjust, neg_AX
         ; simple I/O
-        .export         getkey, getc, putc, print_word, getline
+        .export         getkey, putc, print_word, getline, putc_nosave
         .export         line_buf, cio_close, close_all, sound_off
-        .exportzp       IOCHN, COLOR, IOERROR, tabpos
+        .exportzp       IOCHN, COLOR, IOERROR, tabpos, divmod_sign
         ; String functions
         .export         read_word
         ; memory move
         .export         move_up_src, move_up_dst, move_up
         .export         move_dwn_src, move_dwn_dst, move_dwn
-        ; Graphics
-        .export         graphics
+        ; Common ZP variables (2 bytes each)
+        .exportzp       tmp1, tmp2, tmp3
 
-        .importzp       tmp1, tmp2, tmp3
+.ifdef FASTBASIC_FP
+        ; Exported only in Floating Point version
+        .export         print_fp, int_to_fp, read_fp
+        ; Convert string to floating point
+read_fp = AFP
+.else
+        ; In integer version, the conversion and printing is the same
+print_word = int_to_fp
+.endif ; FASTBASIC_FP
 
         .include        "atari.inc"
+
         .zeropage
-sign:   .res    1
+
+tmp1:   .res    2
+tmp2:   .res    2
+tmp3:   .res    2
+divmod_sign:
+        .res    1
 IOCHN:  .res    1
 IOERROR:.res    2
 COLOR:  .res    1
@@ -53,7 +67,7 @@ tabpos: .res    1
 
         .segment        "RUNTIME"
 
-; Negate AX value
+; Negate AX value : SHOULD PRESERVE Y
 .proc   neg_AX
         clc
         eor     #$FF
@@ -65,25 +79,6 @@ tabpos: .res    1
         tax
         pla
         rts
-.endproc
-
-; Signed 16x16 division
-.proc   sdiv16
-        jsr     sign_adjust
-        lsr     sign
-        bcc     ret
-        jmp     neg_AX
-ret:    rts
-.endproc
-
-; Signed 16x16 modulus
-.proc   smod16
-        jsr     sign_adjust
-        lda     tmp2
-        ldx     tmp2+1
-        asl     sign
-        bcc     sdiv16::ret
-        jmp     neg_AX
 .endproc
 
 ;
@@ -103,11 +98,11 @@ ret:    rts
 
         clc
         adc     tmp3
-        pha
+        tax
         lda     tmp3+1
         adc     tmp2+1
         sta     tmp2+1
-        pla
+        txa
 
 @L1:    ror     tmp2+1
         ror
@@ -116,34 +111,42 @@ ret:    rts
         dey
         bne     @L0
 
-        sta     tmp2            ; Save byte 3
-        lda     tmp1            ; Load the result
-        ldx     tmp1+1
+;       sta     tmp2            ; Save byte 3
         rts                     ; Done
 .endproc
 
-; Adjust sign for SIGNED div operations
-; INPUT: OP1:    A / X
-;        OP2: tmp1 / tmp1+1
-;        P flag : from "X"
-.proc   sign_adjust
+; Adjust sign for SIGNED div/mod operations
+; INPUT: OP1:    stack, y
+;        OP2:    A / X
+;
+; The signs are stored in divmod_sign:
+;        OP1    OP2     divmod_sign     DIV (bit 7)     MOD (bit 8)
+;        +      +       00              +       0       +       0
+;        +      -       80              -       1       +       0
+;        -      +       FF              -       1       .       1
+;        -      -       7F              +       0       .       1
+.proc   divmod_sign_adjust
+        ; Reads stack from the interpreter
+        .import stack_l, stack_h
+        .importzp sptr
         ldy     #0
-        cpx     #0
-        bpl     x_pos
-        dey
-        dey
-        dey
+        cpx     #$80
+        bcc     y_pos
+        ldy     #$80
         jsr     neg_AX
+y_pos:  sta     tmp1
+        stx     tmp1+1
+        sty     divmod_sign
+
+        ldy     sptr
+        inc     sptr
+        lda     stack_l, y
+        ldx     stack_h, y
+        bpl     x_pos
+        jsr     neg_AX
+        dec     divmod_sign
 x_pos:  sta     tmp3
         stx     tmp3+1
-        ldx     tmp1+1
-        bpl     y_pos
-        lda     tmp1
-        iny
-        jsr     neg_AX
-        sta     tmp1
-        stx     tmp1+1
-y_pos:  sty     sign
 .endproc        ; Fall through
 
 ; Divide TMP3 / TMP2, result in AX and remainder in TMP2
@@ -151,7 +154,7 @@ y_pos:  sty     sign
         ldy     #16
         lda     #0
         sta     tmp2+1
-        cpx     #0
+        ldx     tmp1+1
         beq     udiv16x8
 
 L0:     asl     tmp3
@@ -159,19 +162,19 @@ L0:     asl     tmp3
         rol
         rol     tmp2+1
 
-        pha
+        tax
         cmp     tmp1
         lda     tmp2+1
         sbc     tmp1+1
         bcc     L1
 
         sta     tmp2+1
-        pla
+        txa
         sbc     tmp1
-        pha
+        tax
         inc     tmp3
 
-L1:     pla
+L1:     txa
         dey
         bne     L0
         sta     tmp2
@@ -180,6 +183,8 @@ L1:     pla
         rts
 
 udiv16x8:
+        ldx     tmp1
+        beq     L0
 L2:     asl     tmp3
         rol     tmp3+1
         rol
@@ -195,7 +200,7 @@ L4:     dey
         sta     tmp2
         lda     tmp3
         ldx     tmp3+1
-        rts
+xit:    rts
 .endproc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -211,21 +216,9 @@ L4:     dey
 lrts:   rts
 .endproc
 
-.proc   getc
-        lda     #GETCHR
-        sta     ICCOM, x
-        lda     #0
-        sta     ICBAH, x
-        sta     ICBAL, x
-        sta     ICBLL, x
-        sta     ICBLH, x
-        jsr     CIOV
-        rts
-.endproc
-
-        ; Falls from print_byte!
 .proc   putc_nosave
-        tay
+        lda     ICAX1,X
+        sta     ICAX1Z
         lda     ICPTH, x
         pha
         lda     ICPTL, x
@@ -236,11 +229,10 @@ lrts:   rts
 
 .proc   putc
         pha
-        stx     save_x+1
         sty     save_y+1
         ldx     IOCHN
+        tay
         jsr     putc_nosave
-save_x: ldx     #0
 save_y: ldy     #0
         dec     tabpos
         bpl     :+
@@ -269,22 +261,13 @@ line_buf        = LBUFF
 xit:    rts
 .endproc
 
-.proc   print_word
+.proc   int_to_fp
 FR0     = $D4
 IFP     = $D9AA
         stx     tmp1
         cpx     #$80
         bcc     positive
-        clc
-        eor     #$FF
-        adc     #1
-        tay
-        txa
-        eor     #$FF
-        adc     #0
-        tax
-        tya
-
+        jsr     neg_AX
 positive:
         sta     FR0
         stx     FR0+1
@@ -293,6 +276,19 @@ positive:
         and     #$80
         eor     FR0
         sta     FR0
+
+        ; Minor optimization: in integer version, we don't use
+        ; int_to_fp from outside, so fall through to print_fp
+.ifdef FASTBASIC_FP
+        rts
+.endproc
+
+.proc   print_word
+FR0     = $D4
+        jsr     int_to_fp
+
+.endif ; FASTBASIC_FP
+
         ; Fall through
 .endproc
 .proc   print_fp
@@ -356,7 +352,7 @@ SKBLANK = $DBA1
         dex
 skip:   iny
 
-nosign: stx     sign
+nosign: stx     divmod_sign
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
 loop:
         ; Reads one character
@@ -410,11 +406,11 @@ xit_n:  cpy     tmp2+1
         ; Restore sign - conditional!
         lda     tmp1
         ldx     tmp1+1
-        lsr     sign
-        bcc     :+
+        bit     divmod_sign
+        bpl     :+
         jsr     neg_AX
-        clc
-:       rts
+:       clc
+        rts
 .endproc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -424,10 +420,8 @@ xit_n:  cpy     tmp2+1
         ; amount: from  "(ptr-(256-len)) + (256-len)" to "(ptr+len-256) + 256"
         ;
         inx
-        ldy     #0
-        cmp     #0
-        beq     cpage
         tay
+        beq     cpage
         dey
         clc
         adc     src+1
@@ -529,27 +523,5 @@ xit:    rts
 .endproc
 move_dwn_src     = move_dwn::src+1
 move_dwn_dst     = move_dwn::dst+1
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Graphics code
-.proc   graphics
-        sta     tmp1
-        ldx     #$60
-        jsr     cio_close
-        lda     tmp1
-        and     #$F0
-        eor     #$1C    ; Get AUX1 from BASIC mode
-        sta     ICAX1, x
-        lda     tmp1    ; And AUX2
-        sta     ICAX2, x
-        lda     #OPEN
-        sta     ICCOM, x
-        lda     #<device_s
-        sta     ICBAL, x
-        lda     #>device_s
-        sta     ICBAH, x
-        jmp     CIOV
-device_s: .byte "S:", $9B
-.endproc
 
 ; vi:syntax=asm_ca65

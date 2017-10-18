@@ -29,14 +29,9 @@
 
         ; Main symbol
         .export         start
-        ; Export to runtime.asm
-        .exportzp       tmp1, tmp2, tmp3
-        .exportzp       bptr, bpos, var_count
-
-        ; From runtime.asm
-        .importzp       IOCHN, tabpos
         ; From intrepreter.asm
         .import         interpreter_run
+        .importzp       var_count
         ; From alloc.asm
         .importzp       prog_ptr, prog_buf
         ; From bytecode
@@ -50,22 +45,8 @@
         ; Start of HEAP
 heap_start=     __BSS_RUN__+__BSS_SIZE__
 
-        .zeropage
-var_count:      .res 1
-tmp1:   .res 2
-tmp2:   .res 2
-tmp3:   .res 2
-
-; Use (INBUFF)+CIX as our parser pointer
-bptr    = INBUFF
-bpos    = CIX
-
         .code
 start:
-        lda     #0
-        sta     IOCHN
-        sta     tabpos
-
         lda     #NUM_VARS
         sta     var_count
         lda     #<heap_start

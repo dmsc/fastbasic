@@ -22,7 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <map>
+#include <cmath>
 #include <vector>
 
 enum VarType {
@@ -30,7 +30,8 @@ enum VarType {
         VT_WORD,
         VT_ARRAY_WORD,
         VT_ARRAY_BYTE,
-        VT_STRING
+        VT_STRING,
+        VT_FLOAT
 };
 
 enum LoopType {
@@ -53,13 +54,84 @@ enum LoopType {
     LT_ELIF
 };
 
+// Atari FP number format
+class atari_fp {
+    private:
+        double num;
+        uint8_t exp;
+        uint8_t mant[5];
+
+        static const double expTab[99];
+        std::string hex(uint8_t x) const {
+            std::string ret(3,'$');
+            static const char hd[17] = "0123456789ABCDEF";
+            ret[1] = hd[x>>4];
+            ret[2] = hd[x & 0xF];
+            return ret;
+        }
+        uint8_t tobcd(int n) const {
+            return (n/10)*16 + (n%10);
+        }
+        void update()
+        {
+            exp = num < 0 ? 0x80 : 0x00;
+            double x = exp ? -num : num;
+            mant[0] = mant[1] = mant[2] = mant[3] = mant[4] = 0;
+            if( x < 1e-99 )
+                return;
+            if( x >= 1e+98 )
+            {
+                exp |= 0x71;
+                mant[0] = mant[1] = mant[2] = mant[3] = mant[4] = 0x99;
+                return;
+            }
+            exp |= 0x0E;
+            for(int i=0; i<99; i++, exp++)
+            {
+                if( x < expTab[i] )
+                {
+                    uint64_t n = (uint64_t)std::llrint(x * 10000000000.0 / expTab[i]);
+                    mant[4] = tobcd(n % 100); n /= 100;
+                    mant[3] = tobcd(n % 100); n /= 100;
+                    mant[2] = tobcd(n % 100); n /= 100;
+                    mant[1] = tobcd(n % 100); n /= 100;
+                    mant[0] = tobcd(n);
+                    return;
+                }
+            }
+        }
+    public:
+        atari_fp(double x): num(x) {}
+        bool valid() const {
+            return num >= -1E98 && num <= 1E98;
+        }
+        std::string to_asm() {
+            update();
+            return hex(exp) + ", " + hex(mant[0]) + ", " + hex(mant[1]) + ", " +
+                   hex(mant[2]) + ", " + hex(mant[3]) + ", " + hex(mant[4]);
+        }
+};
+
+const double atari_fp::expTab[99] = {
+    1e-98, 1e-96, 1e-94, 1e-92, 1e-90, 1e-88, 1e-86, 1e-84, 1e-82, 1e-80,
+    1e-78, 1e-76, 1e-74, 1e-72, 1e-70, 1e-68, 1e-66, 1e-64, 1e-62, 1e-60,
+    1e-58, 1e-56, 1e-54, 1e-52, 1e-50, 1e-48, 1e-46, 1e-44, 1e-42, 1e-40,
+    1e-38, 1e-36, 1e-34, 1e-32, 1e-30, 1e-28, 1e-26, 1e-24, 1e-22, 1e-20,
+    1e-18, 1e-16, 1e-14, 1e-12, 1e-10, 1e-08, 1e-06, 1e-04, 1e-02, 1e+00,
+    1e+02, 1e+04, 1e+06, 1e+08, 1e+10, 1e+12, 1e+14, 1e+16, 1e+18, 1e+20,
+    1e+22, 1e+24, 1e+26, 1e+28, 1e+30, 1e+32, 1e+34, 1e+36, 1e+38, 1e+40,
+    1e+42, 1e+44, 1e+46, 1e+48, 1e+50, 1e+52, 1e+54, 1e+56, 1e+58, 1e+60,
+    1e+62, 1e+64, 1e+66, 1e+68, 1e+70, 1e+72, 1e+74, 1e+76, 1e+78, 1e+80,
+    1e+82, 1e+84, 1e+86, 1e+88, 1e+90, 1e+92, 1e+94, 1e+96, 1e+98
+};
+
 static bool do_debug = false;
 
 class parse {
     public:
         class codew {
             public:
-                enum { tok, byte, word, label, comment } type;
+                enum { tok, byte, word, label, fp, comment } type;
                 std::string value;
                 bool operator<(const codew &c) const {
                     return (type == c.type) ? (value < c.value) : (type < c.type);
@@ -260,6 +332,12 @@ class parse {
             code->push_back(c);
             return true;
         }
+        bool emit_fp(atari_fp x)
+        {
+            codew c{ codew::fp, x.to_asm() };
+            code->push_back(c);
+            return true;
+        }
         bool emit_label(std::string s)
         {
             codew c{ codew::label, s};
@@ -318,6 +396,8 @@ static VarType get_vartype(parse::codew cw)
         return VT_ARRAY_BYTE;
     if( t == "VT_STRING" )
         return VT_STRING;
+    if( t == "VT_FLOAT" )
+        return VT_FLOAT;
     return VT_UNDEF;
 }
 
@@ -374,10 +454,51 @@ static unsigned long get_number(parse &s)
             return 65536;
 
         while( s.range('0', '9') );
+        if( s.expect('.') ) // If ends in a DOT, it's a fp number
+        {
+            s.pos = start;
+            return 65536;
+        }
         auto sn = s.str.substr(start, s.pos - start);
         s.debug("(got '" + sn + "')");
         return std::stoul(sn);
     }
+}
+
+static atari_fp get_fp_number(parse &s)
+{
+    auto start = s.pos;
+
+    // Optional sign
+    s.expect('-');
+
+    // Integer part
+    while( s.range('0', '9') );
+
+    // Optional dot
+    if( s.expect('.') )
+    {
+        // Fractional part
+        while( s.range('0', '9') );
+    }
+
+    // Optional exponent, only if any number before
+    if( s.pos != start && s.expect('E') )
+    {
+        // Optional exponent sign
+        if( !s.expect('-') )
+            s.expect('+');
+        // And up to two numbers
+        s.range('0', '9');
+        s.range('0', '9');
+    }
+
+    if( s.pos == start )
+        return atari_fp(HUGE_VAL); // return invalid number
+
+    auto sn = s.str.substr(start, s.pos - start);
+    s.debug("(got '" + sn + "')");
+    return atari_fp( std::stod(sn) );
 }
 
 static bool get_asm_word_constant(parse &s)
@@ -440,6 +561,18 @@ static bool SMB_E_NUMBER_BYTE(parse &s)
     if( num > 255 )
         return false;
     s.emit( std::to_string(num) );
+    s.skipws();
+    return true;
+}
+
+static bool SMB_E_NUMBER_FP(parse &s)
+{
+    s.debug("E_NUMBER_FP");
+    s.skipws();
+    auto num = get_fp_number(s);
+    if( !num.valid() )
+        return false;
+    s.emit_fp( num );
     s.skipws();
     return true;
 }
@@ -650,8 +783,8 @@ static bool SMB_E_POP_FOR(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_FOR");
-    auto l1 = s.pop_loop(LT_FOR_2);
     auto l2 = s.pop_loop(LT_FOR_1);
+    auto l1 = s.pop_loop(LT_FOR_2);
     if( l1.empty() || l2.empty() )
         return false;
     s.remove_last();
@@ -696,9 +829,16 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
 
     // Get type
     char type = get_vartype(s.remove_last());
+    auto &v = s.vars;
     if( do_debug )
         std::cout << "\tset var '" << last_var_name << "' to " << int(type) << "\n";
-    s.vars[last_var_name] = (s.vars[last_var_name] & ~0xFF) + type;
+    v[last_var_name] = (v[last_var_name] & ~0xFF) + type;
+    // If type is FLOAT, allocate two more invisible variables
+    if( type == VT_FLOAT )
+    {
+        v[ "-fake-" + std::to_string(v.size()) ] = 0;
+        v[ "-fake-" + std::to_string(v.size()) ] = 0;
+    }
     return true;
 }
 
@@ -738,6 +878,12 @@ static bool SMB_E_VAR_STRING(parse &s)
 {
     s.debug("E_VAR_STRING");
     return var_check(s, VT_STRING);
+}
+
+static bool SMB_E_VAR_FP(parse &s)
+{
+    s.debug("E_VAR_FP");
+    return var_check(s, VT_FLOAT);
 }
 
 static bool SMB_E_LABEL_DEF(parse &s)
@@ -829,6 +975,13 @@ class peephole
             idx += current;
             return ( idx < code.size() &&
                      code[idx].type == parse::codew::tok &&
+                     code[idx].value == name );
+        }
+        bool mcbyte(size_t idx, std::string name)
+        {
+            idx += current;
+            return ( idx < code.size() &&
+                     code[idx].type == parse::codew::byte &&
                      code[idx].value == name );
         }
         bool mword(size_t idx)
@@ -1040,6 +1193,25 @@ class peephole
                         set_tok(2, "TOK_INC"); del(7); del(6); del(5); del(4); del(3); i--; changed = true;
                         continue;
                     }
+                    //  VAR = VAR - 1   ==>  DEC VAR
+                    //   TOK_VAR_A / x / TOK_VAR / x / TOK_NUM / 1 / TOK_SUB / TOK_DPOKE
+                    //        -> TOK_VAR_A / x / TOK_DEC
+                    if( mtok(0,"TOK_VAR_ADDR") && mbyte(1) &&
+                        mtok(2,"TOK_VAR_LOAD") && mbyte(3) &&
+                        mtok(4,"TOK_NUM") && mword(5) && val(5) == 1 &&
+                        mtok(6,"TOK_SUB") && mtok(7,"TOK_DPOKE") &&
+                        val(1) == val(3) )
+                    {
+                        set_tok(2, "TOK_DEC"); del(7); del(6); del(5); del(4); del(3); i--; changed = true;
+                        continue;
+                    }
+                    //   TOK_BYTE / IOCHN / TOK_NUM / 0 / TOK_POKE  -> TOK_IOCHN0
+                    if( mtok(0,"TOK_BYTE") && mcbyte(1, "IOCHN") &&
+                        mtok(2,"TOK_NUM") && mword(3) && val(3) == 0 && mtok(4,"TOK_POKE") )
+                    {
+                        set_tok(0, "TOK_IOCHN0"); del(4); del(3); del(2); del(1); i--; changed = true;
+                        continue;
+                    }
                 }
             } while(changed);
             shorten_numbers();
@@ -1192,6 +1364,9 @@ int main(int argc, char **argv)
                 break;
             case parse::codew::word:
                 ofile << "\t.word\t" << c.value << "\n";
+                break;
+            case parse::codew::fp:
+                ofile << "\t.byte\t" << c.value << "\n";
                 break;
             case parse::codew::label:
                 ofile << c.value << ":\n";

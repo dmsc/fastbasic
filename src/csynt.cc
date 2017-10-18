@@ -23,29 +23,30 @@
 #include "synt-parse.h"
 #include "synt-wlist.h"
 #include "synt-sm.h"
+#include "synt-read.h"
 
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-bool p_file(parseState &p)
+bool p_file(parseState &p, std::ostream &out)
 {
     // Output header
-    std::cout << "// Syntax state machine\n\n";
+    out << "// Syntax state machine\n\n";
 
     while(1)
     {
         wordlist tok(p, "TOKENS", 1);
         if( !tok.parse() )
             break;
-        std::cout << "static const char * TOKENS[" << 1 + tok.next() << "] {\n";
+        out << "static const char * TOKENS[" << 1 + tok.next() << "] {\n";
         std::vector<std::string> sorted_toks(tok.next());
         for(auto i: tok.map())
             sorted_toks[i.second] = i.first;
         for(auto i: sorted_toks)
-            std::cout << "    \"" << i << "\",\n";
-        std::cout << "\t\"LAST_TOKEN\"\n};\n";
+            out << "    \"" << i << "\",\n";
+        out << "\t\"LAST_TOKEN\"\n};\n";
         std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
     }
 
@@ -54,7 +55,7 @@ bool p_file(parseState &p)
     {
         int n = 128;
         for(auto i: ext.map())
-            std::cout << "extern bool SMB_" << i.first << "(parse &s);\n";
+            out << "extern bool SMB_" << i.first << "(parse &s);\n";
         for(auto i: ext.map())
         {
             i.second = n++;
@@ -80,31 +81,23 @@ bool p_file(parseState &p)
     // Emit labels table
     int ns = ext.next();
     for(auto &sm: sm_list)
-        std::cout << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << ns++ << "\n";
+        out << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << ns++ << "\n";
     // Emit state machine tables
-    std::cout << "\n";
+    out << "\n";
     for(auto &sm: sm_list)
-        sm.second->print();
+        sm.second->print(out);
 
     std::cerr << "syntax: " << (ns-128) << " tables in the parser-table.\n";
     return true;
 }
 
-static std::string readInput()
+int main(int argc, const char **argv)
 {
- std::string r;
- int c;
- while( -1 != (c = std::cin.get()) )
-  r += char(c);
- return r;
-}
-
-int main()
-{
- std::string inp = readInput();
+ options opt(argc, argv);
+ std::string inp = readInput(opt.defs, opt.input());
 
  parseState ps(inp.c_str());
- p_file(ps);
+ p_file(ps, opt.output());
 
  return 0;
 }

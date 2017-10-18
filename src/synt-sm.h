@@ -210,7 +210,7 @@ class statemachine {
             }
             return true;
         }
-        void print() const {
-            EM::print(std::cout, _name, _code, complete);
+        void print(std::ostream &out) const {
+            EM::print(out, _name, _code, complete);
         }
 };

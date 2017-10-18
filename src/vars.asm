@@ -19,15 +19,16 @@
 ; Handles a list of names (variables or labels)
 ; --------------------------------------------
 
-        .export         var_getlen, var_search, var_new, var_set_type
-        .export         label_search, label_new
-        .exportzp       var_namelen, var_count, label_count
+        .export         var_getlen, var_search, label_search, name_new
+        .exportzp       var_namelen, label_count
 
-        ; From parser.asm
-        .importzp       bptr, bpos
+        ; From interpreter.asm
+        .importzp       var_count
         ; From alloc.asm
         .importzp       var_buf, var_ptr, label_buf, label_ptr, prog_ptr
         .import         alloc_area_8
+        ; From parser.asm
+        .import         parser_skipws
 
 
 ; Each variable is stored in the list as:
@@ -37,12 +38,16 @@
 ; To find a variable, we simply walk the list by adding the length
 ; to each name.
 
+
+; Parsing pointers:
+CIX     = $F2
+INBUFF  = $F3
+
 ; Our internal pointers:
         .zeropage
 name:   .res 2
 var:    .res 2
 len:    .res 1
-var_count:      .res 1
 label_count:    .res 1
 
 ; Use a longer name for external references
@@ -75,26 +80,25 @@ char_ok:
 
         ; Search the list of labels by name,
         ; Inputs:
-        ;  (bptr + bpos) : Variable name, from parsing code, terminated in any invalid char
+        ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   label_search
         ldx     #label_buf - prog_ptr
         ldy     #label_count
-        sty     search_count
         bne     list_search
 .endproc
 
         ; Search the list of variables by name,
         ; Inputs:
-        ;  (bptr + bpos) : Variable name, from parsing code, terminated in any invalid char
+        ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   var_search
         ; Pointer to var list to "var"
         ldx     #var_buf - prog_ptr
         ldy     #var_count
-        sty     search_count
 .endproc        ; Fall through
 
         ; Search a list of names - used for variables or labels
 .proc   list_search
+        sty     search_count
         ; Pointer to start of var/label list to "var"
         lda     prog_ptr, x
         sta     var
@@ -154,12 +158,14 @@ var_found:      ; Returns variable type in A
         ; If no character is valid, pops the stack and returns with carry set.
         ; Also, init the "name" pointer with the current position
 .proc   var_getlen
+        ; Skips spaces
+        jsr     parser_skipws
         ; Pointer with var name to "name"
-        lda     bptr
+        lda     INBUFF
         clc
-        adc     bpos
+        adc     CIX
         sta     name
-        lda     bptr+1
+        lda     INBUFF+1
         adc     #0
         sta     name+1
 
@@ -197,7 +203,7 @@ exit_2:
         clc
         adc     #2
         jsr     alloc_area_8
-        bcs     exit
+        bcs     var_getlen::exit_2
         ; Copy length and name of var/label
         ldy     #0
         lda     len
@@ -213,43 +219,6 @@ loop:
         lda     #0
         iny
         sta     (var), y
-exit:   rts
-.endproc
-
-        ; Adds a new variable to the variable table, returns the var index
-.proc   var_new
-        ldx     #var_ptr - prog_ptr
-        jsr     name_new
-        ldx     var_count
-        inc     var_count
-        clc
-        rts
-.endproc
-
-        ; Adds a new label
-.proc   label_new
-        ldx     #label_ptr - prog_ptr
-        jsr     name_new
-        ldx     label_count
-        inc     label_count
-        clc
-        rts
-.endproc
-
-        ; Sets the type of the lase defined variable
-        ; A = type
-.proc   var_set_type
-        ; Pointer to var list to "var"
-        ldx     var_ptr
-        stx     var
-        ldx     var_ptr+1
-        dex
-        stx     var+1
-
-        ldy     #$FF
-        sta     (var), y
-
-        clc
         rts
 .endproc
 

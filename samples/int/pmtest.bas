@@ -23,7 +23,7 @@ DATA PMclear() byte = $00,$00,$00,$00,$00
 xPos = 6400 : yPos = 2560
 xSpd =   64 : ySpd =    0
 
-do
+repeat
  xPos = xPos + xSpd : yPos = yPos + ySpd
  ySpd = ySpd + 2
  if (ySpd > 0) and (yPos > 12800)
@@ -36,7 +36,14 @@ do
   if xPos <  6400 Then xSpd = -xSpd
  endif
  exec MovePm : ' Move P/M Graphics
-loop
+until Key()
+
+' Restore RAMTOP and SDMCTL
+poke GRACTL, 0
+poke SDMCTL, Peek(SDMCTL) & 247
+poke RAMTOP, MemTop + 4
+
+END
 
 proc MovePm
  x = xPos / 128 : y = P0Mem + yPos / 128
