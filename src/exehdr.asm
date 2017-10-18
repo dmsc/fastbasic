@@ -3,6 +3,9 @@
         .export         __EXEHDR__: absolute = 1
         .import         __MAIN_START__, __DATA_LOAD__, __DATA_SIZE__
         .import         __INTERP_START__,  __INTERP_SIZE__
+        .import         start
+
+        .include        "atari.inc"
 
 .segment        "EXEHDR"
         .word   $FFFF
@@ -14,5 +17,10 @@
 .segment        "IHEADER"
         .word   __INTERP_START__
         .word   __INTERP_START__ + __INTERP_SIZE__- 1
+
+.segment        "AUTOSTRT"
+        .word   RUNAD
+        .word   RUNAD+1
+        .word   start
 
 ; vi:syntax=asm_ca65

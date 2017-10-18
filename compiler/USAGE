@@ -1,0 +1,2 @@
+For simple compilation of BAS files to XEX (Atari DOS executable), use the included
+compile-fp and compile-int scripts.

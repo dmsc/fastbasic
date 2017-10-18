@@ -3,7 +3,10 @@ bin/
 gen/
 disk/
 temp/
+compiler/fastbasic-int
+compiler/fastbasic-fp
 src/basic.asm
 fastbasic.atr
+*.lib
 .hg/
 .hg*

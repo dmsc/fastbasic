@@ -8,12 +8,12 @@ FPCXX=-DFASTBASIC_FP -Igen/fp
 INTCXX=-Igen/int
 
 # Cross
-CL65OPTS=-g -tatari -Csrc/fastbasic.cfg
+CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
 
 ATR=fastbasic.atr
 PROGS=bin/fb.xex bin/fbi.xex
-NATIVE_INT=bin/fastbasic-int
-NATIVE_FP=bin/fastbasic
+NATIVE_INT=compiler/fastbasic-int
+NATIVE_FP=compiler/fastbasic-fp
 
 NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 
@@ -93,6 +93,13 @@ COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=obj/int/%.o)
 BAS_OBJS_INT=$(BAS_SRC:src/%.bas=obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
 
+# Compiler library files
+COMPILER=\
+	 compiler/fastbasic-int\
+	 compiler/fastbasic-int.lib\
+	 compiler/fastbasic-fp\
+	 compiler/fastbasic-fp.lib\
+
 # All Output files
 OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) \
      $(RT_OBJS_INT) $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) \
@@ -104,10 +111,10 @@ LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=bin/%.lbl)
 SYNT=gen/synt
 CSYNT=gen/csynt
 
-all: $(ATR) $(NATIVES)
+all: $(ATR) $(NATIVES) $(COMPILER)
 
 clean:
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(NATIVES)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(COMPILER)
 
 distclean: clean
 	rm -f gen/int/basic.asm gen/fp/basic.asm gen/int/basic.cc gen/fp/basic.cc \
@@ -215,6 +222,15 @@ obj/int/%.o: gen/int/%.asm | obj/int
 
 gen obj obj/fp obj/int gen/fp gen/int bin:
 	mkdir -p $@
+
+# Library files
+compiler/fastbasic-fp.lib: $(RT_OBJS_FP) $(COMMON_OBJS_FP)
+	rm -f $@
+	ar65 r $@ $^
+
+compiler/fastbasic-int.lib: $(RT_OBJS_INT) $(COMMON_OBJS_INT)
+	rm -f $@
+	ar65 r $@ $^
 
 # Dependencies
 obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
