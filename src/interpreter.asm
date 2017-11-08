@@ -1292,7 +1292,7 @@ pos:    jsr     save_pop_fr1
 .proc   fp_set0
         jsr     pop_fr0
         lda     #0
-        txa
+        tax
         jmp     next_instruction
 .endproc
 
