@@ -166,7 +166,7 @@ ok:     clc
         lda     (bptr),y
         cmp     #$9b ; Atari EOL
         beq     E_REM::ok
-        cmp     #$0A ; ASCII EOL
+        cmp     #$27 ; "'" starts a comment
         beq     E_REM::ok
         cmp     #':' ; ':' separates commands
         beq     E_REM::ok

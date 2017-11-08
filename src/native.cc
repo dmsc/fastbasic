@@ -580,7 +580,7 @@ static bool SMB_E_NUMBER_FP(parse &s)
 static bool SMB_E_EOL(parse &s)
 {
     s.debug("E_EOL");
-    return( s.eos() || s.expect('\n') || s.expect(0x9b) );
+    return( s.eos() || s.peek('\'') || s.expect('\n') || s.expect(0x9b) );
 }
 
 static bool SMB_E_CONST_STRING(parse &s)
