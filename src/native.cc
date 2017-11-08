@@ -383,6 +383,22 @@ class parse {
         }
 };
 
+// Properties of variable types:
+static bool var_type_is_array(enum VarType t)
+{
+    switch(t) {
+        case VT_ARRAY_WORD:
+        case VT_ARRAY_BYTE:
+            return true;
+        case VT_UNDEF:
+        case VT_WORD:
+        case VT_STRING:
+        case VT_FLOAT:
+            return false;
+    }
+    return false;
+}
+
 static VarType get_vartype(parse::codew cw)
 {
     auto t = cw.value;
@@ -828,7 +844,7 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
     s.debug("E_VAR_SET_TYPE");
 
     // Get type
-    char type = get_vartype(s.remove_last());
+    enum VarType type = get_vartype(s.remove_last());
     auto &v = s.vars;
     if( do_debug )
         std::cout << "\tset var '" << last_var_name << "' to " << int(type) << "\n";
@@ -839,7 +855,10 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
         v[ "-fake-" + std::to_string(v.size()) ] = 0;
         v[ "-fake-" + std::to_string(v.size()) ] = 0;
     }
-    return true;
+    // This rule only succeeds on array types (defined with "DIM"), other
+    // variable types create the variable and then fail so the parser can retry
+    // with the new created variable.
+    return var_type_is_array(type);
 }
 
 static bool var_check(parse &s, int type)

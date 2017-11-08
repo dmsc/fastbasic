@@ -362,10 +362,10 @@ VAR_CREATE_TYPE:
 
 # Parse variable as L-VALUE, stores the *address* in the stack, this creates the
 # variable if not exist.
-# NOTE: the creation rule is meant to fail, so next rule actually uses the created
-#       variable.
+# NOTE: the creation rule (E_VAR_SET_TYPE) always fails, so the parser uses the next
+#       rules using the created variable.
 VAR_WORD_LVALUE:
-        E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE E_EOL "."
+        E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         emit TOK_VAR_ADDR E_VAR_WORD
         ARRAY_WORD_ADDR
 

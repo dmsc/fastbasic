@@ -61,12 +61,14 @@
 ;----------------------------------------------------------
         ; Types of variables
         .enum
-                VT_UNDEF
-                VT_WORD
-                VT_ARRAY_WORD
-                VT_ARRAY_BYTE
-                VT_STRING
-                VT_FLOAT = 128 ; Value is negative to signal 6bytes per variable!
+                ; ODD variables are created on assignments, so the set type rule fails.
+                ; EVEN variables are created on "DIM", so the set_type rule succeeds
+                VT_UNDEF      = 0
+                VT_WORD       = 1
+                VT_ARRAY_WORD = 2
+                VT_ARRAY_BYTE = 4
+                VT_STRING     = 5
+                VT_FLOAT      = $FB ; Value > 128 to signal 6bytes per variable!
         .endenum
         ; Types of labels
         .enum
@@ -404,39 +406,49 @@ exit:
         dec     opos            ; Remove variable TYPE from stack
         ldy     opos
         lda     (prog_ptr),y    ; The variable TYPE
-        ldy     #$FF
-        dec     var_ptr+1
-        sta     (var_ptr), y    ; Store to (var_ptr - 1)
-        inc     var_ptr+1
 
 .ifdef FASTBASIC_FP
-        ; In FP version, we need to special case FP variables
-        ; that use 3 slots (6 bytes) each.
-
-        tax                     ; Test if variable is FP
-        bpl     ok
+        .assert VT_FLOAT & 128 , error, "VT_FLOAT must be > 127"
+        bpl     no_float        ; float is > 127
 
         ; FP variable, allocate two more "invisible" variables
         ; to adjust to 6 bytes size.
         ldx     #var_ptr - prog_ptr
         lda     #4
         jsr     alloc_area_8
-        bcs     err
+        bcs     xit
 
-        ; Set both sizes to 0
+        ; Increment variable count
+        inc     var_count
+        inc     var_count
+
+        ; Fill with 0
         dec     var_ptr+1
-        ldy     #$FC
         lda     #0
+        tay
+
+:       dey
         sta     (var_ptr), y
-        ldy     #$FE
-        sta     (var_ptr), y
-        inc     var_ptr+1
-        inc     var_count
-        inc     var_count
+        cpy     #$FB
+        bne     :-
+
+        .assert VT_FLOAT = $FB , error, "VT_FLOAT must be $FB"
+        tya     ; lda #VT_FLOAT
+        bne     set_type
+
+no_float:
 .endif ; FASTBASIC_FP
 
-ok:     clc
-err:    rts
+        ldy     #$FF
+        dec     var_ptr+1
+set_type:
+        sta     (var_ptr), y    ; Store to (var_ptr - 1)
+        inc     var_ptr+1
+
+        ; Return error on "odd" variable types, this is needed for the parser
+        ; to retry after creating the variable:
+        lsr
+xit:    rts
 .endproc
 
                 ; Loop iteration for label-address,
