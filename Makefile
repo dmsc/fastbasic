@@ -226,11 +226,11 @@ gen obj obj/fp obj/int gen/fp gen/int bin:
 # Library files
 compiler/fastbasic-fp.lib: $(RT_OBJS_FP) $(COMMON_OBJS_FP)
 	rm -f $@
-	ar65 r $@ $^
+	ar65 a $@ $^
 
 compiler/fastbasic-int.lib: $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 	rm -f $@
-	ar65 r $@ $^
+	ar65 a $@ $^
 
 # Dependencies
 obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
