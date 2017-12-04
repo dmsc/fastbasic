@@ -470,6 +470,7 @@ ENDPROC
 ' Moves the cursor down 1 line
 PROC CursorDown
   if scrLine = 22
+    exec SaveLine
     exec ScrollUp
   else
     inc line
@@ -484,6 +485,7 @@ PROC CursorUp
     scrLine = scrLine - 1
     line = line - 1
   else
+    exec SaveLine
     exec ScrollDown
   endif
 ENDPROC
