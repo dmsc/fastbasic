@@ -1,4 +1,5 @@
 #!/bin/sh
+LOC=$(dirname $0)
 ASM=${1%.*}.asm
 XEX=${1%.*}.xex
 if [ -z "$1" ]; then
@@ -14,7 +15,7 @@ if [ "$1" -ef "$XEX" ]; then
     exit 1
 fi
 echo "Compiling '$1' to assembler '$ASM'."
-./fastbasic-fp "$1" "$ASM" || exit 1
+$LOC/fastbasic-int "$1" "$ASM" || exit 1
 echo "Assembling '$ASM' to XEX file '$XEX'."
-cl65 -tatari -Cfastbasic.cfg  "$ASM" -o "$XEX" fastbasic-fp.lib || exit 1
+cl65 -tatari -C $LOC/fastbasic.cfg  "$ASM" -o "$XEX" $LOC/fastbasic-int.lib || exit 1
 
