@@ -60,7 +60,7 @@ For simple compilation of BAS files to XEX (Atari DOS executable), use the inclu
 
   or:
 
-      C:\cc65\fb\fb myprog.bas
+      C:\cc65\fb\fb-int myprog.bas
 
 
 Advanced Usage
