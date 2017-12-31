@@ -50,7 +50,7 @@ prompt. This will load the IDE and
 present you with a little help text:
 
     --D:HELP.TXT-------------------0--
-    '  FastBasic FP  -  (c) 2017 dmsc
+    '  FastBasic r2  -  (c) 2017 dmsc
     '
     ' Editor Help
     ' -----------
@@ -162,16 +162,16 @@ the following main rules:
 
 1. A program line must be of 4 types:
    - a comment line, starting with a
-     dot (.) or an apostrophe ('),
+     dot `.` or an apostrophe `'`,
    - a statement followed by its
      parameters,
    - a variable assignment, this is a
-     name followed by '=' and a new
+     name followed by `=` and a new
      value.
    - an empty line.
 
 2. All statements and variable names
-   can be lower or uppercase, as the
+   can be lower or uppercase, the
    language is case insensitive.
 
 3. Statements can be abbreviated to
@@ -179,10 +179,17 @@ the following main rules:
    different abbreviation.
 
 4. Multiple statements can be put on
-   the same line by placing a semicolon
-   `:` between statements.
+   the same line by placing a colon `:`
+   between statements.
 
-5. No line numbers are allowed.
+5. After any statement a comment can be
+   included by starting it with an
+   apostrophe `'`.
+
+6. No line numbers are allowed.
+
+7. Spaces after statements and between
+   operators are optional and ignored.
 
 In the following chapters, whenever a
 value can take any numeric expression,
@@ -267,19 +274,19 @@ operators in order of precedence:
                  right.
 - `+` `-`      : positive / negative.
 
-For example, an expression like "1 + 2
-* 3 - 4 * -5" is evaluated in the
-following order:
+For example, an expression like
+`1 + 2 * 3 - 4 * -5` is evaluated in
+the following order:
 
-- First, the unary "-" before the "5",
-  giving the number "-5".
+- First, the unary `-` before the `5`,
+  giving the number `-5`.
 - The first multiplication, giving
-  "2*3" = "6".
+  `2*3` = `6`.
 - The second multiplication, giving
-  "4*-5" = "-20".
-- The addition, giving "1+6" = "7".
-- The subtraction, giving "7 - -20" =
-  "27".
+  `4*-5` = `-20`.
+- The addition, giving `1+6` = `7`.
+- The subtraction, giving `7 - -20` =
+  `27`.
 
 So, in this example the result is 27.
 
