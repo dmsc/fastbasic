@@ -1239,7 +1239,7 @@ class peephole
 
 static int show_version()
 {
-    std::cerr << "FastBasic - (c) 2017 dmsc\n";
+    std::cerr << "FastBasic r2 - (c) 2017 dmsc\n";
     return 0;
 }
 
