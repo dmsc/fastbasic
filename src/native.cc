@@ -1065,7 +1065,7 @@ class peephole
         void set_w(size_t idx, int16_t x)
         {
             code[idx+current].type = parse::codew::word;
-            code[idx+current].value = std::to_string(x);
+            code[idx+current].value = std::to_string(x & 0xFFFF);
         }
         void set_b(size_t idx, int16_t x)
         {
