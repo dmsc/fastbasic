@@ -77,9 +77,9 @@ class cc_emit
             {
                 if( s.empty() )
                     continue;
-                if( s[1] == '<' )
+                if( s[0] == '<' )
                     continue;
-                if( s[1] == '>' )
+                if( s[0] == '>' )
                     os << "\t\ts.emit_word(\"" << s.substr(1) << "\");\n";
                 else
                     os << "\t\ts.emit(\"" << s << "\");\n";
