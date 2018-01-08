@@ -1119,6 +1119,11 @@ class peephole
                 {
                     del(1); set_tok(0, "TOK_1");
                 }
+                //   TOK_NUM / x == -1
+                else if( mtok(0,"TOK_NUM") && mword(1) && val(1) == -1 )
+                {
+                    set_tok(0, "TOK_1"); set_tok(1, "TOK_NEG");
+                }
                 //   TOK_NUM / x < 256
                 else if( mtok(0,"TOK_NUM") && mword(1) && 0 == (val(1) & ~0xFF) )
                 {
@@ -1140,6 +1145,12 @@ class peephole
                 {
                     current = i;
                     // Sequences:
+                    //   TOK_NUM / x / TOK_NEG  -> TOK_NUM / -x
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NEG") )
+                    {
+                        del(2); set_w(1, - val(1)); i--; changed = true;
+                        continue;
+                    }
                     //   TOK_NUM / x / TOK_USHL  -> TOK_NUM / 2*x
                     if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_USHL") )
                     {
@@ -1211,6 +1222,36 @@ class peephole
                     if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_SUB") )
                     {
                         set_tok(0, "TOK_NUM"); set_w(1, val(1)-val(3)); del(4); del(3); del(2); i--;
+                        continue; changed = true;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_MUL   -> TOK_NUM (x*y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_MUL") )
+                    {
+                        set_tok(0, "TOK_NUM"); set_w(1, val(1) * val(3)); del(4); del(3); del(2); i--; changed = true;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_DIV   -> TOK_NUM (x/y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_DIV") )
+                    {
+                        int16_t div = val(3);
+                        if( div )
+                            div = val(1) / div;
+                        else if( val(1) < 0 )
+                            div = 1;  // Probably a bug in the division routine, but we emulate the result
+                        else
+                            div = -1;
+                        set_tok(0, "TOK_NUM"); set_w(1, div); del(4); del(3); del(2); i--;
+                        continue; changed = true;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_MOD   -> TOK_NUM (x%y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_MOD") )
+                    {
+                        int16_t div = val(3);
+                        if( div )
+                            div = val(1) % div;
+                        else
+                            div = val(1);  // Probably a bug in the division routine, but we emulate the result
+                        set_tok(0, "TOK_NUM"); set_w(1, div); del(4); del(3); del(2); i--;
                         continue; changed = true;
                     }
                     //  VAR + VAR    ==>   2 * VAR
