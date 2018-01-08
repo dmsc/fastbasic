@@ -1023,6 +1023,13 @@ class peephole
                      code[idx].type == parse::codew::byte &&
                      code[idx].value == name );
         }
+        bool mcword(size_t idx, std::string name)
+        {
+            idx += current;
+            return ( idx < code.size() &&
+                     code[idx].type == parse::codew::word &&
+                     code[idx].value == name );
+        }
         bool mword(size_t idx)
         {
             idx += current;
@@ -1099,6 +1106,20 @@ class peephole
                 else if( mtok(0,"TOK_0") )
                 {
                     set_tok(0, "TOK_NUM"); ins(1); set_w(1, 0); i++;
+                }
+                //   TOK_NUM / non numeric constant
+                else if( mtok(0,"TOK_NUM") )
+                {
+                    if( mcword(1, "AUDF1") )       set_w(1, 0xD200);
+                    else if( mcword(1, "AUDCTL") ) set_w(1, 0xD208);
+                    else if( mcword(1, "SKCTL") )  set_w(1, 0xD20F);
+                    else if( mcword(1, "COLOR0") ) set_w(1, 0x02C4);
+                    else if( mcword(1, "PADDL0") ) set_w(1, 0x0270);
+                    else if( mcword(1, "STICK0") ) set_w(1, 0x0278);
+                    else if( mcword(1, "PTRIG0") ) set_w(1, 0x027C);
+                    else if( mcword(1, "STRIG0") ) set_w(1, 0x0284);
+                    else if( mcword(1, "CH") )     set_w(1, 0x02FC);
+                    else if( mcword(1, "FILDAT") ) set_w(1, 0x02FD);
                 }
             }
         }
@@ -1253,6 +1274,24 @@ class peephole
                             div = val(1);  // Probably a bug in the division routine, but we emulate the result
                         set_tok(0, "TOK_NUM"); set_w(1, div); del(4); del(3); del(2); i--;
                         continue; changed = true;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_AND   -> TOK_NUM (x&y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_BIT_AND") )
+                    {
+                        set_tok(0, "TOK_NUM"); set_w(1, val(1) & val(3)); del(4); del(3); del(2); i--; changed = true;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_OR   -> TOK_NUM (x|y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_BIT_OR") )
+                    {
+                        set_tok(0, "TOK_NUM"); set_w(1, val(1) | val(3)); del(4); del(3); del(2); i--; changed = true;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_EXOR   -> TOK_NUM (x^y)
+                    if( mtok(0,"TOK_NUM") && mword(1) && mtok(2,"TOK_NUM") && mword(3) && mtok(4,"TOK_BIT_EXOR") )
+                    {
+                        set_tok(0, "TOK_NUM"); set_w(1, val(1) ^ val(3)); del(4); del(3); del(2); i--; changed = true;
+                        continue;
                     }
                     //  VAR + VAR    ==>   2 * VAR
                     //   TOK_VAR / x / TOK_VAR / x / TOK_ADD   -> TOK_VAR / x / TOK_USHL
