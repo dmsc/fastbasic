@@ -326,6 +326,26 @@ class parse {
             }
             return false;
         }
+        bool eol()
+        {
+            if( pos < str.length() )
+            {
+                // Three types of EOL:
+                if( (str[pos] == 0x9B) || // AT-ASCII EOL
+                    (str[pos] == '\n') )  // Unix EOL
+                {
+                    pos ++;
+                    return true;
+                }
+                // Windows EOL, two bytes (last is :
+                if( (str[pos] == '\r')  && (pos < str.length()-1) && (str[pos+1] == '\n') )
+                {
+                    pos += 2;
+                    return true;
+                }
+            }
+            return false;
+        }
         bool emit_word(std::string s)
         {
             codew c{ codew::word, s};
@@ -596,7 +616,7 @@ static bool SMB_E_NUMBER_FP(parse &s)
 static bool SMB_E_EOL(parse &s)
 {
     s.debug("E_EOL");
-    return( s.eos() || s.peek('\'') || s.peek(':') || s.expect('\n') || s.expect(0x9b) );
+    return( s.eos() || s.peek('\'') || s.peek(':') || s.eol() );
 }
 
 static bool SMB_E_CONST_STRING(parse &s)
@@ -938,9 +958,9 @@ static bool readLine(std::string &r, std::istream &is)
  int c;
  while( -1 != (c = is.get()) )
  {
+     r += char(c);
      if( c == '\n' || c == '\x9b' )
          return true;
-     r += char(c);
  }
  return false;
 }
