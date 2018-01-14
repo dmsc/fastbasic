@@ -1216,8 +1216,9 @@ modify memory. Use with care.
   The difference of the two statements
   is in case the memory ranges overlap,
   if _from_ is lower in memory than
-  _to_, you need to use MOVE, else you
-  need to use -MOVE.
+  _to_, you need to use -MOVE, else you
+  need to use MOVE, otherwise the
+  result will no be a copy.
 
   MOVE a, b, c is equivalent to:
 
