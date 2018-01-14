@@ -128,7 +128,8 @@ loop:   dey
         sta     (tmp2), y
         bne     loop
 
-nxt:    dex
+nxt:    dec     tmp2+1
+        dex
         bne     loop
 
         rts
