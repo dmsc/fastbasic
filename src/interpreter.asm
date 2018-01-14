@@ -32,7 +32,7 @@
 
         ; From allloc.asm
         .importzp       var_buf, array_ptr, mem_end
-        .import         clear_data, alloc_array
+        .import         clear_data, clear_memory, alloc_array
 
         ; From runtime.asm
         .import         umul16, neg_AX, read_word
@@ -368,13 +368,15 @@ adjust_cptr:
         ; Array dimensioning - assigns an address to given array variable
 .proc   TOK_DIM         ; AX = array size, (SP) = variable address
         ldy     array_ptr
-        sty     ret_a+1
+        sty     tmp2
         ldy     array_ptr+1
-        sty     ret_x+1
+        sty     tmp2+1
         jsr     alloc_array
         bcs     memory_error
-ret_a:  lda     #0
-ret_x:  ldx     #0
+        ; Now we have to cleanup the area
+        jsr     clear_memory
+        lda     tmp2
+        ldx     tmp2+1
         ldy     sptr
         jmp     TOK_DPOKE
 .endproc

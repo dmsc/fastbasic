@@ -1128,6 +1128,9 @@ General Statements
   You can DIM more than one array by
   separating the names with commas.
 
+  The array is cleared after the "DIM",
+  so all elements are 0.
+
 
 **Ends program**  
 **END : Ends program.**

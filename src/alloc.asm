@@ -38,7 +38,7 @@
 ;  top_mem:     TOP OF MEMORY
 ;
         .export         alloc_prog, alloc_array, alloc_laddr, clear_data
-        .export         parser_alloc_init, alloc_area_8
+        .export         parser_alloc_init, alloc_area_8, clear_memory
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
@@ -113,10 +113,10 @@ loop:
 .endproc        ; Fall through
 
         ; Clears memory from (tmp2) of (alloc_size) size
-.proc   clear_mem
+.proc   clear_memory
         lda     alloc_size+1
         tax
-        clc
+        sec
         adc     tmp2+1
         sta     tmp2+1
         lda     #0
@@ -124,13 +124,13 @@ loop:
         ldy     alloc_size
         beq     nxt
 
+pgloop: dec     tmp2+1
 loop:   dey
         sta     (tmp2), y
         bne     loop
 
-nxt:    dec     tmp2+1
-        dex
-        bne     loop
+nxt:    dex
+        bne     pgloop
 
         rts
 .endproc
