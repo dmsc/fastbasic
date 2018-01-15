@@ -33,6 +33,7 @@ SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
 
 # Test programs
 TEST_BAS=\
+    testcmp.bas \
     testif.bas \
     testio.bas \
     testloop.bas \
