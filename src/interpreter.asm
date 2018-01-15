@@ -190,13 +190,6 @@ interpreter_cptr        =       cptr
         rts
 .endproc
 
-.proc   TOK_END ; RETURN
-        ldx     #0
-::saved_cpu_stack = * - 1
-        txs
-        rts
-.endproc
-
 ;.proc   TOK_DUP
 ;        jsr     pushAX
 ;        lda     stack_l-1, y
@@ -381,17 +374,25 @@ adjust_cptr:
         jmp     TOK_DPOKE
 .endproc
 
+memory_error_msg:
+        .byte $9b, "rorrE yromeM", $9b
+memory_error_len=    * - memory_error_msg
+
 .proc  memory_error
         ; Show message and ends
-        ldy     #len-1
+        ldy     #memory_error_len-1
 
-:       lda     msg, y
+:       lda     memory_error_msg, y
         jsr     putc
         dey
         bpl     :-
-        jmp     TOK_END
-msg:    .byte $9b, "rorrE yromeM", $9b
-len=    * - msg
+.endproc ; Fall through
+
+.proc   TOK_END ; RETURN
+        ldx     #0
+::saved_cpu_stack = * - 1
+        txs
+        rts
 .endproc
 
 ; Copy one string to another, allocating the destination if necessary
