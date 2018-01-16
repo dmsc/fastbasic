@@ -54,7 +54,7 @@ TOKENS {
  # Arrays
  TOK_DIM, TOK_USHL
  # Strings
- TOK_COPY_STR, TOK_VAL
+ TOK_COPY_STR, TOK_VAL, TOK_CMP_STR
  # Sound off - could be implemented as simple POKE expressions, but it's shorter this way
  TOK_SOUND_OFF
  TOK_PAUSE
@@ -241,6 +241,7 @@ SET_BOOL_EXPR:
 # General Expression - Can be INT or BOOL
 EXPR:
         INT_EXPR TEST_BOOL_EXPR
+        STR_EXPR COMP_STR_RIGHT
 #@if FASTBASIC_FP
         FP_EXPR COMP_FP_RIGHT
 #@endif FASTBASIC_FP
@@ -276,6 +277,7 @@ NOT_EXPR:
 #@if FASTBASIC_FP
         FP_EXPR COMP_FP_RIGHT
 #@endif FASTBASIC_FP
+        STR_EXPR COMP_STR_RIGHT
 
 COMP_OR_BOOL:
         COMP_EXPR_RIGHT COMP_EXPR_MORE
@@ -302,6 +304,14 @@ COMP_FP_RIGHT:
         "<=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT emit TOK_L_NOT
         "<"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ emit TOK_L_NOT
 #@endif FASTBASIC_FP
+
+COMP_STR_RIGHT:
+        "="  STR_EXPR emit TOK_CMP_STR emit TOK_COMP_0 emit TOK_L_NOT
+        ">"  STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_GT
+        ">=" STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_LT emit TOK_L_NOT
+        "<>" STR_EXPR emit TOK_CMP_STR emit TOK_COMP_0
+        "<=" STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_GT emit TOK_L_NOT
+        "<"  STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_LT
 
 COMP_EXPR_MORE:
         COMP_EXPR_RIGHT COMP_EXPR_MORE

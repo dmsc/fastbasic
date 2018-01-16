@@ -448,6 +448,63 @@ cloop:  lda     (tmp1), y
         beq     pop_stack_2
 .endproc
 
+.proc   TOK_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1.
+        sta     tmp1
+        txa
+        beq     null_str1
+        sta     tmp1+1
+
+        ; X is the return value
+        ldx     #0
+
+        lda     stack_l, y
+        sta     tmp2
+        lda     stack_h, y
+        beq     rtn_lt
+        sta     tmp2+1
+
+        ; Get lengths
+        ldy     #0
+        lda     (tmp1), y
+        sta     tmp3
+        lda     (tmp2), y
+        sta     tmp3+1
+
+        ; Compare each byte
+next_char:
+        cpy     tmp3
+        beq     end_str1
+        cpy     tmp3+1
+        beq     rtn_lt
+
+        iny
+        lda     (tmp1), y
+        cmp     (tmp2), y
+        beq     next_char
+
+        bcs     rtn_lt
+        bcc     rtn_gt
+
+null_str1:
+        cmp     stack_h, y
+        .byte   $2C     ; Skip 2 bytes
+
+end_str1:
+        cpy     tmp3+1
+        beq     xit
+
+rtn_gt:
+        inx
+        .byte   $24     ; Skip 1 byte
+
+rtn_lt:
+        dex
+xit:
+        txa
+        jmp     next_ins_incsp
+
+.endproc
+
 .proc   TOK_DPOKE  ; DPOKE (SP++), AX
         pha
         lda     stack_h, y
@@ -1872,7 +1929,7 @@ OP_JUMP:
         ; Arrays
         .word   TOK_DIM, TOK_USHL
         ; Strings
-        .word   TOK_COPY_STR, TOK_VAL
+        .word   TOK_COPY_STR, TOK_VAL, TOK_CMP_STR
         ; Sound off - could be implemented as simple POKE expressions, but it's shorter this way
         .word   TOK_SOUND_OFF
         .word   TOK_PAUSE
