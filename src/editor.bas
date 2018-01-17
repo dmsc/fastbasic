@@ -424,7 +424,7 @@ PROC ScrollDown
   ScrAdr(0) = ptr
 
   ' Adjust line
-  line = line - 1
+  dec line
 
   ' Draw first line
   y = 0
@@ -458,9 +458,6 @@ PROC ScrollUp
   ScrAdr(22) = ptr
   ScrLen(22) = nptr - ptr - 1
 
-  ' Adjust line
-  line = line + 1
-
   ' Draw last line
   y = 22
   exec DrawLineOrig
@@ -473,17 +470,17 @@ PROC CursorDown
     exec SaveLine
     exec ScrollUp
   else
-    inc line
     inc scrLine
   endif
+  inc line
 ENDPROC
 
 '-------------------------------------
 ' Moves the cursor up 1 line
 PROC CursorUp
   if scrLine
-    scrLine = scrLine - 1
-    line = line - 1
+    dec scrLine
+    dec line
   else
     exec SaveLine
     exec ScrollDown
@@ -612,7 +609,7 @@ do
       ' Scroll screen if we are in the last line
       if scrLine > 21
         exec ScrollUp
-        scrLine = 21
+        dec scrLine
       endif
       ' Redraw old line
       hDraw = 0
