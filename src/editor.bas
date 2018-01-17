@@ -165,7 +165,7 @@ PROC CompileFile
   ? "œ Parsing: ";
   if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
     ' Parse error, go to error line
-    line = peek(@@linenum) - 1
+    line = dpeek(@@linenum) - 1
     column = peek( @@bmax )
     if line < 10
       scrLine = line
