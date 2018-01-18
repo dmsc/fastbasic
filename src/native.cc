@@ -1364,6 +1364,24 @@ class peephole
                         set_tok(0, "TOK_IOCHN0"); del(4); del(3); del(2); del(1); i--; changed = true;
                         continue;
                     }
+                    // (bool) != 0  -> (bool)
+                    //   TOK_L_AND | TOK_L_OR | TOK_L_NOT |
+                    //   TOK_NEQ TOK_EQ | TOK_LT | TOK_GT |
+                    //   TOK_FP_EQ | TOK_FP_GT | TOK_FP_GEQ
+                    //       / TOK_COMP_0   ->  remove TOK_COMP_0
+                    if( (mtok(0, "TOK_NEQ") ||
+                         mtok(0, "TOK_L_AND") ||
+                         mtok(0, "TOK_L_OR") ||
+                         mtok(0, "TOK_L_NOT") ||
+                         mtok(0, "TOK_EQ") ||
+                         mtok(0, "TOK_LT") ||
+                         mtok(0, "TOK_GT") ||
+                         mtok(0, "TOK_FP_EQ") ||
+                         mtok(0, "TOK_FP_GT") ||
+                         mtok(0, "TOK_FP_GEQ")) && mtok(1, "TOK_COMP_0") )
+                    {
+                        del(1);
+                    }
                     // CALL xxxxx / RETURN  ->  JUMP xxxxx
                     //   TOK_CALL / x / TOK_RET -> TOK_JUMP / x
                     if( mtok(0,"TOK_CALL") && mtok(2,"TOK_RET") )
