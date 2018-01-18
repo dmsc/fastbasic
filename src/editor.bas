@@ -791,7 +791,7 @@ do
     '--------- Escape ---------------
     elif key = $1B
       escape = 1
-    else
+   'else
       ' Unknown Control Key
     endif
   endif
