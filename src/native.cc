@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <set>
 #include <cmath>
 #include <vector>
 
@@ -1027,6 +1028,11 @@ class peephole
                      code[idx].type == parse::codew::word &&
                      code[idx].value == name );
         }
+        bool mlabel(size_t idx)
+        {
+            idx += current;
+            return idx < code.size() && code[idx].type == parse::codew::label;
+        }
         bool mword(size_t idx)
         {
             idx += current;
@@ -1048,6 +1054,14 @@ class peephole
             }
             else
                 return false;
+        }
+        std::string lbl(size_t idx)
+        {
+            idx += current;
+            if ( idx < code.size() && code[idx].type == parse::codew::label )
+                return code[idx].value;
+            else
+                return std::string();
         }
         int16_t val(size_t idx)
         {
@@ -1152,11 +1166,30 @@ class peephole
                 }
             }
         }
+        // Unused labels removal
+        void remove_unused_labels()
+        {
+            // Go through code accumulating all label expressions
+            std::set<std::string> labels;
+            for(auto &c: code)
+            {
+                if( c.type == parse::codew::word )
+                    labels.insert(c.value);
+            }
+            // And go through code removing labels not in the list
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                if( mlabel(0) && !labels.count(lbl(0)) )
+                    del(0);
+            }
+        }
     public:
         peephole(std::vector<parse::codew> &code):
             code(code), current(0)
         {
             bool changed;
+            remove_unused_labels();
             expand_numbers();
             do
             {
@@ -1330,6 +1363,12 @@ class peephole
                     {
                         set_tok(0, "TOK_IOCHN0"); del(4); del(3); del(2); del(1); i--; changed = true;
                         continue;
+                    }
+                    // CALL xxxxx / RETURN  ->  JUMP xxxxx
+                    //   TOK_CALL / x / TOK_RET -> TOK_JUMP / x
+                    if( mtok(0,"TOK_CALL") && mtok(2,"TOK_RET") )
+                    {
+                        set_tok(0, "TOK_JUMP"); del(2);
                     }
                 }
             } while(changed);
