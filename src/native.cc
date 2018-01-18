@@ -1468,6 +1468,7 @@ static int show_help()
                  "\n"
                  "Options:\n"
                  " -d\tenable parser debug options (only useful to debug parser)\n"
+                 " -n\tdon't run the optimizer, produces same code as 6502 version\n"
                  " -prof\tshow token usage statistics\n"
                  " -v\tshow version and exit\n"
                  " -h\tshow this help\n";
@@ -1487,11 +1488,14 @@ int main(int argc, char **argv)
     std::ifstream ifile;
     std::ofstream ofile;
     bool show_stats = false;
+    bool optimize = true;
 
     for(auto &arg: args)
     {
         if( arg == "-d" )
             do_debug = true;
+        else if( arg == "-n" )
+            optimize = false;
         else if( arg == "-prof" )
             show_stats = true;
         else if( arg == "-v" )
@@ -1558,7 +1562,8 @@ int main(int argc, char **argv)
 
     s.emit("TOK_END");
     // Optimize
-    peephole pp(s.full_code());
+    if( optimize )
+        peephole pp(s.full_code());
     // Statistics
     if( show_stats )
         opstat op(s.full_code());
