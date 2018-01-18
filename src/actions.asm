@@ -307,8 +307,9 @@ eos_ok: ldy     tmp1
         txa
         sta     (prog_ptr), y
         ; And adds an extra character to properly terminate string on IO operations
-        ldy     opos
-        sta     (prog_ptr),y
+        ; - don't need to actually write the extra character!
+        ; ldy     opos
+        ; sta     (prog_ptr),y
         inc     opos
         clc
 xrts:   rts
