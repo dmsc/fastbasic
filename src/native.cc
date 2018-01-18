@@ -131,8 +131,9 @@ class parse {
     public:
         class codew {
             public:
-                enum { tok, byte, word, label, fp, comment } type;
+                enum { tok, byte, word, label, fp } type;
                 std::string value;
+                int lnum;
                 bool operator<(const codew &c) const {
                     return (type == c.type) ? (value < c.value) : (type < c.type);
                 }
@@ -151,6 +152,7 @@ class parse {
         std::string str;
         size_t pos;
         size_t max_pos;
+        int linenum;
         std::map<std::string, std::vector<codew>> procs;
         std::map<std::string, int> vars;
         std::map<std::string, int> labels;
@@ -181,7 +183,7 @@ class parse {
             if( !jumps.size() )
                 return false;
             auto last = jumps.back();
-            return !( last.type != type && ( type != 'E' || last.type != 'I' ) );
+            return !( last.type != type && ( type != LT_ELSE || last.type != LT_IF ) );
         }
         std::string pop_loop(LoopType type)
         {
@@ -204,10 +206,11 @@ class parse {
             return lbl;
         }
 
-        void new_line(std::string l)
+        void new_line(std::string l, int ln)
         {
             pos = max_pos = 0;
             str = l;
+            linenum = ln;
         }
 
         saved_pos save()
@@ -348,31 +351,25 @@ class parse {
         }
         bool emit_word(std::string s)
         {
-            codew c{ codew::word, s};
+            codew c{ codew::word, s, linenum};
             code->push_back(c);
             return true;
         }
         bool emit_fp(atari_fp x)
         {
-            codew c{ codew::fp, x.to_asm() };
+            codew c{ codew::fp, x.to_asm(), linenum};
             code->push_back(c);
             return true;
         }
         bool emit_label(std::string s)
         {
-            codew c{ codew::label, s};
-            code->push_back(c);
-            return true;
-        }
-        bool comment(std::string s)
-        {
-            codew c{ codew::comment, s};
+            codew c{ codew::label, s, linenum};
             code->push_back(c);
             return true;
         }
         bool emit(std::string s)
         {
-            codew c{ codew::byte, s};
+            codew c{ codew::byte, s, linenum};
             if( s.substr(0,4) == "TOK_" )
                 c.type = codew::tok;
             code->push_back(c);
@@ -1067,7 +1064,10 @@ class peephole
         }
         void ins(size_t idx)
         {
-            code.insert(code.begin() + idx + current, {parse::codew::tok, "invalid"});
+            int lnum = 0;
+            if( code.size() > idx + current )
+                lnum = code[idx+current].lnum;
+            code.insert(code.begin() + idx + current, {parse::codew::tok, "invalid", lnum});
         }
         void set_w(size_t idx, int16_t x)
         {
@@ -1416,8 +1416,7 @@ int main(int argc, char **argv)
         ln++;
         if( do_debug )
             std::cerr << iname << ": parsing line " << ln << "\n";
-        s.comment("LINE " + std::to_string(ln));
-        s.new_line(line);
+        s.new_line(line, ln);
         if( !SMB_PARSE_START(s) )
         {
             std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error\n";
@@ -1471,8 +1470,14 @@ int main(int argc, char **argv)
              ";-----------------------------\n"
              "; Bytecode\n"
              "bytecode_start:\n";
+    ln = -1;;
     for(auto c: s.full_code())
     {
+        if( c.lnum != ln )
+        {
+            ln = c.lnum;
+            ofile << "; LINE " << ln << "\n";
+        }
         switch(c.type)
         {
             case parse::codew::tok:
@@ -1489,9 +1494,6 @@ int main(int argc, char **argv)
                 break;
             case parse::codew::label:
                 ofile << c.value << ":\n";
-                break;
-            case parse::codew::comment:
-                ofile << "; " << c.value << "\n";
                 break;
         }
     }
