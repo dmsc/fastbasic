@@ -205,7 +205,7 @@ class statemachine {
             std::string line;
             while(parse_line(line))
             {
-                _code += EM::emit_line(line);
+                _code += EM::emit_line(line, p.line);
                 line.clear();
             }
             return true;

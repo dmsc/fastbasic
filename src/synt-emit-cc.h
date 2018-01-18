@@ -102,11 +102,11 @@ class cc_emit
         {
             return "\t\tif( !SMB_" + sub + "(s) ) break;\n";
         }
-        static std::string emit_line(std::string line)
+        static std::string emit_line(std::string line, int lnum)
         {
             return "\tdo {\n" + line +
                    "\t} while(0);\n"
-                   "\ts.debug(\"--------\");\n"
+                   "\ts.debug(\"-! " + std::to_string(lnum-1) + "\");\n"
                    "\ts.restore(spos);\n";
         }
         static void print(std::ostream &os, std::string name, const std::string &code, bool ok)

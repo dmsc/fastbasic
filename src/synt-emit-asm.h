@@ -69,7 +69,7 @@ class asm_emit
         {
             return "\t.byte SMB_" + sub + "\n";
         }
-        static std::string emit_line(std::string line)
+        static std::string emit_line(std::string line, int)
         {
             return line;
         }
