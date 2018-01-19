@@ -66,3 +66,16 @@ s$ = "Hello"
 ? "2 <>: "; : if "Hell"  <> s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 ? "3 <>: "; : if "Hold"  <> s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 
+? "BOOL EXPR TESTS"
+x0 = 0 : x1 = 1 : x256 = 256
+? "AND/OR:  "; : if x0 and x1 or x1: ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "OR/AND:  "; : if x1 or x1 and x0: ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "NOT/AND: "; : if NOT x0 AND x0  : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "NOT/AND: "; : if NOT (x0 and x0): ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "NOT/NOT: "; : if NOT ((NOT x0)) : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "NOT/NOT: "; : if NOT NOT x0     : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "NOT/NOT: "; : if x1 = NOT NOT a : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "NOT/+:   "; : if NOT x0 + x1    : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "(NOT)/+: "; : if (NOT x0) + x1  : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "conv:    "; : if x256           : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+

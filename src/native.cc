@@ -1388,10 +1388,10 @@ class peephole
                         continue;
                     }
                     // NOT NOT A -> A
-                    //   TOK_L_NOT / TOK_L_NOT -> <nul>
+                    //   TOK_L_NOT / TOK_L_NOT -> TOK_COMP_0
                     if( mtok(0, "TOK_L_NOT") && mtok(1, "TOK_L_NOT") )
                     {
-                        del(0); del(1);
+                        set_tok(0, "TOK_COMP_0"); del(1);
                         continue;
                     }
                     // NOT A=B -> A<>B
@@ -1410,13 +1410,15 @@ class peephole
                     }
                     // (bool) != 0  -> (bool)
                     //   TOK_L_AND | TOK_L_OR | TOK_L_NOT |
-                    //   TOK_NEQ TOK_EQ | TOK_LT | TOK_GT |
+                    //   TOK_NEQ | TOK_COMP_0 | TOK_EQ |
+                    //   TOK_LT | TOK_GT |
                     //   TOK_FP_EQ | TOK_FP_GT | TOK_FP_GEQ
                     //       / TOK_COMP_0   ->  remove TOK_COMP_0
                     if( (mtok(0, "TOK_NEQ") ||
                          mtok(0, "TOK_L_AND") ||
                          mtok(0, "TOK_L_OR") ||
                          mtok(0, "TOK_L_NOT") ||
+                         mtok(0, "TOK_COMP_0") ||
                          mtok(0, "TOK_EQ") ||
                          mtok(0, "TOK_LT") ||
                          mtok(0, "TOK_GT") ||
