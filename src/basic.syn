@@ -218,25 +218,14 @@ OR_AND_BOOL:
         OR_EXPR_RIGHT
         AND_EXPR_RIGHT
 
-OR_AND_COMP_BOOL:
-        OR_EXPR_RIGHT
-        AND_EXPR_RIGHT
-        COMP_EXPR_MORE
-
 # Test if an INT needs to be converted to BOOL
 TEST_BOOL_EXPR:
         emit TOK_COMP_0 OR_AND_BOOL
-        COMP_EXPR_RIGHT OR_AND_COMP_BOOL
+        COMP_EXPR_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
 #@if FASTBASIC_FP
-        emit TOK_INT_FP COMP_FP_RIGHT OR_AND_COMP_BOOL
+        emit TOK_INT_FP COMP_FP_RIGHT  OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
 #@endif FASTBASIC_FP
         pass
-
-# Test if an INT needs to be converted to BOOL
-SET_BOOL_EXPR:
-        emit TOK_COMP_0 OR_AND_BOOL
-        COMP_EXPR_RIGHT OR_AND_COMP_BOOL
-        emit TOK_COMP_0
 
 # General Expression - Can be INT or BOOL
 EXPR:
@@ -248,25 +237,19 @@ EXPR:
 
 # Forced BOOL expressions, convert to BOOL always
 FORCE_BOOL_EXPR:
-        AND_EXPR_BOOL OR_EXPR_MORE
-        INT_EXPR SET_BOOL_EXPR
+        NOT_EXPR AND_EXPR_MORE OR_EXPR_MORE
 
 OR_EXPR_RIGHT:
-        "OR" AND_EXPR_BOOL emit TOK_L_OR OR_EXPR_MORE
+        "OR" NOT_EXPR AND_EXPR_MORE emit TOK_L_OR OR_EXPR_MORE
 
 OR_EXPR_MORE:
         OR_EXPR_RIGHT
         pass
 
-AND_EXPR_BOOL:
-        NOT_EXPR AND_EXPR_MORE
-        INT_EXPR emit TOK_COMP_0
-
 AND_EXPR_RIGHT:
         "AND" NOT_EXPR emit TOK_L_AND AND_EXPR_MORE
 
 AND_EXPR_MORE:
-        OR_EXPR_RIGHT
         AND_EXPR_RIGHT
         pass
 

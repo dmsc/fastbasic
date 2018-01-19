@@ -78,4 +78,5 @@ x0 = 0 : x1 = 1 : x256 = 256
 ? "NOT/+:   "; : if NOT x0 + x1    : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "(NOT)/+: "; : if (NOT x0) + x1  : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 ? "conv:    "; : if x256           : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "par:     "; : if (x0<x1)        : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 
