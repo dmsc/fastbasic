@@ -877,9 +877,9 @@ positive:
         cmp     tmp1
         lda     stack_h, y
         sbc     tmp1+1
-        bvc     :+
-        eor     #$80
-:       bpl     set0
+        bvs     LTGT_set01
+::LTGT_set10:
+        bpl     set0
         bmi     set1
 .endproc
 
@@ -887,10 +887,10 @@ positive:
         cmp     stack_l, y
         txa
         sbc     stack_h, y
-        bvc     :+
-        eor     #$80
-:       bmi     set1
-        bpl     set0
+        bvc     LTGT_set10
+::LTGT_set01:
+        bmi     set0
+        bpl     set1
 .endproc
 
 TOK_0:
