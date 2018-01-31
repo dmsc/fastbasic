@@ -1,3 +1,26 @@
+#
+#  FastBasic - Fast basic interpreter for the Atari 8-bit computers
+#  Copyright (C) 2017-2018 Daniel Serpell
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along
+#  with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+# Set "CROSS" to the compiler prefix, forces compilation of two compilers, one
+# native and one for the cross-target.
+CROSS=
+EXT=
+SHEXT=.sh
 CXX=g++
 CXXFLAGS=-O2 -Wall
 SYNTFLAGS=
@@ -10,10 +33,15 @@ INTCXX=-Igen/int
 # Cross
 CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
 
-ATR=fastbasic.atr
+ATR=build/fastbasic.atr
+ZIPFILE=build/fastbasic.zip
 PROGS=bin/fb.xex bin/fbi.xex
-NATIVE_INT=compiler/fastbasic-int
-NATIVE_FP=compiler/fastbasic-fp
+NATIVE_INT=bin/fastbasic-int
+NATIVE_FP=bin/fastbasic-fp
+CROSS_INT=compiler/fastbasic-int$(EXT)
+CROSS_FP=compiler/fastbasic-fp$(EXT)
+LIB_INT=compiler/fastbasic-int.lib
+LIB_FP=compiler/fastbasic-fp.lib
 
 NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 
@@ -96,10 +124,14 @@ SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
 
 # Compiler library files
 COMPILER=\
-	 compiler/fastbasic-int\
-	 compiler/fastbasic-int.lib\
-	 compiler/fastbasic-fp\
-	 compiler/fastbasic-fp.lib\
+	 $(CROSS_INT)\
+	 $(LIB_INT)\
+	 $(CROSS_FP)\
+	 $(LIB_FP)\
+	 compiler/fb$(SHEXT)\
+	 compiler/fb-int$(SHEXT)\
+	 compiler/USAGE.md\
+	 compiler/LICENSE\
 
 # All Output files
 OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) \
@@ -114,20 +146,29 @@ CSYNT=gen/csynt
 
 all: $(ATR) $(NATIVES) $(COMPILER)
 
+dist: $(ATR) $(ZIPFILE)
+
 clean:
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(COMPILER)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
 
 distclean: clean
 	rm -f gen/int/basic.asm gen/fp/basic.asm gen/int/basic.cc gen/fp/basic.cc \
 	    $(BAS_SRC:src/%.bas=gen/fp/%.asm) \
 	    $(BAS_SRC:src/%.bas=gen/int/%.asm) \
-	    $(SAMPLE_BAS:%.bas=gen/%.asm)
+	    $(SAMPLE_BAS:%.bas=gen/%.asm) \
+	    $(NATIVES)
 	-rmdir gen/fp gen/int obj/fp obj/int
 	-rmdir bin gen obj
 
 # Build an ATR disk image using "mkatr".
-$(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES)
+$(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
 	mkatr $@ $(DOSDIR) -b $^
+
+# Build compiler ZIP file.
+$(ZIPFILE): $(COMPILER) | build
+	$(CROSS)strip $(CROSS_INT)
+	$(CROSS)strip $(CROSS_FP)
+	zip -9vj $@ $(COMPILER)
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 disk/%.bas: samples/fp/%.bas
@@ -164,6 +205,23 @@ $(NATIVE_INT): src/native.cc gen/int/basic.cc | bin
 
 $(NATIVE_FP): src/native.cc gen/fp/basic.cc | bin
 	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
+
+# Cross compiler
+ifeq ($(CROSS),)
+$(CROSS_INT): $(NATIVE_INT)
+	cp -f $< $@
+else
+$(CROSS_INT): src/native.cc gen/int/basic.cc
+	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
+endif
+
+ifeq ($(CROSS),)
+$(CROSS_FP): $(NATIVE_FP)
+	cp -f $< $@
+else
+$(CROSS_FP): src/native.cc gen/fp/basic.cc
+	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
+endif
 
 # Generator for syntax file - 6502 version - FLOAT
 gen/fp/%.asm: src/%.syn $(SYNT) | gen/fp
@@ -221,15 +279,15 @@ obj/int/%.o: src/%.asm | obj/int
 obj/int/%.o: gen/int/%.asm | obj/int
 	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
 
-gen obj obj/fp obj/int gen/fp gen/int bin:
+gen obj obj/fp obj/int gen/fp gen/int bin build:
 	mkdir -p $@
 
 # Library files
-compiler/fastbasic-fp.lib: $(RT_OBJS_FP) $(COMMON_OBJS_FP)
+$(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP)
 	rm -f $@
 	ar65 a $@ $^
 
-compiler/fastbasic-int.lib: $(RT_OBJS_INT) $(COMMON_OBJS_INT)
+$(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 	rm -f $@
 	ar65 a $@ $^
 
