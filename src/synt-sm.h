@@ -27,8 +27,9 @@ class statemachine {
     private:
         parseState &p;
         bool complete;
-        std::string _name;
-        std::string _code;
+        std::string _name; // Table name
+        std::string _code; // Parsing code
+        std::string _desc; // Table description
         std::vector<std::string> ebytes;
         bool parse_name()
         {
@@ -36,6 +37,15 @@ class statemachine {
             while(p.ident_ch());
             _name = s.str();
             return s( p.ch(':') );
+        }
+        bool parse_description()
+        {
+            // Description is from ':' to the end of line, skipping spaces
+            p.space();
+            sentry s(p);
+            p.all();
+            _desc = s.str();
+            return s(true);
         }
         std::string read_ident()
         {
@@ -202,6 +212,7 @@ class statemachine {
             skip_comments();
             if( p.eof() || p.eol() || p.blank() ) return false;
             if( !parse_name() ) return false;
+            if( !parse_description() ) return false;
             std::string line;
             while(parse_line(line))
             {
@@ -211,6 +222,6 @@ class statemachine {
             return true;
         }
         void print(std::ostream &out) const {
-            EM::print(out, _name, _code, complete);
+            EM::print(out, _name, _desc, _code, complete);
         }
 };

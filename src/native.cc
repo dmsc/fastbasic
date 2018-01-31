@@ -153,6 +153,9 @@ class parse {
         std::string str;
         size_t pos;
         size_t max_pos;
+        bool low_error;
+        std::string current_error;
+        std::string saved_error;
         int linenum;
         std::map<std::string, std::vector<codew>> procs;
         std::map<std::string, int> vars;
@@ -164,7 +167,7 @@ class parse {
 
         parse():
             lvl(0), maxlvl(0), pos(0),
-            max_pos(0), label_num(0),
+            max_pos(0), low_error(false), label_num(0),
             finalized(false),
             code(&procs[std::string()]) { }
 
@@ -219,9 +222,29 @@ class parse {
             return saved_pos{pos, code->size()};
         }
 
+        void error(std::string str)
+        {
+            if( str == "&LOW_ERROR" )
+                low_error = true;
+            else if( !str.empty() )
+            {
+                current_error = str;
+                debug( "Set error='" + str + "'" );
+            }
+        }
+
         void restore(saved_pos s)
         {
-            if( pos > max_pos ) max_pos = pos;
+            if( pos >= max_pos )
+            {
+                if( !current_error.empty() &&
+                    ( !low_error || pos > max_pos || saved_error.empty() ) )
+                {
+                    debug("save error='" + current_error + "'");
+                    saved_error = current_error;
+                }
+                max_pos = pos;
+            }
             pos = s.pos;
             code->resize(s.opos);
         }
@@ -327,6 +350,11 @@ class parse {
                     pos ++;
                     return true;
                 }
+            }
+            if( c == ',' )
+            {
+                current_error = "comma";
+                debug( "Set error='" + current_error + "'" );
             }
             return false;
         }
@@ -1543,7 +1571,10 @@ int main(int argc, char **argv)
         s.new_line(line, ln);
         if( !SMB_PARSE_START(s) )
         {
-            std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error\n";
+            std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
+            if( !s.saved_error.empty() )
+                std::cerr << ", expected " << s.saved_error;
+            std::cerr << "\n";
             size_t min = 0, max = s.str.length();
             if( s.max_pos > 40 ) min = s.max_pos - 40;
             if( s.max_pos + 40 < max ) max = s.max_pos + 40;

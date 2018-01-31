@@ -73,7 +73,8 @@ class asm_emit
         {
             return line;
         }
-        static void print(std::ostream &os, std::string name, const std::string &code, bool ok)
+        static void print(std::ostream &os, std::string name, std::string desc,
+                          const std::string &code, bool ok)
         {
             os << name << ":\n"
                << code;

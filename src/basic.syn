@@ -88,7 +88,7 @@ EXTERN {
 
 # Floating point expressions
 #@if FASTBASIC_FP
-FP_EXPR:
+FP_EXPR: floating point expression
         FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
 
 FP_EXPR_MORE:
@@ -106,7 +106,7 @@ FP_E_EXPR_MORE:
         "^" emit TOK_FP_LOG10 FP_T_EXPR emit TOK_FP_MUL emit TOK_FP_EXP10 FP_E_EXPR_MORE
         pass
 
-FP_T_EXPR:
+FP_T_EXPR: floating point constant, variable or function
 	emit TOK_FLOAT E_NUMBER_FP
         "-" FP_T_EXPR emit TOK_FP_NEG
         "+" FP_T_EXPR
@@ -127,12 +127,12 @@ FP_T_EXPR:
 	emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_FP_LOAD
         INT_EXPR emit TOK_INT_FP
 
-FP_PAR_EXPR:
+FP_PAR_EXPR: left parenthesis
         "(" FP_EXPR ")"
 #@endif FASTBASIC_FP
 
 # Normal expressions
-INT_EXPR:
+INT_EXPR: integer expression
 	T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
 
 INT_EXPR_MORE:
@@ -157,7 +157,7 @@ NEG_EXPR:
 	"+" NEG_EXPR
 	T_EXPR emit TOK_NEG
 
-ADR_EXPR:
+ADR_EXPR: string or variable
         STR_EXPR
         VAR_WORD_LVALUE
         VAR_BYTE_LVALUE
@@ -168,7 +168,7 @@ USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
         pass
 
-T_EXPR:
+T_EXPR: integer constant, variable or function
 	emit TOK_BYTE E_NUMBER_BYTE
 	emit TOK_NUM E_NUMBER_WORD
         "-" NEG_EXPR
@@ -207,10 +207,10 @@ T_EXPR:
 RD_PORT:
         PAR_EXPR emit TOK_BIT_AND emit TOK_ADD emit TOK_PEEK
 
-PAR_EXPR:
+PAR_EXPR: left parenthesis
         "(" EXPR ")"
 
-STR_PAR_EXPR:
+STR_PAR_EXPR: left parenthesis
         "(" STR_EXPR ")"
 
 # Parses a continuation of an INT to BOOLean expression
@@ -278,7 +278,7 @@ COMP_EXPR_RIGHT:
 
 #@if FASTBASIC_FP
 # FP Comparisons:
-COMP_FP_RIGHT:
+COMP_FP_RIGHT: integer expression
         "="  FP_EXPR emit TOK_FP_SUB emit TOK_FP_EQ
         ">"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT
         ">=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ
@@ -287,7 +287,7 @@ COMP_FP_RIGHT:
         "<"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ emit TOK_L_NOT
 #@endif FASTBASIC_FP
 
-COMP_STR_RIGHT:
+COMP_STR_RIGHT: integer expression
         "="  STR_EXPR emit TOK_CMP_STR emit TOK_COMP_0 emit TOK_L_NOT
         ">"  STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_GT
         ">=" STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_LT emit TOK_L_NOT
@@ -362,7 +362,7 @@ VAR_CREATE_TYPE:
 # variable if not exist.
 # NOTE: the creation rule (E_VAR_SET_TYPE) always fails, so the parser uses the next
 #       rules using the created variable.
-VAR_WORD_LVALUE:
+VAR_WORD_LVALUE: integer variable
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         emit TOK_VAR_ADDR E_VAR_WORD
         ARRAY_WORD_ADDR
@@ -376,7 +376,7 @@ VAR_FP_LVALUE:
 #@endif FASTBASIC_FP
 
 # Parse an "=" sign, it's own rule to skip spaces before!
-EQUAL:
+EQUAL: variable assignment
         "="
 
 # Parse optional "STEP" in for
@@ -440,7 +440,7 @@ DIM_VAR:
         emit TOK_VAR_ADDR E_VAR_CREATE PAR_EXPR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
 
 # I/O expressions
-IO_CHAN:
+IO_CHAN: I/O channel number
         "#" emit TOK_BYTE emit IOCHN EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_POKE
 
 # Note: we need the version without comma for "CLOSE #*"
@@ -554,7 +554,7 @@ PARSE_LINE_COMMAND:
         "RAD" emit TOK_BYTE emit DEGFLAG emit TOK_BYTE emit DEGFLAG_RAD emit TOK_POKE
 #@endif FASTBASIC_FP
 
-PARSE_LINE_ASSIGN:
+PARSE_LINE_ASSIGN: &LOW_ERROR
         VAR_WORD_LVALUE EQUAL EXPR emit TOK_DPOKE
         VAR_BYTE_LVALUE EQUAL EXPR emit TOK_POKE
         VAR_STR_LVALUE EQUAL STR_EXPR emit TOK_COPY_STR
@@ -567,7 +567,7 @@ EOS:
 	"'" E_REM
 	E_EOL
 
-PARSE_START:
+PARSE_START: statement or variable assignment
                            EOS
         PARSE_LINE_COMMAND EOS
         PARSE_LINE_ASSIGN  EOS

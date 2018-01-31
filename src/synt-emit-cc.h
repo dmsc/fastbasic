@@ -109,10 +109,12 @@ class cc_emit
                    "\ts.debug(\"-! " + std::to_string(lnum-1) + "\");\n"
                    "\ts.restore(spos);\n";
         }
-        static void print(std::ostream &os, std::string name, const std::string &code, bool ok)
+        static void print(std::ostream &os, std::string name, std::string desc,
+                          const std::string &code, bool ok)
         {
             os << "static bool SMB_" << name << "(parse &s) {\n"
                   "\ts.debug(\"" << name << "\");\n"
+                  "\ts.error(\"" << desc << "\");\n"
                   "\ts.lvl++;\n"
                   "\ts.skipws();\n"
                   "\tauto spos = s.save();\n"
