@@ -66,8 +66,7 @@ TOKENS {
  TOK_PRINT_FP
  TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
  TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
- TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT
- TOK_FP_GEQ, TOK_FP_GT, TOK_FP_EQ
+ TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
  TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
 #@endif FASTBASIC_FP
 }
@@ -279,12 +278,12 @@ COMP_EXPR_RIGHT:
 #@if FASTBASIC_FP
 # FP Comparisons:
 COMP_FP_RIGHT: integer expression
-        "="  FP_EXPR emit TOK_FP_SUB emit TOK_FP_EQ
-        ">"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT
-        ">=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ
-        "<>" FP_EXPR emit TOK_FP_SUB emit TOK_FP_EQ emit TOK_L_NOT
-        "<=" FP_EXPR emit TOK_FP_SUB emit TOK_FP_GT emit TOK_L_NOT
-        "<"  FP_EXPR emit TOK_FP_SUB emit TOK_FP_GEQ emit TOK_L_NOT
+        "="  FP_EXPR emit TOK_FP_CMP emit TOK_EQ
+        ">"  FP_EXPR emit TOK_FP_CMP emit TOK_GT
+        ">=" FP_EXPR emit TOK_FP_CMP emit TOK_LT emit TOK_L_NOT
+        "<>" FP_EXPR emit TOK_FP_CMP emit TOK_NEQ
+        "<=" FP_EXPR emit TOK_FP_CMP emit TOK_GT emit TOK_L_NOT
+        "<"  FP_EXPR emit TOK_FP_CMP emit TOK_LT
 #@endif FASTBASIC_FP
 
 COMP_STR_RIGHT: integer expression

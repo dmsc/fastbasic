@@ -1255,6 +1255,7 @@ jump:   jmp     $FFFF
 .proc   save_pop_fr1
         sta     fp_tmp_a
         stx     fp_tmp_x
+nosave:
         jsr     FMOVE
         ; Fall through
 .endproc
@@ -1320,41 +1321,16 @@ pos:    jsr     save_pop_fr1
         jmp     fp_return_interpreter
 .endproc
 
-.proc   fp_ldfr0
+.proc   TOK_FP_CMP      ; Compare two FP numbers in stack, store 0, -1 or 1 in integer stack
         jsr     pushAX
-        lda     FR0
-        rts
-.endproc
-
-.proc   TOK_FP_EQ
-        jsr     fp_ldfr0
-        bne     fp_set0
-        ; Fall through
-.endproc
-.proc   fp_set1
+        jsr     save_pop_fr1::nosave
+        jsr     FSUB
+        ; TODO: Don't check FP errors, assume SUB can't fail in comparisons
+        ldx     FR0
         jsr     pop_fr0
-        lda     #1
-        ldx     #0
-        jmp     next_instruction
-.endproc
-
-.proc   TOK_FP_GEQ
-        jsr     fp_ldfr0
-        bpl     fp_set1
-        bmi     fp_set0
-.endproc
-
-.proc   TOK_FP_GT
-        jsr     fp_ldfr0
-        beq     fp_set0
-        bpl     fp_set1
-        ; Fall through
-.endproc
-.proc   fp_set0
-        jsr     pop_fr0
-        lda     #0
-        tax
-        jmp     next_instruction
+        txa
+        ldy     sptr
+        jmp     TOK_0
 .endproc
 
 .proc   TOK_FP_ADD
@@ -1942,8 +1918,7 @@ OP_JUMP:
         .word   TOK_PRINT_FP
         .word   TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
         .word   TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
-        .word   TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT
-        .word   TOK_FP_GEQ, TOK_FP_GT, TOK_FP_EQ
+        .word   TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
         .word   TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
 .endif ; FASTBASIC_FP
 
