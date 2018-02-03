@@ -288,12 +288,12 @@ COMP_FP_RIGHT: integer expression
 #@endif FASTBASIC_FP
 
 COMP_STR_RIGHT: integer expression
-        "="  STR_EXPR emit TOK_CMP_STR emit TOK_COMP_0 emit TOK_L_NOT
-        ">"  STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_GT
-        ">=" STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_LT emit TOK_L_NOT
-        "<>" STR_EXPR emit TOK_CMP_STR emit TOK_COMP_0
-        "<=" STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_GT emit TOK_L_NOT
-        "<"  STR_EXPR emit TOK_CMP_STR emit TOK_0 emit TOK_LT
+        "="  STR_EXPR emit TOK_CMP_STR emit TOK_EQ
+        ">"  STR_EXPR emit TOK_CMP_STR emit TOK_GT
+        ">=" STR_EXPR emit TOK_CMP_STR emit TOK_LT emit TOK_L_NOT
+        "<>" STR_EXPR emit TOK_CMP_STR emit TOK_NEQ
+        "<=" STR_EXPR emit TOK_CMP_STR emit TOK_GT emit TOK_L_NOT
+        "<"  STR_EXPR emit TOK_CMP_STR emit TOK_LT
 
 COMP_EXPR_MORE:
         COMP_EXPR_RIGHT COMP_EXPR_MORE

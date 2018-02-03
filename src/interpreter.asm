@@ -448,63 +448,6 @@ cloop:  lda     (tmp1), y
         beq     pop_stack_2
 .endproc
 
-.proc   TOK_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1.
-        sta     tmp1
-        txa
-        beq     null_str1
-        sta     tmp1+1
-
-        ; X is the return value
-        ldx     #0
-
-        lda     stack_l, y
-        sta     tmp2
-        lda     stack_h, y
-        beq     rtn_lt
-        sta     tmp2+1
-
-        ; Get lengths
-        ldy     #0
-        lda     (tmp1), y
-        sta     tmp3
-        lda     (tmp2), y
-        sta     tmp3+1
-
-        ; Compare each byte
-next_char:
-        cpy     tmp3
-        beq     end_str1
-        cpy     tmp3+1
-        beq     rtn_lt
-
-        iny
-        lda     (tmp1), y
-        cmp     (tmp2), y
-        beq     next_char
-
-        bcs     rtn_lt
-        bcc     rtn_gt
-
-null_str1:
-        cmp     stack_h, y
-        .byte   $2C     ; Skip 2 bytes
-
-end_str1:
-        cpy     tmp3+1
-        beq     xit
-
-rtn_gt:
-        inx
-        .byte   $24     ; Skip 1 byte
-
-rtn_lt:
-        dex
-xit:
-        txa
-        jmp     next_ins_incsp
-
-.endproc
-
 .proc   TOK_DPOKE  ; DPOKE (SP++), AX
         pha
         lda     stack_h, y
@@ -893,15 +836,6 @@ positive:
         bpl     set1
 .endproc
 
-TOK_0:
-        jsr     pushAX
-        dec     sptr
-.proc   set0
-        lda     #0
-        tax
-        jmp     next_ins_incsp
-.endproc
-
 TOK_1:
         jsr     pushAX
         dec     sptr
@@ -928,6 +862,73 @@ TOK_1:
         eor     stack_h, y
         bne     set0
         beq     set1
+.endproc
+
+.proc   TOK_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1 in stack,
+                        ; the load 0 to perform an integer comparison
+        sta     tmp1
+        txa
+        beq     null_str1
+        sta     tmp1+1
+
+        lda     stack_l, y
+        sta     tmp2
+        ldx     stack_h, y
+        beq     rtn_lt
+        stx     tmp2+1
+
+        ; Get lengths
+        ldy     #0
+        lda     (tmp1), y
+        sta     tmp3
+        lda     (tmp2), y
+        sta     tmp3+1
+
+        ; X is the return value
+        ldx     #0
+
+        ; Compare each byte
+next_char:
+        cpy     tmp3
+        beq     end_str1
+        cpy     tmp3+1
+        beq     rtn_lt
+
+        iny
+        lda     (tmp1), y
+        cmp     (tmp2), y
+        beq     next_char
+
+        bcs     rtn_lt
+        bcc     rtn_gt
+
+null_str1:
+        cmp     stack_h, y
+        .byte   $2C     ; Skip 2 bytes
+
+end_str1:
+        cpy     tmp3+1
+        beq     xit
+
+rtn_gt:
+        inx
+        .byte   $24     ; Skip 1 byte
+
+rtn_lt:
+        dex
+xit:
+        txa
+        inc     sptr
+        ldy     sptr
+.endproc        ; Fall through TOK_0
+
+TOK_0:
+        jsr     pushAX
+        dec     sptr
+.proc   set0
+        lda     #0
+        tax
+        jmp     next_ins_incsp
 .endproc
 
 .proc   TOK_COMP_0  ; AX = AX != 0
