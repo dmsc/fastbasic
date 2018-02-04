@@ -24,14 +24,14 @@
 class codew {
     private:
         enum {
-            tok,
-            byte,
-            byte_str,
-            word,
-            word_str,
-            label,
-            fp,
-            string
+            tok,        // A bytecode TOKEN
+            byte,       // One byte, as number (0 to 255)
+            byte_str,   // One byte, as a label
+            word,       // Two bytes, as number (-32768 to 32767)
+            word_str,   // Two bytes, as a label
+            label,      // A label (target of a jump)
+            fp,         // A FP number, 6 bytes.
+            string      // A constant string, length+bytes
         } type;
         int num;
         std::string str;
@@ -181,10 +181,5 @@ class codew {
             }
             return std::string();
         }
-#if 0
-        bool operator<(const codew &c) const {
-            return (type == c.type) ? (value < c.value) : (type < c.type);
-        }
-#endif
 };
 
