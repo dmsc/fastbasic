@@ -37,7 +37,7 @@ bool p_file(parseState &p, std::ostream &out)
 
     while(1)
     {
-        wordlist tok(p, "TOKENS", 1);
+        wordlist tok(p, "TOKENS", 0);
         if( !tok.parse() )
             break;
         for(auto i: tok.map())

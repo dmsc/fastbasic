@@ -46,8 +46,6 @@
         ; Export used tokens values to the interpreter
         .exportzp       TOK_CSTRING
 
-TOK_END = 0
-
         .zeropage
 buf_ptr:.res 2
 end_ptr:.res 2

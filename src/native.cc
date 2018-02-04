@@ -1615,8 +1615,7 @@ int main(int argc, char **argv)
     for(size_t i=0; i<sizeof(TOKENS)/sizeof(TOKENS[0]); i++)
         if( TOKENS[i] && *TOKENS[i] )
             ofile << TOKENS[i] << " = 2 * " << i << "\n";
-    ofile << "TOK_END = 0\n\n"
-             ";-----------------------------\n"
+    ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"
              ";-----------------------------\n"

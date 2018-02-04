@@ -20,6 +20,8 @@
 # -------------------------------
 
 TOKENS {
+ # First token must be "END"
+ TOK_END
  # Constant and variable loading
  TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
  TOK_SHL8, TOK_0, TOK_1
