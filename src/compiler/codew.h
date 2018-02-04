@@ -38,6 +38,32 @@ class codew {
         atari_fp x;
         enum tokens tk;
         int lnum;
+        // Escape string to include in assembly output
+        std::string escape(std::string str)
+        {
+            std::string ret;
+            bool quote = false;
+            for(auto c: str)
+            {
+                if( c < 32 || c == '"' || c > 126 )
+                {
+                    if( quote )
+                        ret += "\"";
+                    ret += ", " + std::to_string(0xFF & c);
+                    quote = false;
+                }
+                else
+                {
+                    if( !quote )
+                        ret += ", \"";
+                    ret += c;
+                    quote = true;
+                }
+            }
+            if( quote )
+                ret += "\"";
+            return ret;
+        }
     public:
         static codew ctok(enum tokens t, int lnum)
         {
@@ -177,7 +203,7 @@ class codew {
                 case label:
                     return str + ":";
                 case string:
-                    return "\t.byte\t" + str;
+                    return "\t.byte\t" + std::to_string(str.length()) + escape(str) + ", 0";
             }
             return std::string();
         }

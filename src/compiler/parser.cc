@@ -482,35 +482,17 @@ static bool SMB_E_CONST_STRING(parse &s)
 {
     s.debug("E_CONST_STRING");
     std::string str;
-    int len = 0;
-    bool in_str = false;
     while( !s.eos() )
     {
         if( s.expect('"') && !s.peek('"') )
         {
-            if( in_str )
-                str += "\"";
             s.emit_tok(TOK_CSTRING);
-            s.emit_str( std::to_string(len) + str + ", 0" );
+            s.emit_str(str);
             return true;
         }
         char c = s.str[s.pos];
-        if( c < 32 || c == '"' || c > 127 )
-        {
-            if( in_str )
-                str += "\"";
-            str += ", " + std::to_string(0xFF & c);
-            in_str = false;
-        }
-        else
-        {
-            if( !in_str )
-                str += ", \"";
-            str += c;
-            in_str = true;
-        }
+        str += c;
         s.pos++;
-        len ++;
     }
     return false;
 }
