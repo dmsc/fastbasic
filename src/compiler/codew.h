@@ -161,9 +161,13 @@ class codew {
         bool is_label() const {
             return type == label;
         }
+        bool is_string() const {
+            return type == string;
+        }
         // Get data
         std::string get_str() {
-            if( type == byte_str || type == word_str || type == label )
+            if( type == byte_str || type == word_str || type == label ||
+                type == string )
                 return str;
             else
                 return std::string();
@@ -203,7 +207,7 @@ class codew {
                 case label:
                     return str + ":";
                 case string:
-                    return "\t.byte\t" + std::to_string(str.length()) + escape(str) + ", 0";
+                    return "\t.byte\t" + std::to_string(str.length()) + escape(str);
             }
             return std::string();
         }

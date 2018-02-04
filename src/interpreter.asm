@@ -352,9 +352,7 @@ adjust_cptr:
         adc     (cptr), y
         sta     cptr
         pla
-        bcs     TOK_NUM::adjust_cptr_1
-        inc     cptr
-        beq     TOK_NUM::adjust_cptr
+        bcs     TOK_NUM::adjust_cptr
         jmp     next_instruction
 .endproc
 
@@ -505,13 +503,11 @@ TOK_FOR_EXIT    = TOK_MOVE::pop_stack_3
 .proc   TOK_XIO
         jsr     get_str_eol
         ldx     IOCHN
-        tya
-        clc
-        adc     INBUFF
+        lda     INBUFF
         sta     ICBAL, x
         lda     #0
         sta     ICBLH, x
-        adc     INBUFF+1
+        lda     INBUFF+1
         sta     ICBAH, x
         lda     #$FF
         sta     ICBLL, x
@@ -649,8 +645,10 @@ loadL:  lda     $FF00, y
         jmp     next_instruction
 .endproc
 
-; Stores an EOL at end of string, to allow calling SIO routines
+; Copy string to LBUFF storing an EOL at end, allows calling OS routines
+; Returns LBUFF in INBUFF
 .proc   get_str_eol
+INTLBUF = $DA51
         sta     INBUFF
         stx     INBUFF+1
         ; Get length
@@ -658,13 +656,18 @@ loadL:  lda     $FF00, y
         lda     (INBUFF), y
         tay
         iny
-        bne     ok
-        dey     ; String too long, just overwrite last character
+        bpl     ok
+        ldy     #$7f    ; String too long, just overwrite last character
 ok:     lda     #$9B
-        sta     (INBUFF), y
-        ldy     #1
+        .byte   $2C     ; Skip 2 bytes over LDA (),y
+copy:
+        lda     (INBUFF), y
+        sta     LBUFF-1, y
+        dey
+        bne     copy
+        ; Init CIX and copy LBUFF address to INBUFF
         sty     CIX
-        rts
+        jmp     INTLBUF
 .endproc
 
 .proc   TOK_VAL
