@@ -44,7 +44,7 @@ compile_lin32() {
 
 compile_win32() {
     # Compile with mingw-w64 cross compiler to 32bit:
-    make CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat CXXFLAGS="$WIN_OPTS" build/fastbasic.zip
+    make CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat CXXFLAGS="$WIN_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip ${out}-win32.zip
     make EXT=.exe SHEXT=.bat clean
 }
