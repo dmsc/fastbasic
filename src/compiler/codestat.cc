@@ -22,35 +22,44 @@ class opstat
 {
     private:
         std::vector<codew> &code;
-        std::map<codew, int> c1;
-        std::map<std::pair<codew, codew>, int> c2;
+        std::map<enum tokens, int> c1;
+        std::map<std::pair<enum tokens, enum tokens>, int> c2;
+        std::map<std::pair<enum tokens, int>, int> c3;
     public:
         opstat(std::vector<codew> &code):
             code(code)
         {
-            codew old{ codew::byte, std::string() };
+            enum tokens old = TOK_LAST_TOKEN;
             for(auto &c: code)
             {
-                if( c.type == codew::tok )
+                if( c.is_tok() )
                 {
-                    std::pair<codew, codew> p{c, old};
-                    c1[c] ++;
-                    if( old.type == codew::tok )
-                        c2[{c, old}]++;
-                    old = c;
+                    auto t = c.get_tok();
+                    c1[t] ++;
+                    if( old != TOK_LAST_TOKEN )
+                        c2[{t, old}]++;
+                    old = c.get_tok();
                 }
-                else if( c.type == codew::byte && old.type == codew::tok
-                         && old.value == "TOK_BYTE" )
-                    c1[old = { codew::tok, "TOK_BYTE " + c.value }]++;
-                else if( c.type == codew::word && old.type == codew::tok
-                        && old.value == "TOK_NUM" )
-                    c1[old = { codew::tok, "TOK_NUM " + c.value }]++;
+                else
+                {
+                    old = TOK_LAST_TOKEN;
+
+                    if( c.is_byte() && old == TOK_BYTE )
+                        c3[{old,c.get_val()}] ++;
+                    else if( c.is_word() && old == TOK_NUM )
+                        c3[{old,c.get_val()}] ++;
+                }
             }
             // Show results
             for(auto &c: c1)
-                std::cerr << "\t" << c.second << "\t" << c.first.value << "\n";
+                std::cerr << "\t" << c.second << "\t" << token_name(c.first) << "\n";
             for(auto &c: c2)
-                std::cerr << "\t" << c.second << "\t" << c.first.second.value << "\t" << c.first.first.value << "\n";
+                std::cerr << "\t" << c.second << "\t"
+                          << token_name(c.first.second) << "\t"
+                          << token_name(c.first.first) << "\n";
+            for(auto &c: c3)
+                std::cerr << "\t" << c.second << "\t" << token_name(c.first.first)
+                          << " " << c.first.second << "\n";
         }
 };
 

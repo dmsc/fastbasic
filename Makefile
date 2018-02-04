@@ -152,7 +152,9 @@ clean:
 	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
 
 distclean: clean
-	rm -f gen/int/basic.asm gen/fp/basic.asm gen/int/basic.cc gen/fp/basic.cc \
+	rm -f gen/int/basic.asm gen/fp/basic.asm \
+	    gen/int/basic.cc gen/fp/basic.cc \
+	    gen/int/basic.h  gen/fp/basic.h  \
 	    $(BAS_SRC:src/%.bas=gen/fp/%.asm) \
 	    $(BAS_SRC:src/%.bas=gen/int/%.asm) \
 	    $(SAMPLE_BAS:%.bas=gen/%.asm) \
@@ -300,5 +302,5 @@ $(NATIVES) $(CROSS_INT) $(CROSS_FP): \
  src/compiler/main.cc src/compiler/atarifp.cc \
  src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
  src/compiler/parser.cc src/compiler/peephole.cc \
- src/compiler/codestat.cc src/compiler/codew.cc
+ src/compiler/codestat.cc src/compiler/codew.h
 

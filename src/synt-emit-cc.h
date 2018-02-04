@@ -81,8 +81,10 @@ class cc_emit
                     continue;
                 if( s[0] == '>' )
                     os << "\t\ts.emit_word(\"" << s.substr(1) << "\");\n";
+                else if( s.substr(0,4) == "TOK_" )
+                    os << "\t\ts.emit_tok(" << s << ");\n";
                 else
-                    os << "\t\ts.emit(\"" << s << "\");\n";
+                    os << "\t\ts.emit_byte(\"" << s << "\");\n";
             }
             os << "\n";
 

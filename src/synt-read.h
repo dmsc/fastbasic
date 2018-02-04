@@ -46,6 +46,7 @@ class options
         std::string prog_name;
         std::ifstream input_file;
         std::ofstream output_file;
+        std::ofstream output_hfile;
 
         std::ostream &output()
         {
@@ -58,6 +59,23 @@ class options
                     error("can't open output file: '" + output_name + "'");
             }
             return output_file;
+        }
+
+        std::ostream &output_header(std::string ext)
+        {
+            if( output_name.empty() || output_name == "-" )
+                return std::cout;
+            if( !output_hfile.is_open() )
+            {
+                auto n = output_name.find_last_of("./");
+                if( n != output_name.npos && output_name[n] == '/' )
+                    n = output_name.npos;
+                auto hname = output_name.substr(0, n) + ext;
+                output_hfile.open(hname);
+                if( !output_hfile.is_open() )
+                    error("can't open output file: '" + hname + "'");
+            }
+            return output_hfile;
         }
 
         std::istream &input()

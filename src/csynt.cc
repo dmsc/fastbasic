@@ -30,40 +30,26 @@
 #include <string>
 #include <vector>
 
-bool p_file(parseState &p, std::ostream &out)
+bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 {
-    // Output header
-    out << "// Syntax state machine\n\n";
-
-    while(1)
+    // Parse TOKENS
+    wordlist tok(p, "TOKENS", 0);
+    if( !tok.parse() )
     {
-        wordlist tok(p, "TOKENS", 0);
-        if( !tok.parse() )
-            break;
-        out << "static const char * TOKENS[" << 1 + tok.next() << "] {\n";
-        std::vector<std::string> sorted_toks(tok.next());
-        for(auto i: tok.map())
-            sorted_toks[i.second] = i.first;
-        for(auto i: sorted_toks)
-            out << "    \"" << i << "\",\n";
-        out << "\t\"LAST_TOKEN\"\n};\n";
-        std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
+        p.error("missing TOKENS table");
+        return false;
     }
+    // Sort tokens by index (order in token table)
+    std::vector<std::string> sorted_toks(tok.next());
+    for(auto i: tok.map())
+        sorted_toks[i.second] = i.first;
 
-    out << "\n#include \"../../src/compiler/parser.cc\"\n\n";
-
+    // Parse EXTERN routines
     wordlist ext(p, "EXTERN", 128);
-    if( ext.parse() )
-    {
-        int n = 128;
-        for(auto i: ext.map())
-            out << "static bool SMB_" << i.first << "(parse &s);\n";
-        for(auto i: ext.map())
-        {
-            i.second = n++;
-        }
-    }
+    if( !ext.parse() )
+        p.error("missing EXTERN table");
 
+    // Parse state machines
     std::map<std::string, std::unique_ptr<statemachine<cc_emit>>> sm_list;
 
     while( !p.eof() )
@@ -80,16 +66,60 @@ bool p_file(parseState &p, std::ostream &out)
             p.error("invalid input '" + s.str() + "'");
         }
     }
-    // Emit labels table
-    int ns = ext.next();
+
+    std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
+    std::cerr << "syntax: " << (ext.next() + sm_list.size() - 128)
+              << " tables in the parser-table.\n";
+
+    // Output header
+    hdr << "// Syntax state machine - header\n"
+           "// -----------------------------\n"
+           "// This is a generated file - do not modify\n"
+           "#pragma once\n"
+           "#include <string>\n"
+           "\n"
+           "enum tokens {\n";
+    for(auto i: sorted_toks)
+        hdr << "    " << i << ",\n";
+    hdr << "    TOK_LAST_TOKEN\n"
+           "};\n"
+           "\n"
+           "std::string token_name(enum tokens t);\n";
+
+    // Output parser C++ file
+    out << "// Syntax state machine\n"
+           "// --------------------\n"
+           "// This is a generated file - do not modify\n"
+           "\n"
+           "static const char * token_names[" << 1 + tok.next() << "] {\n";
+    // Token names
+    for(auto i: sorted_toks)
+        out << "    \"" << i << "\",\n";
+    out << "    \"LAST_TOKEN\"\n"
+           "};\n"
+           "\n"
+           "std::string token_name(enum tokens t)\n"
+           "{\n"
+           "    return token_names[t];\n"
+           "}\n"
+           "\n";
+
+    // External functions
+    int n = 128;
+    for(auto i: ext.map())
+    {
+        out << "static bool SMB_" << i.first << "(parse &s);\t// " << n << "\n";
+        i.second = n++;
+    }
+
+    // Emit state machine tables
     for(auto &sm: sm_list)
-        out << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << ns++ << "\n";
+        out << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << n++ << "\n";
     // Emit state machine tables
     out << "\n";
     for(auto &sm: sm_list)
         sm.second->print(out);
 
-    std::cerr << "syntax: " << (ns-128) << " tables in the parser-table.\n";
     return true;
 }
 
@@ -99,7 +129,7 @@ int main(int argc, const char **argv)
  std::string inp = readInput(opt.defs, opt.input());
 
  parseState ps(inp.c_str());
- p_file(ps, opt.output());
+ p_file(ps, opt.output(), opt.output_header(".h"));
 
  return 0;
 }

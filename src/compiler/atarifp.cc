@@ -68,6 +68,7 @@ class atari_fp {
             }
         }
     public:
+        atari_fp(): num(0.0) {}
         atari_fp(double x): num(x) {}
         bool valid() const {
             return num >= -1E98 && num <= 1E98;

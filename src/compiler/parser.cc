@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "codew.cc"
+#include "codew.h"
 
 class parse {
     public:
@@ -265,28 +265,42 @@ class parse {
         }
         bool emit_word(std::string s)
         {
-            codew c{ codew::word, s, linenum};
-            code->push_back(c);
+            code->push_back(codew::cword(s, linenum));
+            return true;
+        }
+        bool emit_word(int x)
+        {
+            code->push_back(codew::cword(x, linenum));
             return true;
         }
         bool emit_fp(atari_fp x)
         {
-            codew c{ codew::fp, x.to_asm(), linenum};
-            code->push_back(c);
+            code->push_back(codew::cfp(x, linenum));
             return true;
         }
         bool emit_label(std::string s)
         {
-            codew c{ codew::label, s, linenum};
-            code->push_back(c);
+            code->push_back(codew::clabel(s, linenum));
             return true;
         }
-        bool emit(std::string s)
+        bool emit_tok(enum tokens tk)
         {
-            codew c{ codew::byte, s, linenum};
-            if( s.substr(0,4) == "TOK_" )
-                c.type = codew::tok;
-            code->push_back(c);
+            code->push_back(codew::ctok(tk, linenum));
+            return true;
+        }
+        bool emit_str(std::string s)
+        {
+            code->push_back(codew::cstring(s, linenum));
+            return true;
+        }
+        bool emit_byte(std::string s)
+        {
+            code->push_back(codew::cbyte(s, linenum));
+            return true;
+        }
+        bool emit_byte(int x)
+        {
+            code->push_back(codew::cbyte(x, linenum));
             return true;
         }
         void push_proc(std::string l)
@@ -304,8 +318,8 @@ class parse {
             {
                 finalized = true;
                 // Correctly terminate main code
-                if( !p.size() || p.back().type != codew::tok || p.back().value != "TOK_END" )
-                    p.push_back({codew::tok, "TOK_END"});
+                if( !p.size() || !p.back().is_tok(TOK_END) )
+                    p.push_back(codew::ctok(TOK_END,0));
                 for(auto &c: procs)
                     if( !c.first.empty() )
                         p.insert(std::end(p), std::begin(c.second), std::end(c.second));
@@ -409,7 +423,7 @@ static bool get_asm_byte_constant(parse &s)
         // Reads ASM constant
         if( s.get_ident(name) )
         {
-            s.emit( name );
+            s.emit_byte( name );
             s.skipws();
             return true;
         }
@@ -427,7 +441,7 @@ static bool SMB_E_NUMBER_WORD(parse &s)
     auto num = get_number(s);
     if( num > 65535 )
         return false;
-    s.emit_word( std::to_string(num) );
+    s.emit_word( num );
     s.skipws();
     return true;
 }
@@ -441,7 +455,7 @@ static bool SMB_E_NUMBER_BYTE(parse &s)
     auto num = get_number(s);
     if( num > 255 )
         return false;
-    s.emit( std::to_string(num) );
+    s.emit_byte( num );
     s.skipws();
     return true;
 }
@@ -476,7 +490,8 @@ static bool SMB_E_CONST_STRING(parse &s)
         {
             if( in_str )
                 str += "\"";
-            s.emit( std::string("TOK_CSTRING, ") + std::to_string(len) + str + ", 0" );
+            s.emit_tok(TOK_CSTRING);
+            s.emit_str( std::to_string(len) + str + ", 0" );
             return true;
         }
         char c = s.str[s.pos];
@@ -512,7 +527,7 @@ static bool SMB_E_PUSH_LT(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_LT");
-    auto t = get_looptype(s.remove_last().value);
+    auto t = get_looptype(s.remove_last().get_str());
     auto l = s.push_loop(t);
     switch(t)
     {
@@ -699,7 +714,7 @@ static bool SMB_E_VAR_CREATE(parse &s)
         return false;
     auto v_num = v.size();
     v[name] = 0 + 256 * v_num;
-    s.emit(std::to_string(v_num));
+    s.emit_byte(v_num);
     last_var_name = name;
     return true;
 }
@@ -709,7 +724,7 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
     s.debug("E_VAR_SET_TYPE");
 
     // Get type
-    enum VarType type = get_vartype(s.remove_last().value);
+    enum VarType type = get_vartype(s.remove_last().get_str());
     auto &v = s.vars;
     if( do_debug )
         std::cout << "\tset var '" << last_var_name << "' to " << int(type) << "\n";
@@ -736,7 +751,7 @@ static bool var_check(parse &s, int type)
         return false;
     if( (v[name] & 0xFF) != type )
         return false;
-    s.emit( std::to_string(v[name] >> 8) );
+    s.emit_byte( v[name] >> 8 );
     return true;
 }
 

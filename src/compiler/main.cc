@@ -30,6 +30,8 @@
 
 static bool do_debug = false;
 
+#include "parser.cc"
+
 // Include generated parser
 #include "basic.cc"
 
@@ -158,7 +160,7 @@ int main(int argc, char **argv)
         std::cerr << "MAX LEVEL: " << s.maxlvl << "\n";
     }
 
-    s.emit("TOK_END");
+    s.emit_tok(TOK_END);
     // Optimize
     if( optimize )
         peephole pp(s.full_code());
@@ -169,10 +171,15 @@ int main(int argc, char **argv)
     // Write global symbols
     for(auto &c: s.full_code())
     {
-        if( c.type == codew::word && c.value[0] >= 'A' && c.value[0] <= '_' )
-            ofile << "\t.global " << c.value << "\n";
-        else if( c.type == codew::byte && c.value[0] >= 'A' && c.value[0] <= '_' )
-            ofile << "\t.globalzp " << c.value << "\n";
+        // Lower-case symbols are internal
+        auto s = c.get_str();
+        if( !s.empty() && s[0] >= 'A' && s[0] <= '_' )
+        {
+            if( c.is_sword() )
+                ofile << "\t.global " << c.get_str() << "\n";
+            else if( c.is_sbyte() )
+                ofile << "\t.globalzp " << c.get_str() << "\n";
+        }
     }
     // Export common symbols and include atari defs
     ofile << "\t.export bytecode_start\n"
@@ -181,9 +188,9 @@ int main(int argc, char **argv)
 
     // Write tokens
     ofile << "; TOKENS:\n";
-    for(size_t i=0; i<sizeof(TOKENS)/sizeof(TOKENS[0]); i++)
-        if( TOKENS[i] && *TOKENS[i] )
-            ofile << TOKENS[i] << " = 2 * " << i << "\n";
+    for(size_t i=0; i<sizeof(token_names)/sizeof(token_names[0]); i++)
+        if( token_names[i] && *token_names[i] )
+            ofile << token_names[i] << " = 2 * " << i << "\n";
     ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"
@@ -193,29 +200,12 @@ int main(int argc, char **argv)
     ln = -1;;
     for(auto c: s.full_code())
     {
-        if( c.lnum != ln )
+        if( c.linenum() != ln )
         {
-            ln = c.lnum;
+            ln = c.linenum();
             ofile << "; LINE " << ln << "\n";
         }
-        switch(c.type)
-        {
-            case codew::tok:
-                ofile << "\t.byte\t" << c.value << "\n";
-                break;
-            case codew::byte:
-                ofile << "\t.byte\t" << c.value << "\n";
-                break;
-            case codew::word:
-                ofile << "\t.word\t" << c.value << "\n";
-                break;
-            case codew::fp:
-                ofile << "\t.byte\t" << c.value << "\n";
-                break;
-            case codew::label:
-                ofile << c.value << ":\n";
-                break;
-        }
+        ofile << c.to_asm() << "\n";
     }
 
     return 0;
