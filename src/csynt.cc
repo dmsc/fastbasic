@@ -50,12 +50,14 @@ bool p_file(parseState &p, std::ostream &out)
         std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
     }
 
+    out << "\n#include \"../../src/compiler/parser.cc\"\n\n";
+
     wordlist ext(p, "EXTERN", 128);
     if( ext.parse() )
     {
         int n = 128;
         for(auto i: ext.map())
-            out << "extern bool SMB_" << i.first << "(parse &s);\n";
+            out << "static bool SMB_" << i.first << "(parse &s);\n";
         for(auto i: ext.map())
         {
             i.second = n++;

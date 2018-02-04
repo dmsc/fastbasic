@@ -200,10 +200,10 @@ $(CSYNT): src/csynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Native compiler
-$(NATIVE_INT): src/native.cc gen/int/basic.cc | bin
+$(NATIVE_INT): src/compiler/main.cc gen/int/basic.cc | bin
 	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
 
-$(NATIVE_FP): src/native.cc gen/fp/basic.cc | bin
+$(NATIVE_FP): src/compiler/main.cc gen/fp/basic.cc | bin
 	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
 
 # Cross compiler
@@ -211,7 +211,7 @@ ifeq ($(CROSS),)
 $(CROSS_INT): $(NATIVE_INT)
 	cp -f $< $@
 else
-$(CROSS_INT): src/native.cc gen/int/basic.cc
+$(CROSS_INT): src/compiler/main.cc gen/int/basic.cc
 	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
 endif
 
@@ -219,7 +219,7 @@ ifeq ($(CROSS),)
 $(CROSS_FP): $(NATIVE_FP)
 	cp -f $< $@
 else
-$(CROSS_FP): src/native.cc gen/fp/basic.cc
+$(CROSS_FP): src/compiler/main.cc gen/fp/basic.cc
 	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
 endif
 
@@ -296,3 +296,9 @@ obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
 obj/int/parse.o: src/parse.asm gen/int/basic.asm
 $(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h src/synt-read.h
 $(SYNT): src/synt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-asm.h src/synt-read.h
+$(NATIVES) $(CROSS_INT) $(CROSS_FP): \
+ src/compiler/main.cc src/compiler/atarifp.cc \
+ src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
+ src/compiler/parser.cc src/compiler/peephole.cc \
+ src/compiler/codestat.cc src/compiler/codew.cc
+
