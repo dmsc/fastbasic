@@ -35,8 +35,7 @@ MemEnd = Adr(MemStart)
 '
 PROC FileError
   pos. 1,0
-  ? "ERROR: "; err(); " (press any key)";
-  put @@ATBEL
+  ? "ERROR: "; err(); " (press any key)ý";
   close #1
   get key
 ENDPROC
