@@ -1,5 +1,5 @@
 '
-' A text editor in FastBasic - dmsc - 2017
+' A text editor in FastBasic - dmsc - 2018
 ' ----------------------------------------
 '
 
