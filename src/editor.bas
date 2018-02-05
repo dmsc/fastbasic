@@ -554,6 +554,12 @@ FileName$ ="D:UNTITLED.BAS"
 escape = 0
 do
   ' Key reading loop
+  exec ProcessKeys
+loop
+
+'-------------------------------------
+' Reads a key and process
+PROC ProcessKeys
   get key
   ' Special characters:
   '   27 ESC            ok
@@ -794,6 +800,6 @@ do
       ' Unknown Control Key
     endif
   endif
-loop
+ENDPROC
 
 ' vi:syntax=tbxl
