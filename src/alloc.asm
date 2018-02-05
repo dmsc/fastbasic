@@ -116,13 +116,14 @@ loop:
 .proc   clear_memory
         lda     alloc_size+1
         tax
-        sec
+        clc
         adc     tmp2+1
         sta     tmp2+1
         lda     #0
         inx
         ldy     alloc_size
         beq     nxt
+        .byte   $2C   ; Skip 2 bytes over next "DEC"
 
 pgloop: dec     tmp2+1
 loop:   dey
