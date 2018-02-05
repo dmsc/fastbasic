@@ -224,9 +224,11 @@ class peephole
                     std::string l = lbl(0);
                     size_t i;
                     // Search target - next "normal" instruction
-                    for(i=0; i<code.size()-current; i++)
+                    for(i=1; i<code.size()-current; i++)
                         if( !mlabel(i) )
                             break;
+                        else
+                            tgt[l] = lbl(i);
                     if( mtok(i, TOK_RET) )
                         tgt[l] = "__TOK_RET__";
                     else if( mtok(i, TOK_JUMP) && mlblw(i+1) )
