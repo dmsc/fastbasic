@@ -88,8 +88,11 @@ class peephole
         }
         void del(size_t idx)
         {
-            changed = true;
-            code.erase( code.begin() + idx + current);
+            if ( idx+current < code.size() )
+            {
+                changed = true;
+                code.erase( code.begin() + idx + current);
+            }
         }
         void ins_w(size_t idx, int16_t x)
         {
@@ -98,6 +101,11 @@ class peephole
             if( code.size() > idx + current )
                 lnum = code[idx+current].linenum();
             code.insert(code.begin() + idx + current, codew::cword(x, lnum));
+        }
+        void set_ws(size_t idx, std::string str)
+        {
+            changed = true;
+            code[idx+current] = codew::cword(str, code[idx+current].linenum());
         }
         void set_w(size_t idx, int16_t x)
         {
@@ -203,6 +211,51 @@ class peephole
                 }
             }
         }
+        // Jump threading optimization.
+        // Replace JUMP to RET or another JUMP with a direct jump to target.
+        void replace_label_targets()
+        {
+            // Build a MAP of label that go to another target
+            std::map<std::string, std::string> tgt;
+            for(current=0; current<code.size(); current++)
+            {
+                if( mlabel(0) )
+                {
+                    std::string l = lbl(0);
+                    size_t i;
+                    // Search target - next "normal" instruction
+                    for(i=0; i<code.size()-current; i++)
+                        if( !mlabel(i) )
+                            break;
+                    if( mtok(i, TOK_RET) )
+                        tgt[l] = "__TOK_RET__";
+                    else if( mtok(i, TOK_JUMP) && mlblw(i+1) )
+                        tgt[l] = wlbl(i+1);
+                }
+            }
+            // Now, replace JUMPS
+            if( tgt.size() )
+            {
+                for(current=0; current<code.size(); current++)
+                {
+                    if( (mtok(0, TOK_CJUMP) || mtok(0, TOK_JUMP)) && mlblw(1) && tgt.find(wlbl(1)) != tgt.end() )
+                    {
+                        std::string t = tgt[wlbl(1)];
+                        if( t == "__TOK_RET__" )
+                        {
+                            // We can only replace JUMP to RET with RET, not ConditionalJUMP
+                            if( mtok(0, TOK_JUMP) )
+                            {
+                                set_tok(0, TOK_RET);
+                                del(1);
+                            }
+                        }
+                        else
+                            set_ws(1, t);
+                    }
+                }
+            }
+        }
     public:
         peephole(std::vector<codew> &code):
             code(code), current(0)
@@ -212,6 +265,7 @@ class peephole
             {
                 changed = false;
                 remove_unused_labels();
+                replace_label_targets();
 
                 for(size_t i=0; i<code.size(); i++)
                 {
@@ -440,6 +494,12 @@ class peephole
                     if( mtok(0,TOK_JUMP) && !mlabel(2) )
                     {
                         del(2);
+                        continue;
+                    }
+                    // Remove dead code after a RET
+                    if( mtok(0, TOK_RET) && !mlabel(1) )
+                    {
+                        del(1);
                         continue;
                     }
                 }
