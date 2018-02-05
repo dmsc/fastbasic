@@ -42,12 +42,11 @@ class opstat
                 }
                 else
                 {
-                    old = TOK_LAST_TOKEN;
-
                     if( c.is_byte() && old == TOK_BYTE )
                         c3[{old,c.get_val()}] ++;
                     else if( c.is_word() && old == TOK_NUM )
                         c3[{old,c.get_val()}] ++;
+                    old = TOK_LAST_TOKEN;
                 }
             }
             // Show results
