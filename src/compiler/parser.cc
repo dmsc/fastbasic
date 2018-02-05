@@ -360,42 +360,6 @@ static unsigned long get_number(parse &s)
     }
 }
 
-static atari_fp get_fp_number(parse &s)
-{
-    auto start = s.pos;
-
-    // Optional sign
-    s.expect('-');
-
-    // Integer part
-    while( s.range('0', '9') );
-
-    // Optional dot
-    if( s.expect('.') )
-    {
-        // Fractional part
-        while( s.range('0', '9') );
-    }
-
-    // Optional exponent, only if any number before
-    if( s.pos != start && s.expect('E') )
-    {
-        // Optional exponent sign
-        if( !s.expect('-') )
-            s.expect('+');
-        // And up to two numbers
-        s.range('0', '9');
-        s.range('0', '9');
-    }
-
-    if( s.pos == start )
-        return atari_fp(HUGE_VAL); // return invalid number
-
-    auto sn = s.str.substr(start, s.pos - start);
-    s.debug("(got '" + sn + "')");
-    return atari_fp( std::stod(sn) );
-}
-
 static bool get_asm_word_constant(parse &s)
 {
     auto start = s.pos;
@@ -456,18 +420,6 @@ static bool SMB_E_NUMBER_BYTE(parse &s)
     if( num > 255 )
         return false;
     s.emit_byte( num );
-    s.skipws();
-    return true;
-}
-
-static bool SMB_E_NUMBER_FP(parse &s)
-{
-    s.debug("E_NUMBER_FP");
-    s.skipws();
-    auto num = get_fp_number(s);
-    if( !num.valid() )
-        return false;
-    s.emit_fp( num );
     s.skipws();
     return true;
 }
@@ -761,11 +713,61 @@ static bool SMB_E_VAR_STRING(parse &s)
     return var_check(s, VT_STRING);
 }
 
+#ifdef FASTBASIC_FP
+static atari_fp get_fp_number(parse &s)
+{
+    auto start = s.pos;
+
+    // Optional sign
+    s.expect('-');
+
+    // Integer part
+    while( s.range('0', '9') );
+
+    // Optional dot
+    if( s.expect('.') )
+    {
+        // Fractional part
+        while( s.range('0', '9') );
+    }
+
+    // Optional exponent, only if any number before
+    if( s.pos != start && s.expect('E') )
+    {
+        // Optional exponent sign
+        if( !s.expect('-') )
+            s.expect('+');
+        // And up to two numbers
+        s.range('0', '9');
+        s.range('0', '9');
+    }
+
+    if( s.pos == start )
+        return atari_fp(HUGE_VAL); // return invalid number
+
+    auto sn = s.str.substr(start, s.pos - start);
+    s.debug("(got '" + sn + "')");
+    return atari_fp( std::stod(sn) );
+}
+
+static bool SMB_E_NUMBER_FP(parse &s)
+{
+    s.debug("E_NUMBER_FP");
+    s.skipws();
+    auto num = get_fp_number(s);
+    if( !num.valid() )
+        return false;
+    s.emit_fp( num );
+    s.skipws();
+    return true;
+}
+
 static bool SMB_E_VAR_FP(parse &s)
 {
     s.debug("E_VAR_FP");
     return var_check(s, VT_FLOAT);
 }
+#endif
 
 static bool SMB_E_LABEL_DEF(parse &s)
 {
