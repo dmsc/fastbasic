@@ -1208,12 +1208,7 @@ wait:   lda     RTCLOK+2
 
 .proc   TOK_USR_ADDR
         ; Store out return address into the CPU stack
-        tay
-        lda     #>(next_instruction - 1)
-        pha
-        lda     #<(next_instruction - 1)
-        pha
-        tya
+        jsr     next_instruction
         jmp     next_instruction
 .endproc
 
