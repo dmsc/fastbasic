@@ -326,6 +326,20 @@ class parse {
             }
             return p;
         }
+        std::vector<enum tokens> used_tokens()
+        {
+            auto code = full_code();
+            std::set<enum tokens> set;
+            for(auto &c: code)
+            {
+                if( c.is_tok() )
+                    set.insert(c.get_tok());
+            }
+            std::vector<enum tokens> ret;
+            for(auto &t: set)
+                ret.push_back(t);
+            return ret;
+        }
 };
 
 static unsigned long get_number(parse &s)

@@ -188,9 +188,11 @@ int main(int argc, char **argv)
 
     // Write tokens
     ofile << "; TOKENS:\n";
-    for(size_t i=0; i<sizeof(token_names)/sizeof(token_names[0]); i++)
+    for(auto &i: s.used_tokens())
+    {
         if( token_names[i] && *token_names[i] )
             ofile << "\t.importzp\t" << token_names[i] << "\n";
+    }
     ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"

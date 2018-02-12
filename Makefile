@@ -308,10 +308,10 @@ bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
-bin/%.xex: obj/fp/%.o $(RT_OBJS_FP) $(COMMON_OBJS_FP) | bin
+bin/%.xex: obj/fp/%.o $(LIB_FP) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-bin/%.xex: obj/int/%.o $(RT_OBJS_INT) $(COMMON_OBJS_INT) | bin
+bin/%.xex: obj/int/%.o $(LIB_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
