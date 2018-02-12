@@ -34,6 +34,9 @@
         .importzp       var_buf, array_ptr, mem_end
         .import         clear_data, clear_memory, alloc_array
 
+        ; From jumptab.asm
+        .import         OP_JUMP
+
         ; From runtime.asm
         .import         umul16, neg_AX, read_word
         .import         divmod_sign_adjust
@@ -190,20 +193,20 @@ interpreter_cptr        =       cptr
         rts
 .endproc
 
-;.proc   TOK_DUP
+;.proc   EXE_DUP
 ;        jsr     pushAX
 ;        lda     stack_l-1, y
 ;        ldx     stack_h-1, y
 ;        jmp     next_instruction
 ;.endproc
 
-.proc   TOK_SHL8
+.proc   EXE_SHL8
         tax
         lda     #0
         jmp     next_instruction
 .endproc
 
-.proc   TOK_SGN
+.proc   EXE_SGN
         cpx     #0
         bmi     neg
         bne     pos
@@ -217,32 +220,32 @@ neg:    lda     #$FF
 xit:    jmp     next_instruction
 .endproc
 
-.proc   TOK_ABS
+.proc   EXE_ABS
         cpx     #0
-        bpl     TOK_SGN::xit
+        bpl     EXE_SGN::xit
 .endproc        ; Fall through
-.proc   TOK_NEG ; AX = -AX
+.proc   EXE_NEG ; AX = -AX
         jsr     neg_AX
         jmp     next_instruction
 .endproc
 
-.proc   TOK_DIV  ; AX = (SP+) / AX
+.proc   EXE_DIV  ; AX = (SP+) / AX
         jsr     divmod_sign_adjust
         bit     divmod_sign
-        bmi     TOK_NEG
+        bmi     EXE_NEG
         jmp     next_instruction
 .endproc
 
-.proc   TOK_MOD  ; AX = (SP+) % AX
+.proc   EXE_MOD  ; AX = (SP+) % AX
         jsr     divmod_sign_adjust
         lda     tmp2
         ldx     tmp2+1
         bit     divmod_sign
-        bvs     TOK_NEG
+        bvs     EXE_NEG
         jmp     next_instruction
 .endproc
 
-.proc   TOK_USHL ; AX = AX * 2 (UNSIGNED)
+.proc   EXE_USHL ; AX = AX * 2 (UNSIGNED)
         asl
         tay
         txa
@@ -252,7 +255,7 @@ xit:    jmp     next_instruction
         jmp     next_instruction
 .endproc
 
-.proc   TOK_BIT_AND ; AX = (SP+) & AX
+.proc   EXE_BIT_AND ; AX = (SP+) & AX
         and     stack_l, y
         pha
         txa
@@ -262,7 +265,7 @@ xit:    jmp     next_instruction
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_BIT_OR ; AX = (SP+) | AX
+.proc   EXE_BIT_OR ; AX = (SP+) | AX
         ora     stack_l, y
         pha
         txa
@@ -272,7 +275,7 @@ xit:    jmp     next_instruction
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_BIT_EXOR ; AX = (SP+) ^ AX
+.proc   EXE_BIT_EXOR ; AX = (SP+) ^ AX
         eor     stack_l, y
         pha
         txa
@@ -282,10 +285,10 @@ xit:    jmp     next_instruction
         jmp     next_ins_incsp
 .endproc
 
-TOK_SUB:
+EXE_SUB:
         jsr     neg_AX
         ; Fall through
-.proc   TOK_ADD ; AX = (SP+) + AX
+.proc   EXE_ADD ; AX = (SP+) + AX
         clc
         adc     stack_l, y
         pha
@@ -296,7 +299,7 @@ TOK_SUB:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_MUL  ; AX = (SP+) * AX
+.proc   EXE_MUL  ; AX = (SP+) * AX
         sta     tmp1
         stx     tmp1+1
         lda     stack_l, y
@@ -307,12 +310,12 @@ TOK_SUB:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_VAR_ADDR  ; AX = address of variable
+.proc   EXE_VAR_ADDR  ; AX = address of variable
         jsr     get_op_var
         jmp     next_instruction
 .endproc
 
-.proc   TOK_NUM  ; AX = read from op (load byte first!)
+.proc   EXE_NUM  ; AX = read from op (load byte first!)
         jsr     pushAX
         ldy     #1              ; 2     2
         lda     (cptr), y       ; 5     2
@@ -332,17 +335,17 @@ adjust_cptr:
         jmp     next_instruction
 .endproc
 
-.proc   TOK_BYTE  ; AX = read 1 byte from op
+.proc   EXE_BYTE  ; AX = read 1 byte from op
         jsr     pushAX
         ldy     #0
         lda     (cptr), y
         ldx     #0
         inc     cptr
-        beq     TOK_NUM::adjust_cptr
+        beq     EXE_NUM::adjust_cptr
         jmp     next_instruction
 .endproc
 
-.proc   TOK_CSTRING     ; AX = address of string
+.proc   EXE_CSTRING     ; AX = address of string
         jsr     pushAX
         lda     cptr
         pha
@@ -352,12 +355,12 @@ adjust_cptr:
         adc     (cptr), y
         sta     cptr
         pla
-        bcs     TOK_NUM::adjust_cptr
+        bcs     EXE_NUM::adjust_cptr
         jmp     next_instruction
 .endproc
 
         ; Array dimensioning - assigns an address to given array variable
-.proc   TOK_DIM         ; AX = array size, (SP) = variable address
+.proc   EXE_DIM         ; AX = array size, (SP) = variable address
         ldy     array_ptr
         sty     tmp2
         ldy     array_ptr+1
@@ -369,7 +372,7 @@ adjust_cptr:
         lda     tmp2
         ldx     tmp2+1
         ldy     sptr
-        jmp     TOK_DPOKE
+        jmp     EXE_DPOKE
 .endproc
 
 memory_error_msg:
@@ -386,7 +389,7 @@ memory_error_len=    * - memory_error_msg
         bpl     :-
 .endproc ; Fall through
 
-.proc   TOK_END ; RETURN
+.proc   EXE_END ; RETURN
         ldx     #0
 ::saved_cpu_stack = * - 1
         txs
@@ -394,7 +397,7 @@ memory_error_len=    * - memory_error_msg
 .endproc
 
 ; Copy one string to another, allocating the destination if necessary
-.proc   TOK_COPY_STR    ; AX: source string   (SP): destination *variable* address
+.proc   EXE_COPY_STR    ; AX: source string   (SP): destination *variable* address
         ; Store source
         pha
         txa
@@ -446,7 +449,7 @@ cloop:  lda     (tmp1), y
         beq     pop_stack_2
 .endproc
 
-.proc   TOK_DPOKE  ; DPOKE (SP++), AX
+.proc   EXE_DPOKE  ; DPOKE (SP++), AX
         pha
         lda     stack_h, y
 .if 0
@@ -480,7 +483,7 @@ pop_stack_2:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_MOVE  ; move memory up
+.proc   EXE_MOVE  ; move memory up
         pha
         lda     stack_l, y
         sta     move_up_dst
@@ -498,9 +501,9 @@ pop_stack_3:
 .endproc
 
         ; Remove the FOR arguments from the stack!
-TOK_FOR_EXIT    = TOK_MOVE::pop_stack_3
+EXE_FOR_EXIT    = EXE_MOVE::pop_stack_3
 
-.proc   TOK_XIO
+.proc   EXE_XIO
         jsr     get_str_eol
         ldx     IOCHN
         lda     INBUFF
@@ -534,17 +537,17 @@ iochn0:
         beq     pop_stack
 .endproc
 
-.proc   TOK_IOCHN0
+.proc   EXE_IOCHN0
         ldy     #0
         sty     IOCHN
         jmp     next_instruction
 .endproc
 
-.proc   TOK_BPUT
+.proc   EXE_BPUT
         ldy     #PUTCHR
         .byte   $2C   ; Skip 2 bytes over next "LDY"
 .endproc        ; Fall through
-.proc   TOK_BGET
+.proc   EXE_BGET
         ldy     #GETCHR
         sty     setcom+1
         tay
@@ -563,10 +566,10 @@ iochn0:
         sta     ICBAH, x
 
 setcom: lda     #0
-        bne     TOK_XIO::is_cio ; Note: A is never 0
+        bne     EXE_XIO::is_cio ; Note: A is never 0
 .endproc
 
-.proc   TOK_NMOVE  ; move memory down
+.proc   EXE_NMOVE  ; move memory down
         pha
         lda     stack_l, y
         sta     move_dwn_dst
@@ -578,10 +581,10 @@ setcom: lda     #0
         sta     move_dwn_src+1
         pla
         jsr     move_dwn
-        jmp     TOK_MOVE::pop_stack_3
+        jmp     EXE_MOVE::pop_stack_3
 .endproc
 
-.proc   TOK_PEEK  ; AX = *(AX)
+.proc   EXE_PEEK  ; AX = *(AX)
 .if 0
         sta     tmp1
         stx     tmp1+1
@@ -597,7 +600,7 @@ load:   lda     $FF00, x
         jmp     next_instruction
 .endproc
 
-.proc   TOK_INC ; DPOKE(AX, DPEEK(AX) + 1)
+.proc   EXE_INC ; DPOKE(AX, DPEEK(AX) + 1)
         stx     loadH+2
         stx     loadL+2
         tax
@@ -607,7 +610,7 @@ loadH:  inc     $FF01, x
 :       jmp     pop_stack
 .endproc
 
-.proc   TOK_DEC ; DPOKE(AX, DPEEK(AX) - 1)
+.proc   EXE_DEC ; DPOKE(AX, DPEEK(AX) - 1)
         stx     loadH+2
         stx     loadL1+2
         stx     loadL2+2
@@ -619,13 +622,13 @@ loadL2: dec     $FF00, x
         jmp     pop_stack
 .endproc
 
-.proc   TOK_VAR_LOAD  ; AX = value of variable
+.proc   EXE_VAR_LOAD  ; AX = value of variable
         jsr     get_op_var
         ; Fall through:
-        ; jmp     TOK_DPEEK
+        ; jmp     EXE_DPEEK
 .endproc
 
-.proc   TOK_DPEEK  ; AX = PEEK(AX) + 256 * PEEK(AX+1)
+.proc   EXE_DPEEK  ; AX = PEEK(AX) + 256 * PEEK(AX+1)
 .if 0
         sta     tmp1
         stx     tmp1+1
@@ -670,7 +673,7 @@ copy:
         jmp     INTLBUF
 .endproc
 
-.proc   TOK_VAL
+.proc   EXE_VAL
         jsr     get_str_eol
         jsr     read_word
         bcc     :+
@@ -679,7 +682,7 @@ copy:
 :       jmp     next_instruction
 .endproc
 
-.proc   TOK_TIME
+.proc   EXE_TIME
         jsr     pushAX
 retry:  ldx     19
         lda     20
@@ -688,7 +691,7 @@ retry:  ldx     19
         jmp     next_instruction
 .endproc
 
-.proc   TOK_FRE
+.proc   EXE_FRE
         jsr     pushAX
         lda     MEMTOP
         sec
@@ -701,7 +704,7 @@ retry:  ldx     19
         jmp     next_instruction
 .endproc
 
-.proc   TOK_RAND        ; AX= RANDOM from 0 to AX-1
+.proc   EXE_RAND        ; AX= RANDOM from 0 to AX-1
 
         ldy     #$80
         stx     tmp1+1
@@ -731,7 +734,7 @@ scale:  lsr     tmp2
 xit:    jmp     next_instruction
 .endproc
 
-.proc   TOK_GETKEY
+.proc   EXE_GETKEY
         jsr     pushAX
         jsr     getkey
         sty     IOERROR
@@ -739,22 +742,22 @@ xit:    jmp     next_instruction
         jmp     next_instruction
 .endproc
 
-.proc   TOK_L_NOT  ; A = !A
+.proc   EXE_L_NOT  ; A = !A
         eor     #1
         jmp     next_instruction
 .endproc
 
-.proc   TOK_L_OR  ; A = A | (SP+)
+.proc   EXE_L_OR  ; A = A | (SP+)
         ora     stack_l, y
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_L_AND  ; A = A & (SP+)
+.proc   EXE_L_AND  ; A = A & (SP+)
         and     stack_l, y
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_FOR
+.proc   EXE_FOR
         ; Store STEP into stack and HI part to temporary
         stx     tmp2+1
         jsr     pushAX
@@ -763,16 +766,16 @@ xit:    jmp     next_instruction
         ; first addition:
         ldx     #0
         stx     tmp2
-        beq     TOK_FOR_NEXT_INIT
+        beq     EXE_FOR_NEXT_INIT
 .endproc
 
-.proc   TOK_FOR_NEXT
+.proc   EXE_FOR_NEXT
         ; Store STEP into stack (and also to temporary)
         sta     tmp2
         stx     tmp2+1
         jsr     pushAX
 
-::TOK_FOR_NEXT_INIT:
+::EXE_FOR_NEXT_INIT:
         ; In stack we have:
         ;       y-1 = step
         ;       y   = limit
@@ -811,12 +814,12 @@ xit:    jmp     next_instruction
 
         ; Check sign of STEP
         bit     tmp2+1
-        bmi     TOK_GT
+        bmi     EXE_GT
 positive:
         ; Fall through
 .endproc
 
-.proc   TOK_LT  ; AX = (SP+) >= AX
+.proc   EXE_LT  ; AX = (SP+) >= AX
         sta     tmp1
         stx     tmp1+1
         lda     stack_l, y
@@ -829,7 +832,7 @@ positive:
         bmi     set1
 .endproc
 
-.proc   TOK_GT  ; AX = (SP+) <= AX
+.proc   EXE_GT  ; AX = (SP+) <= AX
         cmp     stack_l, y
         txa
         sbc     stack_h, y
@@ -839,7 +842,7 @@ positive:
         bpl     set1
 .endproc
 
-TOK_1:
+EXE_1:
         jsr     pushAX
         dec     sptr
 .proc   set1
@@ -848,7 +851,7 @@ TOK_1:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_NEQ  ; AX = AX != (SP+)
+.proc   EXE_NEQ  ; AX = AX != (SP+)
         cmp     stack_l, y
         bne     set1
         txa
@@ -858,7 +861,7 @@ TOK_1:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_EQ  ; AX = AX == (SP+)
+.proc   EXE_EQ  ; AX = AX == (SP+)
         cmp     stack_l, y
         bne     set0
         txa
@@ -867,7 +870,7 @@ TOK_1:
         beq     set1
 .endproc
 
-.proc   TOK_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1 in stack,
+.proc   EXE_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1 in stack,
                         ; the load 0 to perform an integer comparison
         sta     tmp1
         txa
@@ -923,9 +926,9 @@ xit:
         txa
         inc     sptr
         ldy     sptr
-.endproc        ; Fall through TOK_0
+.endproc        ; Fall through EXE_0
 
-TOK_0:
+EXE_0:
         jsr     pushAX
         dec     sptr
 .proc   set0
@@ -934,7 +937,7 @@ TOK_0:
         jmp     next_ins_incsp
 .endproc
 
-.proc   TOK_COMP_0  ; AX = AX != 0
+.proc   EXE_COMP_0  ; AX = AX != 0
         tay
         bne     ret_1
         txa
@@ -944,12 +947,12 @@ ret_1:  lda     #1
 ret_0:  jmp     next_instruction
 .endproc
 
-.proc   TOK_PRINT_NUM  ; PRINT (SP+)
+.proc   EXE_PRINT_NUM  ; PRINT (SP+)
         jsr     print_word
         jmp     pop_stack
 .endproc
 
-.proc   TOK_PRINT_STR   ; PRINT string
+.proc   EXE_PRINT_STR   ; PRINT string
         sta     tmp1
         stx     tmp1+1
         ldy     #0
@@ -964,19 +967,19 @@ loop:   iny
 nil:    jmp     pop_stack
 .endproc
 
-.proc   TOK_PRINT_EOL   ; PRINT EOL
+.proc   EXE_PRINT_EOL   ; PRINT EOL
         jsr     pushAX
         ; Reset tab position
         lda     #1
         sta     tabpos
         lda     #$9b
 .endproc        ; Fall through
-.proc   TOK_PUT
+.proc   EXE_PUT
         jsr     putc
         jmp     CIOV_POP::iochn0
 .endproc
 
-.proc   TOK_PRINT_TAB   ; PRINT TAB
+.proc   EXE_PRINT_TAB   ; PRINT TAB
         jsr     pushAX
         lda     #$20
         jsr     putc
@@ -986,7 +989,7 @@ nil:    jmp     pop_stack
         jmp     pop_stack
 .endproc
 
-.proc   TOK_GET
+.proc   EXE_GET
         jsr     pushAX
         ldx     IOCHN
         lda     #GETCHR
@@ -1000,7 +1003,7 @@ nil:    jmp     pop_stack
         jmp     next_instruction
 .endproc
 
-.proc   TOK_INPUT_STR   ; INPUT to string buffer (INBUFF)
+.proc   EXE_INPUT_STR   ; INPUT to string buffer (INBUFF)
         jsr     pushAX
         ldx     IOCHN
         jsr     getline
@@ -1018,7 +1021,7 @@ no_eol:
         jmp     next_instruction
 .endproc
 
-.proc   TOK_POKE  ; POKE (SP++), AX
+.proc   EXE_POKE  ; POKE (SP++), AX
         tax
         lda     stack_h, y
 .if 0
@@ -1038,7 +1041,7 @@ save:   sta     $FF00, x
         jmp     pop_stack_2
 .endproc
 
-.proc   TOK_CDATA       ; AX = address of data
+.proc   EXE_CDATA       ; AX = address of data
         jsr     pushAX
         ldx     cptr+1
         lda     cptr
@@ -1046,9 +1049,9 @@ save:   sta     $FF00, x
         adc     #2
         bcc     :+
         inx
-:       ; ldy     sptr ; TOK_JUMP does not use Y=sptr
+:       ; ldy     sptr ; EXE_JUMP does not use Y=sptr
 .endproc        ; Fall through
-.proc   TOK_JUMP
+.proc   EXE_JUMP
         pha
         stx     save_x+1
         ldy     #1
@@ -1063,7 +1066,7 @@ save_x: ldx     #$ff
         jmp     next_instruction
 .endproc
 
-.proc   TOK_CALL
+.proc   EXE_CALL
         tay
         lda     cptr
         clc
@@ -1073,10 +1076,10 @@ save_x: ldx     #$ff
         adc     #0
         pha
         tya
-        bcc     TOK_JUMP
+        bcc     EXE_JUMP
 .endproc
 
-.proc   TOK_RET
+.proc   EXE_RET
         tay
         pla
         sta     cptr+1
@@ -1086,7 +1089,7 @@ save_x: ldx     #$ff
         jmp     next_instruction
 .endproc
 
-.proc   TOK_CJUMP
+.proc   EXE_CJUMP
         tay
         bne     skip
         ldy     #1
@@ -1109,7 +1112,7 @@ adjust_cptr:
         jmp     pop_stack
 .endproc
 
-.proc   TOK_FOR_START
+.proc   EXE_FOR_START
         ; In stack we have:
         ;       AX = start value
         ;       y  = var_address
@@ -1125,7 +1128,7 @@ save_l: sta     $FF00, x
         jmp     pop_stack
 .endproc
 
-.proc   TOK_GRAPHICS  ; OPEN #6,12,0,
+.proc   EXE_GRAPHICS  ; OPEN #6,12,0,
         sta     tmp1
         ldx     #$60
         jsr     cio_close
@@ -1144,7 +1147,7 @@ save_l: sta     $FF00, x
 device_s: .byte "S:", $9B
 .endproc
 
-.proc   TOK_PLOT
+.proc   EXE_PLOT
         jsr     pushAX
         ldy     COLOR
         ldx     #$60    ; IOCB #6
@@ -1152,10 +1155,10 @@ device_s: .byte "S:", $9B
         jmp     CIOV_POP::ioerr
 .endproc
 
-TOK_FILLTO:
+EXE_FILLTO:
         ldy     #FILLIN
         .byte   $2C   ; Skip 2 bytes over next "LDY"
-.proc   TOK_DRAWTO
+.proc   EXE_DRAWTO
         ldy     #DRAWLN
         sty     ICCOM+$60
         ldy     sptr
@@ -1170,21 +1173,21 @@ TOK_FILLTO:
         jmp     CIOV_POP
 .endproc
 
-.proc   TOK_CLOSE
+.proc   EXE_CLOSE
         jsr     pushAX
         ldx     IOCHN
         lda     #CLOSE
         jmp     CIOV_CMD_POP
 .endproc
 
-.proc   TOK_SOUND_OFF
+.proc   EXE_SOUND_OFF
         pha
         jsr     sound_off
         pla
         jmp     next_instruction
 .endproc
 
-.proc   TOK_PAUSE
+.proc   EXE_PAUSE
         tay
         iny
         inx
@@ -1199,20 +1202,20 @@ wait:   lda     RTCLOK+2
 .endproc
 
 ; USR support
-.proc   TOK_USR_PARAM   ; Stores AX as an usr parameter
+.proc   EXE_USR_PARAM   ; Stores AX as an usr parameter
         pha
         txa
         pha
         jmp     pop_stack
 .endproc
 
-.proc   TOK_USR_ADDR
+.proc   EXE_USR_ADDR
         ; Store out return address into the CPU stack
         jsr     next_instruction
         jmp     next_instruction
 .endproc
 
-.proc   TOK_USR_CALL
+.proc   EXE_USR_CALL
         ; Calls the routine, address is in AX
         sta     jump+1
         stx     jump+2
@@ -1276,7 +1279,7 @@ nosave:
         rts
 .endproc
 
-.proc   TOK_INT_FP      ; Convert INT to FP
+.proc   EXE_INT_FP      ; Convert INT to FP
         ; Save INT stack, push FP stack
         jsr     save_push_fr0
         ; Restore TOS
@@ -1288,7 +1291,7 @@ nosave:
         jmp     pop_stack
 .endproc
 
-.proc   TOK_FP_INT      ; Convert FP to INT, with rounding
+.proc   EXE_FP_INT      ; Convert FP to INT, with rounding
         jsr     pushAX
         asl     FR0
         ror     tmp1    ; Store sign in tmp1
@@ -1310,7 +1313,7 @@ pos:    jsr     save_pop_fr1
         jmp     fp_return_interpreter
 .endproc
 
-.proc   TOK_PRINT_FP  ; PRINT (SP+)
+.proc   EXE_PRINT_FP  ; PRINT (SP+)
         ; Store integer stack.
         sta     fp_tmp_a
         stx     fp_tmp_x
@@ -1319,7 +1322,7 @@ pos:    jsr     save_pop_fr1
         jmp     fp_return_interpreter
 .endproc
 
-.proc   TOK_FP_CMP      ; Compare two FP numbers in stack, store 0, -1 or 1 in integer stack
+.proc   EXE_FP_CMP      ; Compare two FP numbers in stack, store 0, -1 or 1 in integer stack
         jsr     pushAX
         jsr     save_pop_fr1::nosave
         jsr     FSUB
@@ -1328,49 +1331,49 @@ pos:    jsr     save_pop_fr1
         jsr     pop_fr0
         txa
         ldy     sptr
-        jmp     TOK_0
+        jmp     EXE_0
 .endproc
 
-.proc   TOK_FP_ADD
+.proc   EXE_FP_ADD
         jsr     save_pop_fr1
         jsr     FADD
         jmp     check_fp_err
 .endproc
 
-.proc   TOK_FP_SUB
+.proc   EXE_FP_SUB
         jsr     save_pop_fr1
         jsr     FSUB
         jmp     check_fp_err
 .endproc
 
-.proc   TOK_FP_MUL
+.proc   EXE_FP_MUL
         jsr     save_pop_fr1
         jsr     FMUL
         jmp     check_fp_err
 .endproc
 
-.proc   TOK_FP_DIV
+.proc   EXE_FP_DIV
         jsr     save_pop_fr1
         jsr     FDIV
         jmp     check_fp_err
 .endproc
 
-.proc   TOK_FP_ABS
+.proc   EXE_FP_ABS
         asl     FR0
 lft:    lsr     FR0
         jmp     next_instruction
 .endproc
 
-.proc   TOK_FP_NEG
+.proc   EXE_FP_NEG
         asl     FR0
         beq     ok
-        bcs     TOK_FP_ABS::lft
+        bcs     EXE_FP_ABS::lft
         sec
         ror     FR0
 ok:     jmp     next_instruction
 .endproc
 
-.proc   TOK_FP_SGN
+.proc   EXE_FP_SGN
         asl     FR0
         beq     zero
         ldy     #$80
@@ -1386,7 +1389,7 @@ ok:     jmp     next_instruction
 zero:   jmp     next_instruction
 .endproc
 
-.proc   TOK_FLOAT
+.proc   EXE_FLOAT
         jsr     save_push_fr0
 
         ldy     #5
@@ -1404,7 +1407,7 @@ ldloop: lda     (cptr), y
         bcs     fp_return_interpreter
 .endproc
 
-.proc   TOK_FP_VAL
+.proc   EXE_FP_VAL
         jsr     get_str_eol
         jsr     push_fr0
         jsr     read_fp
@@ -1414,7 +1417,7 @@ ldloop: lda     (cptr), y
 :       jmp     pop_stack
 .endproc
 
-.proc   TOK_FP_LOAD
+.proc   EXE_FP_LOAD
         stx     FLPTR+1
         sta     FLPTR
         jsr     push_fr0
@@ -1422,7 +1425,7 @@ ldloop: lda     (cptr), y
         jmp     pop_stack
 .endproc
 
-.proc   TOK_FP_STORE
+.proc   EXE_FP_STORE
         stx     FLPTR+1
         sta     FLPTR
         jsr     FST0P
@@ -1431,7 +1434,7 @@ ldloop: lda     (cptr), y
         jmp     pop_stack
 .endproc
 
-.proc   TOK_FP_EXP
+.proc   EXE_FP_EXP
         sta     fp_tmp_a
         stx     fp_tmp_x
         jsr     EXP
@@ -1455,7 +1458,7 @@ ok:     ; Fall through
         jmp     next_instruction
 .endproc
 
-.proc   TOK_FP_EXP10
+.proc   EXE_FP_EXP10
         sta     fp_tmp_a
         stx     fp_tmp_x
         jsr     EXP10
@@ -1464,7 +1467,7 @@ ok:     ; Fall through
 
         ; Square Root: Copied from Altirra BASIC
         ; Copyright (C) 2015 Avery Lee, All Rights Reserved.
-.proc   TOK_FP_SQRT
+.proc   EXE_FP_SQRT
 FPHALF= $DF6C
         sta     fp_tmp_a
         stx     fp_tmp_x
@@ -1529,14 +1532,14 @@ approx_compare_tab:
         .byte   $ff,$87,$66,$55,$36,$24,$14,$07,$02
 .endproc
 
-.proc   TOK_FP_LOG
+.proc   EXE_FP_LOG
         sta     fp_tmp_a
         stx     fp_tmp_x
         jsr     LOG
         jmp     check_fp_err
 .endproc
 
-.proc   TOK_FP_LOG10
+.proc   EXE_FP_LOG10
         sta     fp_tmp_a
         stx     fp_tmp_x
         jsr     LOG10
@@ -1544,7 +1547,7 @@ approx_compare_tab:
 .endproc
 
         ; Computes FR0 ^ (AX)
-.proc   TOK_FP_IPOW
+.proc   EXE_FP_IPOW
 
         ; Store exponent
         sta     tmp1
@@ -1619,7 +1622,7 @@ xit:    jmp     pop_stack
 
         ; Returns a random FP number in the interval 0 <= X < 1
         ; Based on code from Altirra BASIC, (C) 2015 Avery Lee.
-.proc   TOK_FP_RND
+.proc   EXE_FP_RND
 FPNORM=$DC00
         jsr     save_push_fr0
 
@@ -1725,7 +1728,7 @@ ATNCOEF     = $DFAE
         jmp     FMUL
 .endproc
 
-.proc   TOK_FP_SIN
+.proc   EXE_FP_SIN
         ldy     #2      ; Negative SIN: quadrant #2
         bit     FR0
         bmi     SINCOS
@@ -1733,7 +1736,7 @@ ATNCOEF     = $DFAE
         .byte   $2C     ; Skip 2 bytes over next "LDY"
 .endproc        ; Fall through
 
-.proc   TOK_FP_COS
+.proc   EXE_FP_COS
         ldy     #1      ; Positve/Negative COS: quadrant #1
 .endproc        ; Fall trough
 
@@ -1813,7 +1816,7 @@ exit:
         ; Uses table of coefficients on ROM, shorter code,
         ; reduced as:  ATN(x) = PI/2 - ATN(1/x)  if |x|>1.0
         ;
-.proc TOK_FP_ATN
+.proc EXE_FP_ATN
         ; Save integer stack
         sta     fp_tmp_a
         stx     fp_tmp_x
@@ -1863,61 +1866,39 @@ exit:
 .endif ; FASTBASIC_FP
 
 
-        ; From parse.asm - MUST KEEP IN SAME ORDER!
-
-        .segment "JUMPTAB"
-        .align  256
-OP_JUMP:
-        ; Copied from basyc.syn, must be in the same order:
-        .word   TOK_END
-        ; Constant and variable loading
-        .word   TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
-        .word   TOK_SHL8, TOK_0, TOK_1
-        ; Numeric operators
-        .word   TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
-        ; Bitwise operators
-        .word   TOK_BIT_AND, TOK_BIT_OR, TOK_BIT_EXOR
-        ; Functions
-        .word   TOK_PEEK, TOK_DPEEK
-        .word   TOK_TIME, TOK_FRE, TOK_RAND
-        ; Boolean operators
-        .word   TOK_L_NOT, TOK_L_OR, TOK_L_AND
-        ; Comparisons
-        .word   TOK_LT, TOK_GT, TOK_NEQ, TOK_EQ
-        ; Convert from int to bool
-        .word   TOK_COMP_0
-        ; Low level statements
-        .word   TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_INC, TOK_DEC
-        ; Graphic support statements
-        .word   TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO, TOK_FILLTO
-        ; Print statements
-        .word   TOK_PRINT_NUM, TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
-        ; I/O
-        .word   TOK_GETKEY, TOK_INPUT_STR, TOK_XIO, TOK_CLOSE, TOK_GET, TOK_PUT
-        .word   TOK_BPUT, TOK_BGET
-        ; Optimization - set's IO channel to 0
-        .word   TOK_IOCHN0
-        ; Jumps
-        .word   TOK_JUMP, TOK_CJUMP, TOK_CALL, TOK_RET
-        ; FOR loop support
-        .word   TOK_FOR, TOK_FOR_START, TOK_FOR_NEXT, TOK_FOR_EXIT
-        ; Arrays
-        .word   TOK_DIM, TOK_USHL
-        ; Strings
-        .word   TOK_COPY_STR, TOK_VAL, TOK_CMP_STR
-        ; Sound off - could be implemented as simple POKE expressions, but it's shorter this way
-        .word   TOK_SOUND_OFF
-        .word   TOK_PAUSE
-        ; USR, calls ML routinr
-        .word   TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
+; Export all token procedures
+        ; Standard integer tokens
+        .global   EXE_END
+        .global   EXE_NUM, EXE_BYTE, EXE_CSTRING, EXE_CDATA, EXE_VAR_ADDR, EXE_VAR_LOAD
+        .global   EXE_SHL8, EXE_0, EXE_1
+        .global   EXE_NEG, EXE_ABS, EXE_SGN, EXE_ADD, EXE_SUB, EXE_MUL, EXE_DIV, EXE_MOD
+        .global   EXE_BIT_AND, EXE_BIT_OR, EXE_BIT_EXOR
+        .global   EXE_PEEK, EXE_DPEEK
+        .global   EXE_TIME, EXE_FRE, EXE_RAND
+        .global   EXE_L_NOT, EXE_L_OR, EXE_L_AND
+        .global   EXE_LT, EXE_GT, EXE_NEQ, EXE_EQ
+        .global   EXE_COMP_0
+        .global   EXE_POKE, EXE_DPOKE, EXE_MOVE, EXE_NMOVE, EXE_INC, EXE_DEC
+        .global   EXE_GRAPHICS, EXE_PLOT, EXE_DRAWTO, EXE_FILLTO
+        .global   EXE_PRINT_NUM, EXE_PRINT_STR, EXE_PRINT_TAB, EXE_PRINT_EOL
+        .global   EXE_GETKEY, EXE_INPUT_STR, EXE_XIO, EXE_CLOSE, EXE_GET, EXE_PUT
+        .global   EXE_BPUT, EXE_BGET
+        .global   EXE_IOCHN0
+        .global   EXE_JUMP, EXE_CJUMP, EXE_CALL, EXE_RET
+        .global   EXE_FOR, EXE_FOR_START, EXE_FOR_NEXT, EXE_FOR_EXIT
+        .global   EXE_DIM, EXE_USHL
+        .global   EXE_COPY_STR, EXE_VAL, EXE_CMP_STR
+        .global   EXE_SOUND_OFF
+        .global   EXE_PAUSE
+        .global   EXE_USR_ADDR, EXE_USR_PARAM, EXE_USR_CALL
 
 .ifdef FASTBASIC_FP
         ; Floating point computations
-        .word   TOK_PRINT_FP
-        .word   TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
-        .word   TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
-        .word   TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
-        .word   TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
+        .global   EXE_PRINT_FP
+        .global   EXE_INT_FP, EXE_FP_VAL, EXE_FP_SGN, EXE_FP_ABS, EXE_FP_NEG, EXE_FLOAT
+        .global   EXE_FP_DIV, EXE_FP_MUL, EXE_FP_SUB, EXE_FP_ADD, EXE_FP_STORE, EXE_FP_LOAD
+        .global   EXE_FP_EXP, EXE_FP_EXP10, EXE_FP_LOG, EXE_FP_LOG10, EXE_FP_INT, EXE_FP_CMP
+        .global   EXE_FP_IPOW, EXE_FP_RND, EXE_FP_SQRT, EXE_FP_SIN, EXE_FP_COS, EXE_FP_ATN
 .endif ; FASTBASIC_FP
 
 ; vi:syntax=asm_ca65
