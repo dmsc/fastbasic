@@ -27,8 +27,6 @@
 ; Boolean constants and conversion
 ; --------------------------------
 
-        .export EXE_COMP_0, EXE_1, EXE_0
-
         ; From interpreter.asm
         .import         pushAX
         .importzp       next_instruction
@@ -55,5 +53,10 @@ ret_0:  ldx     #0
         bne     EXE_1::ret_1
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "COMP_0"
+        deftoken "0"
+        deftoken "1"
 
 ; vi:syntax=asm_ca65

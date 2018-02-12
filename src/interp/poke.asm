@@ -27,8 +27,6 @@
 ; Writes an 8-bit value to an address
 ; -----------------------------------
 
-        .export EXE_POKE
-
         ; From interpreter.asm
         .import         stack_l, stack_h, pop_stack_2
         ; From runtime.asm
@@ -55,5 +53,8 @@ save:   sta     $FF00, x
 .endif
         jmp     pop_stack_2
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "POKE"
 
 ; vi:syntax=asm_ca65

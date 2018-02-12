@@ -27,8 +27,6 @@
 ; SGN, extract sign
 ; -----------------
 
-        .export EXE_SHL8
-
         ; From interpreter.asm
         .importzp       next_instruction
 
@@ -39,5 +37,8 @@
         lda     #0
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "SHL8"
 
 ; vi:syntax=asm_ca65

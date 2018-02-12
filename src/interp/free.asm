@@ -27,8 +27,6 @@
 ; FRE function, returns bytes free
 ; --------------------------------
 
-        .export EXE_FRE
-
         ; From allloc.asm
         .importzp       mem_end
 
@@ -52,5 +50,8 @@
         tya
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "FRE"
 
 ; vi:syntax=asm_ca65

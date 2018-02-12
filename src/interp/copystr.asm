@@ -93,4 +93,7 @@ cloop:  lda     (tmp1), y
 xit:    jmp     pop_stack_2
 .endproc
 
+        .include "../deftok.inc"
+        deftoken "COPY_STR"
+
 ; vi:syntax=asm_ca65

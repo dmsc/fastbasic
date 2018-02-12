@@ -27,7 +27,7 @@
 ; Get's variable address
 ; ----------------------
 
-        .export EXE_VAR_ADDR, get_op_var
+        .export get_op_var
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr
@@ -64,5 +64,8 @@
 :
         rts
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "VAR_ADDR"
 
 ; vi:syntax=asm_ca65

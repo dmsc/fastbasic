@@ -27,8 +27,6 @@
 ; Print a tabulation (comma separator in print)
 ; ---------------------------------------------
 
-        .export EXE_PRINT_TAB
-
         ; From runtime.asm
         .import         putc
         .importzp       tabpos
@@ -46,5 +44,8 @@
         bne     :-
         jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PRINT_TAB"
 
 ; vi:syntax=asm_ca65

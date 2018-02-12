@@ -27,9 +27,6 @@
 ; FOR/NEXT and integer comparisons
 ; --------------------------------
 
-        .export EXE_LT, EXE_GT, EXE_NEQ, EXE_EQ
-        .export EXE_FOR, EXE_FOR_START, EXE_FOR_NEXT, EXE_FOR_EXIT
-
         ; From interpreter.asm
         .importzp       next_instruction, next_ins_incsp, cptr, sptr
         .import         stack_l, stack_h, pushAX, EXE_DPOKE
@@ -169,5 +166,15 @@ positive:
         bne     set0
         beq     set1
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "LT"
+        deftoken "GT"
+        deftoken "EQ"
+        deftoken "NEQ"
+        deftoken "FOR"
+        deftoken "FOR_START"
+        deftoken "FOR_NEXT"
+        deftoken "FOR_EXIT"
 
 ; vi:syntax=asm_ca65

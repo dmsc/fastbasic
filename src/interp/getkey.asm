@@ -27,8 +27,6 @@
 ; GET from keyboard
 ; -----------------
 
-        .export EXE_GETKEY
-
         ; From runtime.asm
         .importzp       IOERROR
 
@@ -57,5 +55,8 @@
         sta     ICAX1Z          ; fix problems with direct call to KEYBDV
         rts
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "GETKEY"
 
 ; vi:syntax=asm_ca65

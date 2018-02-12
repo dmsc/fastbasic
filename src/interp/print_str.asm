@@ -27,8 +27,6 @@
 ; Print string
 ; ------------
 
-        .export EXE_PRINT_STR
-
         ; From runtime.asm
         .import         putc
         .importzp       tmp1, tmp2
@@ -51,5 +49,8 @@ loop:   iny
         bne     loop
 nil:    jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PRINT_STR"
 
 ; vi:syntax=asm_ca65

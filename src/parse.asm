@@ -43,8 +43,6 @@
         ; From errors.asm
         .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL
-        ; Export used tokens values to the interpreter
-        .exportzp       TOK_CSTRING
 
         .zeropage
 buf_ptr:.res 2

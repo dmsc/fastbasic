@@ -27,7 +27,7 @@
 ; Silence all sound channels (SOUND without parameters)
 ; -----------------------------------------------------
 
-        .export EXE_SOUND_OFF, sound_off
+        .export sound_off
 
         ; From interpreter.asm
         .importzp       next_instruction
@@ -51,5 +51,8 @@
         bpl     :-
         rts
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "SOUND_OFF"
 
 ; vi:syntax=asm_ca65

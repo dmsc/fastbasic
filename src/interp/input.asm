@@ -27,8 +27,6 @@
 ; INPUT string
 ; ------------
 
-        .export EXE_INPUT_STR
-
         ; From runtime.asm
         .importzp       IOCHN, IOERROR
 
@@ -74,5 +72,8 @@ no_eol:
         ldx     #>(line_buf-1)
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "INPUT_STR"
 
 ; vi:syntax=asm_ca65

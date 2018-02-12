@@ -27,8 +27,6 @@
 ; Random integer
 ; --------------
 
-        .export EXE_RAND
-
         ; From runtime.asm
         .importzp       tmp1, tmp2
 
@@ -68,5 +66,8 @@ scale:  lsr     tmp2
         ldx     tmp2
 xit:    jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "RAND"
 
 ; vi:syntax=asm_ca65

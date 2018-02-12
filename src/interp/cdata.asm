@@ -27,8 +27,6 @@
 ; Read constant data
 ; ------------------
 
-        .export EXE_CDATA
-
         ; From interpreter.asm
         .import         EXE_JUMP, pushAX
         .importzp       cptr
@@ -46,5 +44,8 @@
 :       ; ldy     sptr ; EXE_JUMP does not use Y=sptr
         jmp     EXE_JUMP
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "CDATA"
 
 ; vi:syntax=asm_ca65

@@ -27,7 +27,7 @@
 ; CIO operations
 ; --------------
 
-        .export EXE_XIO, CIOV_CMD_POP, CIOV_CMD_POP2, CIOV_POP
+        .export CIOV_CMD_POP, CIOV_CMD_POP2, CIOV_POP
         .export CIOV_IOCHN0_POP, CIOV_IOERR_POP
 
         ; From runtime.asm
@@ -76,5 +76,8 @@ CIOV_IOCHN0_POP:
         ldy     #0
         sty     IOCHN
         jmp     pop_stack
+
+        .include "../deftok.inc"
+        deftoken "XIO"
 
 ; vi:syntax=asm_ca65

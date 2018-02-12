@@ -27,8 +27,6 @@
 ; CIO GET character
 ; -----------------
 
-        .export EXE_GET
-
         ; From runtime.asm
         .importzp       IOCHN, IOERROR
 
@@ -53,5 +51,8 @@
         ldx     #0
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "GET"
 
 ; vi:syntax=asm_ca65

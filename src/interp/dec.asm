@@ -27,8 +27,6 @@
 ; Decrement a memory location
 ; ---------------------------
 
-        .export EXE_DEC
-
         ; From interpreter.asm
         .import         pop_stack
 
@@ -45,5 +43,8 @@ loadH:  dec     $FF01, x
 loadL2: dec     $FF00, x
         jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DEC"
 
 ; vi:syntax=asm_ca65

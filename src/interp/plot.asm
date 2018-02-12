@@ -27,8 +27,6 @@
 ; PLOT
 ; ----
 
-        .export EXE_PLOT
-
         .import CIOV_IOERR_POP
 
         ; From runtime.asm
@@ -49,5 +47,8 @@
         jsr     putc_nosave
         jmp     CIOV_IOERR_POP
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PLOT"
 
 ; vi:syntax=asm_ca65

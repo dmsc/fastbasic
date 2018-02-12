@@ -27,8 +27,6 @@
 ; Graphics command
 ; ----------------
 
-        .export EXE_GRAPHICS
-
         .import CIOV_CMD_POP
 
         ; From runtime.asm
@@ -57,5 +55,8 @@
         jmp     CIOV_CMD_POP
 device_s: .byte "S:", $9B
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "GRAPHICS"
 
 ; vi:syntax=asm_ca65

@@ -27,7 +27,6 @@
 ; PUT character or PUT EOL
 ; ------------------------
 
-        .export EXE_PRINT_EOL, EXE_PUT
         .import CIOV_IOCHN0_POP
 
         ; From runtime.asm
@@ -47,5 +46,9 @@ EXE_PRINT_EOL:          ; PRINT EOL
 EXE_PUT:                ; PUT character
         jsr     putc
         jmp     CIOV_IOCHN0_POP
+
+        .include "../deftok.inc"
+        deftoken "PRINT_EOL"
+        deftoken "PUT"
 
 ; vi:syntax=asm_ca65

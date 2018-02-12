@@ -27,8 +27,6 @@
 ; Return from subroutine
 ; ----------------------
 
-        .export EXE_RET
-
         ; From interpreter.asm
         .importzp       next_instruction, cptr
 
@@ -43,5 +41,8 @@
         tya
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "RET"
 
 ; vi:syntax=asm_ca65

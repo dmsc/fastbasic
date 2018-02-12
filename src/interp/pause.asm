@@ -27,8 +27,6 @@
 ; Pause for a number of jiffies
 ; -----------------------------
 
-        .export EXE_PAUSE
-
         ; From interpreter.asm
         .import pop_stack
 
@@ -49,5 +47,8 @@ wait:   lda     RTCLOK+2
         bne     wait
         jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PAUSE"
 
 ; vi:syntax=asm_ca65

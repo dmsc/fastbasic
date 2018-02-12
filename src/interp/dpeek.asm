@@ -27,8 +27,6 @@
 ; Reads a 16-bit value from an address
 ; ------------------------------------
 
-        .export EXE_DPEEK, EXE_VAR_LOAD
-
         ; From interpreter.asm
         .importzp       next_instruction
         .import         get_op_var
@@ -62,5 +60,9 @@ loadL:  lda     $FF00, y
 .endif
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DPEEK"
+        deftoken "VAR_LOAD"
 
 ; vi:syntax=asm_ca65

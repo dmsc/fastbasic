@@ -27,8 +27,6 @@
 ; Set I/O channel to 0
 ; --------------------
 
-        .export EXE_IOCHN0
-
         ; From runtime.asm
         .importzp       IOCHN
 
@@ -42,5 +40,8 @@
         sty     IOCHN
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "IOCHN0"
 
 ; vi:syntax=asm_ca65

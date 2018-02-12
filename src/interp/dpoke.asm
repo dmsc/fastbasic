@@ -27,8 +27,6 @@
 ; Writes a 16-bit value to an address
 ; -----------------------------------
 
-        .export EXE_DPOKE
-
         ; From interpreter.asm
         .import         stack_l, stack_h, pop_stack_2
         ; From runtime.asm
@@ -61,5 +59,8 @@ save_l: sta     $FF00, x
 .endif
         jmp     pop_stack_2
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DPOKE"
 
 ; vi:syntax=asm_ca65

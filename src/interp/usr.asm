@@ -27,8 +27,6 @@
 ; USR - call user assembly routine
 ; --------------------------------
 
-        .export EXE_USR_PARAM, EXE_USR_ADDR, EXE_USR_CALL
-
         ; From interpreter.asm
         .import         pop_stack
         .importzp       next_instruction
@@ -56,5 +54,10 @@
         stx     jump+2
 jump:   jmp     $FFFF
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "USR_PARAM"
+        deftoken "USR_ADDR"
+        deftoken "USR_CALL"
 
 ; vi:syntax=asm_ca65

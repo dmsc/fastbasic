@@ -27,8 +27,6 @@
 ; Call and Jump to address
 ; ------------------------
 
-        .export EXE_CALL, EXE_JUMP
-
         ; From interpreter.asm
         .importzp       next_instruction, cptr
 
@@ -60,5 +58,9 @@ save_x: ldx     #$ff
         pla
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "CALL"
+        deftoken "JUMP"
 
 ; vi:syntax=asm_ca65

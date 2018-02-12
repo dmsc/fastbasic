@@ -27,8 +27,6 @@
 ; Division
 ; --------
 
-        .export EXE_DIV, EXE_MOD
-
         ; From runtime.asm
         .import         neg_AX
         .importzp       tmp1, tmp2, tmp3, divmod_sign
@@ -134,5 +132,9 @@ L4:     dey
         bne     L2
         rts
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DIV"
+        deftoken "MOD"
 
 ; vi:syntax=asm_ca65

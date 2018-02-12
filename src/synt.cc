@@ -75,8 +75,9 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
            "; Token Values\n";
 
     for(auto i: tok.map())
-        hdr << i.first << "\t= " << i.second << " * 2\n";
+        hdr << "\t.importzp " << i.first << "\n";
     hdr << "\n";
+    hdr << "\t.assert\tTOK_END = 0, error, \"TOK_END must be 0\"";
 
     // Output parser state machine
     out << "; Syntax state machine\n"

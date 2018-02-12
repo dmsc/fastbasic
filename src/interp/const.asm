@@ -27,8 +27,6 @@
 ; Load constants (Byte/Word and String)
 ; -------------------------------------
 
-        .export EXE_NUM, EXE_BYTE, EXE_CSTRING
-
         ; From interpreter.asm
         .importzp       next_instruction, cptr
         .import         pushAX
@@ -78,5 +76,10 @@ adjust_cptr:
         bcs     EXE_NUM::adjust_cptr
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "NUM"
+        deftoken "BYTE"
+        deftoken "CSTRING"
 
 ; vi:syntax=asm_ca65

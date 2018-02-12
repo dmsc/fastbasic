@@ -27,8 +27,6 @@
 ; Logical AND
 ; -----------
 
-        .export EXE_L_AND
-
         ; From interpreter.asm
         .import         stack_l
         .importzp       next_ins_incsp
@@ -39,5 +37,8 @@
         and     stack_l, y
         jmp     next_ins_incsp
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "L_AND"
 
 ; vi:syntax=asm_ca65

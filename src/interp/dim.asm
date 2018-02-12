@@ -27,8 +27,6 @@
 ; Array dimensioning - assigns an address to given array variable
 ; ---------------------------------------------------------------
 
-        .export EXE_DIM
-
         ; From allloc.asm
         .importzp       array_ptr
         .import         alloc_array, clear_memory
@@ -54,5 +52,8 @@
         ldy     sptr
         jmp     EXE_DPOKE
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DIM"
 
 ; vi:syntax=asm_ca65

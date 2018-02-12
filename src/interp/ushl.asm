@@ -27,8 +27,6 @@
 ; SGN, extract sign
 ; -----------------
 
-        .export EXE_USHL
-
         ; From interpreter.asm
         .importzp       next_instruction
 
@@ -43,5 +41,8 @@
         tya
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "USHL"
 
 ; vi:syntax=asm_ca65

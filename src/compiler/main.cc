@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     ofile << "; TOKENS:\n";
     for(size_t i=0; i<sizeof(token_names)/sizeof(token_names[0]); i++)
         if( token_names[i] && *token_names[i] )
-            ofile << token_names[i] << " = 2 * " << i << "\n";
+            ofile << "\t.importzp\t" << token_names[i] << "\n";
     ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"

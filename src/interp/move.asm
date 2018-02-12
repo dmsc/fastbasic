@@ -27,8 +27,6 @@
 ; MOVE: copy memory upwards
 ; -------------------------
 
-        .export EXE_MOVE
-
         ; From interpreter.asm
         .import         stack_l, stack_h, pop_stack_3
 
@@ -84,5 +82,8 @@ cpage:  dex
 xit:    jmp     pop_stack_3
 
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "MOVE"
 
 ; vi:syntax=asm_ca65

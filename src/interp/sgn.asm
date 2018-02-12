@@ -27,8 +27,6 @@
 ; SGN, extract sign
 ; -----------------
 
-        .export EXE_SGN
-
         ; From interpreter.asm
         .importzp       next_instruction
 
@@ -47,5 +45,8 @@ neg:    lda     #$FF
         tax
 xit:    jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "SGN"
 
 ; vi:syntax=asm_ca65

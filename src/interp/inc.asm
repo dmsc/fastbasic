@@ -27,8 +27,6 @@
 ; Increment a memory location
 ; ---------------------------
 
-        .export EXE_INC
-
         ; From interpreter.asm
         .import         pop_stack
 
@@ -43,5 +41,8 @@ loadL:  inc     $FF00, x
 loadH:  inc     $FF01, x
 :       jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "INC"
 
 ; vi:syntax=asm_ca65

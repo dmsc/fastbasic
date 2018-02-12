@@ -27,7 +27,6 @@
 ; -MOVE: copy memory downwards
 ; ----------------------------
 
-        .export EXE_NMOVE
         ; memory move
         .export         move_dwn_src, move_dwn_dst, move_dwn
 
@@ -124,5 +123,8 @@ xit:    rts
 move_dwn_src     = move_dwn::src+1
 move_dwn_dst     = move_dwn::dst+1
 
+
+        .include "../deftok.inc"
+        deftoken "NMOVE"
 
 ; vi:syntax=asm_ca65

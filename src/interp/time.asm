@@ -27,8 +27,6 @@
 ; TIME function, returns current time in jiffies
 ; ----------------------------------------------
 
-        .export EXE_TIME
-
         ; From interpreter.asm
         .import         pushAX
         .importzp       next_instruction
@@ -43,5 +41,8 @@ retry:  ldx     19
         bne     retry
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "TIME"
 
 ; vi:syntax=asm_ca65

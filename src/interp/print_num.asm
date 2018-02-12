@@ -27,8 +27,6 @@
 ; Print 16bit number
 ; ------------------
 
-        .export EXE_PRINT_NUM
-
         ; From runtime.asm
         .import print_word
         ; From interpreter.asm
@@ -40,5 +38,8 @@
         jsr     print_word
         jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PRINT_NUM"
 
 ; vi:syntax=asm_ca65

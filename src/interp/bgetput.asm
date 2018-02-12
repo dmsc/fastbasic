@@ -27,8 +27,6 @@
 ; Block-GET and Block-PUT
 ; -----------------------
 
-        .export EXE_BGET, EXE_BPUT
-
         .import CIOV_CMD_POP2
 
         ; From runtime.asm
@@ -67,5 +65,9 @@
 setcom: lda     #0
         jmp     CIOV_CMD_POP2   ; Note: A is never 0
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "BPUT"
+        deftoken "BGET"
 
 ; vi:syntax=asm_ca65

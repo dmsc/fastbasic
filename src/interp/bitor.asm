@@ -27,8 +27,6 @@
 ; Bitwise OR
 ; ----------
 
-        .export EXE_BIT_OR
-
         ; From interpreter.asm
         .import         stack_l, stack_h
         .importzp       next_ins_incsp
@@ -44,5 +42,8 @@
         pla
         jmp     next_ins_incsp
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "BIT_OR"
 
 ; vi:syntax=asm_ca65

@@ -27,8 +27,6 @@
 ; Logical OR
 ; ----------
 
-        .export EXE_L_OR
-
         ; From interpreter.asm
         .import         stack_l
         .importzp       next_ins_incsp
@@ -39,5 +37,8 @@
         ora     stack_l, y
         jmp     next_ins_incsp
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "L_OR"
 
 ; vi:syntax=asm_ca65

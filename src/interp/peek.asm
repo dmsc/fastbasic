@@ -27,8 +27,6 @@
 ; Reads an 8-bit value from an address
 ; ------------------------------------
 
-        .export EXE_PEEK
-
         ; From interpreter.asm
         .importzp       next_instruction
         ; From runtime.asm
@@ -51,5 +49,8 @@ load:   lda     $FF00, x
         ldx     #0
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PEEK"
 
 ; vi:syntax=asm_ca65

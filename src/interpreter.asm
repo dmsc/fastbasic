@@ -39,7 +39,7 @@
         .import         clear_data
 
         ; From jumptab.asm
-        .import         OP_JUMP
+        .import         __JUMPTAB_RUN__
 
         ; From runtime.asm
         .import         close_all
@@ -88,7 +88,7 @@ cload:  ldy     $1234           ;4
         inc     z:cload+2       ;1 (1 * 255 + 5 * 1) / 256 = 1.016
 adj:    sty     z:jump+1        ;3
 ldsptr: ldy     #0              ;2
-jump:   jmp     (OP_JUMP)       ;5 = 27 cycles per call
+jump:   jmp     (__JUMPTAB_RUN__);5 = 27 cycles per call
 
 .endproc
 
@@ -170,5 +170,10 @@ pop_stack:
         txs
         rts
 .endproc
+
+        .include "deftok.inc"
+        deftoken "END"
+
+        .assert	TOK_END = 0, error, "TOK_END must be 0"
 
 ; vi:syntax=asm_ca65

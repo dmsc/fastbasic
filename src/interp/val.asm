@@ -27,7 +27,7 @@
 ; CIO CLOSE
 ; ---------
 
-        .export EXE_VAL, read_word
+        .export read_word
 
         ; From runtime.asm
         .importzp       IOERROR, tmp1, tmp2, divmod_sign
@@ -130,5 +130,8 @@ xit_n:  cpy     tmp2+1
 :       clc
         rts
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "VAL"
 
 ; vi:syntax=asm_ca65

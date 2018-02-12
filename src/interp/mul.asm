@@ -27,8 +27,6 @@
 ; Multiplication
 ; --------------
 
-        .export EXE_MUL
-
         ; From runtime.asm
         .import         neg_AX
         .importzp       tmp1, tmp2, tmp3
@@ -75,5 +73,8 @@
         ldx     tmp1+1
         jmp     next_ins_incsp
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "MUL"
 
 ; vi:syntax=asm_ca65

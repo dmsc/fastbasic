@@ -27,8 +27,6 @@
 ; String comparisons
 ; ------------------
 
-        .export EXE_CMP_STR
-
         ; From interpreter.asm
         .import         pushAX, stack_l, stack_h, EXE_0
         .importzp       sptr
@@ -96,5 +94,7 @@ xit:
         jmp     EXE_0
 .endproc
 
+        .include "../deftok.inc"
+        deftoken "CMP_STR"
 
 ; vi:syntax=asm_ca65

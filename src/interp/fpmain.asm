@@ -29,12 +29,6 @@
 
         .exportzp       DEGFLAG, DEGFLAG_RAD, DEGFLAG_DEG, FPSTK_SIZE, fptr
 
-        .export   EXE_PRINT_FP
-        .export   EXE_INT_FP, EXE_FP_VAL, EXE_FP_SGN, EXE_FP_ABS, EXE_FP_NEG, EXE_FLOAT
-        .export   EXE_FP_DIV, EXE_FP_MUL, EXE_FP_SUB, EXE_FP_ADD, EXE_FP_STORE, EXE_FP_LOAD
-        .export   EXE_FP_EXP, EXE_FP_EXP10, EXE_FP_LOG, EXE_FP_LOG10, EXE_FP_INT, EXE_FP_CMP
-        .export   EXE_FP_IPOW, EXE_FP_RND, EXE_FP_SQRT, EXE_FP_SIN, EXE_FP_COS, EXE_FP_ATN
-
         ; From runtime.asm
         .import         neg_AX
         .import         print_fp, int_to_fp, read_fp
@@ -706,5 +700,32 @@ exit:
         jmp     check_fp_err
 
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "PRINT_FP"
+        deftoken "INT_FP"
+        deftoken "FP_VAL"
+        deftoken "FP_SGN"
+        deftoken "FP_ABS"
+        deftoken "FP_NEG"
+        deftoken "FLOAT"
+        deftoken "FP_DIV"
+        deftoken "FP_MUL"
+        deftoken "FP_SUB"
+        deftoken "FP_ADD"
+        deftoken "FP_STORE"
+        deftoken "FP_LOAD"
+        deftoken "FP_EXP"
+        deftoken "FP_EXP10"
+        deftoken "FP_LOG"
+        deftoken "FP_LOG10"
+        deftoken "FP_INT"
+        deftoken "FP_CMP"
+        deftoken "FP_IPOW"
+        deftoken "FP_RND"
+        deftoken "FP_SQRT"
+        deftoken "FP_SIN"
+        deftoken "FP_COS"
+        deftoken "FP_ATN"
 
 ; vi:syntax=asm_ca65

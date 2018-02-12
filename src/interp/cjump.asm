@@ -27,8 +27,6 @@
 ; Conditional JUMP, jumps if false
 ; --------------------------------
 
-        .export EXE_CJUMP
-
         ; From interpreter.asm
         .importzp       next_instruction, cptr
         .import         pop_stack
@@ -57,5 +55,8 @@ adjust_cptr:
         inc     cptr+1
         jmp     pop_stack
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "CJUMP"
 
 ; vi:syntax=asm_ca65

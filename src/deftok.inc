@@ -23,30 +23,22 @@
 ; example, they cover modification of the file, and distribution when not
 ; linked into a combine executable.)
 
+; Macro to define entries in the token jump table
+; -----------------------------------------------
 
-; CIO CLOSE
-; ---------
+        .feature org_per_seg
 
-        .import CIOV_CMD_POP
-
-        ; From runtime.asm
-        .importzp       IOCHN
-
-        ; From interpreter.asm
-        .import         pushAX
-
-        .include "atari.inc"
-
-        .segment        "RUNTIME"
-
-.proc   EXE_CLOSE
-        jsr     pushAX
-        ldx     IOCHN
-        lda     #CLOSE
-        jmp     CIOV_CMD_POP
-.endproc
-
-        .include "../deftok.inc"
-        deftoken "CLOSE"
+        .macro  deftoken arg
+                .pushseg
+                .segment "JUMPTAB"
+                .export         .ident (.concat ("EXE_", arg) )
+                .import         __JUMPTAB_RUN__
+                .exportzp       .ident (.concat ("TOK_", arg) )
+.ident (.concat ("JUMP_EXE_", arg) ):
+.ident (.concat ("TOK_", arg)) = <(* - __JUMPTAB_RUN__)
+                .assert (* - __JUMPTAB_RUN__) < 256, error, "More than 127 tokens!"
+                .word   .ident (.concat ("EXE_", arg) )
+                .popseg
+        .endmacro
 
 ; vi:syntax=asm_ca65

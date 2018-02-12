@@ -27,8 +27,6 @@
 ; DRAWTO and FILLTO
 ; -----------------
 
-        .export EXE_DRAWTO, EXE_FILLTO
-
         .import CIOV_POP
 
         ; From runtime.asm
@@ -59,5 +57,9 @@ EXE_FILLTO:
         sta     ICAX2, x
         jmp     CIOV_POP
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "DRAWTO"
+        deftoken "FILLTO"
 
 ; vi:syntax=asm_ca65

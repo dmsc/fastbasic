@@ -27,8 +27,6 @@
 ; ABS / NEG routines
 ; ------------------
 
-        .export EXE_ABS, EXE_NEG
-
         ; From runtime.asm
         .import         neg_AX
 
@@ -44,5 +42,8 @@ EXE_NEG:        ; AX = -AX
         jsr     neg_AX
 xit:    jmp     next_instruction
 
+        .include "../deftok.inc"
+        deftoken "ABS"
+        deftoken "NEG"
 
 ; vi:syntax=asm_ca65

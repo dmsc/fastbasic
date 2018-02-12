@@ -27,8 +27,6 @@
 ; Add / Sub routines
 ; ------------------
 
-        .export EXE_ADD, EXE_SUB
-
         ; From runtime.asm
         .import         neg_AX
 
@@ -51,5 +49,9 @@ EXE_SUB:
         pla
         jmp     next_ins_incsp
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "ADD"
+        deftoken "SUB"
 
 ; vi:syntax=asm_ca65

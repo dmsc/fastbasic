@@ -27,8 +27,6 @@
 ; Logical NOT
 ; -----------
 
-        .export EXE_L_NOT
-
         ; From interpreter.asm
         .importzp       next_instruction
 
@@ -38,5 +36,8 @@
         eor     #1
         jmp     next_instruction
 .endproc
+
+        .include "../deftok.inc"
+        deftoken "L_NOT"
 
 ; vi:syntax=asm_ca65

@@ -104,7 +104,6 @@ COMMON_AS_SRC=\
     src/alloc.asm\
     src/exehdr.asm\
     src/interpreter.asm\
-    src/jumptab.asm\
     src/runtime.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
@@ -354,6 +353,8 @@ $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 	ar65 a $@ $^
 
 # Dependencies
+$(COMMON_OBJS_FP): src/deftok.inc
+$(COMMON_OBJS_INT): src/deftok.inc
 obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
 obj/int/parse.o: src/parse.asm gen/int/basic.asm
 $(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h src/synt-read.h
