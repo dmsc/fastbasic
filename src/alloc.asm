@@ -43,10 +43,11 @@
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
         ; From runtime.asm
-        .import         move_dwn_src, move_dwn_dst, move_dwn
+        .import         move_dwn_src, move_dwn_dst, move_dwn, putc
         .importzp       tmp1, tmp2
         ; From interpreter.asm
         .importzp       var_count
+        .import         EXE_END
 
         .zeropage
 
@@ -166,16 +167,27 @@ save_x: ldx     #0
         jmp     add_pointers
 .endproc
 
+err_nomem:
+        sec
+xrts:   rts
+
         ; Allocate space for a new array AX = SIZE
 .proc alloc_array
         stx     alloc_size + 1
         ldx     #array_end - mem_start
-        bne     alloc_area::skip_y
-.endproc
+        jsr     alloc_area::skip_y
+        bcc     xrts
 
-.proc   err_nomem
-        sec
-        rts
+        ; Show message and end program
+        ldy     #memory_error_len-1
+loop:   lda     memory_error_msg, y
+        jsr     putc
+        dey
+        bpl     loop
+        jmp     EXE_END
+memory_error_msg:
+        .byte $9b, "rorrE yromeM", $9b
+memory_error_len=    * - memory_error_msg
 .endproc
 
         ; Move memory up.

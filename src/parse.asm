@@ -37,7 +37,7 @@
         .importzp       var_count, label_count
         ; From runtime.asm
         .importzp       IOCHN, COLOR, IOERROR, tmp1, tmp2, tmp3
-        .import         line_buf, putc
+        .import         putc
         ; From interpreter.asm
         .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
         ; From errors.asm
@@ -57,6 +57,9 @@ loop_sp:.res 1
 
         .code
         .include "atari.inc"
+
+; Use LBUFF as line buffer
+line_buf        = LBUFF
 
 ; Use (INBUFF)+CIX as our parser pointer
 bptr    = INBUFF

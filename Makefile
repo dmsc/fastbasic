@@ -106,6 +106,65 @@ COMMON_AS_SRC=\
     src/interpreter.asm\
     src/jumptab.asm\
     src/runtime.asm\
+    src/interp/absneg.asm\
+    src/interp/addsub.asm\
+    src/interp/bgetput.asm\
+    src/interp/bitand.asm\
+    src/interp/bitexor.asm\
+    src/interp/bitor.asm\
+    src/interp/close.asm\
+    src/interp/comp0.asm\
+    src/interp/cmpstr.asm\
+    src/interp/copystr.asm\
+    src/interp/dec.asm\
+    src/interp/dim.asm\
+    src/interp/div.asm\
+    src/interp/dpeek.asm\
+    src/interp/dpoke.asm\
+    src/interp/drawto.asm\
+    src/interp/free.asm\
+    src/interp/getkey.asm\
+    src/interp/graphics.asm\
+    src/interp/inc.asm\
+    src/interp/input.asm\
+    src/interp/iochn0.asm\
+    src/interp/ioget.asm\
+    src/interp/land.asm\
+    src/interp/lor.asm\
+    src/interp/lnot.asm\
+    src/interp/move.asm\
+    src/interp/mul.asm\
+    src/interp/nmove.asm\
+    src/interp/pause.asm\
+    src/interp/plot.asm\
+    src/interp/peek.asm\
+    src/interp/poke.asm\
+    src/interp/print_eol.asm\
+    src/interp/print_num.asm\
+    src/interp/print_str.asm\
+    src/interp/print_tab.asm\
+    src/interp/putchar.asm\
+    src/interp/rand.asm\
+    src/interp/sgn.asm\
+    src/interp/shl8.asm\
+    src/interp/soundoff.asm\
+    src/interp/streol.asm\
+    src/interp/time.asm\
+    src/interp/ushl.asm\
+    src/interp/usr.asm\
+    src/interp/val.asm\
+    src/interp/varaddr.asm\
+    src/interp/return.asm\
+    src/interp/cjump.asm\
+    src/interp/xio.asm\
+    src/interp/const.asm\
+    src/interp/cdata.asm\
+    src/interp/jump.asm\
+    src/interp/for.asm\
+
+# FP Interpreter ASM files
+FP_AS_SRC=\
+    src/interp/fpmain.asm\
 
 # BAS editor source
 BAS_SRC=\
@@ -114,7 +173,7 @@ BAS_SRC=\
 # Object files
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=obj/fp/%.o)
 IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=obj/fp/%.o)
-COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o)
+COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o) $(FP_AS_SRC:src/%.asm=obj/fp/%.o)
 BAS_OBJS_FP=$(BAS_SRC:src/%.bas=obj/fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=obj/int/%.o)
@@ -270,19 +329,19 @@ gen/int/%.asm: samples/int/%.bas $(NATIVE_INT) | gen/int
 	$(NATIVE_INT) $< $@
 
 # Object file rules
-obj/fp/%.o: src/%.asm | obj/fp
+obj/fp/%.o: src/%.asm | obj/fp obj/fp/interp
 	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
 
 obj/fp/%.o: gen/fp/%.asm | obj/fp
 	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
 
-obj/int/%.o: src/%.asm | obj/int
+obj/int/%.o: src/%.asm | obj/int obj/int/interp
 	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
 
 obj/int/%.o: gen/int/%.asm | obj/int
 	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
 
-gen obj obj/fp obj/int gen/fp gen/int bin build:
+gen obj obj/fp obj/int obj/fp/interp obj/int/interp gen/fp gen/int bin build:
 	mkdir -p $@
 
 # Library files
