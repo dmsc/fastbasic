@@ -92,6 +92,7 @@ SM_EMIT_16=     18
 SM_EMIT_N=      SM_EMIT_16 + 1
 SM_EMIT=        SM_EMIT_1
 
+        .include "basic.inc"
         .include "basic.asm"
 
 ; Now, the rest of the code

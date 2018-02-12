@@ -30,36 +30,22 @@
 #include <string>
 #include <vector>
 
-bool p_file(parseState &p, std::ostream &out)
+bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 {
-    // Output header
-    out << "; Syntax state machine\n\n";
-
-    while(1)
+    // Parse TOKENS
+    wordlist tok(p, "TOKENS", 0);
+    if( !tok.parse() )
     {
-        wordlist tok(p, "TOKENS", 0);
-        if( !tok.parse() )
-            break;
-        for(auto i: tok.map())
-            out << i.first << "\t= " << i.second << " * 2\n";
-        out << "\n";
-        std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
+        p.error("missing TOKENS table");
+        return false;
     }
 
+    // Parse EXTERN routines
     wordlist ext(p, "EXTERN", 128);
-    if( ext.parse() )
-    {
-        int n = 128;
-        for(auto i: ext.map())
-            out << " .global " << i.first << "\n";
-        for(auto i: ext.map())
-        {
-            i.second = n++;
-            out << "SMB_" << i.first << "\t= " << i.second << "\n";
-        }
-        out << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
-    }
+    if( !ext.parse() )
+        p.error("missing EXTERN table");
 
+    // Parse state machines
     std::map<std::string, std::unique_ptr<statemachine<asm_emit>>> sm_list;
 
     while( !p.eof() )
@@ -76,22 +62,63 @@ bool p_file(parseState &p, std::ostream &out)
             p.error("invalid input '" + s.str() + "'");
         }
     }
-    // Emit labels table
+
+    std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
+    std::cerr << "syntax: " << (ext.next() + sm_list.size() - 128)
+              << " tables in the parser-table.\n";
+
+    // Output header
+    hdr << "; Syntax state machine - header\n"
+           "; -----------------------------\n"
+           "; This is a generated file - do not modify\n"
+           "\n"
+           "; Token Values\n";
+
+    for(auto i: tok.map())
+        hdr << i.first << "\t= " << i.second << " * 2\n";
+    hdr << "\n";
+
+    // Output parser state machine
+    out << "; Syntax state machine\n"
+           "; --------------------\n"
+           "; This is a generated file - do not modify\n"
+           "\n";
+
+    // External symbols
+    out << "; External symbols\n";
+    for(auto i: ext.map())
+        out << " .global " << i.first << "\n";
+
+    // State machine symbol IDs
+    out << "\n"
+           "; State Machine IDs\n";
+    int n = 128;
+    for(auto i: ext.map())
+    {
+        i.second = n++;
+        out << "SMB_" << i.first << "\t= " << i.second << "\n";
+    }
+    out << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
+
     int ns = ext.next();
     for(auto &sm: sm_list)
         out << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
+
     // Emit array with addresses
-    out << "\nSM_TABLE_ADDR:\n";
+    out << "\n"
+           "; Address of State Machine tables\n"
+           "\n"
+           "SM_TABLE_ADDR:\n";
     for(auto i: ext.map())
         out << "\t.word " << i.first << " - 1\n";
     for(auto &sm: sm_list)
         out << "\t.word " << sm.second->name() << " - 1\n";
     // Emit state machine tables
-    out << "\n";
+    out << "\n"
+           "; State machine tables\n";
     for(auto &sm: sm_list)
         sm.second->print(out);
 
-    std::cerr << "syntax: " << (ns-128) << " tables in the parser-table.\n";
     return true;
 }
 
@@ -101,7 +128,7 @@ int main(int argc, const char **argv)
  std::string inp = readInput(opt.defs, opt.input());
 
  parseState ps(inp.c_str());
- p_file(ps, opt.output());
+ p_file(ps, opt.output(), opt.output_header(".inc"));
 
  return 0;
 }
