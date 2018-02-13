@@ -29,23 +29,17 @@
 
         .import CIOV_CMD_POP
 
-        ; From runtime.asm
-        .import         cio_close
-        .importzp       tmp1
-
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_GRAPHICS  ; OPEN #6,12,0,
-        sta     tmp1
         ldx     #$60
-        jsr     cio_close
-        lda     tmp1
+        pha
         and     #$F0
         eor     #$1C    ; Get AUX1 from BASIC mode
         sta     ICAX1, x
-        lda     tmp1    ; And AUX2
+        pla             ; And AUX2
         sta     ICAX2, x
         lda     #<device_s
         sta     ICBAL, x

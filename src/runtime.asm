@@ -31,7 +31,7 @@
         .export         neg_AX
         ; simple I/O
         .export         print_word
-        .export         cio_close, close_all
+        .export         close_all
         .exportzp       IOCHN, COLOR, IOERROR, tabpos, divmod_sign
         ; Common ZP variables (2 bytes each)
         .exportzp       tmp1, tmp2, tmp3
@@ -123,16 +123,12 @@ ploop:  iny
         rts
 .endproc
 
-.proc   cio_close
-        lda     #CLOSE
-        sta     ICCOM, x
-        jmp     CIOV
-.endproc
-
 .proc   close_all
         lda     #$70
 :       tax
-        jsr     cio_close
+        lda     #CLOSE
+        sta     ICCOM, x
+        jsr     CIOV
         txa
         sec
         sbc     #$10

@@ -526,7 +526,7 @@ PARSE_LINE_COMMAND:
         "ELIF" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
-        "GRaphics" EXPR emit TOK_GRAPHICS
+        "GRaphics" emit TOK_BYTE emit IOCHN emit TOK_BYTE emit 96 emit TOK_POKE emit TOK_CLOSE  EXPR emit TOK_GRAPHICS
         "Color" emit TOK_BYTE emit COLOR EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
         "POSition" POSITION
