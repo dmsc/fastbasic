@@ -37,10 +37,11 @@
 ;  var_ptr:     -> next available pos
 ;  top_mem:     TOP OF MEMORY
 ;
-        .export         alloc_prog, alloc_array, alloc_laddr, clear_data
-        .export         parser_alloc_init, alloc_area_8, clear_memory
-        .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
-        .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
+        .export         alloc_prog, alloc_array, alloc_laddr
+        .export         parser_alloc_init, alloc_area_8
+
+        .importzp       prog_ptr, laddr_ptr, mem_end, array_ptr, var_buf
+        .import         add_pointers
 
         ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn, putc
@@ -49,93 +50,20 @@
         .importzp       var_count
         .import         EXE_END
 
-        .zeropage
 
-        ;           During Parsing           During Execution
-        ;           ---------------------------------------------
-        ; Pointer to program buffer        / current program
-mem_start:
-prog_ptr:       .res    2
-prog_end:       .res    2
-        ; Pointer to variable name table   / variable value table
-var_buf=        prog_end
-var_ptr:        .res    2
-var_end=        var_ptr
-        ; Pointer to labels name table     / strings/arrays table
-array_buf=      var_end
-array_ptr:      .res    2
-array_end=      array_ptr
-label_buf=      array_buf
-label_ptr=      array_ptr
-label_end=      array_end
-        ; Pointer to labels address table  / unused at runtime
-laddr_buf=      array_end
-laddr_ptr:      .res    2
-laddr_end=      laddr_ptr
-        ; End of used memory
-mem_end=        laddr_end
+mem_start = prog_ptr
+prog_end  = var_buf
+array_end = array_ptr
+laddr_end = laddr_ptr
+
         ; Top of available memory
 MEMTOP=         $2E5
-
         ; Allocation size
 alloc_size=     tmp1
 
 ;----------------------------------------------------------
 ; Following routines are part of the runtime
         .segment        "RUNTIME"
-
-        ; Clears data pointers before starting the interpreter
-.proc   clear_data
-        ; Init all pointers to end of program data
-        lda     prog_ptr
-        ldy     prog_ptr+1
-        ldx     #(mem_end-prog_ptr)
-loop:
-        sta     prog_ptr, x
-        sty     prog_ptr+1, x
-        dex
-        dex
-        bpl     loop
-        ; Adds 2 bytes for each variable
-        ldy     #0
-        lda     var_count
-        asl
-        sta     alloc_size
-        bcc     :+
-        iny
-:       sty     alloc_size+1
-        ldx     #var_end - mem_start
-        jsr     add_pointers
-        ; And clears variable area (we have size in "alloc_size")
-        lda     var_buf
-        sta     tmp2
-        lda     var_buf+1
-        sta     tmp2+1
-.endproc        ; Fall through
-
-        ; Clears memory from (tmp2) of (alloc_size) size
-.proc   clear_memory
-        lda     alloc_size+1
-        tax
-        clc
-        adc     tmp2+1
-        sta     tmp2+1
-        lda     #0
-        inx
-        ldy     alloc_size
-        beq     nxt
-        .byte   $2C   ; Skip 2 bytes over next "DEC"
-
-pgloop: dec     tmp2+1
-loop:   dey
-        sta     (tmp2), y
-        bne     loop
-
-nxt:    dex
-        bne     pgloop
-
-        rts
-.endproc
 
         ; This should be outside of runtime, but it's shorter here
 .proc   alloc_laddr
@@ -216,23 +144,6 @@ memory_error_len=    * - memory_error_msg
         tax
         pla
         jmp     move_dwn
-.endproc
-
-        ; Increase all pointers from "Y" to the last by AX
-.proc   add_pointers
-loop:   clc
-        lda     mem_start, x
-        adc     alloc_size
-        sta     mem_start, x
-        inx
-        lda     mem_start, x
-        adc     alloc_size+1
-        sta     mem_start, x
-        inx
-        cpx     #mem_end - mem_start + 2
-        bne     loop
-        clc
-        rts
 .endproc
 
 ;----------------------------------------------------------

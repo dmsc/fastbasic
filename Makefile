@@ -102,8 +102,10 @@ IDE_AS_SRC=\
 # Common ASM files
 COMMON_AS_SRC=\
     src/alloc.asm\
+    src/clearmem.asm\
     src/exehdr.asm\
     src/interpreter.asm\
+    src/memptr.asm\
     src/runtime.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
