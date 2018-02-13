@@ -76,8 +76,8 @@ y_pos:  sta     tmp1
         sty     divmod_sign
 
         ldy     sptr
-        lda     stack_l+1, y
-        ldx     stack_h+1, y
+        lda     stack_l, y
+        ldx     stack_h, y
         bpl     x_pos
         jsr     neg_AX
         dec     divmod_sign
