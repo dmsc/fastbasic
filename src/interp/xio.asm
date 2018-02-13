@@ -27,15 +27,15 @@
 ; CIO operations
 ; --------------
 
-        .export CIOV_CMD_POP, CIOV_CMD_POP2, CIOV_POP
-        .export CIOV_IOCHN0_POP, CIOV_IOERR_POP
-
+        .export CIOV_CMD_POP2
+        ; From close.asm
+        .import CIOV_CMD_POP
         ; From runtime.asm
         .import         neg_AX
         .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR
 
         ; From interpreter.asm
-        .import         pop_stack, stack_l, stack_h, get_str_eol
+        .import         stack_l, stack_h, get_str_eol
         .importzp       sptr
 
         .include "atari.inc"
@@ -64,18 +64,7 @@
         ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack twice
 CIOV_CMD_POP2:
         inc     sptr
-        ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack
-CIOV_CMD_POP:
-        sta     ICCOM, x
-        ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
-CIOV_POP:
-        jsr     CIOV
-CIOV_IOERR_POP:
-        sty     IOERROR
-CIOV_IOCHN0_POP:
-        ldy     #0
-        sty     IOCHN
-        jmp     pop_stack
+        jmp     CIOV_CMD_POP
 
         .include "../deftok.inc"
         deftoken "XIO"
