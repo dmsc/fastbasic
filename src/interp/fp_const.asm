@@ -24,33 +24,61 @@
 ; linked into a combine executable.)
 
 
-; Floating Point stack and variables
-; ----------------------------------
+; Load Floating Point constant (and also, ADD)
+; --------------------------------------------
 
-        .exportzp       DEGFLAG, FPSTK_SIZE, fptr, fp_tmp_a, fp_tmp_x
-        .export         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+        .export         fp_return_interpreter, check_fp_err
+
+        .import         save_push_fr0, save_pop_fr1
+        .importzp       fp_tmp_x, fp_tmp_a
 
         ; From interpreter.asm
-        .import         stack_end
+        .importzp       next_instruction, cptr, IOERROR
 
-        .zeropage
+        .include "atari.inc"
 
-        ; FP stack pointer
-fptr:   .res    1
-        ; Temporary store for INT TOS
-fp_tmp_a:       .res    1
-fp_tmp_x:       .res    1
-        ; DEG/RAD flag
-DEGFLAG:        .res    1
+        .segment        "RUNTIME"
 
-        ; Floating point stack, 8 * 6 = 48 bytes.
-        ; Total stack = 128 bytes
-FPSTK_SIZE = 8
-fpstk_0 =       stack_end
-fpstk_1 =       fpstk_0 + FPSTK_SIZE
-fpstk_2 =       fpstk_1 + FPSTK_SIZE
-fpstk_3 =       fpstk_2 + FPSTK_SIZE
-fpstk_4 =       fpstk_3 + FPSTK_SIZE
-fpstk_5 =       fpstk_4 + FPSTK_SIZE
+.proc   EXE_FLOAT
+        jsr     save_push_fr0
+
+        ldy     #5
+ldloop: lda     (cptr), y
+        sta     FR0,y
+        dey
+        bpl     ldloop
+
+        lda     cptr
+        clc
+        adc     #6
+        sta     cptr
+        bcc     fp_return_interpreter
+        inc     cptr+1
+        bcs     fp_return_interpreter
+.endproc
+
+.proc   EXE_FP_ADD
+        jsr     save_pop_fr1
+        jsr     FADD
+.endproc        ; Fall-through
+        ; Checks FP error, restores INT stack
+        ; and returns to interpreter
+.proc   check_fp_err
+        ; Check error from last FP op
+        bcc     ok
+        lda     #3
+        sta     IOERROR
+ok:     ; Fall through
+.endproc
+.proc   fp_return_interpreter
+; Restore INT stack
+        lda     fp_tmp_a
+        ldx     fp_tmp_x
+        jmp     next_instruction
+.endproc
+
+        .include "../deftok.inc"
+        deftoken "FLOAT"
+        deftoken "FP_ADD"
 
 ; vi:syntax=asm_ca65

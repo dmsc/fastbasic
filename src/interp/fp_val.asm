@@ -30,7 +30,8 @@
         ; From fpmain.asm
         .import         push_fr0
         ; From interpreter.asm
-        .import         get_str_eol, pop_stack, IOERROR
+        .import         get_str_eol, pop_stack
+        .importzp       IOERROR
 
         .include "atari.inc"
 

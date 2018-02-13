@@ -193,6 +193,7 @@ FP_AS_SRC=\
     src/interp/fp_push.asm\
     src/interp/fp_pop.asm\
     src/interp/fp_sqrt.asm\
+    src/interp/fp_const.asm\
 
 # BAS editor source
 BAS_SRC=\
