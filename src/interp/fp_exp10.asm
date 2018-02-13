@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Base 10 exponentiation
+; ----------------------
 
         .importzp       fp_tmp_a, fp_tmp_x
         .import         check_fp_err

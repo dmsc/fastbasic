@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Convert FP to integer
+; ---------------------
 
         .importzp       tmp1, IOERROR
         .import         pushAX, neg_AX, save_pop_fr1, fp_return_interpreter

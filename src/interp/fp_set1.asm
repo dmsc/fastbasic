@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Store 1 into FR0 (floating point register 0)
+; --------------------------------------------
 
         .export FP_SET_1
 

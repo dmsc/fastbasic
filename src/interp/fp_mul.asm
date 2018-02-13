@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Floating Point Multiplication
+; -----------------------------
 
         .import         check_fp_err, save_pop_fr1
 

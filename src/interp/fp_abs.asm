@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Absolute and Negative
-; ---------------------
+; Floating Point Absolute and Negative
+; ------------------------------------
 
         .importzp       next_instruction
 

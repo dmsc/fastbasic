@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; CIO CLOSE
-; ---------
+; Convert string to number
+; ------------------------
 
         .export read_word
 

@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; SGN, extract sign
-; -----------------
+; Shift Left (multiplies by 2)
+; ----------------------------
 
         ; From interpreter.asm
         .importzp       next_instruction

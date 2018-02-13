@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Division
-; --------
+; Division and Modulus
+; --------------------
 
         ; From runtime.asm
         .import         neg_AX

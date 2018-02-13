@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Store Floating Point number to address
+; --------------------------------------
 
         .import         pop_fr0, pop_stack
 

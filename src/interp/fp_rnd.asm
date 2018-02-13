@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; Natural LOG function
-; --------------------
+; Random number from 0.0 to 0.9999999999
+; --------------------------------------
 
         .importzp       fp_tmp_a, fp_tmp_x
         .import         check_fp_err, save_push_fr0

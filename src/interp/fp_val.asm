@@ -24,27 +24,27 @@
 ; linked into a combine executable.)
 
 
-; Main Floating Point interpreter
-; -------------------------------
+; Convert string to floating point
+; --------------------------------
 
         ; From fpmain.asm
         .import         push_fr0
         ; From interpreter.asm
-        .import         get_str_eol, pop_stack
-        ; From runtime.asm
-        .importzp       IOERROR
-        .import         read_fp
+        .import         get_str_eol, pop_stack, IOERROR
+
+        .include "atari.inc"
+
+        .segment        "RUNTIME"
 
 .proc   EXE_FP_VAL
         jsr     get_str_eol
         jsr     push_fr0
-        jsr     read_fp
+        jsr     AFP
         bcc     :+
         lda     #18
         sta     IOERROR
 :       jmp     pop_stack
 .endproc
-
 
         .include "../deftok.inc"
         deftoken "FP_VAL"

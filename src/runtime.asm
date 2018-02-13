@@ -27,16 +27,11 @@
 ; Common runtime between interpreter and parser
 ; ---------------------------------------------
 
-        ; 16bit math
-        .export         neg_AX
         ; simple I/O
         .export         print_word
-        .export         close_all
-        .exportzp       IOCHN, COLOR, IOERROR, tabpos, divmod_sign
-        ; Common ZP variables (2 bytes each)
-        .exportzp       tmp1, tmp2, tmp3
 
-        .import         putc
+        .import         neg_AX, putc
+        .importzp       tmp1
 
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
@@ -50,33 +45,7 @@ print_word = int_to_fp
 
         .include        "atari.inc"
 
-        .zeropage
-
-tmp1:   .res    2
-tmp2:   .res    2
-tmp3:   .res    2
-divmod_sign:
-        .res    1
-IOCHN:  .res    1
-IOERROR:.res    2
-COLOR:  .res    1
-tabpos: .res    1
-
         .segment        "RUNTIME"
-
-; Negate AX value : SHOULD PRESERVE Y
-.proc   neg_AX
-        clc
-        eor     #$FF
-        adc     #1
-        pha
-        txa
-        eor     #$FF
-        adc     #0
-        tax
-        pla
-        rts
-.endproc
 
 .proc   int_to_fp
 FR0     = $D4
@@ -120,19 +89,6 @@ ploop:  iny
         jsr     putc
         pla
         bpl     ploop
-        rts
-.endproc
-
-.proc   close_all
-        lda     #$70
-:       tax
-        lda     #CLOSE
-        sta     ICCOM, x
-        jsr     CIOV
-        txa
-        sec
-        sbc     #$10
-        bne     :-
         rts
 .endproc
 

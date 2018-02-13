@@ -24,8 +24,8 @@
 ; linked into a combine executable.)
 
 
-; CIO CLOSE
-; ---------
+; Calls CIO CLOSE
+; ---------------
 
         .export         CIOV_POP, CIOV_CMD_POP, CIOV_IOERR_POP, CIOV_IOCHN0_POP
 

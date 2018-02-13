@@ -30,7 +30,6 @@
         ; From fpmain.asm
         .import         save_push_fr0
         .importzp       fp_tmp_a, fp_tmp_x
-
         ; From runtime.asm
         .import         int_to_fp
         ; From interpreter.asm

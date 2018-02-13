@@ -29,12 +29,9 @@
 
         .import CIOV_POP
 
-        ; From runtime.asm
-        .importzp       COLOR
-
         ; From interpreter.asm
         .import         pushAX
-        .importzp       sptr
+        .importzp       COLOR, sptr
 
         .include "atari.inc"
 

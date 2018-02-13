@@ -33,6 +33,7 @@
 
         .exportzp       interpreter_cptr, var_count, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
+        .exportzp       tabpos, IOCHN, IOERROR, COLOR, tmp1, tmp2, tmp3, divmod_sign
 
         ; From allloc.asm
         .importzp       var_buf
@@ -41,9 +42,6 @@
         ; From jumptab.asm
         .import         __JUMPTAB_RUN__
 
-        ; From runtime.asm
-        .import         close_all
-        .importzp       tabpos, IOCHN, IOERROR
 
         ; From soundoff.asm
         .import         sound_off
@@ -53,6 +51,16 @@
         .zeropage
 var_count:
         .res    1
+tmp1:   .res    2
+tmp2:   .res    2
+tmp3:   .res    2
+divmod_sign:
+        .res    1
+IOCHN:  .res    1
+IOERROR:.res    2
+COLOR:  .res    1
+tabpos: .res    1
+
 
         ; Integer stack, 40 * 2 = 80 bytes
 .define STACK_SIZE      40
@@ -110,8 +118,18 @@ interpreter_cptr        =       cptr
 
         ; Get memory for all variables and clear the values
         jsr     clear_data
+
         ; Close al I/O channels
-        jsr     close_all
+        lda     #$70
+:       tax
+        lda     #CLOSE
+        sta     ICCOM, x
+        jsr     CIOV
+        txa
+        sec
+        sbc     #$10
+        bne     :-
+
         ; Sound off
         jsr     sound_off
         ; Clear TAB position, IO channel and IO error

@@ -24,22 +24,25 @@
 ; linked into a combine executable.)
 
 
-; Floating Point Division
-; -----------------------
+; Negate AX
+; ---------
 
-        .import         check_fp_err, save_pop_fr1
-
-        .include "atari.inc"
+        .export neg_AX
 
         .segment        "RUNTIME"
 
-.proc   EXE_FP_DIV
-        jsr     save_pop_fr1
-        jsr     FDIV
-        jmp     check_fp_err
+; Negate AX value : MUST PRESERVE Y
+.proc   neg_AX
+        clc
+        eor     #$FF
+        adc     #1
+        pha
+        txa
+        eor     #$FF
+        adc     #0
+        tax
+        pla
+        rts
 .endproc
-
-        .include "../deftok.inc"
-        deftoken "FP_DIV"
 
 ; vi:syntax=asm_ca65

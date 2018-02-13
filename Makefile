@@ -162,6 +162,7 @@ COMMON_AS_SRC=\
     src/interp/cdata.asm\
     src/interp/jump.asm\
     src/interp/for.asm\
+    src/interp/negax.asm\
 
 # FP Interpreter ASM files
 FP_AS_SRC=\
