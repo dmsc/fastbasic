@@ -164,6 +164,32 @@ COMMON_AS_SRC=\
 # FP Interpreter ASM files
 FP_AS_SRC=\
     src/interp/fpmain.asm\
+    src/interp/fp_val.asm\
+    src/interp/fp_sgn.asm\
+    src/interp/fp_intfp.asm\
+    src/interp/fp_print.asm\
+    src/interp/fp_evalpoly.asm\
+    src/interp/fp_atn.asm\
+    src/interp/fp_sincos.asm\
+    src/interp/fp_coef.asm\
+    src/interp/fp_log.asm\
+    src/interp/fp_log10.asm\
+    src/interp/fp_exp.asm\
+    src/interp/fp_exp10.asm\
+    src/interp/fp_sub.asm\
+    src/interp/fp_mul.asm\
+    src/interp/fp_div.asm\
+    src/interp/fp_ipow.asm\
+    src/interp/fp_set1.asm\
+    src/interp/fp_rnd.asm\
+    src/interp/fp_load.asm\
+    src/interp/fp_store.asm\
+    src/interp/fp_abs.asm\
+    src/interp/fp_cmp.asm\
+    src/interp/fp_int.asm\
+    src/interp/fp_push.asm\
+    src/interp/fp_pop.asm\
+    src/interp/fp_sqrt.asm\
 
 # BAS editor source
 BAS_SRC=\
