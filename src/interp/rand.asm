@@ -39,12 +39,12 @@
 
 .proc   EXE_RAND        ; AX= RANDOM from 0 to AX-1
 
-        ldy     #$80
+        ldy     #0
         stx     tmp1+1
 
 get_l:  dey
-        beq     xit
-        asl
+        cpy     #$10
+        rol
         rol     tmp1+1
         bpl     get_l
         sta     tmp1
@@ -61,8 +61,8 @@ retry:  ldx     RANDOM
         txa
 scale:  lsr     tmp2
         ror
-        iny
-        bpl     scale
+        dey
+        bne     scale
         ldx     tmp2
 xit:    jmp     next_instruction
 .endproc
