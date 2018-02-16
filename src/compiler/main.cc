@@ -205,6 +205,8 @@ int main(int argc, char **argv)
         if( c.linenum() != ln )
         {
             ln = c.linenum();
+            // Adds a label to facilitate debugging of resulting program
+            ofile << "@FastBasic_LINE_" << ln << ":  ";
             ofile << "; LINE " << ln << "\n";
         }
         ofile << c.to_asm() << "\n";
