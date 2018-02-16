@@ -85,7 +85,7 @@ x_pos:  sta     tmp3
         stx     tmp3+1
 .endproc        ; Fall through
 
-; Divide TMP3 / TMP2, result in AX and remainder in TMP2
+; Divide TMP3 / TMP1, result in TMP3 and remainder in A:TMP2+1
 .proc   udiv16
         ldy     #16
         lda     #0

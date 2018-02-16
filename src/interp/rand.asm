@@ -42,7 +42,7 @@
         ldy     #0
         stx     tmp1+1
 
-get_l:  dey
+get_l:  iny
         cpy     #$10
         rol
         rol     tmp1+1
