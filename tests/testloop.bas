@@ -45,6 +45,7 @@ repeat
  wend
  b=b+1
 until b>10
+
 ? "Test FOR"
 for i=10 to 0 : ? i, : next i
 ? "="; i
@@ -52,6 +53,25 @@ if i <> 10 then ? "--- BAD ---"
 for i=10 to 0 step -1: ? i, : next i
 ? "="; i
 if i <> -1 then ? "--- BAD ---"
+for i=0 to 10 : ? i, : next i
+? "="; i
+if i <> 11 then ? "--- BAD ---"
+for i=0 to 10 step -1: ? i, : next i
+? "="; i
+if i <> 0 then ? "--- BAD ---"
+for i=10 to -10 step 3: ? i, : next i
+? "="; i
+if i <> 10 then ? "--- BAD ---"
+for i=10 to -10 step -3: ? i, : next i
+? "="; i
+if i <> -11 then ? "--- BAD ---"
+for i=-10 to 10 step 3: ? i, : next i
+? "="; i
+if i <> 11 then ? "--- BAD ---"
+for i=-10 to 10 step -3: ? i, : next i
+? "="; i
+if i <> -10 then ? "--- BAD ---"
+
 ? "Test nested FOR"
 a = 0
 for i=1 to 10

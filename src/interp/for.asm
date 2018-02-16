@@ -32,7 +32,7 @@
         .import         stack_l, stack_h, pushAX, EXE_DPOKE
         .import         pop_stack_3
         ; From runtime.asm
-        .importzp       tmp1, tmp2
+        .importzp       tmp1, tmp2, tmp3
 
         .segment        "RUNTIME"
 
@@ -49,63 +49,69 @@ EXE_FOR_EXIT    = pop_stack_3
         jmp     EXE_DPOKE
 .endproc
 
-        ; FOR: First iteration, stores STEP from stack and goes to NEXT.
+        ; FOR: First iteration, goes to FOR_NEXT but does not add STEP
+        ;      to variable
 .proc   EXE_FOR
-        ; Store STEP into stack and HI part to temporary
-        stx     tmp2+1
-        jsr     pushAX
-
-        ; Jumps to original FOR with a fake STEP=0, skips the
-        ; first addition:
-        ldx     #0
-        stx     tmp2
-        beq     EXE_FOR_NEXT_INIT
-.endproc
-
+        sec
+        .byte   $24     ; Skip next CLC
+.endproc                ; Fall through
         ; FOR_NEXT: Updates FOR variable (adding STEP), compares with
         ;           limit and jumps back to FOR body.
 .proc   EXE_FOR_NEXT
+        clc     ; Clear carry for ADC
+
         ; Store STEP into stack (and also to temporary)
-        sta     tmp2
+        pha
         stx     tmp2+1
         jsr     pushAX
 
-::EXE_FOR_NEXT_INIT:
         ; In stack we have:
-        ;       y-1 = step
-        ;       y   = limit
-        ;       y+1 = var_address
+        ;      sptr     y-1 = step
+        ;      sptr+1   y   = limit
+        ;      sptr+2   y+1 = var_address
         ; Read variable address value
         lda     stack_h+1, y
-        sta     tmp1+1
+        sta     tmp3+1
         lda     stack_l+1, y
-        sta     tmp1
+        sta     tmp3
 
-        ; Copy LIMIT to the stack
-        lda     stack_l, y
-        sta     stack_l-2, y
-        lda     stack_h, y
-        sta     stack_h-2, y
-        dec     sptr
-
-        ; Get STEP again into AX
-        lda     tmp2
-
-        ; Adds STEP to VAR
-        clc
+        ; Adds STEP to VAR if not in first iteration
         ldy     #0
-        adc     (tmp1), y
-        sta     (tmp1), y
+        pla
+
+        bcc     do_add
+        ; Set AX to -1 to skip the ADD (as we also add C=1)
+        lda     #255
+        tax
+do_add:
+        adc     (tmp3), y       ; 4  5
+        sta     (tmp3), y       ; 5  6
         pha
         iny
         txa
-        adc     (tmp1), y
-        sta     (tmp1), y
+        adc     (tmp3), y       ; 4  5
+        sta     (tmp3), y       ; 5  6
         tax
         pla
 
-        ; Now we have LIMIT and VAR in stack, compare
+        ; Now compare LIMIT with VAR
         ldy     sptr
+        dec     sptr
+        iny
+
+        ; This uses the fact that GT and LT read the value using Y indexing
+        ; and not SPTR, so we keep both pointing to different places!
+        ; Before:
+        ;      AX           = var_value
+        ;      sptr     y-2 = UNUSED
+        ;      sptr+1   y-1 = step
+        ;      sptr+2   y   = limit
+        ;      sptr+3   y+1 = var_address
+        ; After GT/LT:
+        ;      AX           = comparison result
+        ;      sptr     y   = step
+        ;      sptr+1   y+1 = limit
+        ;      sptr+2   y+2 = var_address
 
         ; Check sign of STEP
         bit     tmp2+1
@@ -115,12 +121,12 @@ positive:
 .endproc
 
 .proc   EXE_LT  ; AX = (SP+) >= AX
-        sta     tmp1
-        stx     tmp1+1
-        lda     stack_l, y
-        cmp     tmp1
-        lda     stack_h, y
-        sbc     tmp1+1
+        eor     #255
+        sec
+        adc     stack_l, y
+        txa
+        eor     #255
+        adc     stack_h, y
         bvs     LTGT_set01
 ::LTGT_set10:
         bmi     set1
