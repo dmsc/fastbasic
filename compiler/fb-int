@@ -1,13 +1,14 @@
 #!/bin/sh
-LOC=$(dirname $0)
+LOC=$(dirname "$0")
 FB=fastbasic-int
 usage() {
-    $LOC/$FB -h
+    "$LOC/$FB" -h
     exit 1
 }
 
 error() {
-    echo "$(basename $0): error, $@\nTry '$(basename $0) -h' for help."
+    echo "$(basename "$0"): error, $*"
+    echo "Try '$(basename "$0") -h' for help."
     exit 1
 }
 
@@ -44,7 +45,7 @@ LBL=${PROG%.*}.lbl
 [ "$PROG" -ef "$XEX" ] && error "input file '$PROG' same as XEX file"
 
 echo "Compiling '$PROG' to assembler '$ASM'."
-$LOC/$FB $OPTS "$PROG" "$ASM" || exit 1
+"$LOC/$FB" $OPTS "$PROG" "$ASM" || exit 1
 echo "Assembling '$ASM' to XEX file '$XEX'."
-cl65 -tatari -C $LOC/fastbasic.cfg -g "$ASM" "$@" -o "$XEX" -Ln $LBL $LOC/$FB.lib || exit 1
+cl65 -tatari -C "$LOC/fastbasic.cfg" -g "$ASM" "$@" -o "$XEX" -Ln "$LBL" "$LOC/$FB.lib" || exit 1
 

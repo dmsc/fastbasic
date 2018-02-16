@@ -30,22 +30,22 @@ echo ""
 compile_lin64() {
     # Full compile for 64bit Linux (and ATR)
     make CROSS= EXT= SHEXT= CXXFLAGS="$LIN64_FLAGS" dist
-    mv -f build/fastbasic.zip ${out}-linux64.zip
-    mv -f build/fastbasic.atr ${out}.atr
+    mv -f build/fastbasic.zip "${out}-linux64.zip"
+    mv -f build/fastbasic.atr "${out}.atr"
     make CROSS= EXT= SHEXT= clean
 }
 
 compile_lin32() {
     # Compile for 32bit Linux - not considered cross-compilation
     make CROSS= EXT= SHEXT= CXXFLAGS="$LIN32_FLAGS" build/fastbasic.zip
-    mv build/fastbasic.zip ${out}-linux32.zip
+    mv build/fastbasic.zip "${out}-linux32.zip"
     make CROSS= EXT= SHEXT= clean
 }
 
 compile_win32() {
     # Compile with mingw-w64 cross compiler to 32bit:
     make CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat CXXFLAGS="$WIN_FLAGS" build/fastbasic.zip
-    mv build/fastbasic.zip ${out}-win32.zip
+    mv build/fastbasic.zip "${out}-win32.zip"
     make EXT=.exe SHEXT=.bat clean
 }
 
@@ -72,8 +72,9 @@ compile_osx() {
           compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
     #  Pack
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
-    mv build/fastbasic.zip ${out}-maxosx.zip
+    mv build/fastbasic.zip "${out}-maxosx.zip"
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" clean
+    PATH="$OPATH"
 }
 
 make distclean
