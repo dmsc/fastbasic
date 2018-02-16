@@ -29,17 +29,17 @@ echo ""
 
 compile_lin64() {
     # Full compile for 64bit Linux (and ATR)
-    make CROSS= EXT= SHEXT=.sh CXXFLAGS="$LIN64_FLAGS" dist
+    make CROSS= EXT= SHEXT= CXXFLAGS="$LIN64_FLAGS" dist
     mv -f build/fastbasic.zip ${out}-linux64.zip
     mv -f build/fastbasic.atr ${out}.atr
-    make CROSS= EXT= SHEXT=.sh clean
+    make CROSS= EXT= SHEXT= clean
 }
 
 compile_lin32() {
     # Compile for 32bit Linux - not considered cross-compilation
-    make CROSS= EXT= SHEXT=.sh CXXFLAGS="$LIN32_FLAGS" build/fastbasic.zip
+    make CROSS= EXT= SHEXT= CXXFLAGS="$LIN32_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip ${out}-linux32.zip
-    make CROSS= EXT= SHEXT=.sh clean
+    make CROSS= EXT= SHEXT= clean
 }
 
 compile_win32() {
@@ -55,11 +55,11 @@ compile_osx() {
     # Compile FAT binary for OSX.
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
-    make CROSS=x86_64-apple-darwin15- SHEXT=.sh EXT=_m64 CXXFLAGS="$OSX64_FLAGS" \
+    make CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m64 CXXFLAGS="$OSX64_FLAGS" \
          compiler/fastbasic-int_m64 compiler/fastbasic-fp_m64
     #  Clean and compile to 32bit:
     make clean
-    make CROSS=x86_64-apple-darwin15- SHEXT=.sh EXT=_m32 CXXFLAGS="$OSX32_FLAGS" \
+    make CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m32 CXXFLAGS="$OSX32_FLAGS" \
          compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
     #  Build the fat binary with "LIPO":
     x86_64-apple-darwin15-lipo -create \
@@ -71,9 +71,9 @@ compile_osx() {
     rm -f compiler/fastbasic-int_m64 compiler/fastbasic-fp_m64 \
           compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
     #  Pack
-    make CROSS=x86_64-apple-darwin15- SHEXT=.sh EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
+    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip ${out}-maxosx.zip
-    make CROSS=x86_64-apple-darwin15- SHEXT=.sh EXT= CFLAGS="$OSX32_FLAGS" clean
+    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" clean
 }
 
 make distclean

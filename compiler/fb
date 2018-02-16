@@ -1,22 +1,32 @@
 #!/bin/sh
 LOC=$(dirname $0)
+FB=fastbasic-fp
 usage() {
-    $LOC/fastbasic-int -h
+    $LOC/$FB -h
     exit 1
 }
 
 error() {
-    echo "$0: error, $@\nTry '$0 -h' for help."
+    echo "$(basename $0): error, $@\nTry '$(basename $0) -h' for help."
     exit 1
 }
 
 # Process options
-for i in "$@"; do
+OPTS=""
+for i do
+    shift
     case "$i" in
         -h)
             usage
             ;;
+        -[a-zA-Z0-9_]*)
+            OPTS="$OPTS $i"
+            ;;
         -*)
+            error "invalid option '$i'"
+            ;;
+        *.asm|*.o)
+            set -- "$@" "$i"
             ;;
         *)
             [ -n "$PROG" ] && error "specify only one basic file"
@@ -27,13 +37,14 @@ done
 
 ASM=${PROG%.*}.asm
 XEX=${PROG%.*}.xex
+LBL=${PROG%.*}.lbl
 [ -z "$PROG" ]         && error "no input file"
 [ ! -f "$PROG" ]       && error "input file '$PROG' does not exists"
 [ "$PROG" -ef "$ASM" ] && error "input file '$PROG' same as ASM file"
 [ "$PROG" -ef "$XEX" ] && error "input file '$PROG' same as XEX file"
 
 echo "Compiling '$PROG' to assembler '$ASM'."
-$LOC/fastbasic-int "$@" "$ASM" || exit 1
+$LOC/$FB $OPTS "$PROG" "$ASM" || exit 1
 echo "Assembling '$ASM' to XEX file '$XEX'."
-cl65 -tatari -C $LOC/fastbasic.cfg  "$ASM" -o "$XEX" $LOC/fastbasic-int.lib || exit 1
+cl65 -tatari -C $LOC/fastbasic.cfg -g "$ASM" "$@" -o "$XEX" -Ln $LBL $LOC/$FB.lib || exit 1
 

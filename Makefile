@@ -20,7 +20,7 @@
 # native and one for the cross-target.
 CROSS=
 EXT=
-SHEXT=.sh
+SHEXT=
 CXX=g++
 CXXFLAGS=-O2 -Wall
 SYNTFLAGS=
