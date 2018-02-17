@@ -10,3 +10,7 @@ fastbasic.atr
 *.lib
 .hg/
 .hg*
+*.xex
+*.lbl
+*.map
+*.o
