@@ -173,8 +173,8 @@ FP_AS_SRC=\
     src/interp/fp_print.asm\
     src/interp/fp_evalpoly.asm\
     src/interp/fp_atn.asm\
-    src/interp/fp_sincos.asm\
     src/interp/fp_coef.asm\
+    src/interp/fp_sincos.asm\
     src/interp/fp_log.asm\
     src/interp/fp_log10.asm\
     src/interp/fp_exp.asm\

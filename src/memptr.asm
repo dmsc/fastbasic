@@ -37,7 +37,6 @@
 ;  var_ptr:     -> next available pos
 ;  top_mem:     TOP OF MEMORY
 ;
-        .export         add_pointers
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
@@ -74,26 +73,5 @@ laddr_ptr:      .res    2
 mem_end=        laddr_ptr
         ; Allocation size
 alloc_size=     tmp1
-
-;----------------------------------------------------------
-; Following routines are part of the runtime
-        .segment        "RUNTIME"
-
-        ; Increase all pointers from "Y" to the last by AX
-.proc   add_pointers
-loop:   clc
-        lda     mem_start, x
-        adc     alloc_size
-        sta     mem_start, x
-        inx
-        lda     mem_start, x
-        adc     alloc_size+1
-        sta     mem_start, x
-        inx
-        cpx     #mem_end - mem_start + 2
-        bne     loop
-        clc
-        rts
-.endproc
 
 ; vi:syntax=asm_ca65

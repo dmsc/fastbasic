@@ -62,11 +62,9 @@
         ; Copy current memory pointer to the variable
         lda     array_ptr+1
         sta     (tmp1), y
-        sta     tmp2+1
         dey
         lda     array_ptr
         sta     (tmp1), y
-        sta     tmp2
         ; Allocate 256 bytes
         lda     #0
         ldx     #1

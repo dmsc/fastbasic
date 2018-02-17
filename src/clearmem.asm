@@ -27,18 +27,19 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, clear_memory
+        .export         clear_data, clear_memory, alloc_array
 
-        .import         add_pointers
         .importzp       prog_ptr, mem_end, var_buf, var_ptr
 
         ; From runtime.asm
-        .import         move_dwn_src, move_dwn_dst, move_dwn, putc
-        .importzp       tmp1, tmp2
+        .import         move_dwn_src, move_dwn_dst, move_dwn, putc, EXE_END
+        .importzp       tmp1, tmp2, array_ptr
 
         ; From interpreter.asm
         .importzp       var_count
 
+        ; Top of available memory
+MEMTOP=         $2E5
         ; Allocation size
 alloc_size=     tmp1
 
@@ -59,20 +60,40 @@ loop:
         dex
         bpl     loop
         ; Adds 2 bytes for each variable
-        ldy     #0
+        ldx     #0
         lda     var_count
         asl
         sta     alloc_size
         bcc     :+
-        iny
-:       sty     alloc_size+1
-        ldx     #var_ptr - prog_ptr
-        jsr     add_pointers
-        ; And clears variable area (we have size in "alloc_size")
-        lda     var_buf
-        sta     tmp2
-        lda     var_buf+1
-        sta     tmp2+1
+        inx
+:       stx     alloc_size+1
+.endproc        ; Fall through
+
+        ; Allocate space for a new array AX = SIZE
+        ; Returns pointer to allocated memory in TMP2
+        ; Returns size of allocated memory in ALLOC_SIZE
+.proc alloc_array
+
+        ldy     array_ptr
+        sty     tmp2
+        ldy     array_ptr+1
+        sty     tmp2+1
+
+        sta     alloc_size
+        stx     alloc_size + 1
+
+        clc
+        adc     array_ptr
+        tay
+        txa
+        adc     array_ptr+1
+        tax
+        cpy     MEMTOP
+        sbc     MEMTOP+1
+        bcs     err_nomem
+
+        sty     array_ptr
+        stx     array_ptr+1
 .endproc        ; Fall through
 
         ; Clears memory from (tmp2) of (alloc_size) size
@@ -98,5 +119,17 @@ nxt:    dex
 
         rts
 .endproc
+
+err_nomem:
+        ; Show message and end program
+        ldy     #memory_error_len-1
+loop:   lda     memory_error_msg, y
+        jsr     putc
+        dey
+        bpl     loop
+        jmp     EXE_END
+memory_error_msg:
+        .byte $9b, "rorrE yromeM", $9b
+memory_error_len=    * - memory_error_msg
 
 ; vi:syntax=asm_ca65

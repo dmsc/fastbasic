@@ -40,13 +40,7 @@
         .segment        "RUNTIME"
 
 .proc   EXE_DIM         ; AX = array size, (SP) = variable address
-        ldy     array_ptr
-        sty     tmp2
-        ldy     array_ptr+1
-        sty     tmp2+1
         jsr     alloc_array
-        ; Now we have to cleanup the area
-        jsr     clear_memory
         lda     tmp2
         ldx     tmp2+1
         ldy     sptr

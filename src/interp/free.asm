@@ -28,7 +28,7 @@
 ; --------------------------------
 
         ; From allloc.asm
-        .importzp       mem_end
+        .importzp       array_ptr
 
         ; From interpreter.asm
         .import         pushAX
@@ -42,10 +42,10 @@
         jsr     pushAX
         lda     MEMTOP
         sec
-        sbc     mem_end
+        sbc     array_ptr
         tay
         lda     MEMTOP+1
-        sbc     mem_end+1
+        sbc     array_ptr+1
         tax
         tya
         jmp     next_instruction

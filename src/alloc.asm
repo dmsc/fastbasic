@@ -37,18 +37,16 @@
 ;  var_ptr:     -> next available pos
 ;  top_mem:     TOP OF MEMORY
 ;
-        .export         alloc_prog, alloc_array, alloc_laddr
+        .export         alloc_prog, alloc_laddr
         .export         parser_alloc_init, alloc_area_8
 
         .importzp       prog_ptr, laddr_ptr, mem_end, array_ptr, var_buf
-        .import         add_pointers
 
         ; From runtime.asm
-        .import         move_dwn_src, move_dwn_dst, move_dwn, putc
-        .importzp       tmp1, tmp2
+        .import         move_dwn_src, move_dwn_dst, move_dwn
+        .importzp       tmp1
         ; From interpreter.asm
         .importzp       var_count
-        .import         EXE_END
 
 
 mem_start = prog_ptr
@@ -62,10 +60,9 @@ MEMTOP=         $2E5
 alloc_size=     tmp1
 
 ;----------------------------------------------------------
-; Following routines are part of the runtime
-        .segment        "RUNTIME"
+; Following routines are part of the parser/editor
+        .code
 
-        ; This should be outside of runtime, but it's shorter here
 .proc   alloc_laddr
         ldx     #laddr_end - mem_start
 .endproc        ; Fall through
@@ -85,37 +82,31 @@ skip_y: sta     alloc_size
         adc     mem_end+1
         cpy     MEMTOP
         sbc     MEMTOP+1
-        bcs     err_nomem
+        bcs     rts_1
 
         ; Move memory up by "alloc_size"
         stx     save_x+1
         jsr     move_mem_up
         ; Adjust pointers
 save_x: ldx     #0
-        jmp     add_pointers
-.endproc
+.endproc        ; Fall through
 
-err_nomem:
-        sec
-xrts:   rts
-
-        ; Allocate space for a new array AX = SIZE
-.proc alloc_array
-        stx     alloc_size + 1
-        ldx     #array_end - mem_start
-        jsr     alloc_area::skip_y
-        bcc     xrts
-
-        ; Show message and end program
-        ldy     #memory_error_len-1
-loop:   lda     memory_error_msg, y
-        jsr     putc
-        dey
-        bpl     loop
-        jmp     EXE_END
-memory_error_msg:
-        .byte $9b, "rorrE yromeM", $9b
-memory_error_len=    * - memory_error_msg
+        ; Increase all pointers from "Y" to the last by AX
+.proc   add_pointers
+loop:   clc
+        lda     mem_start, x
+        adc     alloc_size
+        sta     mem_start, x
+        inx
+        lda     mem_start, x
+        adc     alloc_size+1
+        sta     mem_start, x
+        inx
+        cpx     #mem_end - mem_start + 2
+        bne     loop
+        clc
+::rts_1:
+        rts
 .endproc
 
         ; Move memory up.
@@ -145,10 +136,6 @@ memory_error_len=    * - memory_error_msg
         pla
         jmp     move_dwn
 .endproc
-
-;----------------------------------------------------------
-; Following routines are part of the parser/editor
-        .code
 
 ;----------------------------------------------------------
 ; Parser initialization here:
