@@ -1,17 +1,15 @@
 ? "Starting!"
 NumIter = 1
 sTime = TIME
+' Arrays are initialized to 0
 DIM A(8190) Byte
 FOR Iter= 1 TO NumIter
   Count = 0
   FOR I = 0 TO 8190
-    A(I) = 1
-  NEXT I
-  FOR I = 0 TO 8190
-    IF A(I)
+    IF NOT A(I)
       Prime = I + I + 3
       FOR K = I + Prime TO 8190 STEP Prime
-        A(K) = 0
+        A(K) = 1
       NEXT K
       INC Count
     ENDIF
