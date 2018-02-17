@@ -7,7 +7,9 @@
 ' Array definitions
 dim ScrAdr(24), ScrLen(24)
 ' And an array with the current line being edited
-dim EditBuf(128) byte
+''NOTE: Use page 6 ($600 to $6FF) to free memory instead of a dynamic array
+'dim EditBuf(256) byte
+EditBuf = $600
 
 ' We start with the help file.
 FileName$ = "D:HELP.TXT"
@@ -67,7 +69,7 @@ ENDPROC
 '
 PROC SaveCompiledFile
   ' Save original filename
-  move Adr(FileName$), Adr(EditBuf), 128
+  move Adr(FileName$), EditBuf, 128
   poke Adr(FileName$) + Len(FileName$), $58
 
   pos. 0, 0
@@ -98,7 +100,7 @@ PROC SaveCompiledFile
   endif
 
   ' Restore original filename
-  move Adr(EditBuf), Adr(FileName$), 128
+  move EditBuf, Adr(FileName$), 128
 ENDPROC
 
 '-------------------------------------
@@ -188,7 +190,7 @@ ENDPROC
 PROC InsertChar
   edited = line + 1
   inc linLen
-  ptr = Adr(EditBuf) + column
+  ptr = EditBuf + column
   -move ptr, ptr+1, linLen - column
   poke ptr, key
 ENDPROC
@@ -199,7 +201,7 @@ ENDPROC
 PROC DeleteChar
   edited = line + 1
   linLen = linLen - 1
-  ptr = Adr(EditBuf) + column
+  ptr = EditBuf + column
   move ptr+1, ptr, linLen - column
   exec ForceDrawCurrentLine
 ENDPROC
@@ -231,7 +233,7 @@ PROC DrawCurrentLine
 
     hDraw = hColumn
     y = scrLine
-    ptr = Adr(EditBuf)
+    ptr = EditBuf
     lLen = linLen
     exec DrawLinePtr
 
@@ -261,7 +263,7 @@ PROC SaveLine
     MemEnd = MemEnd + dif
     ' Copy new line
     ptr  = ScrAdr(lDraw)
-    move Adr(EditBuf), ptr, linLen
+    move EditBuf, ptr, linLen
     ' Adjust all pointers
     ScrLen(lDraw) = linLen
     for y = lDraw + 1 to 22
@@ -289,13 +291,13 @@ PROC CopyToEdit
   endif
 
   ' Copy line to 'Edit' buffer, if not too long
-  if linLen > 127
-    linLen = 127
+  if linLen > 255
+    linLen = 255
   endif
   if linLen > 0
-    move linPtr, Adr(EditBuf), linLen
+    move linPtr, EditBuf, linLen
   else
-    poke Adr(EditBuf), $9b
+    poke EditBuf, $9b
   endif
 ENDPROC
 
@@ -581,7 +583,7 @@ PROC ProcessKeys
   if (key<>$9B) and (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
     ' Process normal keys
     escape = 0
-    if linLen > 126
+    if linLen > 254
       put @@ATBEL : ' ERROR, line too long
     else
       exec InsertChar
