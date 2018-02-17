@@ -27,17 +27,66 @@
 ; Print 16bit number
 ; ------------------
 
-        ; From runtime.asm
-        .import print_word
+.ifdef FASTBASIC_FP
+        .export print_fp, int_to_fp
+.endif
         ; From interpreter.asm
         .import pop_stack
+        .import putc, neg_AX
+        .importzp tmp1
+
 
         .segment        "RUNTIME"
 
-.proc   EXE_PRINT_NUM  ; PRINT (SP+)
-        jsr     print_word
+EXE_PRINT_NUM:          ; PRINT (SP+)
+
+        ; In the integer version we simply fall-through
+        ; from int_to_fp to print_fp and pop_stack, so we
+        ; use 8 bytes less.
+        ;
+.ifdef FASTBASIC_FP
+        jsr     int_to_fp
+        jsr     print_fp
         jmp     pop_stack
-.endproc
+.endif
+
+int_to_fp:
+FR0     = $D4
+IFP     = $D9AA
+        stx     tmp1
+        cpx     #$80
+        bcc     positive
+        jsr     neg_AX
+positive:
+        sta     FR0
+        stx     FR0+1
+        jsr     IFP
+        lda     tmp1
+        and     #$80
+        eor     FR0
+        sta     FR0
+
+.ifdef FASTBASIC_FP
+        rts
+.endif
+        ; Fall through
+print_fp:
+FASC    = $D8E6
+INBUFF  = $F3
+        jsr     FASC
+        ldy     #$FF
+ploop:  iny
+        lda     (INBUFF), y
+        pha
+        and     #$7F
+        jsr     putc
+        pla
+        bpl     ploop
+.ifdef FASTBASIC_FP
+        rts
+.else
+        jmp     pop_stack
+.endif
 
         .include "../deftok.inc"
         deftoken "PRINT_NUM"

@@ -106,7 +106,6 @@ COMMON_AS_SRC=\
     src/exehdr.asm\
     src/interpreter.asm\
     src/memptr.asm\
-    src/runtime.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
     src/interp/bgetput.asm\
