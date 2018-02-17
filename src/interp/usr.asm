@@ -28,7 +28,7 @@
 ; --------------------------------
 
         ; From interpreter.asm
-        .import         pop_stack
+        .import         pop_stack_y
         .importzp       next_instruction
 
         .include "atari.inc"
@@ -39,7 +39,7 @@
         pha
         txa
         pha
-        jmp     pop_stack
+        jmp     pop_stack_y
 .endproc
 
 .proc   EXE_USR_ADDR

@@ -28,7 +28,7 @@
 ; --------------------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, next_ins_incsp, cptr, sptr
+        .importzp       next_instruction, next_ins_incsp, sptr
         .import         stack_l, stack_h, pushAX, EXE_DPOKE
         .import         pop_stack_3
         ; From runtime.asm

@@ -29,13 +29,13 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr
-        .import         pop_stack
+        .import         pop_stack, pop_stack_y
 
         .segment        "RUNTIME"
 
 .proc   EXE_CJUMP
-        tay
-        bne     skip
+        lsr
+        bcs     skip
         ldy     #1
         lda     (cptr), y
         tax
@@ -44,16 +44,14 @@
         sta     cptr
         stx     cptr+1
         jmp     pop_stack
-skip:   inc     cptr
-        beq     adjust_cptr_1
-        inc     cptr
-        beq     adjust_cptr
-        jmp     pop_stack
-adjust_cptr_1:
-        inc     cptr
-adjust_cptr:
+
+skip:   lda     cptr
+;       sec             ; C is always set from above comparison
+        adc     #1
+        sta     cptr
+        bcc     xit
         inc     cptr+1
-        jmp     pop_stack
+xit:    jmp     pop_stack_y
 .endproc
 
         .include "../deftok.inc"

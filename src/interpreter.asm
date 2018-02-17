@@ -29,7 +29,7 @@
 
         .export         interpreter_run, saved_cpu_stack, stack_l, stack_h
         .export         pushAX, stack_end, pop_stack, pop_stack_2, pop_stack_3
-        .export         EXE_END
+        .export         pop_stack_y, EXE_END
 
         .exportzp       interpreter_cptr, var_count, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
@@ -162,6 +162,7 @@ pop_stack_2:
         inc     sptr
 pop_stack:
         ldy     sptr
+pop_stack_y:
         lda     stack_l, y
         ldx     stack_h, y
         jmp     next_ins_incsp

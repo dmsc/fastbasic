@@ -28,7 +28,7 @@
 ; ------------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, cptr
+        .importzp       next_instruction, cptr, tmp1
 
         .segment        "RUNTIME"
 
@@ -45,17 +45,18 @@
 .endproc        ; Fall through
 
 .proc   EXE_JUMP
-        pha
-        stx     save_x+1
-        ldy     #1
-        lda     (cptr), y
-        tax
-        dey
-        lda     (cptr), y
-        sta     cptr
-        stx     cptr+1
-save_x: ldx     #$ff
-        pla
+        ; NOTE: this could be a little faster (but larger) by
+        ;       using STA/LDA instead of PHA/PLA.
+        pha                     ; 3     1
+        ldy     #1              ; 2     2
+        lda     (cptr), y       ; 5     2
+        pha                     ; 3     1
+        dey                     ; 2     1
+        lda     (cptr), y       ; 5     2
+        sta     cptr            ; 3     2
+        pla                     ; 4     1
+        sta     cptr+1          ; 3     2
+        pla                     ; 4 =34 1 =15
         jmp     next_instruction
 .endproc
 

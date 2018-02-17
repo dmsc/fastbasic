@@ -40,16 +40,12 @@
         tax                     ; 2     1
         dey                     ; 2     1
         lda     (cptr), y       ; 5     2
-
-        inc     cptr            ; 5     2
-        beq     adjust_cptr_1   ; 2     2
-        inc     cptr            ; 5     2
-        beq     adjust_cptr     ; 2=30  2=16
-        jmp     next_instruction
-adjust_cptr_1:
-        inc     cptr
-adjust_cptr:
-        inc     cptr+1
+        ldy     cptr            ; 3     2
+        cpy     #254            ; 2     2
+        iny                     ; 2     1
+        iny                     ; 2     1
+        sty     cptr            ; 3     2
+        bcs     inc_cptr_1      ; 2 =30 2 =18
         jmp     next_instruction
 .endproc
 
@@ -59,22 +55,24 @@ adjust_cptr:
         lda     (cptr), y
         ldx     #0
         inc     cptr
-        beq     EXE_NUM::adjust_cptr
+        beq     inc_cptr_1
         jmp     next_instruction
 .endproc
 
 .proc   EXE_CSTRING     ; AX = address of string
         jsr     pushAX
-        lda     cptr
-        pha
-        ldx     cptr+1
         ldy     #0      ; Get string length into A
         sec
+        lda     cptr
+        tax
         adc     (cptr), y
         sta     cptr
-        pla
-        bcs     EXE_NUM::adjust_cptr
-        jmp     next_instruction
+        txa
+        ldx     cptr+1
+        bcc     xit
+::inc_cptr_1:
+        inc     cptr+1
+xit:    jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
