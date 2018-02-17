@@ -57,7 +57,7 @@ tmp3:   .res    2
 divmod_sign:
         .res    1
 IOCHN:  .res    1
-IOERROR:.res    2
+IOERROR:.res    1
 COLOR:  .res    1
 tabpos: .res    1
 
