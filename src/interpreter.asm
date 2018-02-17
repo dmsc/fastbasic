@@ -130,13 +130,15 @@ interpreter_cptr        =       cptr
         sbc     #$10
         bne     :-
 
-        ; Sound off
-        jsr     sound_off
         ; Clear TAB position, IO channel and IO error
-        lda     #0
+        ; lda     #0  ; A == 0 from above
         sta     tabpos
         sta     IOCHN
         sta     IOERROR
+
+        ; Sound off
+        jsr     sound_off
+
         ; Store current stack position to rewind on error
         tsx
         stx     saved_cpu_stack

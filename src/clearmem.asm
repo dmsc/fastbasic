@@ -27,7 +27,7 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, clear_memory, alloc_array
+        .export         clear_data, alloc_array
 
         .importzp       prog_ptr, mem_end, var_buf, var_ptr
 
@@ -74,32 +74,27 @@ loop:
         ; Returns size of allocated memory in ALLOC_SIZE
 .proc alloc_array
 
-        ldy     array_ptr
-        sty     tmp2
-        ldy     array_ptr+1
-        sty     tmp2+1
-
         sta     alloc_size
         stx     alloc_size + 1
 
+        lda     array_ptr
+        sta     tmp2
         clc
-        adc     array_ptr
+        adc     alloc_size
+        sta     array_ptr
         tay
-        txa
-        adc     array_ptr+1
-        tax
+
+        lda     array_ptr+1
+        sta     tmp2+1
+        adc     alloc_size+1
+        sta     array_ptr+1
+
         cpy     MEMTOP
         sbc     MEMTOP+1
         bcs     err_nomem
 
-        sty     array_ptr
-        stx     array_ptr+1
-.endproc        ; Fall through
-
         ; Clears memory from (tmp2) of (alloc_size) size
-.proc   clear_memory
-        lda     alloc_size+1
-        tax
+        txa     ; X = (alloc_size+1)
         clc
         adc     tmp2+1
         sta     tmp2+1

@@ -29,7 +29,7 @@
 
         ; From allloc.asm
         .importzp       array_ptr
-        .import         alloc_array, clear_memory
+        .import         alloc_array
 
         ; From runtime.asm
         .importzp       tmp2, sptr
