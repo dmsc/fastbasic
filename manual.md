@@ -702,7 +702,7 @@ Control Statements
 
 
 **Calls a subroutine**  
-**EXEC _name_**
+**EXEC _name_ / EXE.**
 
   Calls the subroutine _name_. Note
   that the subroutine must be defined
@@ -768,11 +768,11 @@ Control Statements
   ignored.
 
 
-**Conditional execution**
-**IF _condition_ THEN _statement_**  
+**Conditional execution**  
+**IF _condition_ THEN _statement_ / IF T.**  
 **IF _condition_**  
-**ELIF _condition_**  
-**ELSE**  
+**ELIF _condition_ / ELI.**  
+**ELSE / E.**  
 **ENDIF / END.**
 
   The first form executes one
@@ -827,7 +827,7 @@ Control Statements
 
 
 **Loop until condition is true**  
-**REPEAT / REP.**  
+**REPEAT / R.**  
 **UNTIL _condition_ / U.**
 
   The REPEAT loop allows looping with a
@@ -896,7 +896,7 @@ Graphic and Sound Statements
 
 
 **Sets graphic mode**  
-**GRAPHICS _num_ / GR.**
+**GRAPHICS _num_ / G.**
 
   Sets the graphics mode for graphics
   operations. See Atari Basic manual
@@ -918,7 +918,7 @@ Graphic and Sound Statements
   _hue_ and _luminance_.
 
 **Adjust voice sound parameters**  
-**SOUND _voice_, _pitch_, _dist_, _vol_ / SO.**  
+**SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  
 **SOUND**
 
   Adjust sound parameters for _voice_
@@ -1045,7 +1045,7 @@ Device Input and Output Statements
 
 
 **Generic I/O operation**  
-**XIO #_ioc_,_cmd_,_aux1_,_aux2_,*de*v**
+**XIO #_iochn_, _cmd_, _aux1_, _aux2_, *dev* / X.**
 
   Performs a general input/output
   operation on device *dev*, over
@@ -1101,7 +1101,7 @@ General Statements
 
 
 **Decrements variable by 1**  
-**DEC _var_**
+**DEC _var_ / DE.**
 
   Decrements the variable by 1, this is
   equivalent to "_var_ = _var_ - 1",

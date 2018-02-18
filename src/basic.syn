@@ -349,7 +349,7 @@ PRINT_NEXT:
 
 # Parse multi-line IF
 THEN_OR_MULTILINE:
-        "THEN" PARSE_START E_POP_IF
+        "Then" PARSE_START E_POP_IF
         pass
 
 VAR_CREATE_TYPE:
@@ -515,18 +515,18 @@ PARSE_LINE_COMMAND:
         "-move" EXPR_2 "," EXPR emit TOK_NMOVE
         "DO" emit LT_DO_LOOP E_PUSH_LT
         "Loop" emit TOK_JUMP E_POP_LOOP
-        "REPeat" emit LT_REPEAT E_PUSH_LT
+        "Repeat" emit LT_REPEAT E_PUSH_LT
         "Until" FORCE_BOOL_EXPR emit TOK_CJUMP E_POP_REPEAT
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "IF" FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT THEN_OR_MULTILINE
         "For" VAR_WORD_LVALUE EQUAL EXPR emit TOK_FOR_START "TO" EXPR STEP_OPTIONAL emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
-        "ELSE" emit TOK_JUMP E_ELSE
-        "ELIF" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
+        "Else" emit TOK_JUMP E_ELSE
+        "ELIf" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
-        "GRaphics" emit TOK_BYTE emit IOCHN emit TOK_BYTE emit 96 emit TOK_POKE emit TOK_CLOSE  EXPR emit TOK_GRAPHICS
+        "Graphics" emit TOK_BYTE emit IOCHN emit TOK_BYTE emit 96 emit TOK_POKE emit TOK_CLOSE  EXPR emit TOK_GRAPHICS
         "Color" emit TOK_BYTE emit COLOR EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
         "POSition" POSITION
@@ -544,15 +544,15 @@ PARSE_LINE_COMMAND:
         "BGet" IO_CHAN_COMMA EXPR_2 emit TOK_BGET
         "PAuse" EXPR emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE emit TOK_INC
-        "DEC" VAR_WORD_LVALUE emit TOK_DEC
+        "DEc" VAR_WORD_LVALUE emit TOK_DEC
         "PROc" emit TOK_JUMP emit LT_PROC_1 E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
         "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_1
-        "EXEC" emit TOK_CALL E_LABEL
-        "Data" DATA_VAR DATA_TYPE DATA_END
+        "EXEc" emit TOK_CALL E_LABEL
+        "DAta" DATA_VAR DATA_TYPE DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
         "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_1 emit TOK_POKE
-        "RAD" emit TOK_BYTE emit DEGFLAG emit TOK_0 emit TOK_POKE
+        "RAd" emit TOK_BYTE emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN: &LOW_ERROR
