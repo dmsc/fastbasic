@@ -466,7 +466,7 @@ static bool SMB_E_CONST_STRING(parse &s)
 static bool SMB_E_REM(parse &s)
 {
     s.debug("E_REM");
-    while( !s.eos() && !s.peek('\n') && !s.peek(0x9b) )
+    while( !s.eos() && !s.expect('\n') && !s.expect(0x9b) )
         s.pos++;
     return true;
 }

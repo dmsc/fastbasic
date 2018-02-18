@@ -57,7 +57,7 @@ loop_sp:.res 1
         .include "atari.inc"
 
 ; Use LBUFF as line buffer
-line_buf        = LBUFF
+; line_buf        = LBUFF
 
 ; Use (INBUFF)+CIX as our parser pointer
 bptr    = INBUFF
@@ -154,7 +154,7 @@ ok:     lda     #TOK_END
 
 
 ;       Parser start and initialization
-.proc   parser_start
+parser_start:
         tsx
         stx     saved_stack
         lda     #0
@@ -163,15 +163,7 @@ ok:     lda     #TOK_END
         sta     loop_sp
         sta     var_count
         sta     label_count
-        beq     parse_line
-.endproc
-
-line_ok:
-        ; Increases output buffer
-        lda     opos
-        jsr     alloc_prog
-
-.proc parse_line
+parse_line:
         lda     #0
         sta     bpos
         sta     bmax
@@ -208,7 +200,6 @@ line_ok:
         pha
         pha
         beq     parser_sub
-.endproc
 
         ; Matched a dot (abbreviated statement), skips over all remaining chars
 matched_dot:
@@ -271,12 +262,12 @@ match_char:
         bcs     match
         tax
         lda     #'.'
-        cmp     line_buf,y
+        cmp     (bptr),y
         beq     matched_dot
         txa
         eor     #32 ; To uppercase
 match:
-        cmp     line_buf,y
+        cmp     (bptr),y
         bne     ploop_nextline
         iny
         sty     bpos
@@ -320,7 +311,15 @@ pexit_ok:
         pla
         sta     pptr+1
         bne     ploop
-        jmp     line_ok
+        ldy     bpos
+        lda     (bptr), y
+        cmp     #$9B
+        bne     set_parse_error
+line_ok:
+        ; Increases output buffer
+        lda     opos
+        jsr     alloc_prog
+        jmp     parse_line
 
 
 pexit_err:
@@ -392,7 +391,7 @@ xit:    rts
 loop:
         iny
         lda     (buf_ptr), y
-        sta     line_buf, y
+        sta     (bptr), y
         cmp     #$9B
         beq     xit
 
@@ -402,13 +401,13 @@ loop:
         cmp     #'z'-'a'+1
         bcs     loop
         adc     #'A'
-        sta     line_buf, y
+        sta     (bptr), y
         bcc     loop
 
 skip_str:
         iny
         lda     (buf_ptr), y
-        sta     line_buf, y
+        sta     (bptr), y
         cmp     #'"'
         beq     loop
         cmp     #$9b

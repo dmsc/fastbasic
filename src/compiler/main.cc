@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         if( do_debug )
             std::cerr << iname << ": parsing line " << ln << "\n";
         s.new_line(line, ln);
-        if( !SMB_PARSE_START(s) )
+        if( !SMB_PARSE_START(s) || s.pos != line.length() )
         {
             std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
             if( !s.saved_error.empty() )
