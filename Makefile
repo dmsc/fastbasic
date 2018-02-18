@@ -112,9 +112,12 @@ COMMON_AS_SRC=\
     src/interp/bitand.asm\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
+    src/interp/cdata.asm\
+    src/interp/cjump.asm\
     src/interp/close.asm\
-    src/interp/comp0.asm\
     src/interp/cmpstr.asm\
+    src/interp/comp0.asm\
+    src/interp/const.asm\
     src/interp/copystr.asm\
     src/interp/dec.asm\
     src/interp/dim.asm\
@@ -122,6 +125,7 @@ COMMON_AS_SRC=\
     src/interp/dpeek.asm\
     src/interp/dpoke.asm\
     src/interp/drawto.asm\
+    src/interp/for.asm\
     src/interp/free.asm\
     src/interp/getkey.asm\
     src/interp/graphics.asm\
@@ -129,15 +133,17 @@ COMMON_AS_SRC=\
     src/interp/input.asm\
     src/interp/iochn0.asm\
     src/interp/ioget.asm\
+    src/interp/jump.asm\
     src/interp/land.asm\
-    src/interp/lor.asm\
     src/interp/lnot.asm\
+    src/interp/lor.asm\
     src/interp/move.asm\
     src/interp/mul.asm\
+    src/interp/negax.asm\
     src/interp/nmove.asm\
     src/interp/pause.asm\
-    src/interp/plot.asm\
     src/interp/peek.asm\
+    src/interp/plot.asm\
     src/interp/poke.asm\
     src/interp/print_eol.asm\
     src/interp/print_num.asm\
@@ -145,6 +151,7 @@ COMMON_AS_SRC=\
     src/interp/print_tab.asm\
     src/interp/putchar.asm\
     src/interp/rand.asm\
+    src/interp/return.asm\
     src/interp/sgn.asm\
     src/interp/shl8.asm\
     src/interp/soundoff.asm\
@@ -154,45 +161,38 @@ COMMON_AS_SRC=\
     src/interp/usr.asm\
     src/interp/val.asm\
     src/interp/varaddr.asm\
-    src/interp/return.asm\
-    src/interp/cjump.asm\
     src/interp/xio.asm\
-    src/interp/const.asm\
-    src/interp/cdata.asm\
-    src/interp/jump.asm\
-    src/interp/for.asm\
-    src/interp/negax.asm\
 
 # FP Interpreter ASM files
 FP_AS_SRC=\
-    src/interp/fpmain.asm\
-    src/interp/fp_val.asm\
-    src/interp/fp_sgn.asm\
-    src/interp/fp_intfp.asm\
-    src/interp/fp_print.asm\
-    src/interp/fp_evalpoly.asm\
+    src/interp/fp_abs.asm\
     src/interp/fp_atn.asm\
+    src/interp/fp_cmp.asm\
     src/interp/fp_coef.asm\
-    src/interp/fp_sincos.asm\
-    src/interp/fp_log.asm\
-    src/interp/fp_log10.asm\
+    src/interp/fp_const.asm\
+    src/interp/fp_div.asm\
+    src/interp/fp_evalpoly.asm\
     src/interp/fp_exp.asm\
     src/interp/fp_exp10.asm\
-    src/interp/fp_sub.asm\
-    src/interp/fp_mul.asm\
-    src/interp/fp_div.asm\
-    src/interp/fp_ipow.asm\
-    src/interp/fp_set1.asm\
-    src/interp/fp_rnd.asm\
-    src/interp/fp_load.asm\
-    src/interp/fp_store.asm\
-    src/interp/fp_abs.asm\
-    src/interp/fp_cmp.asm\
     src/interp/fp_int.asm\
-    src/interp/fp_push.asm\
+    src/interp/fp_intfp.asm\
+    src/interp/fp_ipow.asm\
+    src/interp/fp_load.asm\
+    src/interp/fp_log.asm\
+    src/interp/fp_log10.asm\
+    src/interp/fp_mul.asm\
     src/interp/fp_pop.asm\
+    src/interp/fp_print.asm\
+    src/interp/fp_push.asm\
+    src/interp/fp_rnd.asm\
+    src/interp/fp_set1.asm\
+    src/interp/fp_sgn.asm\
+    src/interp/fp_sincos.asm\
     src/interp/fp_sqrt.asm\
-    src/interp/fp_const.asm\
+    src/interp/fp_store.asm\
+    src/interp/fp_sub.asm\
+    src/interp/fp_val.asm\
+    src/interp/fpmain.asm\
 
 # BAS editor source
 BAS_SRC=\
