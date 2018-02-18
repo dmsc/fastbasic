@@ -75,10 +75,17 @@ FPNORM=$DC00
         sta     fp_tmp_a
         stx     fp_tmp_x
 
-        ; Divide by 90° or PI/2
-        .assert (>fp_pi1_2) = (>fp_90) , error, "PI/2 and 90 fp constants in different pages!"
-        ldx     DEGFLAG
         ldy     #>fp_pi1_2
+        ldx     #<fp_pi1_2
+
+        ; Divide by 90° or PI/2
+        lda     DEGFLAG
+        beq     do_rad
+        ldx     #<fp_90
+        ; TODO: in the case of the assert bellow, you could add an "INY"
+        .assert (>fp_pi1_2) = (>fp_90), error, "PI/2 and 90 fp constants in different pages"
+do_rad:
+
         jsr     FLD1R
         jsr     FDIV
         bcs     exit

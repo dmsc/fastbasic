@@ -551,8 +551,8 @@ PARSE_LINE_COMMAND:
         "Data" DATA_VAR DATA_TYPE DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
-        "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_BYTE emit DEGFLAG_DEG emit TOK_POKE
-        "RAD" emit TOK_BYTE emit DEGFLAG emit TOK_BYTE emit DEGFLAG_RAD emit TOK_POKE
+        "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_1 emit TOK_POKE
+        "RAD" emit TOK_BYTE emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN: &LOW_ERROR

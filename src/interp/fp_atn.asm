@@ -27,7 +27,7 @@
 ; ATN (arc-tangent) function
 ; --------------------------
 
-        .importzp       DEGFLAG, DEGFLAG_DEG
+        .importzp       DEGFLAG
         .importzp       fp_tmp_a, fp_tmp_x
         .importzp       tmp2
 
@@ -74,8 +74,7 @@ small_arg:
 test_deg:
         ; Convert to degrees if needed:
         lda     DEGFLAG
-        cmp     #DEGFLAG_DEG
-        bne     not_deg
+        beq     not_deg
 
         ldx     #<fp_180pi
         ldy     #>fp_180pi

@@ -27,7 +27,6 @@
 ; Floating Point coefficients
 ; ---------------------------
 
-        .exportzp       DEGFLAG_RAD, DEGFLAG_DEG
         .export         fp_sin_coef, fp_pi1_2, fp_180pi, fp_90
 
         .segment        "RUNTIME"
@@ -44,8 +43,5 @@ fp_90:
         .byte $40,$90,$00,$00,$00,$00
 fp_180pi:
         .byte $40,$57,$29,$57,$79,$51
-
-DEGFLAG_RAD = <fp_pi1_2
-DEGFLAG_DEG = <fp_90
 
 ; vi:syntax=asm_ca65

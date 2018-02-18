@@ -135,6 +135,10 @@ interpreter_cptr        =       cptr
         sta     tabpos
         sta     IOCHN
         sta     IOERROR
+.ifdef FASTBASIC_FP
+        .importzp       DEGFLAG
+        sta     DEGFLAG
+.endif ; FASTBASIC_FP
 
         ; Sound off
         jsr     sound_off
@@ -147,11 +151,9 @@ interpreter_cptr        =       cptr
         lda     #STACK_SIZE
         sta     sptr
 .ifdef FASTBASIC_FP
-        .importzp       DEGFLAG, DEGFLAG_RAD, fptr, FPSTK_SIZE
+        .importzp       fptr, FPSTK_SIZE
         lda     #FPSTK_SIZE
         sta     fptr
-        lda     #DEGFLAG_RAD
-        sta     DEGFLAG
 .endif ; FASTBASIC_FP
 
         ; Interpret opcodes
