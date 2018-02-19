@@ -68,52 +68,25 @@ alloc_size=     tmp1
 .endproc        ; Fall through
 
         ; Increase program memory area X by A (size in bytes)
-alloc_area_8:
-        ldy     #0
-        ; Increase program memory area X by AY (size in bytes)
-.proc   alloc_area
-        sty     alloc_size+1
-skip_y: sta     alloc_size
-
+.proc alloc_area_8
+        sta     alloc_size
         clc
         adc     mem_end
         tay
-        lda     alloc_size+1
+
+        lda     #0
+        sta     alloc_size+1
         adc     mem_end+1
+
         cpy     MEMTOP
         sbc     MEMTOP+1
         bcs     rts_1
 
-        ; Move memory up by "alloc_size"
-        stx     save_x+1
-        jsr     move_mem_up
-        ; Adjust pointers
-save_x: ldx     #0
-.endproc        ; Fall through
-
-        ; Increase all pointers from "Y" to the last by AX
-.proc   add_pointers
-loop:   clc
-        lda     mem_start, x
-        adc     alloc_size
-        sta     mem_start, x
-        inx
-        lda     mem_start, x
-        adc     alloc_size+1
-        sta     mem_start, x
-        inx
-        cpx     #mem_end - mem_start + 2
-        bne     loop
-        clc
-::rts_1:
-        rts
-.endproc
-
         ; Move memory up.
-        ;  Y          : index to pointer to move from
+        ;  X          : index to pointer to move from
         ;  alloc_size : amount to move up
-        ;
-.proc   move_mem_up
+        stx     save_x+1
+
         ;       Setup pointers
         lda     mem_start, x
         sta     move_dwn_src
@@ -134,8 +107,31 @@ loop:   clc
         sbc     mem_start+1, x
         tax
         pla
-        jmp     move_dwn
+        jsr     move_dwn
+
+        ; Adjust pointers
+save_x: ldx     #0
+
+.endproc        ; Fall through
+
+        ; Increase all pointers from "Y" to the last by AX
+.proc   add_pointers
+loop:   clc
+        lda     mem_start, x
+        adc     alloc_size
+        sta     mem_start, x
+        inx
+        lda     mem_start, x
+        adc     alloc_size+1
+        sta     mem_start, x
+        inx
+        cpx     #mem_end - mem_start + 2
+        bne     loop
+        clc
+::rts_1:
+        rts
 .endproc
+
 
 ;----------------------------------------------------------
 ; Parser initialization here:
