@@ -447,6 +447,34 @@ set_type:
 xit:    rts
 .endproc
 
+; Label definition search/create
+.proc   E_LABEL_DEF
+        jsr     label_create
+
+        ; Fills all undefined labels with current position - saved for the label
+        bcs     nfound
+
+        ; Check label number
+cloop:  bmi     error   ; label already defined
+
+        ; Write current codep to AX
+        jsr     patch_codep
+        ldy     #0
+        lda     #1
+        sta     (tmp1), y
+
+        ; Continue
+next:   jsr     next_laddr
+        bcc     cloop
+nfound:
+        lda     #128
+        jsr     add_laddr_list
+        bcs     error
+        bcc     advance_varn
+error:  sec
+        rts
+.endproc
+
                 ; Loop iteration for label-address,
         ; increment pointer, compares with end
         ; and reads values
@@ -551,34 +579,6 @@ nfound: lda     #0
 ret:    rts
 .endproc
 
-; Label definition search/create
-.proc   E_LABEL_DEF
-        jsr     label_create
-
-        ; Fills all undefined labels with current position - saved for the label
-        bcs     nfound
-
-        ; Check label number
-cloop:  bmi     error   ; label already defined
-
-        ; Write current codep to AX
-        jsr     patch_codep
-        ldy     #0
-        lda     #1
-        sta     (tmp1), y
-
-        ; Continue
-next:   jsr     next_laddr
-        bcc     cloop
-nfound:
-        lda     #128
-        jsr     add_laddr_list
-        bcs     error
-        jmp     advance_varn
-error:  sec
-xit:    rts
-.endproc
-
 ; Check if all labels are defined
 ; Returns C=1 if ok.
 .proc   check_labels
@@ -591,10 +591,10 @@ start:
         cpy     laddr_ptr
         lda     tmp1+1
         sbc     laddr_ptr+1
-        bcs     E_LABEL_DEF::xit
+        bcs     E_LABEL::ret
 
         lda     (tmp1), y
-        beq     E_LABEL_DEF::xit
+        beq     E_LABEL::ret
 
         ; Note: C = 0 from above!
         tya
@@ -606,25 +606,6 @@ start:
 .endproc
 
 ; Actions for LOOPS
-.proc   pop_patch_codep
-        jsr     pop_codep
-.endproc        ; Fall through
-.proc   patch_codep
-        ; Patches saved position with current position
-        sta     tmp2
-        stx     tmp2+1
-        jsr     get_codep
-        ldy     #0
-        clc
-        adc     reloc_addr
-        sta     (tmp2),y
-        iny
-        txa
-        adc     reloc_addr+1
-        sta     (tmp2),y
-        clc
-        rts     ; C is cleared on exit!
-.endproc
 
 .proc   E_PUSH_LT
         ; Push current position, don't emit
@@ -722,7 +703,8 @@ rtsclc: clc
 .proc   E_POP_PROC_1
         ; Pop saved "jump to end" position
         lda     #LT_PROC_1
-        jmp     pop_patch_codep
+        .assert LT_PROC_1 = 0, error, "LT_PROC_1 must be 0"
+        beq     pop_patch_codep
 .endproc
 
 .proc   E_EXIT_LOOP
@@ -827,12 +809,30 @@ comp_y: cpx     #$FC
         bmi     no_elif
         lda     #LT_ELIF
         cmp     loop_stk, y
-        bne     no_elif
-        ; ELIF, remove from stack and patch
-        jmp     pop_patch_codep
+        beq     pop_patch_codep ; ELIF, remove from stack and patch
 no_elif:
         clc
         rts
+.endproc
+
+.proc   pop_patch_codep
+        jsr     pop_codep
+.endproc        ; Fall through
+.proc   patch_codep
+        ; Patches saved position with current position
+        sta     tmp2
+        stx     tmp2+1
+        jsr     get_codep
+        ldy     #0
+        clc
+        adc     reloc_addr
+        sta     (tmp2),y
+        iny
+        txa
+        adc     reloc_addr+1
+        sta     (tmp2),y
+        clc
+        rts     ; C is cleared on exit!
 .endproc
 
 .proc   E_ELIF
@@ -857,7 +857,7 @@ type:   lda     #LT_ELSE
         ; Parch current position + 2 (over jump)
         lda     tmp1
         ldx     tmp1+1
-        jmp     patch_codep
+        bne     patch_codep
 .endproc
 
 ; vi:syntax=asm_ca65
