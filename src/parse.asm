@@ -97,29 +97,28 @@ SM_EMIT=        SM_EMIT_1
         .code
 
 .proc parser_error
-        ; Restore stack
-ldstk:  ldx     #$ff
-        txs
         ; Prints error message
         tax
         ldy     #$FF
-nxt:    iny
-        lda     error_msg_list, y
-        bpl     nxt
-        dex
-        bpl     nxt
-        ; And print
 ploop:  iny
+        cpx     #1      ; C=1 if X != 0
         lda     error_msg_list, y
+        bcs     skip    ; Skip if X != 0
         pha
         and     #$7F
         jsr     putc
         pla
+skip:   bpl     ploop
+        dex
         bpl     ploop
         sec
+        ; Restore stack and return
+::restore_stack:
+        ldx     #$ff
+        txs
         rts
 .endproc
-saved_stack = parser_error::ldstk + 1
+saved_stack = restore_stack + 1
 
 .proc parse_eof
         ; Check if parser stack is empty
@@ -137,10 +136,8 @@ ok:     lda     #TOK_END
         jsr     emit_const
         lda     opos
         jsr     alloc_prog
-        ldx     saved_stack
-        txs
         clc
-        rts
+        bcc     restore_stack   ; exit
 .endproc
 
 .proc parser_fetch
@@ -320,7 +317,6 @@ line_ok:
         lda     opos
         jsr     alloc_prog
         jmp     parse_line
-
 
 pexit_err:
         pla

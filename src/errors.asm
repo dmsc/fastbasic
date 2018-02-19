@@ -34,7 +34,6 @@ error_msg_list:
         .endrepeat
         .byte   .strat(msg, .strlen(msg)-1) ^ $80
 .endmacro
-        .byte   $80
         def_error ERR_LOOP,     "bad loop error"
         def_error ERR_PARSE,    "parse error"
         def_error ERR_NO_ELOOP, "no end loop/proc/if"
