@@ -182,7 +182,35 @@ parse_line:
         jsr     INTLBUF
 
         ; Convert to uppercase and copy to line buffer
-        jsr     ucase_buffer
+        ldy     #$FF
+loop:
+        iny
+        lda     (buf_ptr), y
+        sta     (bptr), y
+        cmp     #$9B
+        beq     ucase_end
+
+        cmp     #'"'
+        beq     skip_str        ; Skip string constants
+        sbc     #'a'
+        cmp     #'z'-'a'+1
+        bcs     loop
+        adc     #'A'
+        sta     (bptr), y
+        bcc     loop
+
+skip_str:
+        iny
+        lda     (buf_ptr), y
+        sta     (bptr), y
+        cmp     #'"'
+        beq     loop
+        cmp     #$9b
+        bne     skip_str
+ucase_end:
+
+        ; Store line length to verify complete parsing
+        sty     parse_line_len
         tya
         sec
         adc     buf_ptr
@@ -309,8 +337,8 @@ pexit_ok:
         sta     pptr+1
         bne     ploop
         ldy     bpos
-        lda     (bptr), y
-        cmp     #$9B
+        cpy     #00
+parse_line_len=*-1
         bne     set_parse_error
 line_ok:
         ; Increases output buffer
@@ -379,36 +407,6 @@ emit_const:
         ldy     opos
         sta     (prog_ptr),y
         inc     opos
-xit:    rts
-
-        ; Transforms the line to uppercase
-.proc   ucase_buffer
-        ldy     #$FF
-loop:
-        iny
-        lda     (buf_ptr), y
-        sta     (bptr), y
-        cmp     #$9B
-        beq     xit
-
-        cmp     #'"'
-        beq     skip_str        ; Skip string constants
-        sbc     #'a'
-        cmp     #'z'-'a'+1
-        bcs     loop
-        adc     #'A'
-        sta     (bptr), y
-        bcc     loop
-
-skip_str:
-        iny
-        lda     (buf_ptr), y
-        sta     (bptr), y
-        cmp     #'"'
-        beq     loop
-        cmp     #$9b
-        bne     skip_str
         rts
-.endproc
 
 ; vi:syntax=asm_ca65
