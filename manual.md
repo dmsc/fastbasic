@@ -769,7 +769,7 @@ Control Statements
 
 
 **Conditional execution**  
-**IF _condition_ THEN _statement_ / IF T.**  
+**IF _condition_ THEN _statement_ / I. T.**  
 **IF _condition_**  
 **ELIF _condition_ / ELI.**  
 **ELSE / E.**  
@@ -984,7 +984,7 @@ Device Input and Output Statements
   the error value.
 
 **Input variable or string from file**  
-**INPUT #_iochn_, _var_ / I.**
+**INPUT #_iochn_, _var_ / IN.**
 
   Reads a line from channel _iochn_ and
   stores to _var_.
