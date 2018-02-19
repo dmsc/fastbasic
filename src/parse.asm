@@ -210,7 +210,6 @@ skip_str:
 ucase_end:
 
         ; Store line length to verify complete parsing
-        sty     parse_line_len
         tya
         sec
         adc     buf_ptr
@@ -337,8 +336,8 @@ pexit_ok:
         sta     pptr+1
         bne     ploop
         ldy     bpos
-        cpy     #00
-parse_line_len=*-1
+        lda     (bptr), y
+        cmp     #$9B
         bne     set_parse_error
 line_ok:
         ; Increases output buffer
