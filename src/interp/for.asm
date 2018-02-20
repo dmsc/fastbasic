@@ -160,8 +160,7 @@ positive:
         txa
         eor     stack_h, y
         bne     set1
-        tax
-        jmp     next_ins_incsp
+        beq     set0
 .endproc
 
 .proc   EXE_EQ  ; AX = AX == (SP+)
