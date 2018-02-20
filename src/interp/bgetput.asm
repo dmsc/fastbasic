@@ -41,28 +41,30 @@
         .segment        "RUNTIME"
 
 .proc   EXE_BPUT
-        ldy     #PUTCHR
-        .byte   $2C   ; Skip 2 bytes over next "LDY"
+        clc
+        .byte   $24   ; Skip 1 byte over next "SEC"
 .endproc        ; Fall through
 .proc   EXE_BGET
-        ldy     #GETCHR
-        sty     setcom+1
-        tay
+        sec
+
+        pha
         txa
 
         ldx     IOCHN
 
         sta     ICBLH, x
-        tya
+        pla
         sta     ICBLL, x        ; Length
 
-        ldy     sptr
         lda     stack_l, y
         sta     ICBAL, x        ; Address
         lda     stack_h, y
         sta     ICBAH, x
 
-setcom: lda     #0
+        lda     #GETCHR
+        bcs     bget
+        lda     #PUTCHR
+bget:
         jmp     CIOV_CMD_POP2   ; Note: A is never 0
 .endproc
 
