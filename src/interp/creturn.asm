@@ -24,25 +24,26 @@
 ; linked into a combine executable.)
 
 
-; Return from subroutine
-; ----------------------
+; Conditional return from subroutine
+; ----------------------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, cptr
+        .importzp       cptr, sptr
+        .import         pop_stack_y
 
         .segment        "RUNTIME"
 
-.proc   EXE_RET
-        tay
+.proc   EXE_CRET
+        lsr
+        bcs     skip
         pla
         sta     cptr+1
         pla
         sta     cptr
-        tya
-        jmp     next_instruction
+skip:   jmp     pop_stack_y
 .endproc
 
         .include "../deftok.inc"
-        deftoken "RET"
+        deftoken "CRET"
 
 ; vi:syntax=asm_ca65

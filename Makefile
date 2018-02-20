@@ -119,6 +119,7 @@ COMMON_AS_SRC=\
     src/interp/comp0.asm\
     src/interp/const.asm\
     src/interp/copystr.asm\
+    src/interp/creturn.asm\
     src/interp/dec.asm\
     src/interp/dim.asm\
     src/interp/div.asm\
