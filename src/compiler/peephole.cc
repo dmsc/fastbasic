@@ -251,6 +251,11 @@ class peephole
                                 set_tok(0, TOK_RET);
                                 del(1);
                             }
+                            else if( mtok(0, TOK_CJUMP) )
+                            {
+                                set_tok(0, TOK_CRET);
+                                del(1);
+                            }
                         }
                         else
                             set_ws(1, t);
@@ -492,14 +497,23 @@ class peephole
                         set_tok(0, TOK_L_NOT); set_tok(2, TOK_CJUMP); del(1);
                         continue;
                     }
+                    // Bypass CJUMP over a RET
+                    //   TOK_CJUMP / x / TOK_RET / LABEL x
+                    //     -> TOK_L_NOT / TOK_CRET / LABEL x
+                    if( mtok(0,TOK_CJUMP) && mtok(2,TOK_RET) && mlabel(3) &&
+                        lbl(3) == wlbl(1) )
+                    {
+                        set_tok(0, TOK_L_NOT); set_tok(2, TOK_CRET); del(1);
+                        continue;
+                    }
                     // Remove dead code after a JUMP
                     if( mtok(0,TOK_JUMP) && !mlabel(2) )
                     {
                         del(2);
                         continue;
                     }
-                    // Remove dead code after a RET
-                    if( mtok(0, TOK_RET) && !mlabel(1) )
+                    // Remove dead code after a RET or END
+                    if( (mtok(0, TOK_RET) || mtok(0, TOK_END)) && !mlabel(1) )
                     {
                         del(1);
                         continue;

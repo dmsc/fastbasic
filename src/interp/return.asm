@@ -28,9 +28,20 @@
 ; ----------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, cptr
+        .importzp       next_instruction, cptr, sptr
+        .import         stack_l, stack_h, pop_stack_y
 
         .segment        "RUNTIME"
+
+.proc   EXE_CRET
+        lsr
+        bcc     skip
+        jmp     pop_stack_y
+skip:
+        lda     stack_l, y
+        ldx     stack_h, y
+        inc     sptr
+.endproc
 
 .proc   EXE_RET
         tay
@@ -44,5 +55,6 @@
 
         .include "../deftok.inc"
         deftoken "RET"
+        deftoken "CRET"
 
 ; vi:syntax=asm_ca65

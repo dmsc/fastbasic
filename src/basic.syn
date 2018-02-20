@@ -50,7 +50,7 @@ TOKENS {
  # Optimization - set's IO channel to 0
  TOK_IOCHN0
  # Jumps
- TOK_JUMP, TOK_CJUMP, TOK_CALL, TOK_RET
+ TOK_JUMP, TOK_CJUMP, TOK_CALL, TOK_RET, TOK_CRET
  # FOR loop support
  TOK_FOR, TOK_FOR_START, TOK_FOR_NEXT, TOK_FOR_EXIT
  # Arrays
