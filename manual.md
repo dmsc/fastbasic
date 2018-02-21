@@ -775,8 +775,9 @@ Control Statements
 **ELSE / E.**  
 **ENDIF / END.**
 
-  The first form executes one
-  _statement_ if the condition is true.
+  The first form (with THEN) executes
+  one _statement_ if the condition is
+  true.
 
   The second form executes all
   statements following the IF (up until
