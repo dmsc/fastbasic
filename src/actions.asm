@@ -85,11 +85,12 @@ read_fp = AFP
                 ; and if the loop should be ignored by the EXIT statement.
                 ;
                 ;                     ; EXIT?   PUSH?
+                ;                     ; bit-7   bit-6
+                LT_EXIT               ; error   yes
                 LT_PROC_1             ; error   yes
                 LT_DATA               ; error   yes
-                LT_EXIT               ; error   yes
                 LT_FOR_2              ; yes     yes
-                LT_LAST_JUMP = 32
+                LT_LAST_JUMP = 63
                 LT_PROC_2             ; yes     no
                 LT_DO_LOOP            ; yes     no
                 LT_REPEAT             ; yes     no
@@ -99,7 +100,8 @@ read_fp = AFP
                 LT_IF                 ; ignore  yes
                 LT_ELSE               ; ignore  yes
                 LT_ELIF               ; ignore  yes
-                LT_FOR_1 = 128 + 33   ; ignore  no
+
+                LT_FOR_1 = 128 + 64   ; ignore  no
         .endenum
 
 ;----------------------------------------------------------
@@ -202,10 +204,9 @@ xit:    sec
         jmp     emit_AX
 
 read_hex:
-        iny
-
 nloop:
-        ; Read a number
+        ; Read next hex digit
+        iny
         lda     (bptr),y
         sec
         sbc     #'0'
@@ -218,36 +219,38 @@ nloop:
         bcs     xit ; Not an hex number
 
 digit:
-        iny             ; Accept
         sta     tmp1    ; and save digit
+
+        ; Check if number is < $FFF
+        lda     tmp1+1
+        cmp     #$F0
+        bcs     ret     ; Exit with C = 1
 
         ; Multiply tmp by 16
         txa
         asl
         rol     tmp1+1
-        bcs     ebig
         asl
         rol     tmp1+1
-        bcs     ebig
         asl
         rol     tmp1+1
-        bcs     ebig
         asl
         rol     tmp1+1
-        bcs     ebig
 
         ; Add new digit
         ora     tmp1
         tax
         bcc     nloop
 
-ebig:
-        sec
+ret:
         rts
 
 xit:
-        cpy     bpos
-        beq     ebig
+        ; TODO: This check does not work, because we always consumed at
+        ;       least the "$" at start. So, just define that "$" is the
+        ;       same as "0" and omit the check:
+;       cpy     bpos    ; Check that we consumed at least one character
+;       beq     ret     ; Exit with C = 1 (if Y == bpos, C = 1)
 
         sty     bpos
 
@@ -529,7 +532,7 @@ xit:    rts
         dey
         txa
         sta     (tmp2), y
-        clc
+      ; clc     ; get_codep clears carry
 xit:    rts
 .endproc
 
@@ -623,9 +626,8 @@ start:
         bmi     loop_error
         sty     loop_sp
         pla
-        and     #$7F
-        cmp     #LT_LAST_JUMP+1
-        bcs     xit
+        asl     ; Check BIT 6
+        bmi     xit
         inc     opos
         inc     opos
 xit:    clc
@@ -676,7 +678,7 @@ rtsclc: clc
         dey
         bmi     pop_codep::rtsclc
         lda     loop_stk, y
-        cmp     #LT_EXIT
+        .assert LT_EXIT = 0, error, "LT_EXIT must be 0"
         bne     pop_codep::rtsclc
         ; Yes, pop and patch
         sty     loop_sp
@@ -688,18 +690,6 @@ rtsclc: clc
         jsr     patch_codep
         ; And check for more possible EXIT's
         jmp     check_loop_exit
-.endproc
-
-.proc   E_POP_DATA
-        ; Pop saved position, store
-        lda     #LT_DATA
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_POP_PROC_1
-        ; Pop saved "jump to end" position
-        lda     #LT_PROC_1
-        .assert LT_PROC_1 = 0, error, "LT_PROC_1 must be 0"
-        beq     pop_patch_codep
 .endproc
 
 .proc   E_EXIT_LOOP
@@ -810,6 +800,16 @@ no_elif:
         rts
 .endproc
 
+.proc   E_POP_DATA
+        ; Pop saved position, store
+        lda     #LT_DATA
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
+.proc   E_POP_PROC_1
+        ; Pop saved "jump to end" position
+        lda     #LT_PROC_1
+.endproc        ; Fall through
+
 .proc   pop_patch_codep
         jsr     pop_codep
 .endproc        ; Fall through
@@ -819,7 +819,7 @@ no_elif:
         stx     tmp2+1
         jsr     get_codep
         ldy     #0
-        clc
+     ;  clc     ; get_codep clears carry
         adc     reloc_addr
         sta     (tmp2),y
         iny
