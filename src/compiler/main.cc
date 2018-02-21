@@ -168,7 +168,8 @@ int main(int argc, char **argv)
     if( show_stats )
         opstat op(s.full_code());
 
-    // Write global symbols
+    // Get global symbols
+    std::set<std::string> globals, globals_zp;
     for(auto &c: s.full_code())
     {
         // Lower-case symbols are internal
@@ -176,13 +177,23 @@ int main(int argc, char **argv)
         if( !s.empty() && s[0] >= 'A' && s[0] <= '_' )
         {
             if( c.is_sword() )
-                ofile << "\t.global " << c.get_str() << "\n";
+                globals.insert(c.get_str());
             else if( c.is_sbyte() )
-                ofile << "\t.globalzp " << c.get_str() << "\n";
+                globals_zp.insert(c.get_str());
         }
     }
+
+    // Output all global symbols
+    ofile << "; Imported symbols\n";
+    for(auto &c: globals)
+        ofile << "\t.global " << c << "\n";
+    for(auto &c: globals_zp)
+        ofile << "\t.globalzp " << c << "\n";
+
     // Export common symbols and include atari defs
-    ofile << "\t.export bytecode_start\n"
+    ofile << "\n"
+             "; Exported symbols\n"
+             "\t.export bytecode_start\n"
              "\t.exportzp NUM_VARS\n"
              "\n\t.include \"atari.inc\"\n\n";
 
