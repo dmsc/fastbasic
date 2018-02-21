@@ -93,7 +93,7 @@ COMPILE_BUFFER:
         pla
         pla
         ; Store again in stack
-        pha
+        php
         beq     no_save
 
         ; We need to relocate the bytecode, calculate the offset:
@@ -109,7 +109,7 @@ no_save:
         ; Parse
         jsr     parser_start
         lda     #1
-        bcs     load_editor     ; On error, exit returning 1
+        bcs     load_editor_plp ; On error, exit returning 1
 
         lda     prog_ptr
         sta     COMP_END
@@ -126,7 +126,8 @@ no_save:
         sta     compiled_var_count+1
 
         ; Check if need to run program
-        pla
+        plp
+        php
         bne     return_0
 
         ; Runs current parsed program
@@ -162,6 +163,9 @@ run_program:
 return_0:
         ldx     #0
         txa
+
+load_editor_plp:
+        plp
 
         ; Load all pointer to execute the editor
         ; Does not modify A/X
