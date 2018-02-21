@@ -46,7 +46,7 @@ static bool readLine(std::string &r, std::istream &is)
  while( -1 != (c = is.get()) )
  {
      r += char(c);
-     if( c == '\n' || c == '\x9b' )
+     if( c == '\n' || c == (unsigned char)'\x9b' )
          return true;
  }
  return false;

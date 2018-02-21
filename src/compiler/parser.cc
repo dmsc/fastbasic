@@ -248,7 +248,7 @@ class parse {
             if( pos < str.length() )
             {
                 // Three types of EOL:
-                if( (str[pos] == 0x9B) || // AT-ASCII EOL
+                if( (str[pos] == '\x9B') || // AT-ASCII EOL
                     (str[pos] == '\n') )  // Unix EOL
                 {
                     pos ++;
@@ -466,7 +466,7 @@ static bool SMB_E_CONST_STRING(parse &s)
 static bool SMB_E_REM(parse &s)
 {
     s.debug("E_REM");
-    while( !s.eos() && !s.expect('\n') && !s.expect(0x9b) )
+    while( !s.eos() && !s.expect('\n') && !s.expect('\x9b') )
         s.pos++;
     return true;
 }
