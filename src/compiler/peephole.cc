@@ -211,6 +211,65 @@ class peephole
                 }
             }
         }
+        // Remove extra IOCHN0 tokens
+        void trace_iochn()
+        {
+            // This is the calculated current I/O channel
+            int ioch = 0;
+            for(current=0; current<code.size(); current++)
+            {
+                if( mlabel(0) || mtok(0, TOK_CALL) )
+                    ioch = 0; // Assume 0 after any label or CALL
+                else if( mtok(0, TOK_CLOSE) ||
+                         mtok(0, TOK_BPUT) ||
+                         mtok(0, TOK_BGET) ||
+                         mtok(0, TOK_DRAWTO) ||
+                         mtok(0, TOK_FILLTO) ||
+                         mtok(0, TOK_GRAPHICS) ||
+                         mtok(0, TOK_PLOT) ||
+                         mtok(0, TOK_PRINT_EOL) ||
+                         mtok(0, TOK_PUT) ||
+                         mtok(0, TOK_XIO) )
+                {
+                    ioch = 0; // Tokens that set IOCHN to 0
+                }
+                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") &&
+                        mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_POKE) )
+                {
+                    if( ioch == val(3) )
+                    {
+                        // Remove redundant set IOCHN
+                        del(4); del(3); del(2); del(1); del(0);
+                        current--;
+                    }
+                    else
+                        ioch = val(3);
+                }
+                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") )
+                {
+                    ioch = -1;
+                }
+                else if( mtok(0, TOK_IOCHN0) &&
+                         mtok(1,TOK_BYTE) && mcbyte(2, "IOCHN") &&
+                         mtok(3,TOK_NUM) && mword(4) && mtok(5,TOK_POKE) )
+                {
+                    // Setting I/O channel just after IOCHN0, delete redundant one
+                    del(0);
+                    current++;
+                }
+                else if( mtok(0, TOK_IOCHN0 ) )
+                {
+                    if( ioch == 0 )
+                    {
+                        del(0);
+                        current--;
+                    }
+                    else
+                        ioch = 0;
+                }
+            }
+        }
+
         // Jump threading optimization.
         // Replace JUMP to RET or another JUMP with a direct jump to target.
         void replace_label_targets()
@@ -273,6 +332,7 @@ class peephole
                 changed = false;
                 remove_unused_labels();
                 replace_label_targets();
+                trace_iochn();
 
                 for(size_t i=0; i<code.size(); i++)
                 {
