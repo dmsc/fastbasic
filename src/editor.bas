@@ -755,12 +755,12 @@ PROC ProcessKeys
     '
     '--------- Control-R (run) -----
     elif key = $12
-      key = 0
+      key = 0 ' key = 0 -> run
       exec CompileFile
     '
     '--------- Control-W (write compiled file) -----
     elif key = $17
-      key = 1
+      ' key <> 0 -> save
       exec CompileFile
     '
     '--------- Control-N (new) -----

@@ -92,7 +92,8 @@ COMPILE_BUFFER:
         ; Compile / Run
         pla
         pla
-        sta     do_run+1
+        ; Store again in stack
+        pha
         beq     no_save
 
         ; We need to relocate the bytecode, calculate the offset:
@@ -124,7 +125,8 @@ no_save:
         lda     var_count
         sta     compiled_var_count+1
 
-do_run: ldx     #$00
+        ; Check if need to run program
+        pla
         bne     return_0
 
         ; Runs current parsed program
