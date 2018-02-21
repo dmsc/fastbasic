@@ -452,7 +452,6 @@ static bool SMB_E_CONST_STRING(parse &s)
     {
         if( s.expect('"') && !s.peek('"') )
         {
-            s.emit_tok(TOK_CSTRING);
             s.emit_str(str);
             return true;
         }

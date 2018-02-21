@@ -270,8 +270,7 @@ xit:    rts
         ; Store original output position
         lda     opos
         sta     tmp1
-        ; Increase by two (token and length)
-        inc     opos
+        ; Increase by one (string length)
         inc     opos
 nloop:
         ; Check length
@@ -301,9 +300,6 @@ eos:    iny
         dec     bpos
         ; Store token and length
 eos_ok: ldy     tmp1
-        lda     #TOK_CSTRING
-        sta     (prog_ptr), y
-        iny
         txa
         sta     (prog_ptr), y
         clc

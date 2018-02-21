@@ -303,7 +303,7 @@ COMP_EXPR_MORE:
 # String expressions
 STR_EXPR:
         # Either, a constant string
-        "\"" E_CONST_STRING
+        "\"" emit TOK_CSTRING E_CONST_STRING
         # Or a string variable
         emit TOK_VAR_LOAD E_VAR_STRING "$"
 
@@ -411,7 +411,7 @@ DIM_MORE:
 # INPUT
 INPUT_STR:
         IO_CHAN_COMMA                                    # I/O channel, don't print prompt
-        "\"" E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
+        "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
         emit TOK_BYTE emit 63 emit TOK_PUT               # Prints a '?' by default
 
