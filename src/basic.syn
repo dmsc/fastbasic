@@ -503,6 +503,7 @@ DATA_VAR:
 # Parse a line
 PARSE_LINE_COMMAND:
 	"." E_REM
+	"'" E_REM
 	"?" IO_CHAN_OPT PRINT_EXPR
 	"PRint" IO_CHAN_OPT PRINT_EXPR
         "INput" INPUT_STR INPUT_VAR_LIST emit TOK_IOCHN0
@@ -563,14 +564,17 @@ PARSE_LINE_ASSIGN: &LOW_ERROR
         VAR_FP_LVALUE EQUAL FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
-EOS:
-        ":" PARSE_START
-	"'" E_REM
-	E_EOL
+PARSE_LINE: statement or variable assignment
+        PARSE_LINE_COMMAND E_EOL
+        PARSE_LINE_ASSIGN
 
-PARSE_START: statement or variable assignment
-                           EOS
-        PARSE_LINE_COMMAND EOS
-        PARSE_LINE_ASSIGN  EOS
+PARSE_MORE: comment, end of line or new line
+        ":" PARSE_LINE PARSE_MORE
+        "'" E_REM
+        E_EOL
+
+PARSE_START:
+        PARSE_LINE PARSE_MORE
+        PARSE_MORE
 
 # vi:syntax=perl
