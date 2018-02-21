@@ -275,7 +275,6 @@ xit:    rts
 nloop:
         ; Check length
         ldy     bpos
-        inc     bpos
         lda     (bptr), y
         cmp     #'"'
         beq     eos
@@ -283,6 +282,7 @@ nloop:
         beq     err
         ; Store
 store:  inx
+        inc     bpos
         ldy     opos
         sta     (prog_ptr),y
         inc     opos
@@ -297,7 +297,6 @@ eos:    iny
         inc     bpos
         cmp     #'"'    ; Check for "" to encode one ".
         beq     store
-        dec     bpos
         ; Store token and length
 eos_ok: ldy     tmp1
         txa
