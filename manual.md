@@ -66,7 +66,7 @@ present you with a little help text:
     '  Ctrl-R : Parse and run program
     '  Ctrl-W : Compile to binary file
     '
-    '- Press CONTROL-N + ESC to begin -
+    '- Press CONTROL-N to begin -
 
 You are now in the integrated editor.
 In the first line of the screen the
@@ -84,10 +84,11 @@ file being edited.
 As the help text says, just press the
 `CONTROL` key and the letter `N` (at
 the same time) to begin editing a new
-file.  The editor asks if you want to
-save the current file (the help text)
-to disk, to skip saving simply type
-`ESC`.
+file.  If the text was changed, the
+editor asks if you want to save the
+current file to disk, to skip saving
+simply type `CONTROL-C`, to cancel the
+New File command type `ESC`.
 
 Now, you can start writing your BASIC
 program. Try the following example,
@@ -125,11 +126,12 @@ error so you can correct it and retry.
 
 Remember to save often, pressing the
 `CONTROL` and `S` keys, you need to
-supply a filename. Delete the old file
-with `BACKSPACE` and type the name of
-your new program, and `ENTER` to save.
-As with any prompt, you can press `ESC`
-to cancel the save operation.
+supply a filename. Type the name, and
+press `ENTER` to save.  As with any
+prompt, you can press `ESC` to cancel
+the save operation.  Use the
+`BACKSPACE` over the proposed file name
+if you want to change it.
 
 
 Compiling the program to disk

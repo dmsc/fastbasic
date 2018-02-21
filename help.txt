@@ -15,5 +15,5 @@
 '   Ctrl-R : Parse and run program
 '   Ctrl-W : Compile to binary file
 '
-'  Πςεσσ ΓΟΞΤÒΟΜ­Ξ « ΕΣΓ το βεηιξ  
+'    Πςεσσ ΓΟΞΤÒΟΜ­Ξ το βεηιξ      
 

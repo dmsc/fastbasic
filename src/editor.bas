@@ -36,8 +36,8 @@ MemEnd = Adr(MemStart)
 ' Shows file error
 '
 PROC FileError
-  pos. 1,0
-  ? "ERROR: "; err(); " (press any key)ý";
+  pos. 0,0
+  ? "ERROR: "; err(); ", press any keyý";
   close #1
   get key
 ENDPROC
@@ -50,7 +50,7 @@ PROC InputFilename
   pos. 6, 0: ? FileName$;
   do
     get key
-    if key = 27
+    if key <= 27
       exit
     elif key = 155
       pos. 6, 0
@@ -73,7 +73,7 @@ PROC SaveCompiledFile
   poke Adr(FileName$) + Len(FileName$), $58
 
   pos. 0, 0
-  ? "œ Name?";
+  ? "œName?";
   exec InputFileName
   if key
     ' Don't save
@@ -109,7 +109,7 @@ ENDPROC
 PROC AskSaveFile
   exec SaveLine
   pos. 0, 0
-  ? "œ Save?";
+  ? "œSave?";
   exec InputFileName
   if key
     ' Don't save
@@ -123,11 +123,34 @@ PROC AskSaveFile
     if err() < 128
       ' Save ok, close
       close #1
-      if err() < 128 then Exit
+      if err() < 128
+        fileChanged = 0
+        Exit
+      endif
     endif
   endif
 
   exec FileError
+ENDPROC
+
+'-------------------------------------
+' Ask to save a file if it is changed
+' from last save.
+PROC AskSaveFileChanged
+  key = 0
+  while fileChanged
+   exec AskSaveFile
+   ' ESC means "don't save, cancel operation"
+   if key = 27
+     exec ShowInfo
+     exit
+   endif
+   ' CONTROL-C means "don't save, lose changes"
+   if key = 3
+     key = 0
+     exit
+   endif
+  wend
 ENDPROC
 
 '-------------------------------------
@@ -148,10 +171,10 @@ PROC LoadFile
     exec FileError
   endif
 
+  fileChanged = 0
   column = 0
   line = 0
   scrLine = 0
-  edited = 0
   exec RedrawScreen
 
 ENDPROC
@@ -163,7 +186,7 @@ PROC CompileFile
   exec SaveLine
   poke MemEnd, $9B
   pos. 1,0
-  ? "œ Parsing: ";
+  ? "œParsing: ";
   if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
     ' Parse error, go to error line
     line = dpeek(@@linenum) - 1
@@ -188,6 +211,7 @@ ENDPROC
 ' Insert a character over the cursor
 '
 PROC InsertChar
+  fileChanged = 1
   edited = line + 1
   inc linLen
   ptr = EditBuf + column
@@ -199,6 +223,7 @@ ENDPROC
 ' Deletes the character over the cursor
 '
 PROC DeleteChar
+  fileChanged = 1
   edited = line + 1
   linLen = linLen - 1
   ptr = EditBuf + column
@@ -551,7 +576,7 @@ ENDPROC
 ' Loads initial file, and change the filename
 exec InitScreen
 exec LoadFile
-FileName$ ="D:UNTITLED.BAS"
+FileName$ ="D:"
 
 escape = 0
 do
@@ -641,6 +666,8 @@ PROC ProcessKeys
     '
     '--------- Delete Line ----------
     elif key = 156
+      ' Mark file as changed
+      fileChanged = 1
       ' Go to beginning of line
       column = 0
       ' Delete line from screen
@@ -744,9 +771,11 @@ PROC ProcessKeys
     '
     '--------- Control-Q (exit) -----
     elif key = $11
-      exec AskSaveFile
-      put 125
-      end
+      exec AskSaveFileChanged
+      if not key
+        put 125
+        end
+      endif
     '
     '--------- Control-S (save) -----
     elif key = $13
@@ -765,24 +794,29 @@ PROC ProcessKeys
     '
     '--------- Control-N (new) -----
     elif key = $0E
-      exec AskSaveFile
-      FileName$="D:"
-      MemEnd = Adr(MemStart)
-      poke MemEnd, $9B
-      column = 0
-      line = 0
-      scrLine = 0
-      exec RedrawScreen
+      exec AskSaveFileChanged
+      if not key
+        FileName$="D:"
+        MemEnd = Adr(MemStart)
+        poke MemEnd, $9B
+        column = 0
+        line = 0
+        scrLine = 0
+        exec RedrawScreen
+      endif
     '
     '--------- Control-L (load) -----
     elif key = $0C
-      pos. 0, 0
-      ? "œ Load?";
-      exec InputFileName
-      if key
-        exec ShowInfo
-      else
-        exec LoadFile
+      exec AskSaveFileChanged
+      if not key
+        pos. 0, 0
+        ? "œLoad?";
+        exec InputFileName
+        if key
+          exec ShowInfo
+        else
+          exec LoadFile
+        endif
       endif
     '
     '--------- Control-Z (undo) -----
