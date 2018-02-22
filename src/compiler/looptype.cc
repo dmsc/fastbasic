@@ -41,6 +41,38 @@ enum LoopType {
     LT_ELIF
 };
 
+std::string get_loop_name(enum LoopType l)
+{
+    switch( l )
+    {
+        case LT_PROC_1:
+        case LT_PROC_2:
+            return "PROC";
+        case LT_DATA:
+            return "DATA";
+        case LT_EXIT:
+            return "EXIT";
+        case LT_DO_LOOP:
+            return "DO loop";
+        case LT_REPEAT:
+            return "REPEAT loop";
+        case LT_WHILE_1:
+        case LT_WHILE_2:
+            return "WHILE loop";
+        case LT_FOR_1:
+        case LT_FOR_2:
+            return "FOR loop";
+        case LT_IF:
+            return "IF";
+        case LT_ELSE:
+            return "ELSE";
+        case LT_ELIF:
+            return "ELIF";
+        default:
+            return "unknown loop";
+    }
+}
+
 static LoopType get_looptype(std::string t)
 {
     if( t == "LT_PROC_1" )

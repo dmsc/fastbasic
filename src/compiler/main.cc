@@ -159,6 +159,13 @@ int main(int argc, char **argv)
         std::cerr << "parse end:\n";
         std::cerr << "MAX LEVEL: " << s.maxlvl << "\n";
     }
+    // Check unclosed loops
+    auto loop_error = s.check_loops();
+    if( loop_error.size() )
+    {
+        std::cerr << iname << ":" << ln << ": " << loop_error << "\n";
+        return 1;
+    }
 
     s.emit_tok(TOK_END);
     // Optimize

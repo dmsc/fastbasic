@@ -94,6 +94,20 @@ class parse {
             jumps.pop_back();
             return lbl;
         }
+        std::string check_loops()
+        {
+            // Checks that there are no unclosed loops at the end
+            // of compilation.
+            if( !jumps.size() )
+                return std::string();
+            for( ; jumps.size(); jumps.pop_back() )
+            {
+                auto type = jumps.back().type;
+                if( type != LT_EXIT )
+                    return "unclosed " + get_loop_name(type);
+            }
+            return "EXIT without loop";
+        }
 
         void new_line(std::string l, int ln)
         {
