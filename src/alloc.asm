@@ -150,11 +150,13 @@ loop:
         sty     alloc_size
         iny
         sty     alloc_size+1
-        jmp     add_pointers
+        bne     add_pointers
 .endproc
 
         ; Increase program memory area by A (size in bytes)
 .proc alloc_prog
+        .importzp       opos
+        lda     opos
         ; Move from "prog_end", up by "alloc_size"
         ldx     #prog_end - mem_start
         jsr     alloc_area_8

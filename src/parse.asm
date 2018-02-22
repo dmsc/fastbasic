@@ -134,7 +134,6 @@ ok_loop:
         bne     parser_error
 ok:     lda     #TOK_END
         jsr     emit_const
-        lda     opos
         jsr     alloc_prog
         clc
         bcc     restore_stack   ; exit
@@ -341,7 +340,6 @@ pexit_ok:
         bne     set_parse_error
 line_ok:
         ; Increases output buffer
-        lda     opos
         jsr     alloc_prog
         jmp     parse_line
 
