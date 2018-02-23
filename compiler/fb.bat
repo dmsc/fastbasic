@@ -17,8 +17,8 @@ set extra=
  set opt=%1
  if "%opt%"=="-h" call :usage & exit /b
  if "%opt:~0,1%"=="-" set opts=%opts% %~1 & goto :nextarg
- if /l "%~x1"==".asm" set extra=%extra% %~1 & goto :nextarg
- if /l "%~x1"==".o"   set extra=%extra% %~1 & goto :nextarg
+ if /i "%~x1"==".asm" set extra=%extra% %~1 & goto :nextarg
+ if /i "%~x1"==".o"   set extra=%extra% %~1 & goto :nextarg
  if not "%prog%"=="" call :error specify only one basic file & exit /b
  set prog=%~nx1
  set basfile=%~dpnx1
@@ -39,7 +39,7 @@ if "%basfile%"=="%xexfile%" call :error input file '%prog%' same as XEX file & e
 if "%basfile%"=="%lblfile%" call :error input file '%prog%' same as LBL file & exit /b
 
 echo Compiling '%prog%' to assembler.
-%fbpath%%fb% %* %asmfile% || exit /b %errorlevel%
+%fbpath%%fb% %opts% %basfile% %asmfile% || exit /b %errorlevel%
 echo Assembling '%asmfile%%extra%' to XEX file.
 %cc65%cl65 -tatari -C %fbpath%fastbasic.cfg -g %asmfile% %extra% -o %xexfile% -Ln %lblfile% %fbpath%%fb%.lib || exit /b %errorlevel%
 
