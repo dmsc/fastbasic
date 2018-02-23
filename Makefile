@@ -217,6 +217,7 @@ COMPILER=\
 	 $(LIB_INT)\
 	 $(CROSS_FP)\
 	 $(LIB_FP)\
+	 compiler/fastbasic.cfg\
 	 compiler/fb$(SHEXT)\
 	 compiler/fb-int$(SHEXT)\
 	 compiler/USAGE.md\
