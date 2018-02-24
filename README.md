@@ -4,25 +4,30 @@ FastBasic - Fast BASIC interpreter for the Atari 8-bit computers
 This is a fast interpreter for the BASIC language on the Atari 8-bit computers.
 
 The current features are:
-- Support for 16bit integer variables;
-- Small size (currently the IDE is less than 10k, and the runtime is less than 3k);
-- Fast execution (currently, about 15% faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 3.5 times faster than OSS Integer Basic);
+- Support for Atari floating point and 16bit integer variables;
+- Small size (currently the full floating point IDE is 9.5k, the integer IDE is 8k, and the runtime is less than 3k);
+- Fast execution (currently, about 43% faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 5 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
 - Feels "alike" TurboBasicXL, with many of the extended statements.
 - Integrated editor and compiler.
+- A cross-compiler is available that directly compiles sources to Atari executables in any modern PC.
 
-For more support, see the AtariAge thread at:
-http://atariage.com/forums/topic/267929-fastbasic-beta-version-available/
+For support, use the GitHub bug-tracker or see the AtariAge thread at:
+http://atariage.com/forums/topic/275698-fastbasic-summer-release/
+
 
 Manual
 ------
 
-There is information of the supported syntax in the file [manual.md](manual.md).
+There is a full manual with all the supported syntax in the file [manual.md](manual.md).
+
+To use the cross-compiler, download from the releases and see [compiler/USAGE.md](compiler/USAGE.md) for instructions.
+
 
 Sample files
 ------------
 
-In the "tests" folder there are some samples of the language.
+There are samples for the [integer only compiler](samples/int/) and for he [floating point compiler](samples/fp/), in addition to more thest programs in the [tests](tests/) folder.
 
 
 License
@@ -48,7 +53,7 @@ Compiling the sources
 ---------------------
 
 To compile the sources, you need:
-- CC65 suite, from http://cc65.github.io/cc65/getting-started.html
+- CC65 suite, version 2.16 or later, from http://cc65.github.io/cc65/getting-started.html
 - Host build tools (make & gcc) to build the syntax generator
 - mkatr, from https://github.com/dmsc/mkatr to build the Atari disk image (ATR) file.
 
