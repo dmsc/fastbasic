@@ -535,8 +535,8 @@ PARSE_LINE_COMMAND:
         "DRawto" POSITION emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_FILLTO
         "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD "," EXPR_AB emit TOK_POKE
-        "SOund" EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD "," EXPR "," EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
-        "SOund" emit TOK_SOUND_OFF
+        "Sound" EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD "," EXPR "," EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
+        "Sound" emit TOK_SOUND_OFF
         "DIm" DIM_VAR DIM_MORE
         "CLose" IO_CHAN emit TOK_CLOSE
         "Open" IO_CHAN_COMMA emit TOK_BYTE emit OPEN XIO_EXPR
