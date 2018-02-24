@@ -543,6 +543,22 @@ calculation, in case of error ERR()
 returns 3.
 
 
+String functions
+----------------
+
+- STR$(_num_): Returns a string with a
+               printable value for
+               _num_. Can be used with
+               integers and floating
+               point. Note that this
+               function can't be used
+               at both sides of a
+               comparison, as the
+               resulting string is
+               overwritten each time it
+               is called.
+
+
 Low level Functions
 -------------------
 

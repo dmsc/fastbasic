@@ -147,7 +147,6 @@ COMMON_AS_SRC=\
     src/interp/plot.asm\
     src/interp/poke.asm\
     src/interp/print_eol.asm\
-    src/interp/print_num.asm\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\
     src/interp/putchar.asm\
@@ -156,6 +155,7 @@ COMMON_AS_SRC=\
     src/interp/sgn.asm\
     src/interp/shl8.asm\
     src/interp/soundoff.asm\
+    src/interp/str.asm\
     src/interp/streol.asm\
     src/interp/time.asm\
     src/interp/ushl.asm\
@@ -183,7 +183,6 @@ FP_AS_SRC=\
     src/interp/fp_log10.asm\
     src/interp/fp_mul.asm\
     src/interp/fp_pop.asm\
-    src/interp/fp_print.asm\
     src/interp/fp_push.asm\
     src/interp/fp_rnd.asm\
     src/interp/fp_set1.asm\
@@ -191,6 +190,7 @@ FP_AS_SRC=\
     src/interp/fp_sincos.asm\
     src/interp/fp_sqrt.asm\
     src/interp/fp_store.asm\
+    src/interp/fp_str.asm\
     src/interp/fp_sub.asm\
     src/interp/fp_val.asm\
     src/interp/fpmain.asm\
