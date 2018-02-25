@@ -264,17 +264,14 @@ ploop_nofetch:
         .assert SM_RET  = 1, error, "SM_RET must be 1"
         beq     pexit_ok
         dex
-        .assert SM_ERET = 2, error, "SM_ERET must be 1"
+        .assert SM_ERET = 2, error, "SM_ERET must be 2"
         beq     pemit_ret
 
-pemit_n:
-        clc
-        adc     #($100 - SM_EMIT_1)
-        tax
+        .assert SM_EMIT_1 = 3, error, "SM_EMIT_1 must be 3"
 :       jsr     emit_sub
         dex
-        bpl     :-
-        bmi     ploop
+        bne     :-
+        beq     ploop
 
         ; Character match
 match_char:
@@ -381,14 +378,12 @@ skip_nextline:
         .assert SM_RET  = 1, error, "SM_RET must be 1"
         beq     go_ploop
         dex
-        .assert SM_ERET = 2, error, "SM_ERET must be 1"
+        .assert SM_ERET = 2, error, "SM_ERET must be 2"
         beq     skip_ret
-        clc
-        adc     #($100 - SM_EMIT_1)
-        tax
+        .assert SM_EMIT_1 = 3, error, "SM_EMIT_1 must be 3"
 :       jsr     parser_fetch    ; Skip token
         dex
-        bpl     :-
+        bne     :-
         jmp     skip_nextline
 skip_ret:
         jsr     parser_fetch    ; Skip token and RET
