@@ -938,11 +938,16 @@ Graphic and Sound Statements
 
 **Adjust voice sound parameters**  
 **SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  
+**SOUND _voice_**  
 **SOUND**
 
   Adjust sound parameters for _voice_
   (from 0 to 3) ot the given _pitch_,
   _distortion_ and _volume_.
+
+  If only the _voice_ parameter is
+  present, that voice is cleared so no
+  sound is produced by that voice.
 
   If no parameters are given, clears
   all voices so that no sounds are
