@@ -201,9 +201,10 @@ PROC CompileFile
     exec SaveCompiledFile
   else
     get key
+    sound
+    exec InitScreen
   endif
   line = line - scrLine
-  exec InitScreen
   exec RedrawScreen
 ENDPROC
 
