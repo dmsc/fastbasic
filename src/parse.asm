@@ -19,7 +19,7 @@
 ; Parser state machine interpreter
 ; --------------------------------
 
-        .export         parser_start, parser_error, parser_skipws
+        .export         parser_start, parser_error, parser_skipws, parser_emit_byte
         ; Parser state
         .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
         .exportzp       loop_sp
@@ -42,7 +42,7 @@
         .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
         ; From errors.asm
         .import         error_msg_list
-        .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL
+        .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
 
         .zeropage
 buf_ptr:.res 2
@@ -96,6 +96,17 @@ SM_EMIT=        SM_EMIT_1
 ; Now, the rest of the code
         .code
 
+emit_sub:
+        jsr     parser_fetch
+emit_const:
+parser_emit_byte:
+        ldy     opos
+        sta     (prog_ptr),y
+        inc     opos
+        bne     rts1
+        lda     #ERR_TOO_LONG
+        ; Fall through
+
 .proc parser_error
         ; Prints error message
         tax
@@ -116,7 +127,7 @@ skip:   bpl     ploop
 ::restore_stack:
         ldx     #$ff
         txs
-        rts
+::rts1: rts
 .endproc
 saved_stack = restore_stack + 1
 
@@ -392,13 +403,5 @@ skip_ret:
 set_parse_error:
         lda     #ERR_PARSE
         jmp     parser_error
-
-emit_sub:
-        jsr     parser_fetch
-emit_const:
-        ldy     opos
-        sta     (prog_ptr),y
-        inc     opos
-        rts
 
 ; vi:syntax=asm_ca65

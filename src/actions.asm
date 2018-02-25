@@ -41,7 +41,7 @@
         .import         alloc_laddr
         .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
         ; From parser.asm
-        .import         parser_error, parser_skipws
+        .import         parser_error, parser_skipws, parser_emit_byte
         .importzp       TOK_CSTRING
         ; From error.asm
         .importzp       ERR_LOOP
@@ -141,15 +141,10 @@ ok:     rts
 ;
 ; Emits 16bit AX into codep
 .proc   emit_AX
-        ldy     opos
-new_y:  sta     (prog_ptr),y
-        txa
-        iny
-        sta     (prog_ptr),y
-        iny
-        sty     opos
         clc
-        rts
+        jsr     parser_emit_byte
+        txa
+        jmp     parser_emit_byte
 .endproc
 
 ; Parser external subs
@@ -286,9 +281,7 @@ nloop:
         ; Store
 store:  inx
         inc     bpos
-        ldy     opos
-        sta     (prog_ptr),y
-        inc     opos
+        jsr     parser_emit_byte
         bne     nloop
 err:    ; Restore opos and exit
         lda     tmp1
@@ -379,9 +372,7 @@ exit:
 .proc   emit_varn
         ; Store VARN
         txa
-        ldy     opos
-        sta     (prog_ptr),y
-        inc     opos
+        jsr     parser_emit_byte
         ; Fall through
 .endproc
         ; Advances variable name in source pointer
