@@ -42,14 +42,53 @@ static bool do_debug = false;
 
 static bool readLine(std::string &r, std::istream &is)
 {
- int c;
- while( -1 != (c = is.get()) )
- {
-     r += char(c);
-     if( c == '\n' || c == (unsigned char)'\x9b' )
-         return true;
- }
- return false;
+    // Special handling of EOL: We allow Unix / DOS line endings - except inside
+    // strings, because that would be incompatible with the Atari IDE.
+    // To properly split lines then, we must pre-parse the content, skipping
+    // comments and keeping track of the strings.
+    bool in_string = false;
+    bool in_comment = false;
+    bool in_start = true;
+    while( -1 != is.peek() )
+    {
+        char c = is.get();
+        r += c;
+        if( in_string )
+        {
+            // Inside strings, consume any char except for the '"'
+            if( c == '\"' )
+                in_string = false;
+            continue;
+        }
+        // Check for DOS end of line
+        if( c == '\x0D' &&  '\x0A' == is.peek() )
+        {
+            // Check if next char is 0x0A and replace
+            c = is.get();
+            r[r.size()-1] = c;
+        }
+        // Check for any end of line
+        if( c == '\x0A' || c == '\x9B' )
+            return true;
+        // Check we are not entering a string or a comment
+        if( in_start )
+        {
+            if( c == '.' || c == '\'' )
+                in_comment = true;
+            if( c != ' ' )
+                in_start = false;
+        }
+        if( !in_comment )
+        {
+            if( c == '\'' )
+                in_comment = true;
+            else if( c == ':' )
+                in_start = true;
+            else if( c == '\"' )
+                in_string = true;
+        }
+    }
+    return false;
 }
 
 static int show_version()
@@ -105,7 +144,7 @@ int main(int argc, char **argv)
             return show_error("invalid option '" + arg + "', try -h for help");
         else if( !ifile.is_open() )
         {
-            ifile.open(arg);
+            ifile.open(arg, std::ios::binary);
             if( !ifile.is_open() )
                 return show_error("can't open input file '" + arg + "'");
             iname = arg;
