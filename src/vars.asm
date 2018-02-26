@@ -19,7 +19,7 @@
 ; Handles a list of names (variables or labels)
 ; --------------------------------------------
 
-        .export         var_getlen, var_search, label_search, name_new
+        .export         var_search, label_search, name_new
         .exportzp       var_namelen, label_count
 
         ; From interpreter.asm
@@ -82,8 +82,9 @@ char_ok:
         ; Inputs:
         ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   label_search
+        jsr     var_getlen
         ldx     #label_buf - prog_ptr
-        ldy     #label_count
+        ldy     label_count
         bne     list_search
 .endproc
 
@@ -91,9 +92,10 @@ char_ok:
         ; Inputs:
         ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   var_search
+        jsr     var_getlen
         ; Pointer to var list to "var"
         ldx     #var_buf - prog_ptr
-        ldy     #var_count
+        ldy     var_count
 .endproc        ; Fall through
 
         ; Search a list of names - used for variables or labels
@@ -115,7 +117,7 @@ search_loop:
         ldy     #0
         lda     (var),y
         cmp     len
-        bne     next_var
+        bne     next_var_len
 
         ; Compare data
         tay
@@ -129,6 +131,7 @@ next_var:
         ; Advance pointer to next var
         ldy     #0
         lda     (var),y
+next_var_len:
         clc
         adc     #2      ; No carry, as len is max 128
         adc     var
@@ -139,7 +142,7 @@ next_var:
 search_start:
         inx
 ::search_count=   * + 1
-        cpx     $12
+        cpx     #0
         bne     search_loop
 
 not_found:
@@ -207,17 +210,15 @@ exit_2:
         ; Copy length and name of var/label
         ldy     #0
         lda     len
-        sta     (var),y
 loop:
-        lda     (name),y
-        iny
         sta     (var),y
+        lda     (name),y
         cpy     len
-        bne     loop
+        iny
+        bcc     loop
 
         ; Set type to 0 initially
         lda     #0
-        iny
         sta     (var), y
         rts
 .endproc

@@ -34,7 +34,7 @@
         ; From runtime.asm
         .import         read_word
         ; From vars.asm
-        .import         var_search, name_new, var_getlen
+        .import         var_search, name_new
         .import         label_search
         .importzp       var_namelen, label_count, var_count
         ; From alloc.asm
@@ -342,7 +342,6 @@ xrts:   rts
         lda     #VT_WORD
         sta     tmp3    ; Store variable type
         ; Check if we have a valid name - this exits on error!
-        jsr     var_getlen
         ; Search existing var
         jsr     var_search
         bcs     exit
@@ -357,7 +356,6 @@ exit:
 ; Creates a new variable, with no type (the type will be set by parser next)
 .proc   E_VAR_CREATE
         ; Check if we have a valid name - this exits on error!
-        jsr     var_getlen
         ; Search existing var
         jsr     var_search
         bcc     E_VAR_WORD::not_found ; Exit with error if already exists
@@ -529,7 +527,6 @@ xit:    rts
 
 .proc   label_create
         ; Check if we have a valid name - this exits on error!
-        jsr     var_getlen
         jsr     label_search
         bcc     xit
         ; Create a new label
