@@ -24,19 +24,43 @@
 ; linked into a combine executable.)
 
 
-; Memory functions
-; ----------------
+; Parser Memory functions
+; -----------------------
 
 ; The memory areas are arranged as:
-;  prog_ptr:    -> current program output pos
-;               Buffer zone (at least 0x100 free bytes)
-;  array_buf:   STRING/ARRAY AREA
-;  array_ptr:   -> next available pos
-;  var_buf:     VARIABLE TABLE AREA (during parsing) and VARIABLE VALUE AREA
-;               (during interpreting)
-;  var_ptr:     -> next available pos
-;  top_mem:     TOP OF MEMORY
+;  prog_ptr:    -> current program output buffer
+;                 This has 0x100 free bytes at start of parsing a new line, to
+;                 avoid calling "alloc_area" for each output byte.
+;  prog_end
 ;
+;  var_buf:     -> Variable name table, stores variable names and types,
+;                  one byte for length, N bytes for the name and 1 byte for the
+;                  type.
+;  var_end
+;
+;  label_buf:   -> Label name table, stores PROC names and types. The format is
+;                  the same as the variable name table, both are managed by the
+;                  same functions.
+;  label_end
+;
+;  laddr_buf:   -> Label address table, stores address of PROC of address
+;                  of EXEC arguments, to be patched when PROC address is known.
+;  laddr_end
+;
+;  mem_end:     -> End of used memory.
+;
+; Because areas are always contiguous, we have:
+;    var_buf   == prog_end
+;    label_buf == var_end
+;    laddr_buf == label_end
+;    mem_end   == laddr_end
+;
+; So, we store only 5 pointers.
+;
+; To allocate more memory for any area, we call "alloc_area_8" with A == amount
+; of memory to allocate, X == end pointer to area to expand.
+;
+
         .export         alloc_prog, alloc_laddr
         .export         parser_alloc_init, alloc_area_8
 

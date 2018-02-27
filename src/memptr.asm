@@ -27,51 +27,32 @@
 ; Memory functions
 ; ----------------
 
-; The memory areas are arranged as:
-;  prog_ptr:    -> current program output pos
-;               Buffer zone (at least 0x100 free bytes)
-;  array_buf:   STRING/ARRAY AREA
-;  array_ptr:   -> next available pos
-;  var_buf:     VARIABLE TABLE AREA (during parsing) and VARIABLE VALUE AREA
-;               (during interpreting)
-;  var_ptr:     -> next available pos
-;  top_mem:     TOP OF MEMORY
-;
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
 
-        ; From runtime.asm
-        .import         move_dwn_src, move_dwn_dst, move_dwn, putc
-        .importzp       tmp1, tmp2
-        ; From interpreter.asm
-        .importzp       var_count
-        .import         EXE_END
-
         .zeropage
 
+        ; Note that the memory pointers are shared between parser and runtime,
+        ; so that less zeropage memory is used.
+        ;
         ;           During Parsing           During Execution
         ;           ---------------------------------------------
         ; Pointer to program buffer        / current program
 mem_start:
 prog_ptr:       .res    2
-prog_end:       .res    2
         ; Pointer to variable name table   / variable value table
-var_buf=        prog_end
-var_ptr:        .res    2
-var_end=        var_ptr
+var_buf:        .res    2
+var_ptr=        array_buf
         ; Pointer to labels name table     / strings/arrays table
-array_buf=      var_end
-array_ptr:      .res    2
-array_end=      array_ptr
+array_buf:      .res    2
 label_buf=      array_buf
-label_ptr=      array_ptr
-label_end=      array_end
-        ; Pointer to labels address table  / unused at runtime
-laddr_buf=      array_end
-laddr_ptr:      .res    2
+array_ptr=      laddr_buf
+label_ptr=      laddr_buf
+        ; Pointer to labels address table  / end of string/arrays table,
+        ;                                    top of used memory
+laddr_buf:      .res    2
+laddr_ptr=      mem_end
         ; End of used memory
-mem_end=        laddr_ptr
-        ; Allocation size
-alloc_size=     tmp1
+mem_end:        .res    2
 
 ; vi:syntax=asm_ca65
