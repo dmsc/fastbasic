@@ -438,54 +438,88 @@ xit:    rts
 .proc   E_LABEL_DEF
         jsr     label_create
 
-        ; Fills all undefined labels with current position - saved for the label
+        ; Fills all undefined labels with current position:
         bcs     nfound
 
-        ; Check label number
-cloop:  bmi     error   ; label already defined
+        ; If we found a *definition* for the label, error out (label already
+        ; defined).
+cloop:  bmi     error
 
         ; Write current codep to AX
         jsr     patch_codep
+
+        ; Mark the label as "resolved", so we can show error if not all
+        ; labels are defined after parsing ends.
         ldy     #0
         lda     #1
         sta     (tmp1), y
 
-        ; Continue
+        ; Continue searching the address list
 next:   jsr     next_laddr
         bcc     cloop
+
+        ; No more entries, adds our address as a "definition" (A = 128)
 nfound:
         lda     #128
         jsr     add_laddr_list
-        bcs     error
+        ; Ok, advance parsing pointer with the label length
         bcc     advance_varn
+
 error:  sec
         rts
 .endproc
 
-                ; Loop iteration for label-address,
-        ; increment pointer, compares with end
-        ; and reads values
+        ; Create a label if not exists and starts searching in the label
+        ; address list.
+        ;
+        ; This jumps to next_laddr, so it returns the same values.
+.proc   label_create
+        ; Check if we have a valid name - this exits on error!
+        jsr     label_search
+        bcc     xit
+        ; Create a new label
+        ldx     #label_ptr - prog_ptr
+        jsr     name_new
+        ldx     label_count
+        inc     label_count
+xit:
+        lda     laddr_buf
+        ldy     laddr_buf+1
+        sty     tmp1+1
+        stx     laddr_search_num
+        bne     laddr_search_start      ; Assume laddr_buf+1 is never 0
+.endproc
+
+        ; Search next matching label in the label address table.
+        ;
+        ; Returns C=1 if there are no more address stored.
+        ;
+        ; Returns C=0, AX = address of label or reference, Y = type.
+        ; If the label is already defined, Y = 128 and the N flag is
+        ; set on return.
+        ;
+        ; On first call, laddr_search_num must be set to the number of
+        ; the label to be searched (as returned by "label_search").
 .proc   next_laddr
 loop:
         lda     tmp1
         clc
         adc     #4
-        sta     tmp1
         bcc     comp
         inc     tmp1+1
 comp:
-        lda     tmp1
+        sta     tmp1
         cmp     laddr_ptr
         lda     tmp1+1
         sbc     laddr_ptr+1
-        bcs     xit
+        bcs     xit             ; Exit if no more addresses found
         ldy     #0
-        lda     (tmp1), y       ; Read variable type
+        lda     (tmp1), y       ; Read label address type
         sta     tmp2
         iny
-        lda     (tmp1), y       ; Read variable number and compare
+        lda     (tmp1), y       ; Read label number and compare
 cpnum:  eor     #$00
-        bne     loop            ; Not our variable, retry
+        bne     loop            ; Not our label, retry
         iny
         lda     (tmp1), y       ; Yes, read hi address in X
         tax
@@ -493,6 +527,8 @@ cpnum:  eor     #$00
         lda     (tmp1), y       ; lo address in A
         ldy     tmp2            ; And type in Y
 xit:    rts
+::laddr_search_num = cpnum + 1
+::laddr_search_start = comp
 .endproc
 
 ; Adds a label address pointer to the list
@@ -513,7 +549,7 @@ xit:    rts
         ldy     #0
         sta     (tmp2), y
         iny
-        lda     next_laddr::cpnum+1
+        lda     laddr_search_num
         sta     (tmp2), y
         jsr     get_codep
         ldy     #3
@@ -523,24 +559,6 @@ xit:    rts
         sta     (tmp2), y
       ; clc     ; get_codep clears carry
 xit:    rts
-.endproc
-
-.proc   label_create
-        ; Check if we have a valid name - this exits on error!
-        jsr     label_search
-        bcc     xit
-        ; Create a new label
-        ldx     #label_ptr - prog_ptr
-        jsr     name_new
-        ldx     label_count
-        inc     label_count
-xit:
-        lda     laddr_buf
-        ldy     laddr_buf+1
-        sta     tmp1
-        sty     tmp1+1
-        stx     next_laddr::cpnum+1
-        jmp     next_laddr::comp
 .endproc
 
 ; Label search / create (on use)
