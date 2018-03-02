@@ -606,7 +606,45 @@ PROC ProcessKeys
   '  253 BELL (ctrl-2)
   '  254 DEL CHAR (ctrl-bs)    ok
   '  255 INS CHAR (ctrl->)
-  if (key<>$9B) and (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
+
+  '--------- Return Key - can't be escaped
+  if key = $9B
+    ' Ads an CR char and terminate current line editing.
+    exec InsertChar
+    exec SaveLine
+    ' Split current line at this point
+    ScrLen(scrLine) = column
+    inc column
+    newLen = linLen - column
+    newPtr = ScrAdr(scrLine) + column
+    ' Go to column 0
+    column = 0
+    ' Scroll screen if we are in the last line
+    if scrLine > 21
+      exec ScrollUp
+      dec scrLine
+    endif
+    ' Redraw old line
+    hDraw = 0
+    y = scrLine
+    exec DrawLineOrig
+    ' Go to next line
+    inc line
+    inc scrLine
+    ' Move screen down!
+    poke @CRSINH, 1
+    pos. 0, scrLine+1
+    put 157
+    ' Move screen pointers
+    -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + (scrLine+1) * 2, (22 - scrLine) * 2
+    -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (22 - scrLine) * 2
+    ' Save new line position
+    ScrAdr(scrLine) = newPtr
+    ScrLen(scrLine) = newLen
+    lDraw = scrLine
+    hDraw = -1
+    exec ChgLine
+  elif (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
     ' Process normal keys
     escape = 0
     if linLen > 254
@@ -625,48 +663,11 @@ PROC ProcessKeys
     endif
   else
     '--------------------------------
-    ' Keyboard handling
+    ' Command keys handling
     '
-    '--------- Return ---------------
-    if key = $9B
-      ' Ads an CR char and terminate current line editing.
-      exec InsertChar
-      exec SaveLine
-      ' Split current line at this point
-      ScrLen(scrLine) = column
-      inc column
-      newLen = linLen - column
-      newPtr = ScrAdr(scrLine) + column
-      ' Go to column 0
-      column = 0
-      ' Scroll screen if we are in the last line
-      if scrLine > 21
-        exec ScrollUp
-        dec scrLine
-      endif
-      ' Redraw old line
-      hDraw = 0
-      y = scrLine
-      exec DrawLineOrig
-      ' Go to next line
-      inc line
-      inc scrLine
-      ' Move screen down!
-      poke @CRSINH, 1
-      pos. 0, scrLine+1
-      put 157
-      ' Move screen pointers
-      -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + (scrLine+1) * 2, (22 - scrLine) * 2
-      -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (22 - scrLine) * 2
-      ' Save new line position
-      ScrAdr(scrLine) = newPtr
-      ScrLen(scrLine) = newLen
-      lDraw = scrLine
-      hDraw = -1
-      exec ChgLine
     '
     '--------- Delete Line ----------
-    elif key = 156
+    if key = 156
       ' Mark file as changed
       fileChanged = 1
       ' Go to beginning of line
