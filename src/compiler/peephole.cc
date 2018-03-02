@@ -541,6 +541,52 @@ class peephole
                         del(1);
                         continue;
                     }
+                    // NOT (A > x)  ==  A <= x  ->  A < x+1
+                    //    TOK_NUM / x / TOK_GT / TOK_L_NOT -> TOK_NUM / x+1 / TOK_LT
+                    if( mtok(0, TOK_NUM) && mword(1) &&
+                        mtok(2, TOK_GT) && mtok(3, TOK_L_NOT) )
+                    {
+                        if( val(1) == 32637 )
+                        {
+                            // If x=32767, the expression is always true.
+                            // We can't currently delete an expression, so
+                            // simply replace it with "OR 1"
+                            set_tok(0, TOK_NUM);
+                            set_w(1, 1);
+                            set_tok(2, TOK_BIT_OR);
+                            set_tok(3, TOK_COMP_0);
+                        }
+                        else
+                        {
+                            set_tok(0, TOK_NUM);
+                            set_w(1, val(1) + 1);
+                            set_tok(2, TOK_LT);
+                            del(3);
+                        }
+                    }
+                    // NOT (A < x)  ==  A >= x  ->  A > x-1
+                    //    TOK_NUM / x / TOK_LT / TOK_L_NOT -> TOK_NUM / x+1 / TOK_LT
+                    if( mtok(0, TOK_NUM) && mword(1) &&
+                        mtok(2, TOK_LT) && mtok(3, TOK_L_NOT) )
+                    {
+                        if( val(1) == -32768 )
+                        {
+                            // If x=-32768, the expression is always true.
+                            // We can't currently delete an expression, so
+                            // simply replace it with "OR 1"
+                            set_tok(0, TOK_NUM);
+                            set_w(1, 1);
+                            set_tok(2, TOK_BIT_OR);
+                            set_tok(3, TOK_COMP_0);
+                        }
+                        else
+                        {
+                            set_tok(0, TOK_NUM);
+                            set_w(1, val(1) - 1);
+                            set_tok(2, TOK_GT);
+                            del(3);
+                        }
+                    }
                     // CALL xxxxx / RETURN  ->  JUMP xxxxx
                     //   TOK_CALL / x / TOK_RET -> TOK_JUMP / x
                     if( mtok(0,TOK_CALL) && mtok(2,TOK_RET) )
