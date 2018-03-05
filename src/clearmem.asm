@@ -52,21 +52,20 @@ alloc_size=     tmp1
         ; Init all pointers to end of program data
         lda     prog_ptr
         ldy     prog_ptr+1
-        ldx     #(mem_end-prog_ptr)
+        ldx     #(mem_end-prog_ptr)+2
 loop:
-        sta     prog_ptr, x
-        sty     prog_ptr+1, x
+        sta     prog_ptr-2, x
+        sty     prog_ptr+1-2, x
         dex
         dex
-        bpl     loop
-        ; Adds 2 bytes for each variable
-        ldx     #0
+        bne     loop
+        ; Allocate and clear 2 bytes of memory for each variable
+        ; X = 0 from loop above
         lda     var_count
         asl
-        sta     alloc_size
         bcc     :+
         inx
-:       stx     alloc_size+1
+:
 .endproc        ; Fall through
 
         ; Allocate space for a new array AX = SIZE
