@@ -25,7 +25,7 @@
         ; From interpreter.asm
         .importzp       var_count
         ; From alloc.asm
-        .importzp       var_buf, var_ptr, label_buf, label_ptr, prog_ptr
+        .importzp       var_buf, label_buf, prog_ptr
         .import         alloc_area_8
         ; From parser.asm
         .import         parser_skipws

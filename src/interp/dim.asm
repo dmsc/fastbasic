@@ -28,7 +28,6 @@
 ; ---------------------------------------------------------------
 
         ; From allloc.asm
-        .importzp       array_ptr
         .import         alloc_array
 
         ; From runtime.asm

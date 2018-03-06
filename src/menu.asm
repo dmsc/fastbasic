@@ -108,20 +108,24 @@ no_save:
 
         ; Parse
         jsr     parser_start
-        lda     #1
-        bcs     load_editor_plp ; On error, exit returning 1
 
-        lda     prog_ptr
-        sta     COMP_END
-        clc
-        adc     reloc_addr
-        sta     compiled_prog_ptr1+1
-        sta     COMP_HEAD_2+2
-        lda     prog_ptr+1
-        sta     COMP_END+1
-        adc     reloc_addr+1
-        sta     compiled_prog_ptr2+1
-        sta     COMP_HEAD_2+3
+        ldx     #$7E
+        bcs     load_editor_plp ; On error, exit returning <> 0 (0x7E7E)
+
+        ; Loops 2 times with X=$7E and X=$7F, exits with X=$80 (not positive)
+        ; C = clear and X = $7E on enter
+sto_loop:
+        tay
+        lda     prog_ptr - $7E,x
+        sta     COMP_END - $7E,x
+        adc     reloc_addr - $7E,x
+        sta     COMP_HEAD_2+2 - $7E,x
+        inx
+        bpl     sto_loop
+
+        sta     compiled_var_buf_h+1
+        sty     compiled_var_buf_l+1
+
         lda     var_count
         sta     compiled_var_count+1
 
@@ -173,10 +177,8 @@ load_editor:
         ldy     #NUM_VARS
         sty     var_count
         ldy     #<heap_start
-        sty     prog_ptr
         sty     var_buf
         ldy     #>heap_start
-        sty     prog_ptr+1
         sty     var_buf+1
         rts
 
@@ -251,12 +253,12 @@ compiled_start:
 compiled_var_count:
         lda     #00
         sta     var_count
-compiled_prog_ptr1:
+compiled_var_buf_l:
         lda     #00
-        sta     prog_ptr
-compiled_prog_ptr2:
+        sta     var_buf
+compiled_var_buf_h:
         lda     #00
-        sta     prog_ptr+1
+        sta     var_buf+1
 
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR

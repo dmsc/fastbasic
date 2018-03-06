@@ -37,7 +37,7 @@
         ;
         ;           During Parsing           During Execution
         ;           ---------------------------------------------
-        ; Pointer to program buffer        / current program
+        ; Pointer to program buffer        / UNUSED
 mem_start:
 prog_ptr:       .res    2
         ; Pointer to variable name table   / variable value table

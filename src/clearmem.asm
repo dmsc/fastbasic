@@ -29,14 +29,8 @@
 
         .export         clear_data, alloc_array
 
-        .importzp       prog_ptr, mem_end, var_buf, var_ptr
-
-        ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn, putc, EXE_END
-        .importzp       tmp1, tmp2, array_ptr
-
-        ; From interpreter.asm
-        .importzp       var_count
+        .importzp       mem_end, var_buf, tmp1, tmp2, array_ptr, var_count
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -50,17 +44,12 @@ alloc_size=     tmp1
         ; Clears data pointers before starting the interpreter
 .proc   clear_data
         ; Init all pointers to end of program data
-        lda     prog_ptr
-        ldy     prog_ptr+1
-        ldx     #(mem_end-prog_ptr)+2
-loop:
-        sta     prog_ptr-2, x
-        sty     prog_ptr+1-2, x
-        dex
-        dex
-        bne     loop
+        lda     var_buf
+        ldx     var_buf+1
+        sta     array_ptr
+        stx     array_ptr+1
         ; Allocate and clear 2 bytes of memory for each variable
-        ; X = 0 from loop above
+        ldx     #0
         lda     var_count
         asl
         bcc     :+

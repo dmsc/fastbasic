@@ -36,24 +36,24 @@
 ;  var_buf:     -> Variable name table, stores variable names and types,
 ;                  one byte for length, N bytes for the name and 1 byte for the
 ;                  type.
-;  var_end
+;  var_ptr
 ;
 ;  label_buf:   -> Label name table, stores PROC names and types. The format is
 ;                  the same as the variable name table, both are managed by the
 ;                  same functions.
-;  label_end
+;  label_ptr
 ;
 ;  laddr_buf:   -> Label address table, stores address of PROC of address
 ;                  of EXEC arguments, to be patched when PROC address is known.
-;  laddr_end
+;  laddr_ptr
 ;
 ;  mem_end:     -> End of used memory.
 ;
 ; Because areas are always contiguous, we have:
 ;    var_buf   == prog_end
-;    label_buf == var_end
-;    laddr_buf == label_end
-;    mem_end   == laddr_end
+;    label_buf == var_ptr
+;    laddr_buf == label_ptr
+;    mem_end   == laddr_ptr
 ;
 ; So, we store only 5 pointers.
 ;
@@ -64,7 +64,7 @@
         .export         alloc_prog, alloc_laddr
         .export         parser_alloc_init, alloc_area_8
 
-        .importzp       prog_ptr, laddr_ptr, mem_end, array_ptr, var_buf
+        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf
 
         ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn
@@ -75,8 +75,6 @@
 
 mem_start = prog_ptr
 prog_end  = var_buf
-array_end = array_ptr
-laddr_end = laddr_ptr
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -88,7 +86,7 @@ alloc_size=     tmp1
         .code
 
 .proc   alloc_laddr
-        ldx     #laddr_end - mem_start
+        ldx     #laddr_ptr - mem_start
 .endproc        ; Fall through
 
         ; Increase program memory area X by A (size in bytes)

@@ -31,9 +31,7 @@
         .export         start
         ; From intrepreter.asm
         .import         interpreter_run
-        .importzp       var_count
-        ; From alloc.asm
-        .importzp       prog_ptr, prog_buf
+        .importzp       var_count, var_buf
         ; From bytecode
         .import         bytecode_start
         .importzp       NUM_VARS
@@ -50,9 +48,9 @@ start:
         lda     #NUM_VARS
         sta     var_count
         lda     #<heap_start
-        sta     prog_ptr
+        sta     var_buf
         lda     #>heap_start
-        sta     prog_ptr+1
+        sta     var_buf+1
 
         lda     #<bytecode_start
         ldx     #>bytecode_start
