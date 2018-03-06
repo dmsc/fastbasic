@@ -131,10 +131,14 @@ interpreter_cptr        =       cptr
         bne     :-
 
         ; Clear TAB position, IO channel and IO error
+        ; Also clears location 0 to allow a null-pointer representation
+        ; for an empty string (length = 0).
+        ;
         ; lda     #0  ; A == 0 from above
         sta     tabpos
         sta     IOCHN
         sta     IOERROR
+        sta     0
 .ifdef FASTBASIC_FP
         .importzp       DEGFLAG
         sta     DEGFLAG

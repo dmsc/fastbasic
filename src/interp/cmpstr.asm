@@ -38,14 +38,11 @@
 .proc   EXE_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1 in stack,
                         ; then load 0 to perform an integer comparison
         sta     tmp1
-        txa
-        beq     null_str1
-        sta     tmp1+1
+        stx     tmp1+1
 
         lda     stack_l, y
         sta     tmp2
         ldx     stack_h, y
-        beq     rtn_lt
         stx     tmp2+1
 
         ; Get lengths
@@ -63,19 +60,17 @@ next_char:
         cpy     tmp3
         beq     end_str1
         cpy     tmp3+1
-        beq     rtn_lt
+        beq     rtn_lt  ; Note that on branch, C = 1
 
         iny
         lda     (tmp1), y
         cmp     (tmp2), y
         beq     next_char
 
-        bcs     rtn_lt
         bcc     rtn_gt
-
-null_str1:
-        cmp     stack_h, y
-        .byte   $2C     ; Skip 2 bytes
+rtn_lt:
+        dex             ; Returns < 0
+        bcs     xit     ; Always taken
 
 end_str1:
         cpy     tmp3+1
@@ -83,10 +78,6 @@ end_str1:
 
 rtn_gt:
         inx
-        .byte   $24     ; Skip 1 byte
-
-rtn_lt:
-        dex
 xit:
         txa
         inc     sptr

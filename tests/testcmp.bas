@@ -41,6 +41,9 @@ x% = 12.34
 ? "2 <>: "; : if  0.98 <> x% : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 ? "3 <>: "; : if  1134 <> x% : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 
+' Force a null string, defined but not set:
+if 0 then nul$="NONE"
+
 s$ = "Hello"
 ? "STR TESTS"
 ? "1 < : "; : if "Hello" <  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
@@ -48,6 +51,8 @@ s$ = "Hello"
 ? "3 < : "; : if "Hold"  <  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "4 < : "; : if "Hellos" < s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "5 < : "; : if "Hall"  <  s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "6 < : "; : if nul$    <  s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
+? "7 < : "; : if s$    <  nul$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "1 > : "; : if "Hello" >  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "2 > : "; : if "Hell"  >  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "3 > : "; : if "Hold"  >  s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
@@ -62,6 +67,8 @@ s$ = "Hello"
 ? "1 = : "; : if "Hello" =  s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 ? "2 = : "; : if "Hell"  =  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "3 = : "; : if "Hold"  =  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "4 = : "; : if nul$    =  s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
+? "5 = : "; : if s$    =  nul$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "1 <>: "; : if "Hello" <> s$ : ? "FAIL" : ELSE : ? "PASS" : ENDIF
 ? "2 <>: "; : if "Hell"  <> s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF
 ? "3 <>: "; : if "Hold"  <> s$ : ? "PASS" : ELSE : ? "FAIL" : ENDIF

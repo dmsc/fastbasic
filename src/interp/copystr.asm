@@ -34,7 +34,7 @@
         .import         alloc_array
 
         ; From runtime.asm
-        .importzp       tmp1, tmp2
+        .importzp       tmp1, tmp2, tmp3
 
         ; From interpreter.asm
         .import         pop_stack_2, stack_l, stack_h
@@ -43,10 +43,9 @@
 
 ; Copy one string to another, allocating the destination if necessary
 .proc   EXE_COPY_STR    ; AX: source string   (SP): destination *variable* address
-        ; Store source
-        pha
-        txa
-        pha
+        ; Store source pointer
+        sta     tmp3
+        stx     tmp3+1
         ; Get destination pointer - allocate if 0
         lda     stack_l, y
         sta     tmp1
@@ -70,23 +69,14 @@
         ldx     #1
         jsr     alloc_array
 ok:
-        ; Get source pointer and check if it is allocated
-        pla
-        sta     tmp1+1
-        pla
-        sta     tmp1
+        ; Copy data + len
         ldy     #0
-        ora     tmp1+1
-        beq     nul
-        ; Copy len
-        lda     (tmp1), y
-nul:    sta     (tmp2), y
+        lda     (tmp3), y
         tay
-        beq     xit
-        ; Copy data
-cloop:  lda     (tmp1), y
+cloop:  lda     (tmp3), y
         sta     (tmp2), y
         dey
+        cpy     #$FF
         bne     cloop
 xit:    jmp     pop_stack_2
 .endproc
