@@ -455,6 +455,7 @@ static bool SMB_E_NUMBER_BYTE(parse &s)
 static bool SMB_E_EOL(parse &s)
 {
     s.debug("E_EOL");
+    s.skipws();
     return( s.eos() || s.peek('\'') || s.peek(':') || s.eol() );
 }
 

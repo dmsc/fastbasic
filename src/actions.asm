@@ -161,7 +161,7 @@ ok:     clc
 .endproc
 
 .proc   E_EOL
-        ldy     bpos
+        jsr     parser_skipws
         lda     (bptr),y
         cmp     #$9b ; Atari EOL
         beq     E_REM::ok
