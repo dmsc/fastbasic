@@ -41,20 +41,19 @@ INTLBUF = $DA51
         stx     INBUFF+1
         ; Get length
         ldy     #0
+        ; Init CIX
+        sty     CIX
         lda     (INBUFF), y
         tay
-        iny
         bpl     ok
         ldy     #$7f    ; String too long, just overwrite last character
 ok:     lda     #$9B
-        .byte   $2C     ; Skip 2 bytes over LDA (),y
 copy:
+        sta     LBUFF, y
         lda     (INBUFF), y
-        sta     LBUFF-1, y
         dey
-        bne     copy
-        ; Init CIX and copy LBUFF address to INBUFF
-        sty     CIX
+        bpl     copy
+        ; Copy LBUFF address to INBUFF
         jmp     INTLBUF
 .endproc
 
