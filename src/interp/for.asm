@@ -53,7 +53,7 @@ EXE_FOR_EXIT    = pop_stack_3
         ;      to variable
 .proc   EXE_FOR
         sec
-        .byte   $24     ; Skip next CLC
+        .byte   $90     ; BCC not taken, skips next CLC
 .endproc                ; Fall through
         ; FOR_NEXT: Updates FOR variable (adding STEP), compares with
         ;           limit and jumps back to FOR body.

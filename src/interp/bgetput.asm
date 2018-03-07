@@ -42,7 +42,7 @@
 
 .proc   EXE_BPUT
         clc
-        .byte   $24   ; Skip 1 byte over next "SEC"
+        .byte   $B0     ; BCS not taken, skips next SEC
 .endproc        ; Fall through
 .proc   EXE_BGET
         sec
