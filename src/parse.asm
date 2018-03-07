@@ -40,6 +40,7 @@
         .import         putc
         ; From interpreter.asm
         .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
+        .import         EXE_END, saved_cpu_stack
         ; From errors.asm
         .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
@@ -123,13 +124,9 @@ skip:   bpl     ploop
         dex
         bpl     ploop
         sec
-        ; Restore stack and return
-::restore_stack:
-        ldx     #$ff
-        txs
-::rts1: rts
+::parse_end:
+        jmp     EXE_END
 .endproc
-saved_stack = restore_stack + 1
 
 .proc parse_eof
         ; Check if parser stack is empty
@@ -147,7 +144,7 @@ ok:     lda     #TOK_END
         jsr     emit_const
         jsr     alloc_prog
         clc
-        bcc     restore_stack   ; exit
+        bcc     parse_end       ; exit
 .endproc
 
 .proc parser_fetch
@@ -156,14 +153,14 @@ ok:     lda     #TOK_END
         inc     pptr+1
 :       ldy     #0
         lda     (pptr),y
-        rts
+::rts1: rts
 .endproc
 
 
 ;       Parser start and initialization
 parser_start:
         tsx
-        stx     saved_stack
+        stx     saved_cpu_stack
         lda     #0
         sta     linenum
         sta     linenum+1
@@ -302,8 +299,7 @@ match:
         bne     ploop_nextline
         iny
         sty     bpos
-go_ploop:
-        jmp     ploop
+        bne     ploop
 
 pcall:
         asl
@@ -318,7 +314,7 @@ pcall:
         pha
         lda     pptr
         pha
-        jmp     parser_sub
+        bcs     parser_sub
 
 call_ax1:
         pha
@@ -395,9 +391,10 @@ skip_nextline:
 :       jsr     parser_fetch    ; Skip token
         dex
         bne     :-
-        jmp     skip_nextline
+        beq     skip_nextline
 skip_ret:
         jsr     parser_fetch    ; Skip token and RET
+go_ploop:
         jmp     ploop
 
 set_parse_error:

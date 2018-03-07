@@ -92,8 +92,6 @@ COMPILE_BUFFER:
         ; Compile / Run
         pla
         pla
-        ; Store again in stack
-        php
         beq     no_save
 
         ; We need to relocate the bytecode, calculate the offset:
@@ -106,11 +104,15 @@ COMPILE_BUFFER:
         sta     reloc_addr+1
 no_save:
 
+        ; Save our CPU return stack
+        lda     saved_cpu_stack
+        pha
+
         ; Parse
         jsr     parser_start
 
         ldx     #$7E
-        bcs     load_editor_plp ; On error, exit returning <> 0 (0x7E7E)
+        bcs     load_editor_stack ; On error, exit returning <> 0 (0x7E7E)
 
         ; Loops 2 times with X=$7E and X=$7F, exits with X=$80 (not positive)
         ; C = clear and X = $7E on enter
@@ -129,9 +131,8 @@ sto_loop:
         lda     var_count
         sta     compiled_var_count+1
 
-        ; Check if need to run program
-        plp
-        php
+        ; Check if need to run program, only if not relocated
+        lda     reloc_addr + 1
         bne     return_0
 
         ; Runs current parsed program
@@ -144,8 +145,6 @@ run_program:
         pha
         lda     interpreter_cptr+1
         pha
-        lda     saved_cpu_stack
-        pha
 
         lda     #125
         jsr     putc
@@ -154,8 +153,6 @@ run_program:
         ldx     end_ptr+1
         jsr     interpreter_run
 
-        pla
-        sta     saved_cpu_stack
         pla
         sta     interpreter_cptr+1
         pla
@@ -166,10 +163,14 @@ run_program:
         ; Exit to editor returning 0
 return_0:
         ldx     #0
-        txa
 
-load_editor_plp:
-        plp
+        ; Restore saved CPU stack
+load_editor_stack:
+        pla
+        sta     saved_cpu_stack
+
+        ; X = result, copy to A also
+        txa
 
         ; Load all pointer to execute the editor
         ; Does not modify A/X
