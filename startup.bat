@@ -1,3 +1,4 @@
+BASIC OFF
 TYPE README
 PAUSE ;œ
 DIR *.BAS ;œœ
