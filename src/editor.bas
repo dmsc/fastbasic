@@ -191,9 +191,8 @@ PROC CompileFile
     ' Parse error, go to error line
     line = dpeek(@@linenum) - 1
     column = peek( @@bmax )
-    if line < 10
-      scrLine = line
-    else
+    scrLine = line
+    if line > 10
       scrLine = 10
     endif
     get key
@@ -309,9 +308,8 @@ PROC CopyToEdit
 
   ' Get column in range
   if column > linLen
-    if linLen >= 0
-      column = linLen
-    else
+    column = linLen
+    if linLen < 0
       column = 0
     endif
   endif
@@ -357,10 +355,6 @@ PROC ChgLine
   exec DrawCurrentLine
 
 ENDPROC
-
-proc PutBlanks
-  for max = max to 1 step -1 : put 32 : next max
-endproc
 
 '-------------------------------------
 ' Draws line 'Y' from file buffer
@@ -416,12 +410,16 @@ PROC DrawLinePtr
 
 ENDPROC
 
+proc PutBlanks
+  while max : put 32 : dec max : wend
+endproc
+
 '-------------------------------------
 ' Prints line info and changes line
 '
 PROC ShowInfo
   pos. 0, 0
-  for max=1 to peek(@@RMARGN) : put $12 : next max
+  max = 1 : repeat : put $12 : inc max : until max > peek(@@RMARGN)
   poke @@OLDCHR, $52
   pos. 2, 0 : ? FileName$;
   pos. scrColumn, scrLine
@@ -749,16 +747,24 @@ PROC ProcessKeys
     '
     '--------- Control-U (page up)---
     elif key = $15
-      for i=0 to 18
+      ' To use less code, reuse "key" variable
+      ' as loop counter, so instead of looping
+      ' from 0 to 18, loops from key=$15 to $15+18=$27
+      repeat
         exec CursorUp
-      next i
+        inc key
+      until key>$27
       exec ChgLine
     '
     '--------- Control-V (page down)-
     elif key = $16
-      for i=0 to 18
+      ' To use less code, reuse "key" variable
+      ' as loop counter, so instead of looping
+      ' from 0 to 18, loops from key=$16 to $16+18=$28
+      repeat
         exec CursorDown
-      next i
+        inc key
+      until key>$28
       exec ChgLine
     '
     '--------- Down -----------------
