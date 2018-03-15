@@ -397,10 +397,8 @@ PROC DrawLinePtr
       if lLen > 0
         bput #0, ptr, lLen
       endif
-      if lLen < max
-        max = max - lLen
-        exec PutBlanks
-      endif
+      max = max - lLen
+      exec PutBlanks
       poke @@OLDCHR, $00
     endif
   endif
