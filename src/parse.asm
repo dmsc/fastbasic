@@ -19,7 +19,7 @@
 ; Parser state machine interpreter
 ; --------------------------------
 
-        .export         parser_start, parser_error, parser_skipws, parser_emit_byte
+        .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; Parser state
         .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
         .exportzp       loop_sp
@@ -103,6 +103,7 @@ emit_const:
 parser_emit_byte:
         ldy     opos
         sta     (prog_ptr),y
+parser_inc_opos:
         inc     opos
         bne     rts1
         lda     #ERR_TOO_LONG

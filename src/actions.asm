@@ -41,7 +41,7 @@
         .import         alloc_laddr
         .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
         ; From parser.asm
-        .import         parser_error, parser_skipws, parser_emit_byte
+        .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         .importzp       TOK_CSTRING
         ; From error.asm
         .importzp       ERR_LOOP
@@ -265,11 +265,9 @@ xit:    rts
 .proc   E_CONST_STRING
         ; Get characters until a '"' - emit all characters read!
         ldx     #0
-        ; Store original output position
-        lda     opos
-        sta     tmp1
-        ; Increase by one (string length)
-        inc     opos
+        ; Skip one byte (string length), and store original output position into tmp1
+        jsr     parser_emit_byte
+        sty     tmp1
 nloop:
         ; Check length
         ldy     bpos
@@ -634,8 +632,9 @@ start:
         pla
         asl     ; Check BIT 6
         bmi     xit
-        inc     opos
-        inc     opos
+::inc_opos_2:
+        jsr     parser_inc_opos
+        jsr     parser_inc_opos
 xit:    clc
         rts     ; C is cleared on exit!
 .endproc
@@ -746,8 +745,7 @@ comp_y: cpx     #$FC
         ; Pop saved "jump to end" position
         lda     #LT_WHILE_2
         ; Save current position + 2 (skip over jump)
-        inc     opos
-        inc     opos
+        jsr     inc_opos_2
         jsr     pop_patch_codep
         ; Pop saved "loop reentry" position
         lda     #LT_WHILE_1
