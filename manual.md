@@ -451,13 +451,6 @@ functions supported by FastBasic.
                be used with integers
                and floating point.
 
-- INT(_num_) : Converts the floating
-               point number _num_ to
-               the nearest integer from
-               -32768 to 32767. In case
-               of error, ERR() returns
-               3.
-
 - PADDLE(_n_): Returns the value of the
                PADDLE controller _n_.
 
@@ -516,14 +509,29 @@ functions supported by FastBasic.
 Floating Point functions
 ------------------------
 
-This functions return a floating point
-value.
+This functions use floating point
+values, and are only available in the
+floating point version.
+
+In case of errors (such as logarithm or
+square root of negative numbers and
+overflow in the results), the functions
+returns an invalid value, and the ERR()
+function returns 3.
+
+
+- ATN(_n_): Arc-Tangent of _n_.
 
 - COS(_n_): Cosine of _n_.
 
 - EXP(_n_) : Natural exponentiation.
 
 - EXP10(_n_) : Returns ten raised to _n_.
+
+- INT(_num_) : Converts the floating
+               point number _num_ to
+               the nearest integer from
+               -32768 to 32767.
 
 - LOG(_n_) : Natural logarithm of _n_.
 
@@ -532,15 +540,9 @@ value.
 - RND(): Returns a random positive
          number strictly less than 1.
 
-- SQR(_n_): Square root of _n_.
-
 - SIN(_n_): Sine of _n_.
 
-- ATN(_n_): Arc-Tangent of _n_.
-
-Note that, as any floating point
-calculation, in case of error ERR()
-returns 3.
+- SQR(_n_): Square root of _n_.
 
 
 String functions
