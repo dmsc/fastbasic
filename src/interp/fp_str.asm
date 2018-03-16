@@ -27,12 +27,13 @@
 ; Convert Floating Point number to string
 ; ---------------------------------------
 
-        .import         save_pop_fr1, fp_return_interpreter, fp_to_str
+        .import         save_pop_fr1, fp_return_interpreter, fp_to_str, pushAX
 
         .segment        "RUNTIME"
 
-.proc   EXE_FP_STR  ; AX = STRING (SP+)
+.proc   EXE_FP_STR  ; AX = STRING (FP_STACK)
         ; Store integer stack.
+        jsr     pushAX
         jsr     fp_to_str
         jsr     save_pop_fr1
         jmp     fp_return_interpreter
