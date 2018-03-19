@@ -5,7 +5,7 @@
 
 '-------------------------------------
 ' Array definitions
-dim ScrAdr(24), ScrLen(24)
+dim ScrAdr(25)
 ' And an array with the current line being edited
 ''NOTE: Use page 6 ($600 to $6FF) to free memory instead of a dynamic array
 'dim EditBuf(256) byte
@@ -29,7 +29,6 @@ MemEnd = Adr(MemStart)
 ' linLen:       Current line length.
 ' edited:       0 if not currently editing a line
 ' ScrAdr():     Address in the file of screen line
-' ScrLen():     Length of screen line
 
 
 '-------------------------------------
@@ -276,7 +275,7 @@ PROC SaveLine
   if edited
     ' Move file memory to make room for new line
     ptr  = ScrAdr(lDraw)
-    llen = ScrLen(lDraw)
+    llen = ScrAdr(lDraw+1) - ptr - 1
     dif  = linLen - llen
     nptr = ptr + linLen
     ptr = ptr + llen
@@ -290,8 +289,7 @@ PROC SaveLine
     ptr  = ScrAdr(lDraw)
     move EditBuf, ptr, linLen
     ' Adjust all pointers
-    ScrLen(lDraw) = linLen
-    for y = lDraw + 1 to 22
+    for y = lDraw + 1 to 23
       ScrAdr(y) = ScrAdr(y) + dif
     next y
     ' End
@@ -304,7 +302,7 @@ ENDPROC
 '
 PROC CopyToEdit
   linPtr = ScrAdr(scrLine)
-  linLen = ScrLen(scrLine)
+  linLen = ScrAdr(scrLine+1) - linPtr - 1
 
   ' Get column in range
   if column > linLen
@@ -339,7 +337,7 @@ PROC ChgLine
   endif
 
   ' Keep new line in range
-  while ScrLen(scrLine) < 0
+  while scrLine and ScrAdr(scrLine) = MemEnd
     line = line - 1
     scrLine = scrLine - 1
   wend
@@ -361,7 +359,7 @@ ENDPROC
 '
 PROC DrawLineOrig
   ptr = ScrAdr(y)
-  lLen = ScrLen(y)
+  lLen = ScrAdr(y+1) - ptr - 1
   hDraw = 0
   exec DrawLinePtr
 ENDPROC
@@ -435,15 +433,13 @@ PROC ScrollDown
   pos. 0, 1
   put 157
   ' Move screen pointers
-  -move adr(ScrLen), adr(ScrLen)+2, 44
-  -move adr(ScrAdr), adr(ScrAdr)+2, 44
+  -move adr(ScrAdr), adr(ScrAdr)+2, 46
   ' Get first screen line by searching last '$9B'
   llen = 0
   for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
     if peek(ptr) = $9B then Exit
   next ptr
   inc ptr
-  ScrLen(0) = ScrAdr(0) - ptr - 1
   ScrAdr(0) = ptr
 
   ' Adjust line
@@ -458,6 +454,12 @@ ENDPROC
 '-------------------------------------
 ' Calls 'CountLines
 PROC CountLines
+' This code is too slow in FastBasic, so we use machine code
+'  nptr = ptr
+'  while nptr <> MemEnd
+'    inc nptr
+'    if peek(nptr-1) = $9b then exit
+'  wend
   nptr = USR(@Count_Lines, ptr, MemEnd - ptr)
 ENDPROC
 
@@ -472,14 +474,12 @@ PROC ScrollUp
   pos. 0, 1
   put 156
   ' Move screen pointers
-  move adr(ScrLen)+2, adr(ScrLen), 44
-  move adr(ScrAdr)+2, adr(ScrAdr), 44
+  move adr(ScrAdr)+2, adr(ScrAdr), 46
 
   ' Get last screen line length by searching next EOL
-  ptr = ScrAdr(22) + ScrLen(22) + 1
+  ptr = ScrAdr(23)
   exec CountLines
-  ScrAdr(22) = ptr
-  ScrLen(22) = nptr - ptr - 1
+  ScrAdr(23) = nptr
 
   ' Draw last line
   y = 22
@@ -534,14 +534,14 @@ PROC RedrawScreen
   exec ShowInfo
   hdraw = 0
   y = 0
+  ScrAdr(0) = ptr
   while y < 23
     exec CountLines
     lLen = nptr - ptr - 1
-    ScrLen(y) = lLen
-    ScrAdr(y) = ptr
     exec DrawLinePtr
     ptr = nptr
     inc y
+    ScrAdr(y) = ptr
   wend
 
   line = line + scrLine
@@ -608,11 +608,14 @@ PROC ProcessKeys
     ' Ads an CR char and terminate current line editing.
     exec InsertChar
     exec SaveLine
+    ' Redraw old line up to the new EOL
+    hDraw = 0
+    y = scrLine
+    ptr = ScrAdr(scrLine)
+    lLen = column
+    exec DrawLinePtr
     ' Split current line at this point
-    ScrLen(scrLine) = column
-    inc column
-    newLen = linLen - column
-    newPtr = ScrAdr(scrLine) + column
+    newPtr = ScrAdr(scrLine) + column + 1
     ' Go to column 0
     column = 0
     ' Scroll screen if we are in the last line
@@ -620,10 +623,6 @@ PROC ProcessKeys
       exec ScrollUp
       dec scrLine
     endif
-    ' Redraw old line
-    hDraw = 0
-    y = scrLine
-    exec DrawLineOrig
     ' Go to next line
     inc line
     inc scrLine
@@ -632,11 +631,9 @@ PROC ProcessKeys
     pos. 0, scrLine+1
     put 157
     ' Move screen pointers
-    -move Adr(ScrLen) + scrLine * 2, Adr(ScrLen) + (scrLine+1) * 2, (22 - scrLine) * 2
-    -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (22 - scrLine) * 2
+    -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (23 - scrLine) * 2
     ' Save new line position
     ScrAdr(scrLine) = newPtr
-    ScrLen(scrLine) = newLen
     lDraw = scrLine
     hDraw = -1
     exec ChgLine
@@ -674,7 +671,7 @@ PROC ProcessKeys
       put 156
       ' Delete from entire file!
       ptr = ScrAdr(scrLine)
-      nptr = ptr + ScrLen(scrLine) + 1
+      nptr = ScrAdr(scrLine+1)
       move nptr, ptr, MemEnd - nptr
       MemEnd = MemEnd - nptr + ptr
       exec CheckEmptyBuf
@@ -686,8 +683,7 @@ PROC ProcessKeys
       for y = scrLine to 22
         ptr = nptr
         exec CountLines
-        ScrLen(y) = nptr - ptr - 1
-        ScrAdr(y) = ptr
+        ScrAdr(y+1) = nptr
       next y
       y = scrLine
       exec DrawLineOrig
