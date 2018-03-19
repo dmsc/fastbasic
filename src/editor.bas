@@ -347,7 +347,7 @@ PROC ChgLine
   exec CopyToEdit
 
   ' Print status
-  pos. 32, 0 : ? line;
+  pos. 32, 0 : ? line+1;
   put $12
 
   ' Redraw line
