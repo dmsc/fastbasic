@@ -212,7 +212,7 @@ ENDPROC
 '
 PROC InsertChar
   fileChanged = 1
-  edited = line + 1
+  edited = 1
   inc linLen
   ptr = EditBuf + column
   -move ptr, ptr+1, linLen - column
@@ -224,7 +224,7 @@ ENDPROC
 '
 PROC DeleteChar
   fileChanged = 1
-  edited = line + 1
+  edited = 1
   linLen = linLen - 1
   ptr = EditBuf + column
   move ptr+1, ptr, linLen - column
