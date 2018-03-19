@@ -274,24 +274,26 @@ ENDPROC
 PROC SaveLine
   if edited
     ' Move file memory to make room for new line
-    ptr  = ScrAdr(lDraw)
-    llen = ScrAdr(lDraw+1) - ptr - 1
-    dif  = linLen - llen
-    nptr = ptr + linLen
-    ptr = ptr + llen
-    if nptr < ptr
+    nptr = ScrAdr(lDraw) + linLen
+    ptr = ScrAdr(lDraw+1) - 1
+    dif = nptr - ptr
+
+    if dif < 0
       move  ptr, nptr, MemEnd - ptr
-    elif nptr > ptr
+    elif dif > 0
       -move ptr, nptr, MemEnd - ptr
     endif
     MemEnd = MemEnd + dif
+
     ' Copy new line
     ptr  = ScrAdr(lDraw)
     move EditBuf, ptr, linLen
     ' Adjust all pointers
-    for y = lDraw + 1 to 23
+    y = lDraw
+    repeat
+      inc y
       ScrAdr(y) = ScrAdr(y) + dif
-    next y
+    until y > 22
     ' End
     edited = 0
   endif
@@ -301,8 +303,8 @@ ENDPROC
 ' Copy current line to edit buffer
 '
 PROC CopyToEdit
-  linPtr = ScrAdr(scrLine)
-  linLen = ScrAdr(scrLine+1) - linPtr - 1
+  ptr = ScrAdr(scrLine)
+  linLen = ScrAdr(scrLine+1) - ptr - 1
 
   ' Get column in range
   if column > linLen
@@ -317,7 +319,7 @@ PROC CopyToEdit
     linLen = 255
   endif
   if linLen > 0
-    move linPtr, EditBuf, linLen
+    move ptr, EditBuf, linLen
   else
     poke EditBuf, $9b
   endif
@@ -435,7 +437,6 @@ PROC ScrollDown
   ' Move screen pointers
   -move adr(ScrAdr), adr(ScrAdr)+2, 46
   ' Get first screen line by searching last '$9B'
-  llen = 0
   for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
     if peek(ptr) = $9B then Exit
   next ptr
