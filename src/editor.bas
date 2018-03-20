@@ -153,6 +153,18 @@ PROC AskSaveFileChanged
 ENDPROC
 
 '-------------------------------------
+' Redraw screen after new file
+'
+PROC RedrawNewFile
+  fileChanged = 0
+  column = 0
+  line = 0
+  scrLine = 0
+  exec RedrawScreen
+ENDPROC
+
+
+'-------------------------------------
 ' Load file into editor
 '
 PROC LoadFile
@@ -170,12 +182,7 @@ PROC LoadFile
     exec FileError
   endif
 
-  fileChanged = 0
-  column = 0
-  line = 0
-  scrLine = 0
-  exec RedrawScreen
-
+  exec RedrawNewFile
 ENDPROC
 
 '-------------------------------------
@@ -202,7 +209,6 @@ PROC CompileFile
     sound
     exec InitScreen
   endif
-  line = line - scrLine
   exec RedrawScreen
 ENDPROC
 
@@ -516,6 +522,9 @@ ENDPROC
 '
 PROC RedrawScreen
 
+  ' Top line is current minus screen line
+  line = line - scrLine
+
   exec CheckEmptyBuf
 
   ' Search given line
@@ -704,6 +713,16 @@ PROC ProcessKeys
     elif key = 254
       if column < linLen
         exec DeleteChar
+      else
+        ' Mark file as changed
+        fileChanged = 1
+        exec SaveLine
+        ' Manually delete the EOL
+        ptr = ScrAdr(scrLine+1)
+        move ptr, ptr - 1, MemEnd - ptr
+        MemEnd = MemEnd - 1
+        ' Redraw
+        exec RedrawScreen
       endif
     '
     '--------- Control-E (END) ------
@@ -801,11 +820,7 @@ PROC ProcessKeys
       if not key
         FileName$="D:"
         MemEnd = Adr(MemStart)
-        poke MemEnd, $9B
-        column = 0
-        line = 0
-        scrLine = 0
-        exec RedrawScreen
+        exec RedrawNewFile
       endif
     '
     '--------- Control-L (load) -----

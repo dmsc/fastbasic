@@ -102,8 +102,13 @@ advance to the next:
 If you made any mistake, simply move
 back using the cursor keys, this is
 `CONTROL` and `-`, `=`, `+` or `*`,
-then press `BACKSPACE` key and type
-again.
+then press `BACKSPACE` key to delete
+the character before the cursor or
+press `DELETE` (`CONTROL` and
+`BACKSPACE`) to delete the character
+bellow the cursor.  To join two lines,
+go to the end of the first line and
+press `DELETE`.
 
 After typing the last line, you can run
 the program by pressing `CONTROL` and
