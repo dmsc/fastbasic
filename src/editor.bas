@@ -39,6 +39,7 @@ PROC FileError
   ? "ERROR: "; err(); ", press any key˝";
   close #1
   get key
+  exec ShowInfo
 ENDPROC
 
 '-------------------------------------
@@ -61,6 +62,7 @@ PROC InputFilename
       put key
     endif
   loop
+  exec ShowInfo
 ENDPROC
 
 '-------------------------------------
@@ -141,7 +143,6 @@ PROC AskSaveFileChanged
    exec AskSaveFile
    ' ESC means "don't save, cancel operation"
    if key = 27
-     exec ShowInfo
      exit
    endif
    ' CONTROL-C means "don't save, lose changes"
@@ -422,10 +423,13 @@ endproc
 ' Prints line info and changes line
 '
 PROC ShowInfo
-  pos. 0, 0
-  max = 1 : repeat : put $12 : inc max : until max > peek(@@RMARGN)
+  ' Print two "-", then filename, then complete with '-' until right margin
+  pos. 0, 0 : put $12 : put $12
+  ? FileName$;
+  repeat : put $12 : until peek(@@RMARGN) = peek(@@COLCRS)
+  ' Fill last character
   poke @@OLDCHR, $52
-  pos. 2, 0 : ? FileName$;
+  ' Go to cursor position
   pos. scrColumn, scrLine
   put 29
 ENDPROC
@@ -802,7 +806,6 @@ PROC ProcessKeys
     '--------- Control-S (save) -----
     elif key = $13
       exec AskSaveFile
-      exec ShowInfo
     '
     '--------- Control-R (run) -----
     elif key = $12
@@ -830,9 +833,7 @@ PROC ProcessKeys
         pos. 0, 0
         ? "úùLoad?";
         exec InputFileName
-        if key
-          exec ShowInfo
-        else
+        if not key
           exec LoadFile
         endif
       endif
