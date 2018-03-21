@@ -175,22 +175,26 @@ int main(int argc, char **argv)
         if( do_debug )
             std::cerr << iname << ": parsing line " << ln << "\n";
         s.new_line(line, ln);
-        if( !SMB_PARSE_START(s) || s.pos != line.length() )
+        while( s.pos != line.length() )
         {
-            std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
-            if( !s.saved_error.empty() )
-                std::cerr << ", expected " << s.saved_error;
-            std::cerr << "\n";
-            size_t min = 0, max = s.str.length();
-            if( s.max_pos > 40 ) min = s.max_pos - 40;
-            if( s.max_pos + 40 < max ) max = s.max_pos + 40;
-            for(auto i = min; i<s.max_pos; i++)
-                std::cerr << s.str[i];
-            std::cerr << "<--- HERE -->";
-            for(auto i = s.max_pos; i<max; i++)
-                std::cerr << s.str[i];
-            std::cerr << "\n";
-            return 1;
+            if( !SMB_PARSE_START(s) || ( s.pos != line.length() && !s.peek(':') )  )
+            {
+                std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
+                std::cerr << "pos=" << s.pos << ", len=" << line.length() << "\n";
+                if( !s.saved_error.empty() )
+                    std::cerr << ", expected " << s.saved_error;
+                std::cerr << "\n";
+                size_t min = 0, max = s.str.length();
+                if( s.max_pos > 40 ) min = s.max_pos - 40;
+                if( s.max_pos + 40 < max ) max = s.max_pos + 40;
+                for(auto i = min; i<s.max_pos; i++)
+                    std::cerr << s.str[i];
+                std::cerr << "<--- HERE -->";
+                for(auto i = s.max_pos; i<max; i++)
+                    std::cerr << s.str[i];
+                std::cerr << "\n";
+                return 1;
+            }
         }
     }
     if( do_debug )

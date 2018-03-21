@@ -306,12 +306,6 @@ pcall:
         pha
         bcs     parser_sub
 
-call_ax1:
-        pha
-        txa
-        pha
-        rts
-
 pemit_ret:
         jsr     emit_sub
 
@@ -330,6 +324,8 @@ pexit_ok:
         ; Check if we are at end of line
         ldy     bpos
         lda     (bptr), y
+        cmp     #':'            ; Colon: continue parsing line
+        beq     parse_start
         cmp     #$9B
         bne     set_parse_error
 line_ok:
@@ -353,6 +349,12 @@ skip_chars:
         bcs     skip_chars
         tax
         bcc     ploop_nofetch
+
+call_ax1:
+        pha
+        txa
+        pha
+        rts
 
 pexit_err:
         pla
