@@ -172,7 +172,6 @@ parse_line:
         lda     #0
         sta     bpos
         sta     bmax
-        sta     opos
 
         lda     buf_ptr
         cmp     end_ptr
@@ -225,25 +224,15 @@ ucase_end:
         bcc     :+
         inc     buf_ptr+1
 :
+
+parse_start:
         ; Parse line
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
         lda     #0
+        sta     opos
         pha
         pha
-        beq     parser_sub
-
-        ; Matched a dot (abbreviated statement), skips over all remaining chars
-matched_dot:
-        iny
-        sty     bpos
-skip_chars:
-        jsr     parser_fetch
-        bmi     ploop_nofetch
-        cmp     #SM_EMIT_N
-        bcs     skip_chars
-        tax
-        bcc     ploop_nofetch
 
         ; Parser sub
 parser_sub:
@@ -323,11 +312,6 @@ call_ax1:
         pha
         rts
 
-pcall_ml:
-        jsr     call_ax1
-        bcc     ploop
-        bcs     ploop_nextline
-
 pemit_ret:
         jsr     emit_sub
 
@@ -339,14 +323,36 @@ pexit_ok:
         pla
         sta     pptr+1
         bne     ploop
+
+        ; Parser returned, alloc program space
+        jsr     alloc_prog
+
+        ; Check if we are at end of line
         ldy     bpos
         lda     (bptr), y
         cmp     #$9B
         bne     set_parse_error
 line_ok:
         ; Increases output buffer
-        jsr     alloc_prog
         jmp     parse_line
+
+        ; Calls a machine-language subroutine
+pcall_ml:
+        jsr     call_ax1
+        bcc     ploop
+        bcs     ploop_nextline
+
+        ; Matched a dot (abbreviated statement), skips over all remaining chars
+matched_dot:
+        iny
+        sty     bpos
+skip_chars:
+        jsr     parser_fetch
+        bmi     ploop_nofetch
+        cmp     #SM_EMIT_N
+        bcs     skip_chars
+        tax
+        bcc     ploop_nofetch
 
 pexit_err:
         pla
