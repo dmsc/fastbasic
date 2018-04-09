@@ -180,7 +180,6 @@ int main(int argc, char **argv)
             if( !SMB_PARSE_START(s) || ( s.pos != line.length() && !s.peek(':') )  )
             {
                 std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
-                std::cerr << "pos=" << s.pos << ", len=" << line.length() << "\n";
                 if( !s.saved_error.empty() )
                     std::cerr << ", expected " << s.saved_error;
                 std::cerr << "\n";

@@ -418,7 +418,7 @@ VAR_BYTE_LVALUE:
 	emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE PAR_EXPR emit TOK_ADD
 
 # DIM
-DIM_MORE:
+DIM_MORE: comma
         "," DIM_VAR DIM_MORE
         pass
 
@@ -446,12 +446,12 @@ INPUT_VAR:
 
 
 # Dim variable types
-DIM_VAR_TYPE:
+DIM_VAR_TYPE: array type
         "Byte"               emit VT_ARRAY_BYTE
         "Word" emit TOK_USHL emit VT_ARRAY_WORD
                emit TOK_USHL emit VT_ARRAY_WORD
 
-DIM_VAR:
+DIM_VAR: new variable name
         emit TOK_VAR_ADDR E_VAR_CREATE PAR_EXPR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
 
 # I/O expressions
@@ -467,12 +467,12 @@ IO_CHAN_OPT:
         pass
 
 # Get from keyboard expression
-GETK_EXPR:
+GETK_EXPR: variable name
         VAR_BYTE_LVALUE emit TOK_GETKEY emit TOK_POKE
         VAR_WORD_LVALUE emit TOK_GETKEY emit TOK_DPOKE
 
 # Get expression
-GET_EXPR:
+GET_EXPR: variable name
         VAR_BYTE_LVALUE emit TOK_GET emit TOK_POKE GET_EXPR_MORE
         VAR_WORD_LVALUE emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
 
@@ -493,16 +493,16 @@ XIO_EXPR:
         EXPR_2 emit TOK_SHL8 emit TOK_ADD "," STR_EXPR emit TOK_XIO
 
 # Parses a "DATA" expression, get's binary data in memory
-DATA_WORDS:
+DATA_WORDS: data word
         "," E_NUMBER_WORD DATA_WORDS
         pass
 
-DATA_BYTES:
+DATA_BYTES: data byte
         # To store bytes, simply remove upper part
         "," E_NUMBER_BYTE DATA_BYTES
         pass
 
-DATA_TYPE:
+DATA_TYPE: data type
         "Byte" emit VT_ARRAY_BYTE E_VAR_SET_TYPE EQUAL E_NUMBER_BYTE DATA_BYTES
         "Word" emit VT_ARRAY_WORD E_VAR_SET_TYPE EQUAL E_NUMBER_WORD DATA_WORDS
 
@@ -510,7 +510,7 @@ DATA_END:
         ","
         E_POP_DATA emit TOK_DPOKE
 
-DATA_VAR:
+DATA_VAR: new array name
         emit TOK_VAR_ADDR E_VAR_CREATE "()" emit TOK_CDATA emit LT_DATA E_PUSH_LT
         pass
 
