@@ -24,11 +24,11 @@
         .export         E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
         .export         E_CONST_STRING
-        .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD
+        .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_ARRAY_STRING
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
         .export         check_labels
-        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT
+        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
@@ -68,6 +68,7 @@ read_fp = AFP
                 VT_ARRAY_WORD = 2
                 VT_ARRAY_BYTE = 4
                 VT_STRING     = 5
+                VT_ARRAY_STRING = 6
                 VT_FLOAT      = $FB ; Value > 128 to signal 6bytes per variable!
         .endenum
         ; Types of labels
@@ -324,6 +325,10 @@ xrts:   rts
 ; Variable matching.
 ; The parser calls the routine to check if there is a variable
 ; with the correct type
+.proc   E_VAR_ARRAY_STRING
+        lda     #VT_ARRAY_STRING
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
 .proc   E_VAR_STRING
         lda     #VT_STRING
         .byte   $2C   ; Skip 2 bytes over next "LDA"

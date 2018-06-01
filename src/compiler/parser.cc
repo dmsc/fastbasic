@@ -735,6 +735,12 @@ static bool SMB_E_VAR_ARRAY_BYTE(parse &s)
     return var_check(s, VT_ARRAY_BYTE);
 }
 
+static bool SMB_E_VAR_ARRAY_STRING(parse &s)
+{
+    s.debug("E_VAR_ARRAY_STRING");
+    return var_check(s, VT_ARRAY_STRING);
+}
+
 static bool SMB_E_VAR_STRING(parse &s)
 {
     s.debug("E_VAR_STRING");

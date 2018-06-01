@@ -377,7 +377,7 @@ order of precedence, are:
 Arrays
 ------
 
-Arrays hold many numeric values (called
+Arrays hold many ordered values (called
 elements), the elements can be accessed
 by an index.
 
@@ -393,14 +393,20 @@ variable name followed by the index) in
 any location where a standard numeric
 variable or value is expected.
 
-Arrays can be of two types: WORD arrays
-or BYTE arrays. Word arrays (the
-default if no type is given) use two
-bytes of memory for each element, and
-works like normal numeric variables.
-Byte arrays use only one byte for each
-element, but the numeric range is
-reduced from 0 to 255.
+Arrays can be of three types:
+- WORD arrays (the default if no type
+  is given) use two bytes of memory for
+  each element, and works like normal
+  numeric variables.
+- BYTE arrays use only one byte for
+  each element, but the numeric range
+  is reduced from 0 to 255.
+- STRING arrays store an string in each
+  element. String arrays use two byte
+  of memory for each element that is
+  not yet assigned (containing empty
+  strings), and 258 bytes for each
+  element with a string assigned.
 
 
 String Values
@@ -1151,6 +1157,10 @@ General Statements
   be left out) to define an array with
   integers from -32768 to 32767.
 
+  If the name _arr_ ends with a `$`
+  symbol, this defines a string array,
+  and you can't specify a type.
+
   The size of the array is the number
   of elements, the elements are
   numerated from 0, so that an array of
@@ -1160,7 +1170,8 @@ General Statements
   separating the names with commas.
 
   The array is cleared after the "DIM",
-  so all elements are 0.
+  so all elements are 0 or an empty
+  string.
 
 
 **Ends program**  

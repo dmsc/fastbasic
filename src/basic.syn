@@ -79,7 +79,8 @@ EXTERN {
  E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
  E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
  E_CONST_STRING
- E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_STRING, E_VAR_SET_TYPE
+ E_VAR_CREATE, E_VAR_SET_TYPE
+ E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_STRING, E_VAR_ARRAY_STRING
  E_LABEL, E_LABEL_DEF
 
 #@if FASTBASIC_FP
@@ -164,6 +165,7 @@ ADR_EXPR: string or variable
         VAR_BYTE_LVALUE
         emit TOK_VAR_LOAD E_VAR_ARRAY_WORD
         emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE
+        emit TOK_VAR_LOAD E_VAR_ARRAY_STRING
 
 USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
@@ -311,6 +313,8 @@ STR_EXPR:
 #@endif FASTBASIC_FP
         # Or a string variable
         emit TOK_VAR_LOAD E_VAR_STRING "$"
+        # Or a string array
+        ARRAY_STRING_ADDR emit TOK_DPEEK
 
 # Statements
 PRINT_SEP:
@@ -375,6 +379,7 @@ VAR_WORD_LVALUE: integer variable
 
 VAR_STR_LVALUE:
         emit TOK_VAR_ADDR E_VAR_STRING "$"
+        ARRAY_STRING_ADDR
 
 #@if FASTBASIC_FP
 VAR_FP_LVALUE:
@@ -409,9 +414,13 @@ SOUND:
         EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
 
-# Arrays
+# Word Arrays
 ARRAY_WORD_ADDR:
 	emit TOK_VAR_LOAD E_VAR_ARRAY_WORD PAR_EXPR emit TOK_USHL emit TOK_ADD
+
+# String Arrays
+ARRAY_STRING_ADDR:
+	emit TOK_VAR_LOAD E_VAR_ARRAY_STRING "$" PAR_EXPR emit TOK_USHL emit TOK_ADD
 
 # This is the same as "ARRAY_BYTE_ADDR"
 VAR_BYTE_LVALUE:
@@ -446,13 +455,17 @@ INPUT_VAR:
 
 
 # Dim variable types
-DIM_VAR_TYPE: array type
+DIM_VAR_TYPE_NUM: array type
         "Byte"               emit VT_ARRAY_BYTE
         "Word" emit TOK_USHL emit VT_ARRAY_WORD
                emit TOK_USHL emit VT_ARRAY_WORD
 
+DIM_VAR_TYPE:
+        "$" PAR_EXPR emit TOK_USHL emit VT_ARRAY_STRING
+        PAR_EXPR DIM_VAR_TYPE_NUM
+
 DIM_VAR: new variable name
-        emit TOK_VAR_ADDR E_VAR_CREATE PAR_EXPR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
+        emit TOK_VAR_ADDR E_VAR_CREATE DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
 
 # I/O expressions
 IO_CHAN: I/O channel number
