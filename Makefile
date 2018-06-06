@@ -157,6 +157,7 @@ COMMON_AS_SRC=\
     src/interp/soundoff.asm\
     src/interp/str.asm\
     src/interp/streol.asm\
+    src/interp/strindex.asm\
     src/interp/time.asm\
     src/interp/ushl.asm\
     src/interp/usr.asm\
