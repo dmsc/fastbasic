@@ -246,11 +246,12 @@ distclean: clean
 	rm -f gen/int/basic.asm gen/fp/basic.asm \
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
+	    gen/int/basic.inc  gen/fp/basic.inc  \
 	    $(BAS_SRC:src/%.bas=gen/fp/%.asm) \
 	    $(BAS_SRC:src/%.bas=gen/int/%.asm) \
 	    $(SAMPLE_BAS:%.bas=gen/%.asm) \
 	    $(NATIVES)
-	-rmdir gen/fp gen/int obj/fp obj/int
+	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
 	-rmdir bin gen obj
 
 # Build an ATR disk image using "mkatr".
