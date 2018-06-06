@@ -1268,13 +1268,13 @@ modify memory. Use with care.
   MOVE a, b, c is equivalent to:
 
       FOR I=0 to c-1
-        POKE b+I, a+I
+        POKE b+I, PEEK(a+I)
       NEXT I
 
   but -MOVE a, b, c is instead:
 
       FOR I=c-1 to 0 STEP -1
-        POKE b+I, a+I
+        POKE b+I, PEEK(a+I)
       NEXT I
 
 
