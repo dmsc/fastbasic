@@ -18,9 +18,9 @@ rdir="../releases"
 out="$rdir/fastbasic-$ver"
 
 CXX_FLAGS="-DNDEBUG -Os -Wall -flto"
-LIN64_FLAGS="$CXX_FLAGS -static-libstdc++"
-LIN32_FLAGS="$CXX_FLAGS -m32 -static-libstdc++"
-WIN_FLAGS="$CXX_FLAGS -static-libstdc++ -static-libgcc"
+LIN64_FLAGS="$CXX_FLAGS -static-libstdc++ -Wl,--gc-sections"
+LIN32_FLAGS="$CXX_FLAGS -m32 -static-libstdc++ -Wl,--gc-sections"
+WIN_FLAGS="$CXX_FLAGS -static-libstdc++ -static-libgcc -Wl,--gc-sections"
 OSX32_FLAGS="$CXX_FLAGS -m32 -static-libstdc++"
 OSX64_FLAGS="$CXX_FLAGS -static-libstdc++"
 
