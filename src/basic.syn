@@ -303,7 +303,7 @@ COMP_EXPR_MORE:
         pass
 
 # String expressions: base plus optional index
-STR_EXPR:
+STR_EXPR: string expression
         STR_EXPR_BASE OPT_STR_INDEX
 
 OPT_STR_INDEX:
