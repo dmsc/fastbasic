@@ -24,10 +24,8 @@
 ; linked into a combine executable.)
 
 
-; String copy (assign)
-; --------------------
-
-        .export EXE_COPY_STR
+; String copy (assign) and concatenate
+; ------------------------------------
 
         ; From allloc.asm
         .importzp       array_ptr
@@ -41,8 +39,8 @@
 
         .segment        "RUNTIME"
 
-; Copy one string to another, allocating the destination if necessary
-.proc   EXE_COPY_STR    ; AX: source string   (SP): destination *variable* address
+; Store source and destination pointers, allocating destination string if needed.
+.proc   get_pointers
         ; Store source pointer
         sta     tmp3
         stx     tmp3+1
@@ -69,19 +67,60 @@
         ldx     #1
         jsr     alloc_array
 ok:
-        ; Copy data + len
         ldy     #0
+        rts
+.endproc
+
+; Copy one string to another, allocating the destination if necessary
+.proc   EXE_COPY_STR    ; AX: source string   (SP): destination *variable* address
+        jsr     get_pointers
+
+        ; Copy length
         lda     (tmp3), y
+        sta     (tmp2), y
         tay
+        beq     xit
+
+        ; Copy data
 cloop:  lda     (tmp3), y
         sta     (tmp2), y
         dey
-        cpy     #$FF
         bne     cloop
 xit:    jmp     pop_stack_2
 .endproc
 
+; Concatenate the source string to the end of the destination string
+.proc   EXE_CAT_STR    ; AX: source string   (SP): destination *variable* address
+        jsr     get_pointers
+
+        lda     (tmp2), y       ; Destination length
+        sta     tmp1
+
+        clc
+        adc     (tmp3), y       ; Source length
+        bcc     ok_len
+        lda     #255            ; String length overflow, fix at maximum
+ok_len:
+        sta     (tmp2), y       ; Store new length
+
+        ; Get ending source position into Y
+        sec
+        sbc     tmp1
+        beq     EXE_COPY_STR::xit       ; No bytes to copy
+        tay
+
+        ; Fix destination pointer and jump to copy loop
+        lda     tmp1
+        clc
+        adc     tmp2
+        sta     tmp2
+        bcc     EXE_COPY_STR::cloop
+        inc     tmp2+1
+        bcs     EXE_COPY_STR::cloop
+.endproc
+
         .include "../deftok.inc"
         deftoken "COPY_STR"
+        deftoken "CAT_STR"
 
 ; vi:syntax=asm_ca65
