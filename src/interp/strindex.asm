@@ -43,7 +43,7 @@
 
         ; Index at position with given length
 .proc   EXE_STR_IDX
-        ; AX   = Length
+        ; AX   = Count
         ; SP   = Position
         ; SP+1 = String address
 
@@ -52,49 +52,51 @@
 
         cpx     #0
         beq     ok1
-        lda     #255            ; if length>255, set to 255
-ok1:    sta     tmp3+1          ; tmp3+1 = Length
-        ldx     stack_h, y
-        bne     zero    ; Overflow
-        ldx     stack_l, y
-        dex
-        stx     tmp3
+        lda     #255            ; if Count>255, set to 255
+ok1:
 
-        lda     stack_l+1, y
-        sta     tmp1
-        adc     tmp3
-        sta     tmp2
-        lda     stack_h+1, y
-        sta     tmp1+1
-        adc     #0
-        sta     tmp2+1
-        ; Subtract LEN - POS -> new length
+        sta     tmp3+1
+
+        ldx     stack_h, y      ; Check Position < 256
+        bne     zero            ; Overflow
+
+        ldx     stack_l+1, y    ; Copy Address to tmp1
+        stx     tmp1
+        ldx     stack_h+1, y
+        stx     tmp1+1
+
+        ldx     stack_l, y      ; Position
+
         ldy     #0
         lda     (tmp1), y
-        sec
-        sbc     tmp3
-        bcc     zero    ; Also overflow
-        cmp     tmp3+1
-        bcc     ok2
-        lda     tmp3+1          ; Use given length instead of max
-ok2:    tax
-        inx
+        sta     tmp3
+
+        txa
+        tay
+        dey
+        ldx     #$FF
 
 copy_str:
-        sta     LBUFF-1, y
-        lda     (tmp2), y
+        inx
+        lda     (tmp1), y
+        sta     LBUFF-1, x
+        cpy     tmp3
+        bcs     xit
         iny
-        dex
-        bne     copy_str
+        cpx     tmp3+1
+        bcc     copy_str
+
+xit:
+        stx     LBUFF-1         ; Set string length
+
         ; Return new string position
         lda     #<(LBUFF-1)
         ldx     #>(LBUFF-1)
-pop:    jmp     next_ins_incsp
+        jmp     next_ins_incsp
 
 zero:
-        lda     #0
-        tax
-        beq     pop
+        ldx     #0
+        beq     xit
 .endproc
 
         .include "../deftok.inc"
