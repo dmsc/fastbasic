@@ -102,6 +102,27 @@ class peephole
                 lnum = code[idx+current].linenum();
             code.insert(code.begin() + idx + current, codew::cword(x, lnum));
         }
+        void ins_tok(size_t idx, enum tokens tok)
+        {
+            int lnum = 0;
+            changed = true;
+            if( code.size() > idx + current )
+                lnum = code[idx+current].linenum();
+            code.insert(code.begin() + idx + current, codew::ctok(tok, lnum));
+        }
+        void copy(size_t idx, size_t from, size_t num)
+        {
+            changed = true;
+            while(num)
+            {
+                code.insert(code.begin() + idx + current, code[from+current]);
+                num--;
+                idx++;
+                from++;
+                if( from >= idx )
+                    from++;
+            }
+        }
         void set_ws(size_t idx, std::string str)
         {
             changed = true;
@@ -563,6 +584,72 @@ class peephole
                             set_tok(2, TOK_LT);
                             del(3);
                         }
+                    }
+                    // STRING[i,n>255] -> STRING[i,255]
+                    //   TOK_NUM / > 255 / TOK_STR_IDX
+                    //        -> TOK_NUM / 255 / TOK_STR_IDX
+                    if( mtok(0, TOK_NUM) && mword(1) && mtok(2, TOK_STR_IDX) &&
+                        val(1) > 255 )
+                    {
+                        set_w(1, 255);
+                        continue;
+                    }
+                    // STRING[i][j,n] -> STRING[i+j-1,n]
+                    //   TOK_NUM / 255 / TOK_STR_IDX /
+                    //   ( TOK_NUM / j ) || ( TOK_VAR_LOAD / k ) /
+                    //   ( TOK_NUM / n ) || ( TOK_VAR_LOAD / n ) /
+                    //   TOK_STR_IDX
+                    //      ->
+                    //   TOK_NUM / j / TOK_ADD / TOK_NUM / 1 / TOK_SUB / TOK_NUM / n / TOK_STR_IDX
+                    if( mtok(0, TOK_NUM) && mword(1) && (val(1) == 255) &&
+                        mtok(2, TOK_STR_IDX) &&
+                        ( mtok(3, TOK_NUM) || mtok(3, TOK_VAR_LOAD) ) &&
+                        ( mtok(5, TOK_NUM) || mtok(5, TOK_VAR_LOAD) ) &&
+                        mtok(7, TOK_STR_IDX) )
+                    {
+                        ins_tok(5, TOK_ADD);
+                        ins_tok(6, TOK_NUM); ins_w(7, 1);
+                        ins_tok(8, TOK_SUB);
+                        del(2); del(1); del(0);
+                        continue;
+                    }
+                    // STRING[i,n][j] -> STRING[i+j-1,n-j+1]
+                    //   ( TOK_NUM / n ) || ( TOK_VAR_LOAD / n ) / TOK_STR_IDX
+                    //   ( TOK_NUM / j ) || ( TOK_VAR_LOAD / k ) /
+                    //   TOK_NUM / 255 / TOK_STR_IDX
+                    //      ->
+                    //   TOK_NUM / j / TOK_ADD / TOK_NUM / 1 / TOK_SUB / TOK_NUM / n /
+                    //   TOK_NUM / j / TOK_SUB / TOK_NUM / 1 / TOK_ADD / TOK_STR_IDX
+                    if( ( mtok(0, TOK_NUM) || mtok(0, TOK_VAR_LOAD) ) &&
+                        mtok(2, TOK_STR_IDX) &&
+                        ( mtok(3, TOK_NUM) || mtok(3, TOK_VAR_LOAD) ) &&
+                        mtok(5, TOK_NUM) && mword(6) && (val(6) == 255) &&
+                        mtok(7, TOK_STR_IDX) )
+                    {
+                        del(6); del(5);
+                        copy(0, 3, 2);
+                        ins_tok(2, TOK_ADD);
+                        ins_tok(3, TOK_NUM); ins_w(4, 1);
+                        ins_tok(5, TOK_SUB);
+                        del(8);
+                        ins_tok(10, TOK_SUB);
+                        ins_tok(11, TOK_NUM); ins_w(12, 1);
+                        ins_tok(13, TOK_ADD);
+                        continue;
+                    }
+                    // ASC( STRING[i,X (>=1) ] ) -> PEEK( ADR(STRING) + i + 1 )
+                    //
+                    //   TOK_NUM / X (>=1) / TOK_STR_IDX /
+                    //   TOK_NUM / Y (<=X) / TOK_ADD / TOK_PEEK
+                    //      ->
+                    //   TOK_ADD / TOK_NUM / Y / TOK_ADD / TOK_PEEK
+                    if( mtok(0, TOK_NUM) && mword(1) && (val(1)>0) && mtok(2, TOK_STR_IDX) &&
+                        mtok(3, TOK_NUM) && mword(4) && (val(4)<=val(1)) &&
+                        mtok(5, TOK_ADD) && mtok(6, TOK_PEEK) )
+                    {
+                        set_tok(2, TOK_ADD);
+                        del(1); del(0);
+                        continue;
                     }
                     // NOT (A < x)  ==  A >= x  ->  A > x-1
                     //    TOK_NUM / x / TOK_LT / TOK_L_NOT -> TOK_NUM / x+1 / TOK_LT
