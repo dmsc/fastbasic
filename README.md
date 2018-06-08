@@ -5,6 +5,7 @@ This is a fast interpreter for the BASIC language on the Atari 8-bit computers.
 
 The current features are:
 - Support for Atari floating point and 16bit integer variables;
+- Support for string arrays, substrings and concatenation;
 - Small size (currently the full floating point IDE is 9.5k, the integer IDE is 8k, and the runtime is less than 3k);
 - Fast execution (currently, about 43% faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 5 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
@@ -27,7 +28,7 @@ To use the cross-compiler, download from the releases and see [compiler/USAGE.md
 Sample files
 ------------
 
-There are samples for the [integer only compiler](samples/int/) and for he [floating point compiler](samples/fp/), in addition to more thest programs in the [tests](tests/) folder.
+There are samples for the [integer only compiler](samples/int/) and for the [floating point compiler](samples/fp/), in addition to more test programs in the [tests](tests/) folder.
 
 
 License
