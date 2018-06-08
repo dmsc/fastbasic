@@ -51,6 +51,7 @@
         inc     sptr
 
         cpx     #0
+        bmi     zero
         beq     ok1
         lda     #255            ; if Count>255, set to 255
 ok1:
