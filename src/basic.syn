@@ -307,8 +307,8 @@ STR_EXPR: string expression
         STR_EXPR_BASE OPT_STR_INDEX
 
 OPT_STR_INDEX:
-        "[" EXPR_2 "]" emit TOK_STR_IDX
-        "[" EXPR "]" emit TOK_BYTE emit 255 emit TOK_STR_IDX
+        "[" EXPR_2 "]" emit TOK_STR_IDX OPT_STR_INDEX
+        "[" EXPR "]" emit TOK_BYTE emit 255 emit TOK_STR_IDX OPT_STR_INDEX
         pass
 
 STR_EXPR_BASE:
