@@ -173,8 +173,11 @@ the following main rules:
    - a statement followed by its
      parameters,
    - a variable assignment, this is a
-     name followed by `=` and a new
-     value.
+     name followed by `=` and a the
+     expression for the new value.
+     For string variables, there is
+     also a concatenation operator,
+     `=+`.
    - an empty line.
 
 2. All statements and variable names
@@ -211,7 +214,8 @@ Expressions
 Expressions are used to perform
 calculations in the language.
 
-There are numeric expressions, boolean
+There are numeric expressions (integer
+and floating point), boolean
 expressions and string expressions.
 
 In FastBasic, standard  numeric
@@ -426,6 +430,57 @@ Will print:
 
     Hello "world"
 
+The bracket operator `[` `]` allows
+creating a string from a portion of
+another, and accepts two forms:
+
+ - [ _num_ ]
+   This form selects all characters
+   from _num_ up to the end of the
+   string, counting from 1.
+   So, `A$[1]` selects all the string
+   and `A$[3]` selects from the third
+   character to the end, effectively
+   removing the leftmost two
+   characters.
+
+ - [ _num1_ , _num2_ ]
+   This form selects at most _num2_
+   characters from _num1_, or up to
+   the end of the string if there is
+   not enough characters.
+
+Example:
+
+    PRINT "Hello World"[7]
+    A$ = STR$(3.1415)[3,3]
+    ? A$
+    ? A$[2,1]
+
+Will print:
+    World
+    141
+    4
+
+Note that the bracket operator creates
+a new string and copies the characters
+from the original string to the new
+one. As the buffer used for the new
+string is always the same, you can't
+compare two values without first
+assigning them to a new variable.
+
+This will print "ERROR":
+
+    A$="Dont Work"
+    IF A$[2,2] = A$[3,3] THEN ? "ERROR"
+
+But this will work:
+
+    A$="Long string"
+    B$=A$[2,2]
+    IF B$ = A$[3,3] THEN ? "ERROR"
+
 
 String Variables
 ---------------
@@ -434,6 +489,33 @@ String variables are named the same as
 numeric variables but must end with a $
 symbol.  Valid variable names are
 "Text$", "NAME1$".
+
+String variables always use 256 bytes,
+the first byte stores the string
+length and the following bytes store up
+to 255 characters.
+
+There are two types of string
+assignments:
+
+ - The standard `=` sign copies the
+   string expression in the right to
+   the variable in the left.
+
+ - The `=+` sign copies the string
+   expression at the right to the end
+   of the current string, concatenating
+   the text.
+
+Example:
+
+    A$ = "Hello "
+    A$ =+ "World"
+    ? A$
+
+Will print:
+
+    Hello World
 
 
 Standard Functions
