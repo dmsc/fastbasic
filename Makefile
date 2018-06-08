@@ -223,6 +223,7 @@ COMPILER=\
 	 compiler/fb-int$(SHEXT)\
 	 compiler/USAGE.md\
 	 compiler/LICENSE\
+	 compiler/MANUAL.md\
 
 # All Output files
 OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) \
@@ -384,6 +385,10 @@ $(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP)
 $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 	rm -f $@
 	ar65 a $@ $^
+
+# Copy manual to compiler
+compiler/MANUAL.md: manual.md
+	cp -f $< $@
 
 # Dependencies
 $(COMMON_OBJS_FP): src/deftok.inc
