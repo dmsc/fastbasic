@@ -438,6 +438,37 @@ class peephole
                         set_tok(0, TOK_NUM); set_w(1, val(1)-val(3)); del(4); del(3); del(2); i--;
                         continue;
                     }
+                    //   TOK_ADD / TOK_NUM / x / TOK_ADD
+                    //      ->   TOK_NUM x / TOK_ADD / TOK_ADD
+                    if( mtok(0,TOK_ADD) && mtok(1,TOK_NUM) && mword(2) && mtok(3,TOK_ADD) )
+                    {
+                        set_tok(0, TOK_NUM); set_w(1,val(2)); set_tok(2, TOK_ADD); i--;
+                        continue;
+                    }
+                    //   TOK_ADD / TOK_NUM / x / TOK_SUB
+                    //      ->   TOK_NUM x / TOK_SUB / TOK_ADD
+                    if( mtok(0,TOK_ADD) && mtok(1,TOK_NUM) && mword(2) && mtok(3,TOK_SUB) )
+                    {
+                        set_tok(0, TOK_NUM); set_w(1,val(2)); set_tok(2, TOK_SUB);
+                        set_tok(3, TOK_ADD); i--;
+                        continue;
+                    }
+                    //   TOK_SUB / TOK_NUM / x / TOK_ADD
+                    //      ->   TOK_NUM x / TOK_SUB / TOK_SUB
+                    if( mtok(0,TOK_SUB) && mtok(1,TOK_NUM) && mword(2) && mtok(3,TOK_ADD) )
+                    {
+                        set_tok(0, TOK_NUM); set_w(1,val(2)); set_tok(2, TOK_SUB);
+                        set_tok(3, TOK_SUB); i--;
+                        continue;
+                    }
+                    //   TOK_SUB / TOK_NUM / x / TOK_SUB
+                    //      ->   TOK_NUM x / TOK_ADD / TOK_SUB
+                    if( mtok(0,TOK_SUB) && mtok(1,TOK_NUM) && mword(2) && mtok(3,TOK_SUB) )
+                    {
+                        set_tok(0, TOK_NUM); set_w(1,val(2)); set_tok(2, TOK_ADD);
+                        set_tok(3, TOK_SUB); i--;
+                        continue;
+                    }
                     //   TOK_NUM / x / TOK_NUM / y / TOK_MUL   -> TOK_NUM (x*y)
                     if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_MUL) )
                     {
