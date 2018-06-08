@@ -5,6 +5,7 @@ disk/
 temp/
 compiler/fastbasic-int
 compiler/fastbasic-fp
+compiler/MANUAL.md
 src/basic.asm
 fastbasic.atr
 *.lib
