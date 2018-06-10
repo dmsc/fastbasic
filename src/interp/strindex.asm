@@ -55,7 +55,6 @@
         beq     ok1
         lda     #255            ; if Count>255, set to 255
 ok1:
-
         sta     tmp3+1
 
         ldx     stack_h, y      ; Check Position < 256
@@ -66,16 +65,13 @@ ok1:
         ldx     stack_h+1, y
         stx     tmp1+1
 
-        ldx     stack_l, y      ; Position
-
-        ldy     #0
-        lda     (tmp1), y
-        sta     tmp3
-
-        txa
+        lda     stack_l, y      ; Position
         tay
         dey
+
         ldx     #$FF
+        lda     (tmp1+1,x)      ; Read original length
+        sta     tmp3
 
 copy_str:
         inx
