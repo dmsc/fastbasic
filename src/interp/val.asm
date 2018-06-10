@@ -60,18 +60,23 @@ SKBLANK = $DBA1
         ; Clears result
         ldx     #0
         stx     tmp1
-        stx     tmp1+1
 
         ; Reads a '+' or '-'
         lda     (INBUFF), y
         cmp     #'+'
         beq     skip
         cmp     #'-'
-        bne     nosign
-        dex
-skip:   iny
+        bne     convert
 
-nosign: stx     divmod_sign
+        iny
+        jsr     convert
+        php
+        jsr     neg_AX
+        plp
+        rts
+
+skip:   iny
+convert:
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
 loop:
         ; Reads one character
@@ -87,7 +92,7 @@ loop:
 
         ; Multiply "tmp1" by 10 - uses A,X, keeps Y
         lda     tmp1
-        ldx     tmp1+1
+        stx     tmp1+1
 
         asl
         rol     tmp1+1
@@ -104,7 +109,7 @@ loop:
 
         asl     tmp1
         rol     a
-        sta     tmp1+1
+        tax
         bcs     ebig
 
         ; Add new digit
@@ -112,7 +117,7 @@ loop:
         adc     tmp1
         sta     tmp1
         bcc     loop
-        inc     tmp1+1
+        inx
         bne     loop
 
 ebig:
@@ -122,13 +127,8 @@ xit:    rts
 xit_n:  cpy     tmp2+1
         beq     ebig    ; No digits read
 
-        ; Restore sign - conditional!
         lda     tmp1
-        ldx     tmp1+1
-        bit     divmod_sign
-        bpl     :+
-        jsr     neg_AX
-:       clc
+        clc
         rts
 .endproc
 
