@@ -63,6 +63,7 @@ SKBLANK = $DBA1
         stx     tmp1+1
 
         ; Reads a '+' or '-'
+        lda     (INBUFF), y
         cmp     #'+'
         beq     skip
         cmp     #'-'
