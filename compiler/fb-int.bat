@@ -16,6 +16,8 @@ set extra=
  if "%~1"=="" goto :endargs
  set opt=%1
  if "%opt%"=="-h" call :usage & exit /b
+ if "%opt:~0,3%"=="-X:" set extra=%extra% %opt:~3% & goto :nextarg
+ if "%opt:~0,3%"=="-S:" set extra=%extra% --start-addr %opt:~3% & goto :nextarg
  if "%opt:~0,1%"=="-" set opts=%opts% %~1 & goto :nextarg
  if /i "%~x1"==".asm" set extra=%extra% %~1 & goto :nextarg
  if /i "%~x1"==".o"   set extra=%extra% %~1 & goto :nextarg

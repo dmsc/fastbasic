@@ -1,5 +1,5 @@
 FastBasic Cross Compiler
-------------------------
+========================
 
 This is the FastBasic cross compiler. It takes a basic sources and compiles
 to an assembly file for CC65.
@@ -33,7 +33,7 @@ If you need a different path for CC65 you will need to alter the "fb.bat" and
 
 
 Basic Usage
------------
+===========
 
 For simple compilation of BAS files to XEX (Atari DOS executable), use the
 included "fb" and "fb-int" scripts.
@@ -78,9 +78,55 @@ The compilation is a two step process:
 
       cl65 -t atari -C /path/to/fastbasic.cfg myprog.asm -o myprog.xex /path/to/fastbasic-fp.lib
 
-
 Advanced Usage
---------------
+==============
+
+Passing options to the compiler
+-------------------------------
+
+The compiler scripts `fb` and `fb-int` allows passing options to the compiler,
+allowed options are:
+
+- **-v**  
+  Shows the compiler version.
+
+- **-n**  
+  Disable all the optimizations, the produced code will be the same as the
+  native IDE. This is useful to debug problems with the optimizations passes,
+  should not be used normally.
+
+- **-prof**  
+  Helps profiling the compiler generated code. Outputs statistics of the most
+  used tokens and token pairs.
+
+- **-d**  
+  Enable parser debug options. This is only useful to debug parser, as it
+  writes the full parsing tree with all the tried constructs.
+
+- **-h**  
+  Shows available compiler options.
+
+- **-S**:*address*  
+  Sets the start address of the compiled binary. The default value is `$2000`,
+  set in the configuration file `fastbasic.cfg`. You can specify a different
+  address to allow for a bigger DOS, or to have more memory available if you
+  don't use a DOS. The address can be specified as decimal or hexadecimal with
+  `0x` at front.
+
+- **-X**:*cl65-option*  
+  Passes the given option to the CL65 linker. See the CC65 documentation for
+  valid options, some useful options are listed bellow:
+
+  - **-X:--asm-include-dir -X**:*path*  
+    Adds a path to search for assembly included files, used in your custom ASM
+    sources.
+
+  - **-X:--asm-define-sym**=*symbol*  
+    Define an assembly symbol, used in custom ASM sources.
+
+
+Linking other assembly files
+----------------------------
 
 The compiler support linking to external assembly modules, you can pass them to
 the "fb" command line:

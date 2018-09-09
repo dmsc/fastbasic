@@ -20,6 +20,12 @@ for i do
         -h)
             usage
             ;;
+        -X:*)
+            set -- "$@" "${i#-X:}"
+            ;;
+        -S:*)
+            set -- "$@" "--start-addr" "${i#-S:}"
+            ;;
         -[a-zA-Z0-9_]*)
             OPTS="$OPTS $i"
             ;;
