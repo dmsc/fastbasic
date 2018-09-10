@@ -1,4 +1,4 @@
-# FastBasic - Fast BASIC interpreter for the Atari 8-bit computers
+% FastBasic - Fast BASIC interpreter for the Atari 8-bit computers
 
 Introduction
 ============
@@ -24,6 +24,7 @@ parsed on run, generating optimized
 code for very fast execution.
 
 Currently, FastBasic support:
+
 - Integer and floating point variables,
   including all standard arithmetic
   operators.
@@ -242,28 +243,28 @@ Numeric Values
 --------------
 
 Basic values can be written as decimal
-numbers (like 123, 1000, etc.), as
+numbers (like `123`, `1000`, etc.), as
 hexadecimal numbers with a $ sign
-before (like $1C0, $A00, etc.) or by
-using the name of a variable.
+before (like `$1C0`, `$A00`, etc.) or
+by using the name of a variable.
 
 Floating point values are written with
 a decimal dot and an optional exponent
-(like 1.0E+10, or -3.2)
+(like `1.0E+10`, or `-3.2`)
 
 
 Numeric Variables
 -----------------
 
 Variable names must begin with a letter
-or the symbol _, and can contain any
-letter, number or the symbol _.
+or the symbol `_`, and can contain any
+letter, number or the symbol `_`.
 Examples of valid variable names are
-"COUNTER", "My_Var", "num1".
+`COUNTER`, `My_Var`, `num1`.
 
-Floating point variables have an "%" as
+Floating point variables have an `%` as
 last character in the name. Examples of
-valid names are "MyNum%", "x1%".
+valid names are `MyNum%`, `x1%`.
 
 
 Numeric Operators
@@ -277,12 +278,12 @@ operators in order of precedence:
 
 - `+` `-`      : addition, subtraction,
                  from left to right.
-- `*` `/` MOD  : multiplication,
+- `*` `/` `MOD`: multiplication,
                  division, modulus,
                  from left to right.
-- `&` `!` EXOR : binary AND, OR and
-                 EXOR, from left to
-                 right.
+- `&` `!` `EXOR`: binary AND, OR and
+                  EXOR, from left to
+                  right.
 - `+` `-`      : positive / negative.
 
 For example, an expression like
@@ -320,15 +321,15 @@ Note that integer expressions are
 automatically converted to floating
 point if needed, this allows mixing
 integers and floating point in some
-calculations, but you must have care
-to force floating point calculations to
+calculations, but you must have care to
+force floating point calculations to
 avoid integer overflows.
 
 Example: the expression
 
     a% = 1000 * 1000 + 1.2
 
-gives correct result as "1000" is
+gives correct result as 1000 is
 converted to floating point before
 calculation, but:
 
@@ -340,7 +341,7 @@ multiplication result is bigger tan
 
 Note that after any floating point
 errors (division by 0 and overflow),
-ERR() returns 3.
+`ERR()` returns 3.
 
 
 Boolean Operators
@@ -359,20 +360,20 @@ converted to 0.
 The supported boolean operators, in
 order of precedence, are:
 
-- OR     : Logical OR, true if one or
+- `OR`   : Logical OR, true if one or
            both operands are true.
-- AND    : Logical AND, true only if
+- `AND`  : Logical AND, true only if
            both operands are true.
-- NOT    : Logical NOT, true only if
+- `NOT`  : Logical NOT, true only if
            operand is false.
-- <=  >=  <>  <  >  =
+- `<=` `>=` `<>` `<` `>` `=`
   Integer or floating point comparison,
   compare the two numbers and return
-  true or false.  Note that "<>" is
-  "not equal".
+  true or false.  Note that `<>` is
+  _not equal_.
   You can only compare two values of
   the same type, so an expression like
-  "x = 1.2" is invalid, but "1.2 = x"
+  `x = 1.2` is invalid, but `1.2 = x`
   is valid as the second operand is
   converted to floating point before
   comparison.
@@ -398,14 +399,15 @@ any location where a standard numeric
 variable or value is expected.
 
 Arrays can be of three types:
-- WORD arrays (the default if no type
+
+- `WORD` arrays (the default if no type
   is given) use two bytes of memory for
   each element, and works like normal
   numeric variables.
-- BYTE arrays use only one byte for
+- `BYTE` arrays use only one byte for
   each element, but the numeric range
   is reduced from 0 to 255.
-- STRING arrays store an string in each
+- String arrays store an string in each
   element. String arrays use two byte
   of memory for each element that is
   not yet assigned (containing empty
@@ -417,7 +419,7 @@ String Values
 -------------
 
 String values are written as a text
-surrounded by double quotes (""). If
+surrounded by double quotes (`"`). If
 you need to include a double quote
 character in a string, you must write
 two double quotes together.
@@ -458,6 +460,7 @@ Example:
     ? A$[2,1]
 
 Will print:
+
     World
     141
     4
@@ -486,9 +489,9 @@ String Variables
 ---------------
 
 String variables are named the same as
-numeric variables but must end with a $
-symbol.  Valid variable names are
-"Text$", "NAME1$".
+numeric variables but must end with a
+`$` symbol.  Valid variable names are
+`Text$`, `NAME1$`.
 
 String variables always use 256 bytes,
 the first byte stores the string
@@ -726,17 +729,16 @@ Console Print and Input Statements
 **GET _var_ / GE.**
 
   Waits for a key-press and writes the
-  key value to _var_.
-
-  _var_ can be a variable name or an
-  array position (like "array(123)")
+  key value to _var_, which can be a
+  variable name or an array position
+  (like "array(123)")
 
 **Input variable or string**  
 **INPUT _var_ / I.**  
 **INPUT "prompt"; _var_**  
 **INPUT "prompt", _var_**
 
-  Reads form keyboard/screen and stores
+  Reads from keyboard/screen and stores
   the value in _var_.
 
   A "?" sign is printed to the screen
@@ -808,7 +810,7 @@ Control Statements
   Starts and ends an endless
   repetition, when reaching the LOOP
   statement the program begins again
-  executing form the DO statement.
+  executing from the DO statement.
 
   The only way to terminate the loop is
   via de EXIT statement.
@@ -961,15 +963,16 @@ Control Statements
 **WHILE _condition_ / W.**  
 **WEND / WE.**
 
-  The WHILE loop allows looping with a
-  condition evaluated at the beginning
-  of each iteration.
+  The `WHILE` loop allows looping with
+  a condition evaluated at the
+  beginning of each iteration.
 
   First, evaluates the condition. If
   false, skips the whole loop to the
   end. If true, executes the statements
-  between WHILE and WEND and returns to
-  the top to test the condition again.
+  between `WHILE` and `WEND` and
+  returns to the top to test the
+  condition again.
 
   An EXIT statement also terminates the
   loop and skips to the end.
@@ -981,9 +984,9 @@ Graphic and Sound Statements
 **Set color number**  
 **COLOR _num_ / C.**
 
-  Changes the color of PLOT, DRAWTO and
-  the line color on FILLTO to _num_.
-
+  Changes the color of `PLOT`, `DRAWTO`
+  and the line color on `FILLTO` to
+  _num_.
 
 **Draws a line**  
 **DRAWTO _x_, _y_ / DR.**
@@ -994,7 +997,7 @@ Graphic and Sound Statements
 **Sets fill color number**  
 **FCOLOR _num_ & FC.**
 
-  Changes the filling color of FILLTO
+  Changes the filling color of `FILLTO`
   operation to _num_.
 
 **Fill from line to the right**  
@@ -1002,12 +1005,11 @@ Graphic and Sound Statements
 
   Draws a line from last position to
   the given _x_ and _y_ position, using
-  COLOR number, and for each plotted
+  `COLOR` number, and for each plotted
   point also paint all points to the
-  right with the FCOLOR number until a
-  point with different color than the
+  right with the `FCOLOR` number until
+  a point with different color than the
   first.
-
 
 **Sets graphic mode**  
 **GRAPHICS _num_ / G.**
@@ -1022,7 +1024,7 @@ Graphic and Sound Statements
 
   Plots a point in the specified _x_
   and _y_ coordinates, with the current
-  COLOR number.
+  `COLOR` number.
 
 **Sets displayed color**
 **SETCOLOR _num_, _hue_, _lum_ / SE.**  
@@ -1060,21 +1062,23 @@ Device Input and Output Statements
   _address_.
 
   For example, to read to a byte array,
-  use "ADR(array)" to specify the
+  use `ADR(array)` to specify the
   address.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
 **Binary read from file**  
 **BPUT #_iochn_,_address_,_len_ / BP.**
 
-  Similar to BPUT, but writes _length_
-  bytes from memory at _address_ to the
-  channel _iochn_.
+  Similar to `BPUT`, but writes
+  _length_ bytes from memory at
+  _address_ to the channel _iochn_.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
 **Close channel**  
 **CLOSE #_iochn_  / CL.**
@@ -1083,12 +1087,14 @@ Device Input and Output Statements
   _iochn_, finalizing all read/write
   operations.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
   Note that it is important to read the
-  value of ERR() after close to ensure
-  that written data is really on disk.
+  value of `ERR()` after close to
+  ensure that written data is really on
+  disk.
 
 **Reads bytes from file**  
 **GET #_iochn_, _var_, ...**
@@ -1097,9 +1103,9 @@ Device Input and Output Statements
   and writes the value to _var_.
 
   _var_ can be a variable name or an
-  array position (like "array(123)")
+  array position (like `array(123)`)
 
-  In case of any error, ERR() returns
+  In case of any error, `ERR()` returns
   the error value.
 
 **Input variable or string from file**  
@@ -1114,8 +1120,9 @@ Device Input and Output Statements
   If _var_ is a numeric variable, the
   line is converted to a number first.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
 **Opens I/O channel**  
 **OPEN #_ioc_,_mode_,_ax_,*dev* / O.**
@@ -1135,8 +1142,9 @@ Device Input and Output Statements
   documentation in the open modes, aux
   values and device names.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
 **Print strings and numbers to a file**  
 **PRINT #_iochn_, ... / ?**
@@ -1200,13 +1208,13 @@ General Statements
   fixes length with the values given.
 
   The array name should not be used
-  before, and type can be "BYTE"
-  (abbreviated "B.") or "WORD"
-  (abbreviated "W.").
+  before, and type can be `BYTE`
+  (abbreviated `B.`) or `WORD`
+  (abbreviated `W.`).
 
-  If you end the DATA statement with a
-  comma, the following line must be
-  another DATA statement without the
+  If you end the `DATA` statement with
+  a comma, the following line must be
+  another `DATA` statement without the
   array name, and so on until the last
   line.
 
@@ -1230,12 +1238,12 @@ General Statements
 **Allocate an array**  
 **DIM _arr_(_size_) [type], .../ DI.**
 
-  The DIM statement allows defining
+  The `DIM` statement allows defining
   arrays of specified length.
 
-  The type must be "BYTE" (abbreviated
-  "B.") to define a byte array, with
-  numbers from 0 to 255, or "WORD" (can
+  The type must be `BYTE` (abbreviated
+  `B.`) to define a byte array, with
+  numbers from 0 to 255, or `WORD` (can
   be left out) to define an array with
   integers from -32768 to 32767.
 
@@ -1248,10 +1256,10 @@ General Statements
   numerated from 0, so that an array of
   size 10 holds values from 0 to 9.
 
-  You can DIM more than one array by
+  You can `DIM` more than one array by
   separating the names with commas.
 
-  The array is cleared after the "DIM",
+  The array is cleared after the `DIM`,
   so all elements are 0 or an empty
   string.
 
@@ -1335,25 +1343,25 @@ modify memory. Use with care.
   Copies _length_ bytes in memory at
   address _from_ to address _to_.
 
-  The MOVE version copies from the
+  The `MOVE` version copies from the
   lower address to the upper address,
-  the -MOVE version copies from upper
+  the `-MOVE` version copies from upper
   address to lower address.
 
   The difference of the two statements
   is in case the memory ranges overlap,
   if _from_ is lower in memory than
-  _to_, you need to use -MOVE, else you
-  need to use MOVE, otherwise the
+  _to_, you need to use `-MOVE`, else
+  you need to use `MOVE`, otherwise the
   result will no be a copy.
 
-  MOVE a, b, c is equivalent to:
+  `MOVE a, b, c` is equivalent to:
 
       FOR I=0 to c-1
         POKE b+I, PEEK(a+I)
       NEXT I
 
-  but -MOVE a, b, c is instead:
+  but `-MOVE a, b, c` is instead:
 
       FOR I=c-1 to 0 STEP -1
         POKE b+I, PEEK(a+I)
