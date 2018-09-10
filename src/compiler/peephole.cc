@@ -668,17 +668,18 @@ class peephole
                         ins_tok(13, TOK_ADD);
                         continue;
                     }
-                    // ASC( STRING[i,X (>=1) ] ) -> PEEK( ADR(STRING) + i + 1 )
+                    // ASC( STRING[i,X (>=1) ] ) -> PEEK( ADR(STRING) + i )
                     //
                     //   TOK_NUM / X (>=1) / TOK_STR_IDX /
                     //   TOK_NUM / Y (<=X) / TOK_ADD / TOK_PEEK
                     //      ->
-                    //   TOK_ADD / TOK_NUM / Y / TOK_ADD / TOK_PEEK
+                    //   TOK_ADD / TOK_NUM / Y - 1 / TOK_ADD / TOK_PEEK
                     if( mtok(0, TOK_NUM) && mword(1) && (val(1)>0) && mtok(2, TOK_STR_IDX) &&
                         mtok(3, TOK_NUM) && mword(4) && (val(4)<=val(1)) &&
-                        mtok(5, TOK_ADD) && mtok(6, TOK_PEEK) )
+                        (val(4)>=1) && mtok(5, TOK_ADD) && mtok(6, TOK_PEEK) )
                     {
                         set_tok(2, TOK_ADD);
+                        set_w(4, val(4) - 1);
                         del(1); del(0);
                         continue;
                     }
