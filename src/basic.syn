@@ -56,7 +56,7 @@ TOKENS {
  # Arrays
  TOK_DIM, TOK_USHL
  # Strings
- TOK_COPY_STR, TOK_VAL, TOK_CMP_STR, TOK_INT_STR, TOK_STR_IDX, TOK_CAT_STR
+ TOK_COPY_STR, TOK_VAL, TOK_CMP_STR, TOK_INT_STR, TOK_STR_IDX, TOK_CAT_STR, TOK_CHR
  # Sound off - could be implemented as simple POKE expressions, but it's shorter this way
  TOK_SOUND_OFF
  TOK_PAUSE
@@ -315,6 +315,7 @@ STR_EXPR_BASE:
         # Either, a constant string
         "\"" emit TOK_CSTRING E_CONST_STRING
         # Or a string function
+        "CHR$" PAR_EXPR emit TOK_CHR
         "STR$" PAR_EXPR emit TOK_INT_STR
 #@if FASTBASIC_FP
         "STR$" FP_PAR_EXPR emit TOK_FP_STR

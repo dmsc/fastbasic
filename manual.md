@@ -656,6 +656,10 @@ String functions
                overwritten each time it
                is called.
 
+- CHR$(_num_): Converts _num_ to a one
+               character string with
+               the ATASCII value.
+
 
 Low level Functions
 -------------------

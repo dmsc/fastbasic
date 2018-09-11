@@ -115,6 +115,7 @@ COMMON_AS_SRC=\
     src/interp/cdata.asm\
     src/interp/cjump.asm\
     src/interp/close.asm\
+    src/interp/chr.asm\
     src/interp/cmpstr.asm\
     src/interp/comp0.asm\
     src/interp/const.asm\
