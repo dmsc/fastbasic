@@ -31,7 +31,7 @@
         .export int_to_fp, fp_to_str
 .endif
         .import neg_AX
-        .importzp next_instruction, tmp1
+        .importzp next_instruction
 
 
         .segment        "RUNTIME"
@@ -50,8 +50,8 @@ EXE_INT_STR:          ; AX = STRING( AX )
 int_to_fp:
 FR0     = $D4
 IFP     = $D9AA
-        stx     tmp1
         cpx     #$80
+        php                     ; Store sign in C
         bcc     positive
         jsr     neg_AX
 positive:
@@ -60,7 +60,7 @@ positive:
         jsr     IFP
 
         asl     FR0
-        asl     tmp1
+        plp                     ; Get sign and store in FR0
         ror     FR0
 
 .ifdef  FASTBASIC_FP

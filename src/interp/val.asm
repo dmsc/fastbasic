@@ -68,8 +68,7 @@ SKBLANK = $DBA1
         cmp     #'-'
         bne     convert
 
-        iny
-        jsr     convert
+        jsr     skip
         php
         jsr     neg_AX
         plp
