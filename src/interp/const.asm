@@ -51,9 +51,8 @@
 
 .proc   EXE_BYTE  ; AX = read 1 byte from op
         jsr     pushAX
-        ldy     #0
-        lda     (cptr), y
         ldx     #0
+        lda     (cptr, x)
         inc     cptr
         beq     inc_cptr_1
         jmp     next_instruction
