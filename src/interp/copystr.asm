@@ -40,6 +40,7 @@
         .segment        "RUNTIME"
 
 ; Store source and destination pointers, allocating destination string if needed.
+; Returns Y=0
 .proc   get_pointers
         ; Store source pointer
         sta     tmp3
@@ -49,13 +50,17 @@
         sta     tmp1
         lda     stack_h, y
         sta     tmp1+1
-        ldy     #0
+        ldy     #1
+        lda     (tmp1), y
+        beq     alloc
+
+        sta     tmp2+1
+        dey
         lda     (tmp1), y
         sta     tmp2
-        iny
-        lda     (tmp1), y
-        sta     tmp2+1
-        bne     ok
+        rts
+
+alloc:
         ; Copy current memory pointer to the variable
         lda     array_ptr+1
         sta     (tmp1), y
@@ -63,12 +68,9 @@
         lda     array_ptr
         sta     (tmp1), y
         ; Allocate 256 bytes
-        lda     #0
+        tya
         ldx     #1
-        jsr     alloc_array
-ok:
-        ldy     #0
-        rts
+        jmp     alloc_array
 .endproc
 
 ; Copy one string to another, allocating the destination if necessary

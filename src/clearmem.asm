@@ -58,8 +58,9 @@ alloc_size=     tmp1
 .endproc        ; Fall through
 
         ; Allocate space for a new array AX = SIZE
-        ; Returns pointer to allocated memory in TMP2
-        ; Returns size of allocated memory in ALLOC_SIZE
+        ; Returns: pointer to allocated memory in TMP2
+        ;          size of allocated memory in ALLOC_SIZE
+        ;          X=0 and Y=0
 .proc alloc_array
 
         sta     alloc_size
