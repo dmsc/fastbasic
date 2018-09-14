@@ -545,6 +545,7 @@ PARSE_LINE_COMMAND:
         "GEt" GETK_EXPR
         "GEt" IO_CHAN_COMMA GET_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT
+        "CLS" IO_CHAN_OPT emit TOK_BYTE emit CLS emit TOK_PUT
         "Poke"  EXPR_2 emit TOK_POKE
         "Dpoke" EXPR_2 emit TOK_DPOKE
         "Move"  EXPR_2 "," EXPR emit TOK_MOVE

@@ -804,6 +804,15 @@ Console Print and Input Statements
   given by it's ATASCI code.
 
 
+**Clears the screen**  
+**CLS**
+
+  Clears the text screen. This is the
+  same as `PUT 125`.
+  For clearing the graphics screen, you
+  can use `CLS #6`.
+
+
 Control Statements
 ------------------
 

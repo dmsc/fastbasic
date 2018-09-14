@@ -544,7 +544,7 @@ PROC RedrawScreen
   next y
 
   ' Draw all screen lines
-  put 125
+  cls
   exec ShowInfo
   hdraw = 0
   y = 0
@@ -799,7 +799,7 @@ PROC ProcessKeys
     elif key = $11
       exec AskSaveFileChanged
       if not key
-        put 125
+        cls
         end
       endif
     '
