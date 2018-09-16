@@ -567,7 +567,7 @@ PARSE_LINE_COMMAND:
         "Color" emit TOK_BYTE emit COLOR EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
         "POSition" POSITION
-        "PLot" POSITION emit TOK_PLOT
+        "PLot" POSITION emit TOK_BYTE emit COLOR emit TOK_PEEK emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
         "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD "," EXPR_AB emit TOK_POKE

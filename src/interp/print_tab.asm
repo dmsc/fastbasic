@@ -28,7 +28,7 @@
 ; ---------------------------------------------
 
         ; From runtime.asm
-        .import         putc
+        .import         putspc
         .importzp       tabpos
         ; From interpreter.asm
         .import         pop_stack, pushAX
@@ -37,9 +37,8 @@
 
 .proc   EXE_PRINT_TAB   ; PRINT TAB
         jsr     pushAX
-        lda     #$20
-        jsr     putc
-:       jsr     putc
+        jsr     putspc
+:       jsr     putspc
         ldx     tabpos
         bne     :-
         jmp     pop_stack

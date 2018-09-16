@@ -27,11 +27,11 @@
 ; PUT character or PUT EOL
 ; ------------------------
 
-        .import CIOV_IOCHN0_POP
+        .import CIOV_IOERR_POP
 
         ; From runtime.asm
-        .import         putc
-        .importzp       tabpos
+        .import         putc_nosave
+        .importzp       tabpos, IOCHN
         ; From interpreter.asm
         .import         pushAX
 
@@ -40,15 +40,21 @@
 EXE_PRINT_EOL:          ; PRINT EOL
         jsr     pushAX
         ; Reset tab position
-        lda     #1
+        lda     #0
         sta     tabpos
         lda     #$9b
 EXE_PUT:                ; PUT character
-        jsr     putc
-        jmp     CIOV_IOCHN0_POP
+        jsr     putc_nosave
+        jmp     CIOV_IOERR_POP
+
+EXE_PLOT:
+        ldx     #$60    ; IOCB #6
+        stx     IOCHN
+        bne     EXE_PUT
 
         .include "../deftok.inc"
         deftoken "PRINT_EOL"
         deftoken "PUT"
+        deftoken "PLOT"
 
 ; vi:syntax=asm_ca65

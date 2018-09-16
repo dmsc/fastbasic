@@ -27,7 +27,7 @@
 ; DRAWTO and FILLTO
 ; -----------------
 
-        .import CIOV_POP
+        .import CIOV_CMD_POP
 
         ; From interpreter.asm
         .importzp       COLOR, sptr
@@ -37,11 +37,10 @@
         .segment        "RUNTIME"
 
 .proc   EXE_DRAWTO
+        ldx     COLOR
+        stx     ATACHR
         ldx     #$60    ; IOCB #6
-        sta     ICCOM, x
-        lda     COLOR
-        sta     ATACHR
-        jmp     CIOV_POP
+        jmp     CIOV_CMD_POP
 .endproc
 
         .include "../deftok.inc"
