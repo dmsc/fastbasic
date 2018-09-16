@@ -41,7 +41,7 @@ TOKENS {
  # Low level statements
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_INC, TOK_DEC
  # Graphic support statements
- TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO, TOK_FILLTO
+ TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # Print statements
  TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
  # I/O
@@ -568,8 +568,8 @@ PARSE_LINE_COMMAND:
         "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
-        "DRawto" POSITION emit TOK_DRAWTO
-        "FIllto" POSITION emit TOK_FILLTO
+        "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
+        "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
         "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD "," EXPR_AB emit TOK_POKE
         "Sound" SOUND
         "DIm" DIM_VAR DIM_MORE

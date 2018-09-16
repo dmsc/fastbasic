@@ -30,33 +30,21 @@
         .import CIOV_POP
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       COLOR, sptr
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
-EXE_FILLTO:
-        ldy     #FILLIN
-        .byte   $2C   ; Skip 2 bytes over next "LDY"
 .proc   EXE_DRAWTO
-        ldy     #DRAWLN
-        sty     ICCOM+$60
-        ldy     sptr
-        jsr     pushAX
+        ldx     #$60    ; IOCB #6
+        sta     ICCOM, x
         lda     COLOR
         sta     ATACHR
-        ldx     #$60    ; IOCB #6
-        lda     #$0C
-        sta     ICAX1, x
-        lda     #$00
-        sta     ICAX2, x
         jmp     CIOV_POP
 .endproc
 
         .include "../deftok.inc"
         deftoken "DRAWTO"
-        deftoken "FILLTO"
 
 ; vi:syntax=asm_ca65

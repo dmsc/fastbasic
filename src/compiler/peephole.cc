@@ -245,7 +245,6 @@ class peephole
                          mtok(0, TOK_BPUT) ||
                          mtok(0, TOK_BGET) ||
                          mtok(0, TOK_DRAWTO) ||
-                         mtok(0, TOK_FILLTO) ||
                          mtok(0, TOK_GRAPHICS) ||
                          mtok(0, TOK_PLOT) ||
                          mtok(0, TOK_PRINT_EOL) ||
