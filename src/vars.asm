@@ -183,12 +183,12 @@ next:
         lda     (name),y
         jsr     check_char
         bcc     next
-end:
-        sty     len
-        rts
+
+        .byte   $2C     ; Skips two PLA
 exit_2:
         pla
         pla
+        sty     len
         sec
         rts
 .endproc
@@ -203,6 +203,7 @@ exit_2:
         sta     var+1
         ; Allocate memory for name
         lda     len
+        beq     var_getlen::exit_2
         clc
         adc     #2
         jsr     alloc_area_8
