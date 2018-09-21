@@ -174,21 +174,24 @@ not_found:
 .proc   var_getlen
         ; Skips spaces
         jsr     parser_skipws
+        ; Checks first character - most times we don't need to search anything else
+        lda     (INBUFF), y
+        jsr     check_char::first
+
+        tya
+        ldy     #0
+        bcs     exit_2
+
+        ; Ok, we have at least one character
+
         ; Pointer with var name to "name"
-        lda     INBUFF
-        clc
-        adc     CIX
+        adc     INBUFF
         sta     name
         lda     INBUFF+1
         adc     #0
         sta     name+1
 
-        ; Start checking
-        ldy     #0
-        ; Read the first character
-        lda     (name),y
-        jsr     check_char::first
-        bcs     exit_2
+        ; Check rest of characters
 next:
         iny
         lda     (name),y
