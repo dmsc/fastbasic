@@ -397,37 +397,15 @@ exit:
         .assert VT_FLOAT & 128 , error, "VT_FLOAT must be > 127"
         bpl     no_float        ; float is > 127
 
-        ; FP variable, allocate two more "invisible" variables
-        ; to adjust to 6 bytes size.
-        ldx     #var_ptr - prog_ptr
-        lda     #4
-        jsr     alloc_area_8
-        bcs     xit
-
-        ; Increment variable count
+        ; Increment variable count to allocate 4 more bytes
         inc     var_count
         inc     var_count
-
-        ; Fill with $80
-        dec     var_ptr+1
-        lda     #$80
-        tay
-
-:       dey
-        sta     (var_ptr), y
-        cpy     #$FB
-        bne     :-
-
-        .assert VT_FLOAT = $FB , error, "VT_FLOAT must be $FB"
-        tya     ; lda #VT_FLOAT
-        bne     set_type
 
 no_float:
 .endif ; FASTBASIC_FP
 
         ldy     #$FF
         dec     var_ptr+1
-set_type:
         sta     (var_ptr), y    ; Store to (var_ptr - 1)
         inc     var_ptr+1
 

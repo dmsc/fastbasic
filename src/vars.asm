@@ -135,7 +135,21 @@ skip_var:
         asl
         iny
         bcc     skip_var
+
 next_var:
+
+.ifdef FASTBASIC_FP
+        .importzp       VT_FLOAT
+        ; Check if variable is FP and add two to the number, this allocates
+        ; 6 bytes to the variable at runtime.
+        lda     (var), y        ; Get type
+        .assert VT_FLOAT & 128 , error, "VT_FLOAT must be > 127"
+        bpl     no_float        ; float is > 127
+        inx
+        inx
+no_float:
+.endif
+
         tya
         sec
         adc     var
