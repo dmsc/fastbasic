@@ -408,9 +408,9 @@ exit:
         inc     var_count
         inc     var_count
 
-        ; Fill with 0
+        ; Fill with $80
         dec     var_ptr+1
-        lda     #0
+        lda     #$80
         tay
 
 :       dey

@@ -32,11 +32,9 @@
 
 
 ; Each variable is stored in the list as:
-;   1 byte:   length of name in bytes
-;   N bytes:  variable name
+;   N bytes:  variable name, last char +$80
 ;   1 byte:   variable type
-; To find a variable, we simply walk the list by adding the length
-; to each name.
+; To find a variable, we simply walk the list skipping the types.
 
 
 ; Parsing pointers:
@@ -82,7 +80,6 @@ char_ok:
         ; Inputs:
         ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   label_search
-        jsr     var_getlen
         ldx     #label_buf - prog_ptr
         ldy     label_count
         bne     list_search
@@ -92,7 +89,6 @@ char_ok:
         ; Inputs:
         ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
 .proc   var_search
-        jsr     var_getlen
         ; Pointer to var list to "var"
         ldx     #var_buf - prog_ptr
         ldy     var_count
@@ -101,11 +97,15 @@ char_ok:
         ; Search a list of names - used for variables or labels
 .proc   list_search
         sty     search_count
+
         ; Pointer to start of var/label list to "var"
         lda     prog_ptr, x
         sta     var
         lda     prog_ptr+1, x
         sta     var+1
+
+        ; Get's the name length, used when creating new variables
+        jsr     var_getlen
 
         ; Variable number
         ldx     #$ff
@@ -113,27 +113,31 @@ char_ok:
 
 search_loop:
 
-        ; Compare lengths
-        ldy     #0
-        lda     (var),y
-        cmp     len
-        bne     next_var_len
-
         ; Compare data
-        tay
+        ldy     #0
 cmp_loop:
         lda     (var), y
-        dey
-        bmi     var_found
-        cmp     (name), y
-        beq     cmp_loop
-next_var:
-        ; Advance pointer to next var
-        ldy     #0
-        lda     (var),y
-next_var_len:
+        eor     (name), y
+        asl
+        bne     skip_var
+        iny
+        bcc     cmp_loop
+        cpy     len
+        bne     next_var
+
+found:
+        lda     (var), y
         clc
-        adc     #2      ; No carry, as len is max 128
+        rts
+
+skip_var:
+        lda     (var), y
+        asl
+        iny
+        bcc     skip_var
+next_var:
+        tya
+        sec
         adc     var
         sta     var
         bcc     :+
@@ -147,13 +151,6 @@ search_start:
 
 not_found:
         sec
-        rts
-
-var_found:      ; Returns variable type in A
-        ldy     len
-        iny
-        lda     (var), y
-        clc
         rts
 .endproc
 
@@ -205,23 +202,28 @@ exit_2:
         lda     len
         beq     var_getlen::exit_2
         clc
-        adc     #2
+        adc     #1
         jsr     alloc_area_8
         bcs     var_getlen::exit_2
-        ; Copy length and name of var/label
-        ldy     #0
-        lda     len
-loop:
-        sta     (var),y
-        lda     (name),y
-        cpy     len
-        iny
-        bcc     loop
+
 
         ; Set type to 0 initially
+        ldy     len
         lda     #0
         sta     (var), y
-        rts
+
+        ; Copy name of var/label
+        dey
+        lda     (name),y
+        eor     #$80
+loop:
+        sta     (var),y
+        dey
+        bmi     end
+        lda     (name),y
+        bpl     loop
+
+end:    rts
 .endproc
 
 ; vi:syntax=asm_ca65
