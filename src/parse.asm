@@ -185,6 +185,7 @@ parse_line:
         inc     linenum+1
 :
 
+.proc   ucase_line
         ; Point parsing buffer pointer to line buffer
         jsr     INTLBUF
 
@@ -193,6 +194,7 @@ parse_line:
 loop:
         iny
         lda     (buf_ptr), y
+loop_redo:
         sta     (bptr), y
         cmp     #$9B
         beq     ucase_end
@@ -203,8 +205,7 @@ loop:
         cmp     #'z'-'a'+1
         bcs     loop
         adc     #'A'
-        sta     (bptr), y
-        bcc     loop
+        bcc     loop_redo
 
 skip_str:
         iny
@@ -215,8 +216,9 @@ skip_str:
         cmp     #$9b
         bne     skip_str
 ucase_end:
+.endproc
 
-        ; Store line length to verify complete parsing
+        ; Point buf_ptr to next line
         tya
         sec
         adc     buf_ptr
@@ -226,7 +228,7 @@ ucase_end:
 :
 
 parse_start:
-        ; Parse line
+        ; Parse statement
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
         lda     #0
@@ -255,6 +257,7 @@ ploop_nofetch:
         bmi     pcall
         cmp     #SM_EMIT_N
         bcs     match_char
+ploop_tax:
         tax
         .assert SM_EXIT = 0, error, "SM_EXIT must be 0"
         beq     pexit_err
@@ -287,8 +290,7 @@ match_char:
 match:
         cmp     (bptr),y
         bne     ploop_nextline
-        iny
-        sty     bpos
+        inc     bpos
         bne     ploop
 
 pcall:
@@ -328,8 +330,8 @@ pexit_ok:
         beq     parse_start
         cmp     #$9B
         bne     set_parse_error
-line_ok:
-        ; Increases output buffer
+
+        ; End parsing of current line
         jmp     parse_line
 
         ; Calls a machine-language subroutine
@@ -347,8 +349,7 @@ skip_chars:
         bmi     ploop_nofetch
         cmp     #SM_EMIT_N
         bcs     skip_chars
-        tax
-        bcc     ploop_nofetch
+        bcc     ploop_tax
 
 call_ax1:
         pha
@@ -383,8 +384,11 @@ ploop_nextline:
         lda     opos
         pha
 
+        ldy     #0
+
 skip_nextline:
-        jsr     parser_fetch
+        iny
+        lda     (pptr),y
         cmp     #SM_EMIT_N      ; Note: comparisons sorted for faster skip
         bcs     skip_nextline
         tax
@@ -397,14 +401,20 @@ skip_nextline:
         .assert SM_ERET = 2, error, "SM_ERET must be 2"
         beq     skip_ret
         .assert SM_EMIT_1 = 3, error, "SM_EMIT_1 must be 3"
-:       jsr     parser_fetch    ; Skip token
+:       iny                     ; Skip token
         dex
         bne     :-
         beq     skip_nextline
 skip_ret:
-        jsr     parser_fetch    ; Skip token and RET
+        iny                     ; Skip token and RET
 go_ploop:
-        jmp     ploop
+        tya
+        clc
+        adc     pptr
+        sta     pptr
+        bcc     :+
+        inc     pptr+1
+:       jmp     ploop
 
 set_parse_error:
         lda     #ERR_PARSE
