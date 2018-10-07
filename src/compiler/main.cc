@@ -181,7 +181,7 @@ int main(int argc, char **argv)
             {
                 std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
                 if( !s.saved_error.empty() )
-                    std::cerr << ", expected " << s.saved_error;
+                    std::cerr << ", " << s.saved_error;
                 std::cerr << "\n";
                 size_t min = 0, max = s.str.length();
                 if( s.max_pos > 40 ) min = s.max_pos - 40;

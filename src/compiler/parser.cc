@@ -78,7 +78,9 @@ class parse {
         {
             if( !jumps.size() )
             {
-                std::cerr << "missing loop start\n";
+                if( type == LT_ELSE || type == LT_ELIF )
+                    type = LT_IF;
+                loop_error("missing " + get_loop_name(type));
                 return std::string();
             }
             auto last = jumps.back();
@@ -86,7 +88,9 @@ class parse {
             {
                 if( type !=  LT_ELSE || last.type != LT_IF )
                 {
-                    std::cerr << "invalid loop type\n";
+                    if( type == LT_ELSE || type == LT_ELIF )
+                        type = LT_IF;
+                    loop_error("missing " + get_loop_name(type));
                     return std::string();
                 }
             }
@@ -127,9 +131,17 @@ class parse {
                 low_error = true;
             else if( !str.empty() )
             {
-                current_error = str;
-                debug( "Set error='" + str + "'" );
+                current_error = "expected " + str;
+                debug( "Set error='" + current_error + "'" );
             }
+        }
+
+        bool loop_error(std::string str)
+        {
+            current_error = str;
+            saved_error = current_error;
+            debug( "Set loop error='" + current_error + "'" );
+            return false;
         }
 
         void restore(saved_pos s)
@@ -593,7 +605,7 @@ static bool SMB_E_EXIT_LOOP(parse &s)
     while(1)
     {
         if( last == 0 )
-            return false;
+            return s.loop_error("EXIT without loop");
         last--;
         auto type = s.jumps[last].type;
         if( type == LT_ELIF || type == LT_IF || type == LT_ELSE || type == LT_FOR_2 || type == LT_WHILE_2 )
