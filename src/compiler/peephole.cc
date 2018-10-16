@@ -336,7 +336,7 @@ class peephole
                                 del(1);
                             }
                         }
-                        else
+                        else if (wlbl(1) != t)
                             set_ws(1, t);
                     }
                 }
