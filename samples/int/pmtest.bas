@@ -9,7 +9,7 @@ poke RAMTOP, MemTop
 
 ' Activate and configure P/M data
 graphics 0
-poke P0Mem, 0 : move P0Mem, P0Mem+1, 127 : ' Clears Memory
+mset P0Mem, 128, 0  ' Clears Memory
 poke PCOLR0, $1F
 poke SDMCTL, Peek(SDMCTL) ! 8
 poke PMBASE, MemTop
@@ -17,7 +17,6 @@ poke GRACTL, 2
 
 ' P/M data and blank (to clear P/M)
 DATA PMdata()  byte = $38,$44,$54,$44,$38
-DATA PMclear() byte = $00,$00,$00,$00,$00
 
 ' Initial Conditions
 xPos = 6400 : yPos = 2560
@@ -35,22 +34,23 @@ repeat
  else
   if xPos <  6400 Then xSpd = -xSpd
  endif
- exec MovePm : ' Move P/M Graphics
+ exec MovePm  ' Move P/M Graphics
 until Key()
 
 ' Restore RAMTOP and SDMCTL
 poke GRACTL, 0
 poke SDMCTL, Peek(SDMCTL) & 247
 poke RAMTOP, MemTop + 4
+graphics 0
 
 END
 
 proc MovePm
  x = xPos / 128 : y = P0Mem + yPos / 128
- poke $D01A,$74 : ' Change background color
+ poke $D01A,$74 ' Change background color
  pause 0
  poke HPOSP0, x
- move adr(PMclear), oldPos, 5
- move adr(PMdata),  y,      5
+ mset oldPos, 5, 0
+ move adr(PMdata), y, 5
  oldPos = y
 endproc

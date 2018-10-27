@@ -85,9 +85,7 @@
     if gbase&960 = 960
       gbase = gbase+256
     endif
-   next y
-  ' Moved here to optimize space, corresponds to the clearing of PM data
-  dpoke pmadr,0
+  next y
 
   ' Adds display list first and last bytes to all DLs
   d = dlist
@@ -104,8 +102,8 @@
     d = d + 88
   next curvature
 
-  ' Sets PM data (continued from above)
-  move pmadr, pmadr+1, 999
+  ' Clears PM data
+  mset pmadr, 999, 0
 
   ' Our car bitmap data for the PM 0 and 1
   data pm1() byte = $18,$18,$18,$3C,$3C,$24,$24,$3C,$00,$18,$18,$3C,$7E,$7E,$00,$FF,$00,$7E,$7E
