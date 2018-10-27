@@ -180,8 +180,18 @@ int main(int argc, char **argv)
             if( !SMB_PARSE_START(s) || ( s.pos != line.length() && !s.peek(':') )  )
             {
                 std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
-                if( !s.saved_error.empty() )
-                    std::cerr << ", " << s.saved_error;
+                if( !s.saved_errors.empty() )
+                {
+                    std::cerr << ", expected: ";
+                    bool first = true;
+                    for(const auto &i: s.saved_errors)
+                    {
+                        if( !first )
+                            std::cerr << ", ";
+                        std::cerr << i;
+                        first = false;
+                    }
+                }
                 std::cerr << "\n";
                 size_t min = 0, max = s.str.length();
                 if( s.max_pos > 40 ) min = s.max_pos - 40;

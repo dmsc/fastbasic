@@ -19,6 +19,7 @@
 // parser.cc: C++ parser
 
 #include <string>
+#include <algorithm>
 
 #include "codew.h"
 
@@ -38,9 +39,7 @@ class parse {
         std::string str;
         size_t pos;
         size_t max_pos;
-        bool low_error;
-        std::string current_error;
-        std::string saved_error;
+        std::vector<std::string> saved_errors;
         int linenum;
         std::map<std::string, std::vector<codew>> procs;
         std::map<std::string, int> vars;
@@ -52,7 +51,7 @@ class parse {
 
         parse():
             lvl(0), maxlvl(0), pos(0),
-            max_pos(0), low_error(false), label_num(0),
+            max_pos(0), label_num(0),
             finalized(false),
             code(&procs[std::string()]) { }
 
@@ -117,6 +116,7 @@ class parse {
         {
             pos = max_pos = 0;
             str = l;
+            saved_errors.clear();
             linenum = ln;
         }
 
@@ -127,33 +127,41 @@ class parse {
 
         void error(std::string str)
         {
-            if( str == "&LOW_ERROR" )
-                low_error = true;
-            else if( !str.empty() )
+            if( !str.empty() )
             {
-                current_error = "expected " + str;
-                debug( "Set error='" + current_error + "'" );
+                if( pos >= max_pos )
+                {
+                    debug( "Set error='" + str + "' "
+                           "at pos='" + std::to_string(pos) + "' "
+                           "mp='" + std::to_string(max_pos) + "'"  );
+                    if( pos > max_pos )
+                    {
+                        debug( "ERROR SAVED" );
+                        saved_errors.clear();
+                    }
+                    else
+                        debug( "ERROR ADDED" );
+                    if( saved_errors.end() == std::find(saved_errors.begin(), saved_errors.end(), str) )
+                        saved_errors.push_back(str);
+                    max_pos = pos;
+                }
             }
         }
 
         bool loop_error(std::string str)
         {
-            current_error = str;
-            saved_error = current_error;
-            debug( "Set loop error='" + current_error + "'" );
+            // Loop error takes precedence over all other errors
+            saved_errors.clear();
+            saved_errors.push_back(str);
+            debug( "Set loop error='" + str + "'" );
             return false;
         }
 
         void restore(saved_pos s)
         {
-            if( pos >= max_pos )
+            if( pos > max_pos )
             {
-                if( !current_error.empty() &&
-                    ( !low_error || pos > max_pos || saved_error.empty() ) )
-                {
-                    debug("save error='" + current_error + "'");
-                    saved_error = current_error;
-                }
+                debug("error, pos > max_pos ?!?!?");
                 max_pos = pos;
             }
             pos = s.pos;
@@ -261,11 +269,6 @@ class parse {
                     pos ++;
                     return true;
                 }
-            }
-            if( c == ',' )
-            {
-                current_error = "comma";
-                debug( "Set error='" + current_error + "'" );
             }
             return false;
         }

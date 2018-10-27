@@ -90,20 +90,20 @@ EXTERN {
 
 # Floating point expressions
 #@if FASTBASIC_FP
-FP_EXPR: floating point expression
+FP_EXPR:
         FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
 
-FP_EXPR_MORE:
+FP_EXPR_MORE: '+', '-'
         "+" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_ADD FP_EXPR_MORE
         "-" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_SUB FP_EXPR_MORE
         pass
 
-FP_M_EXPR_MORE:
+FP_M_EXPR_MORE: '*', '/'
         "*" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_MUL FP_M_EXPR_MORE
         "/" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_DIV FP_M_EXPR_MORE
         pass
 
-FP_E_EXPR_MORE:
+FP_E_EXPR_MORE: '^'
         "^" T_EXPR emit TOK_FP_IPOW FP_E_EXPR_MORE
         "^" emit TOK_FP_LOG10 FP_T_EXPR emit TOK_FP_MUL emit TOK_FP_EXP10 FP_E_EXPR_MORE
         pass
@@ -137,18 +137,18 @@ FP_PAR_EXPR: left parenthesis
 INT_EXPR: integer expression
 	T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
 
-INT_EXPR_MORE:
+INT_EXPR_MORE: '+', '-'
 	"+" T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_ADD INT_EXPR_MORE
 	"-" T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_SUB INT_EXPR_MORE
         pass
 
-M_EXPR_MORE:
+M_EXPR_MORE: '*', '/', 'MOD'
 	"*"   T_EXPR BIT_EXPR_MORE emit TOK_MUL M_EXPR_MORE
 	"/"   T_EXPR BIT_EXPR_MORE emit TOK_DIV M_EXPR_MORE
 	"MOD" T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
         pass
 
-BIT_EXPR_MORE:
+BIT_EXPR_MORE: '&', '!', 'EXOR'
         "&"    T_EXPR emit TOK_BIT_AND  BIT_EXPR_MORE
         "!"    T_EXPR emit TOK_BIT_OR   BIT_EXPR_MORE
         "EXOR" T_EXPR emit TOK_BIT_EXOR BIT_EXPR_MORE
@@ -168,7 +168,7 @@ ADR_EXPR: string or variable
         emit TOK_VAR_LOAD E_VAR_ARRAY_STRING
 
 USR_EXPR_MORE:
-        "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
+        C_EXPR emit TOK_USR_PARAM USR_EXPR_MORE
         pass
 
 T_EXPR: integer constant, variable or function
@@ -242,14 +242,14 @@ EXPR:
 FORCE_BOOL_EXPR:
         NOT_EXPR AND_EXPR_MORE OR_EXPR_MORE
 
-OR_EXPR_RIGHT:
+OR_EXPR_RIGHT: 'OR'
         "OR" NOT_EXPR AND_EXPR_MORE emit TOK_L_OR OR_EXPR_MORE
 
 OR_EXPR_MORE:
         OR_EXPR_RIGHT
         pass
 
-AND_EXPR_RIGHT:
+AND_EXPR_RIGHT: 'AND'
         "AND" NOT_EXPR emit TOK_L_AND AND_EXPR_MORE
 
 AND_EXPR_MORE:
@@ -271,7 +271,7 @@ COMP_OR_BOOL:
 #@endif FASTBASIC_FP
         emit TOK_COMP_0
 
-COMP_EXPR_RIGHT:
+COMP_EXPR_RIGHT: integer comparison operator
         "<=" INT_EXPR emit TOK_GT emit TOK_L_NOT
         ">=" INT_EXPR emit TOK_LT emit TOK_L_NOT
         "<>" INT_EXPR emit TOK_NEQ
@@ -281,7 +281,7 @@ COMP_EXPR_RIGHT:
 
 #@if FASTBASIC_FP
 # FP Comparisons:
-COMP_FP_RIGHT: integer expression
+COMP_FP_RIGHT: floating-point comparison operator
         "="  FP_EXPR emit TOK_FP_CMP emit TOK_EQ
         ">"  FP_EXPR emit TOK_FP_CMP emit TOK_GT
         ">=" FP_EXPR emit TOK_FP_CMP emit TOK_LT emit TOK_L_NOT
@@ -290,7 +290,7 @@ COMP_FP_RIGHT: integer expression
         "<"  FP_EXPR emit TOK_FP_CMP emit TOK_LT
 #@endif FASTBASIC_FP
 
-COMP_STR_RIGHT: integer expression
+COMP_STR_RIGHT: comparison operator
         "="  STR_EXPR emit TOK_CMP_STR emit TOK_EQ
         ">"  STR_EXPR emit TOK_CMP_STR emit TOK_GT
         ">=" STR_EXPR emit TOK_CMP_STR emit TOK_LT emit TOK_L_NOT
@@ -307,7 +307,7 @@ STR_EXPR: string expression
         STR_EXPR_BASE OPT_STR_INDEX
 
 OPT_STR_INDEX:
-        "[" EXPR_2 "]" emit TOK_STR_IDX OPT_STR_INDEX
+        "[" EXPR C_EXPR "]" emit TOK_STR_IDX OPT_STR_INDEX
         "[" EXPR "]" emit TOK_BYTE emit 255 emit TOK_STR_IDX OPT_STR_INDEX
         pass
 
@@ -412,14 +412,14 @@ NEXT_VARNAME:
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
-        emit TOK_BYTE emit COLCRS EXPR "," emit TOK_DPOKE emit TOK_BYTE emit ROWCRS EXPR emit TOK_POKE
+        emit TOK_BYTE emit COLCRS EXPR emit TOK_DPOKE emit TOK_BYTE emit ROWCRS C_EXPR emit TOK_POKE
 
 # SOUND arguments, three possibilities:
 #  SOUND voice, freq, distort, vol
 #  SOUND voice
 #  SOUND
 SOUND:
-        EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD "," EXPR "," EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
+        EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD C_EXPR EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_BYTE emit 3 emit TOK_POKE
         EXPR emit TOK_USHL emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
 
@@ -442,7 +442,7 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        IO_CHAN_COMMA                                    # I/O channel, don't print prompt
+        IO_CHAN ","                                      # I/O channel, don't print prompt
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
         emit TOK_BYTE emit 63 emit TOK_PUT               # Prints a '?' by default
@@ -480,12 +480,8 @@ DIM_VAR: new variable name
 IO_CHAN: I/O channel number
         "#" emit TOK_BYTE emit IOCHN EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_POKE
 
-# Note: we need the version without comma for "CLOSE #*"
-IO_CHAN_COMMA:
-        IO_CHAN ","
-
 IO_CHAN_OPT:
-        IO_CHAN_COMMA
+        IO_CHAN ","
         pass
 
 # Used only for CLS
@@ -500,24 +496,24 @@ GETK_EXPR: variable name
 
 # Get expression
 GET_EXPR: variable name
-        VAR_BYTE_LVALUE emit TOK_GET emit TOK_POKE GET_EXPR_MORE
-        VAR_WORD_LVALUE emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
+        "," VAR_BYTE_LVALUE emit TOK_GET emit TOK_POKE GET_EXPR_MORE
+        "," VAR_WORD_LVALUE emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
 
 GET_EXPR_MORE:
-        "," GET_EXPR
+        GET_EXPR
         emit TOK_IOCHN0
 
-# Get two comma separated expressions "A,B" and returns "A*16+B"
-EXPR_AB:
-        EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL "," EXPR emit TOK_ADD
+# A comma followed by an expression
+C_EXPR: comma followed by an expression
+        "," EXPR
 
-# 2 expressions separated by comma
-EXPR_2:
-        EXPR "," EXPR
+# Get two comma separated expressions ",A,B" and returns "A*16+B"
+EXPR_AB:
+        C_EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL C_EXPR emit TOK_ADD
 
 # Parses a XIO AUX1/AUX2/STRING expression
 XIO_EXPR:
-        EXPR_2 emit TOK_SHL8 emit TOK_ADD "," STR_EXPR emit TOK_XIO
+        C_EXPR C_EXPR emit TOK_SHL8 emit TOK_ADD "," STR_EXPR emit TOK_XIO
 
 # Parses a "DATA" expression, get's binary data in memory
 DATA_WORDS: data word
@@ -548,14 +544,14 @@ PARSE_LINE_COMMAND:
 	"PRint" IO_CHAN_OPT PRINT_EXPR
         "INput" INPUT_STR INPUT_VAR_LIST emit TOK_IOCHN0
         "GEt" GETK_EXPR
-        "GEt" IO_CHAN_COMMA GET_EXPR
+        "GEt" IO_CHAN GET_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT
         "CLS" IO_CHAN_OPT_NOCOMMA emit TOK_BYTE emit CLS emit TOK_PUT
-        "Poke"  EXPR_2 emit TOK_POKE
-        "Dpoke" EXPR_2 emit TOK_DPOKE
-        "MSet"  EXPR_2 "," EXPR emit TOK_MSET
-        "Move"  EXPR_2 "," EXPR emit TOK_MOVE
-        "-move" EXPR_2 "," EXPR emit TOK_NMOVE
+        "Poke"  EXPR C_EXPR emit TOK_POKE
+        "Dpoke" EXPR C_EXPR emit TOK_DPOKE
+        "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET
+        "Move"  EXPR C_EXPR C_EXPR emit TOK_MOVE
+        "-move" EXPR C_EXPR C_EXPR emit TOK_NMOVE
         "DO" emit LT_DO_LOOP E_PUSH_LT
         "Loop" emit TOK_JUMP E_POP_LOOP
         "Repeat" emit LT_REPEAT E_PUSH_LT
@@ -576,14 +572,14 @@ PARSE_LINE_COMMAND:
         "PLot" POSITION emit TOK_BYTE emit COLOR emit TOK_PEEK emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
-        "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD "," EXPR_AB emit TOK_POKE
+        "SEtcolor" EXPR emit TOK_NUM word COLOR0 emit TOK_ADD EXPR_AB emit TOK_POKE
         "Sound" SOUND
         "DIm" DIM_VAR DIM_MORE
         "CLose" IO_CHAN emit TOK_CLOSE
-        "Open" IO_CHAN_COMMA emit TOK_BYTE emit OPEN XIO_EXPR
-        "Xio"  IO_CHAN_COMMA EXPR "," XIO_EXPR
-        "BPut" IO_CHAN_COMMA EXPR_2 emit TOK_BPUT
-        "BGet" IO_CHAN_COMMA EXPR_2 emit TOK_BGET
+        "Open" IO_CHAN emit TOK_BYTE emit OPEN XIO_EXPR
+        "Xio"  IO_CHAN C_EXPR XIO_EXPR
+        "BPut" IO_CHAN C_EXPR C_EXPR emit TOK_BPUT
+        "BGet" IO_CHAN C_EXPR C_EXPR emit TOK_BGET
         "PAuse" EXPR emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE emit TOK_INC
         "DEc" VAR_WORD_LVALUE emit TOK_DEC
@@ -597,7 +593,7 @@ PARSE_LINE_COMMAND:
         "RAd" emit TOK_BYTE emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
 
-PARSE_LINE_ASSIGN: &LOW_ERROR
+PARSE_LINE_ASSIGN:
         VAR_WORD_LVALUE EQUAL EXPR emit TOK_DPOKE
         VAR_BYTE_LVALUE EQUAL EXPR emit TOK_POKE
         VAR_STR_LVALUE EQUAL STR_EXPR emit TOK_COPY_STR
