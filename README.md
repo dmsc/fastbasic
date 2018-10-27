@@ -6,7 +6,7 @@ This is a fast interpreter for the BASIC language on the Atari 8-bit computers.
 The current features are:
 - Support for Atari floating point and 16bit integer variables;
 - Support for string arrays, substrings and concatenation;
-- Small size (currently the full floating point IDE is 9.5k, the integer IDE is 8k, and the runtime is less than 3k);
+- Small size (currently the full floating point IDE is 9.3k, the integer IDE is 8k, and the runtime is less than 3k);
 - Fast execution (currently, about 43% faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 5 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
 - Feels "alike" TurboBasicXL, with many of the extended statements.
