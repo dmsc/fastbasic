@@ -27,7 +27,7 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, alloc_array
+        .export         clear_data, alloc_array, mem_set
 
         .import         move_dwn_src, move_dwn_dst, move_dwn, putc, EXE_END
         .importzp       mem_end, var_buf, tmp1, tmp2, array_ptr, var_count
@@ -83,11 +83,14 @@ alloc_size=     tmp1
         bcs     err_nomem
 
         ; Clears memory from (tmp2) of (alloc_size) size
+        ldy     #0      ; Value to set
+
+::mem_set:
         txa     ; X = (alloc_size+1)
         clc
         adc     tmp2+1
         sta     tmp2+1
-        lda     #0
+        tya
         inx
         ldy     alloc_size
         beq     nxt

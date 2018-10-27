@@ -39,7 +39,7 @@ TOKENS {
  # Convert from int to bool
  TOK_COMP_0
  # Low level statements
- TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_INC, TOK_DEC
+ TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
  # Graphic support statements
  TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # Print statements
@@ -553,6 +553,7 @@ PARSE_LINE_COMMAND:
         "CLS" IO_CHAN_OPT_NOCOMMA emit TOK_BYTE emit CLS emit TOK_PUT
         "Poke"  EXPR_2 emit TOK_POKE
         "Dpoke" EXPR_2 emit TOK_DPOKE
+        "MSet"  EXPR_2 "," EXPR emit TOK_MSET
         "Move"  EXPR_2 "," EXPR emit TOK_MOVE
         "-move" EXPR_2 "," EXPR emit TOK_NMOVE
         "DO" emit LT_DO_LOOP E_PUSH_LT

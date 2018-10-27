@@ -1381,6 +1381,23 @@ modify memory. Use with care.
       NEXT I
 
 
+**Sets memory to a value**  
+**MSET _address_, _length_, _value_ / MS.**  
+
+  Writes _length_ bytes in memory at
+  given _address_ with _value_.
+
+  This is useful to clear graphics
+  or P/M data, or simply to set an
+  string to a repeated value.
+
+  `MSET a, b, c` is equivalent to:
+
+      FOR I=0 to b-1
+        POKE a+I, c
+      NEXT I
+
+
 **Writes a byte to memory**  
 **POKE _address_, _value_ / P.**
 

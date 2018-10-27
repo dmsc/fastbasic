@@ -140,6 +140,7 @@ COMMON_AS_SRC=\
     src/interp/lnot.asm\
     src/interp/lor.asm\
     src/interp/move.asm\
+    src/interp/mset.asm\
     src/interp/mul.asm\
     src/interp/negax.asm\
     src/interp/nmove.asm\
