@@ -160,10 +160,9 @@ class parse {
         void restore(saved_pos s)
         {
             if( pos > max_pos )
-            {
                 debug("error, pos > max_pos ?!?!?");
-                max_pos = pos;
-            }
+            if( pos != s.pos )
+                debug("restore pos=" + std::to_string(pos) + " <= " + std::to_string(s.pos));
             pos = s.pos;
             code->resize(s.opos);
         }
@@ -270,6 +269,11 @@ class parse {
                     return true;
                 }
             }
+            // Add left parenthesis as possible error, provides better messages
+            if (c == ')')
+                error("right parenthesis");
+            else if (c == ']')
+                error("right bracket");
             return false;
         }
         bool eol()
