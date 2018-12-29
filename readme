@@ -2,8 +2,10 @@
 ­­­  ΖαστΒασιγ  ­  βω δνσγ ­­­
 ••••••••••••••••••••••••••••••
 
-Type FB to load the standard IDE,
-or FBI to load the integer IDE.
+Type:
+ FB  for the standard IDE,
+ FBI for the integer IDE,
+ FBC for the command line compiler.
 
 See MANUAL.TXT for the full manual.
 

@@ -71,6 +71,7 @@ TEST_BAS=\
 # Output files inside the ATR
 FILES=\
     disk/fb.com \
+    disk/fbc.com \
     disk/fbi.com \
     disk/readme \
     disk/manual.txt \
@@ -91,13 +92,20 @@ DOS=\
 RT_AS_SRC=\
     src/standalone.asm\
 
-# ASM files used in the IDE
-IDE_AS_SRC=\
+# ASM files used in the IDE and Command Line compiler
+COMPILER_AS_SRC=\
     src/actions.asm\
     src/errors.asm\
-    src/menu.asm\
     src/parse.asm\
     src/vars.asm\
+
+# ASM files used in the IDE
+IDE_AS_SRC=$(COMPILER_AS_SRC)\
+    src/menu.asm\
+
+# ASM files used in the Command Line compiler
+CMD_AS_SRC=$(COMPILER_AS_SRC)\
+    src/cmdmenu.asm\
 
 # Common ASM files
 COMMON_AS_SRC=\
@@ -198,19 +206,25 @@ FP_AS_SRC=\
     src/interp/fpmain.asm\
 
 # BAS editor source
-BAS_SRC=\
+IDE_BAS_SRC=\
     src/editor.bas\
+
+# BAS command line source
+CMD_BAS_SRC=\
+    src/cmdline.bas\
 
 # Object files
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=obj/fp/%.o)
 IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=obj/fp/%.o)
+CMD_OBJS_FP=$(CMD_AS_SRC:src/%.asm=obj/fp/%.o)
 COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o) $(FP_AS_SRC:src/%.asm=obj/fp/%.o)
-BAS_OBJS_FP=$(BAS_SRC:src/%.bas=obj/fp/%.o)
+IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=obj/fp/%.o)
+CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:src/%.bas=obj/fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=obj/int/%.o)
 COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=obj/int/%.o)
-BAS_OBJS_INT=$(BAS_SRC:src/%.bas=obj/int/%.o)
+IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
 
 # Compiler library files
@@ -227,8 +241,8 @@ COMPILER=\
 	 compiler/MANUAL.md\
 
 # All Output files
-OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) \
-     $(RT_OBJS_INT) $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) \
+OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) $(CMD_BAS_OBSJ_FP) \
+     $(RT_OBJS_INT) $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) \
      $(SAMP_OBJS)
 LSTS=$(OBJS:%.o=%.lst)
 
@@ -249,8 +263,9 @@ distclean: clean
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
 	    gen/int/basic.inc  gen/fp/basic.inc  \
-	    $(BAS_SRC:src/%.bas=gen/fp/%.asm) \
-	    $(BAS_SRC:src/%.bas=gen/int/%.asm) \
+	    $(IDE_BAS_SRC:src/%.bas=gen/fp/%.asm) \
+	    $(CMD_BAS_SRC:src/%.bas=gen/fp/%.asm) \
+	    $(IDE_BAS_SRC:src/%.bas=gen/int/%.asm) \
 	    $(SAMPLE_BAS:%.bas=gen/%.asm) \
 	    $(NATIVES)
 	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
@@ -336,10 +351,13 @@ gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
 	$(CSYNT) $(SYNTFLAGS) $< -o $@
 
 # Main program file
-bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(BAS_OBJS_FP) | bin
+bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(BAS_OBJS_INT) | bin
+bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | bin
+	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+
+bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files

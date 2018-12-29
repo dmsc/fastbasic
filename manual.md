@@ -33,13 +33,15 @@ Currently, FastBasic support:
   extensions from Turbo Basic.
 - All control flow structures from
   Atari Basic and Turbo Basic.
-- Minimal string support.
-- Arrays with "word" and "byte" types.
+- Automatic string variables of up to
+  255 characters.
+- Arrays of "word", "byte" and strings.
 - User defined procedures.
 - Compilation to binary loadable files.
-- Available as a full version `FB.COM`
-  and also as a smaller integer-only
-  `FBI.COM`.
+- Available as a full version `FB.COM`,
+  as a smaller integer-only `FBI.COM`
+  and as a command-line compiler
+  `FBC.COM`.
 
 
 First Steps
@@ -159,6 +161,14 @@ extension in some DOS.
 Compiled programs include the full
 runtime, so you can distribute them
 alone without the IDE.
+
+You can also compile a program directly
+from DOS by using the included command
+line compiler `FBC.COM`. The compiler
+prompts for the input file name, loads
+the BASIC source, compiles it and
+prompts for a executable output file
+name to write the compiled program.
 
 
 About the syntax
