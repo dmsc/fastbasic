@@ -64,6 +64,7 @@ class codew {
                 ret += "\"";
             return ret;
         }
+        codew() {};
     public:
         static codew ctok(enum tokens t, int lnum)
         {

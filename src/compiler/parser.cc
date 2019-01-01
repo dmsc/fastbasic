@@ -51,7 +51,7 @@ class parse {
 
         parse():
             lvl(0), maxlvl(0), pos(0),
-            max_pos(0), label_num(0),
+            max_pos(0), linenum(0), label_num(0),
             finalized(false),
             code(&procs[std::string()]) { }
 
@@ -164,7 +164,7 @@ class parse {
             if( pos != s.pos )
                 debug("restore pos=" + std::to_string(pos) + " <= " + std::to_string(s.pos));
             pos = s.pos;
-            code->resize(s.opos);
+            code->resize(s.opos, codew::ctok(TOK_END, 0));
         }
 
         codew remove_last()
