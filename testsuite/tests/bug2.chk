@@ -1,0 +1,8 @@
+Name: Check floating-point STR$ function
+Test: run-fp
+Output:
+123
+123
+3
+123
+3

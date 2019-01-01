@@ -1,0 +1,130 @@
+Name: Check string indexing
+Test: run
+Output:
+EST.STRING INDEXING
+T.STRING
+
+T.STRING INDEXING
+TEST.STRING INDEXING
+TEST.STRING INDEXING
+TEST.
+EST.STRING INDEXING
+EST.S
+NG INDEXING
+1         >TEST.STRING INDEXING<
+2         >EST.STRING INDEXING<
+3         >ST.STRING INDEXING<
+4         >T.STRING INDEXING<
+5         >.STRING INDEXING<
+6         >STRING INDEXING<
+7         >TRING INDEXING<
+8         >RING INDEXING<
+9         >ING INDEXING<
+10        >NG INDEXING<
+11        >G INDEXING<
+12        > INDEXING<
+13        >INDEXING<
+14        >NDEXING<
+15        >DEXING<
+16        >EXING<
+17        >XING<
+18        >ING<
+19        >NG<
+20        >G<
+21        ><
+22        ><
+1         >TE<
+2         >ES<
+3         >ST<
+4         >T.<
+5         >.S<
+6         >ST<
+7         >TR<
+8         >RI<
+9         >IN<
+10        >NG<
+11        >G <
+12        > I<
+13        >IN<
+14        >ND<
+15        >DE<
+16        >EX<
+17        >XI<
+18        >IN<
+19        >NG<
+20        >G<
+21        ><
+22        ><
+0         ><
+1         >E<
+2         >ES<
+3         >EST<
+4         >EST.<
+5         >EST.S<
+6         >EST.ST<
+7         >EST.STR<
+8         >EST.STRI<
+9         >EST.STRIN<
+10        >EST.STRING<
+11        >EST.STRING <
+12        >EST.STRING I<
+13        >EST.STRING IN<
+14        >EST.STRING IND<
+15        >EST.STRING INDE<
+16        >EST.STRING INDEX<
+17        >EST.STRING INDEXI<
+18        >EST.STRING INDEXIN<
+19        >EST.STRING INDEXING<
+20        >EST.STRING INDEXING<
+21        >EST.STRING INDEXING<
+22        >EST.STRING INDEXING<
+1         1         
+2         4         
+3         9         
+4         16        6
+5         25        5
+6         36        6
+7         49        9
+8         64        4
+9         81        1
+10        100       0
+11        121       2
+12        144       4
+13        169       6
+14        196       9
+15        225       2
+16        256       5
+17        289       8
+18        324       2
+19        361       6
+20        400       0
+>Sub<
+>41<
+Hola
+Hola y 
+Hola y chao
+Hola y chao-abcde->1
+Hola y chao-abcde->1-abcde->4
+Hola y chao-abcde->1-abcde->4-abcde->9
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400-abcde->441
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400-abcde->441-abcde->484
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400-abcde->441-abcde->484-abcde->529
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400-abcde->441-abcde->484-abcde->529-ab
+Hola y chao-abcde->1-abcde->4-abcde->9-abcde->16-abcde->25-abcde->36-abcde->49-abcde->64-abcde->81-abcde->100-abcde->121-abcde->144-abcde->169-abcde->196-abcde->225-abcde->256-abcde->289-abcde->324-abcde->361-abcde->400-abcde->441-abcde->484-abcde->529-ab

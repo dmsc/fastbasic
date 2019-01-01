@@ -1,0 +1,15 @@
+Name: Check PROC usage
+Test: run
+Output:
+Loop: 0
+Loop: 1
+Loop: 2
+Loop: 3
+Loop: 4
+Skipping 5!
+Loop: 6
+Loop: 7
+Loop: 8
+Loop: 9
+Loop: 10
+-- test --

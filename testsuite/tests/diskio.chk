@@ -1,0 +1,21 @@
+Name: Check D: input/output
+Test: run
+Output:
+Start
+1
+INPUT
+1
+hola
+136
+chao
+1
+BGET 9
+1
+1
+hola
+chaoZZZ
+BGET 32
+136
+1
+hola
+chaoZZZ

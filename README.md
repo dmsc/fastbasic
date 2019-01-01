@@ -60,3 +60,7 @@ To compile the sources, you need:
 
 Then, type make to build all sources to a "fastbasic.xex" file and a "fastbasic.atr" disk image.
 
+There is also a test-suite that tests various source files compiled with the
+Atari compiler and the cross compilers, you can run the test-suite by typing
+`make test`
+

@@ -1,0 +1,5 @@
+Name: Check string array initialization
+Test: run
+Output:
+10:Some Text
+30:More Text

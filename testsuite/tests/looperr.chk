@@ -1,0 +1,2 @@
+Name: Check detection of missing loop end
+Test: compile-error

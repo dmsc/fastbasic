@@ -1,0 +1,82 @@
+Name: Test comparisons
+Test: run-fp
+Output:
+INTEGER TESTS
+1 < : PASS
+2 < : PASS
+3 < : PASS
+1 > : PASS
+2 > : PASS
+3 > : PASS
+1 <=: PASS
+2 <=: PASS
+3 <=: PASS
+1 >=: PASS
+2 >=: PASS
+3 >=: PASS
+1 = : PASS
+2 = : PASS
+3 = : PASS
+1 <>: PASS
+2 <>: PASS
+3 <>: PASS
+FP TESTS
+1 < : PASS
+2 < : PASS
+3 < : PASS
+1 > : PASS
+2 > : PASS
+3 > : PASS
+1 <=: PASS
+2 <=: PASS
+3 <=: PASS
+1 >=: PASS
+2 >=: PASS
+3 >=: PASS
+1 = : PASS
+2 = : PASS
+3 = : PASS
+1 <>: PASS
+2 <>: PASS
+3 <>: PASS
+STR TESTS
+1 < : PASS
+2 < : PASS
+3 < : PASS
+4 < : PASS
+5 < : PASS
+6 < : PASS
+7 < : PASS
+1 > : PASS
+2 > : PASS
+3 > : PASS
+4 > : PASS
+5 > : PASS
+1 <=: PASS
+2 <=: PASS
+3 <=: PASS
+1 >=: PASS
+2 >=: PASS
+3 >=: PASS
+1 = : PASS
+2 = : PASS
+3 = : PASS
+4 = : PASS
+5 = : PASS
+1 <>: PASS
+2 <>: PASS
+3 <>: PASS
+BOOL EXPR TESTS
+AND/OR:  PASS
+OR/AND:  PASS
+NOT/AND: PASS
+NOT/AND: PASS
+NOT/NOT: PASS
+NOT/NOT: PASS
+NOT/NOT: PASS
+NOT/+:   PASS
+(NOT)/+: PASS
+conv:    PASS
+par:     PASS
+> <>:    PASS
+> <>:    PASS

@@ -8,6 +8,9 @@ compiler/fastbasic-fp
 compiler/MANUAL.md
 src/basic.asm
 fastbasic.atr
+testsuite/tests/*.atb
+testsuite/tests/*.asm
+testsuite/fbtest
 *.lib
 .hg/
 .hg*

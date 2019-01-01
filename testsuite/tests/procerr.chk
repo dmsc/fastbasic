@@ -1,0 +1,2 @@
+Name: Check detection of missing PROC
+Test: compile-error

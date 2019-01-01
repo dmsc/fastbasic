@@ -1,0 +1,30 @@
+Name: Check string index optimizations
+Test: run
+Output:
+Hello World
+0
+Hello World
+5
+6
+H         72        72        
+e         101       101       101
+l         108       108       108
+l         108       108       108
+o         111       111       111
+          32        32        32
+W         87        87        87
+o         111       111       111
+r         114       114       114
+l         108       108       108
+d         100       100       100
+72
+101
+108
+108
+111
+32
+87
+111
+114
+108
+100

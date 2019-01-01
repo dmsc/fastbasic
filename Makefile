@@ -61,10 +61,7 @@ SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
 
 # Test programs
 TEST_BAS=\
-    testcmp.bas \
-    testif.bas \
     testio.bas \
-    testloop.bas \
     testproc.bas \
     testusr.bas \
 
@@ -404,6 +401,11 @@ $(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP)
 $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 	rm -f $@
 	ar65 a $@ $^
+
+# Runs the test suite
+.PHONY: test
+test: $(COMPILER) bin/fbc.xex
+	make -C testsuite
 
 # Copy manual to compiler
 compiler/MANUAL.md: manual.md

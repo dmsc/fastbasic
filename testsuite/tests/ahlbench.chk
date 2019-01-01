@@ -1,0 +1,6 @@
+Name: Test floating-point calculations
+Test: run-fp
+Output:
+Accuracy: OK
+Accuracy: OK
+Accuracy: OK

@@ -1,0 +1,4 @@
+Name: Check for error in string comparison
+Test: run
+Output:
+ERROR - EXPECTED
