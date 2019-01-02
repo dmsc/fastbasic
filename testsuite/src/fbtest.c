@@ -89,7 +89,7 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
     else if (e)
     {
         // Prints error message
-        fprintf(stderr, "%s: simulator returned %s at address %04x.",
+        fprintf(stderr, "%s: simulator returned %s at address %04x.\n",
                 xexname, sim65_error_str(s, e), sim65_error_addr(s));
         free(s);
         return -1;

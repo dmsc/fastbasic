@@ -35,7 +35,8 @@
         .importzp       tmp1, tmp2, tmp3
 
         ; From interpreter.asm
-        .import         pop_stack_2, stack_l, stack_h
+        .importzp       next_ins_incsp
+        .import         stack_l, stack_h
 
         .segment        "RUNTIME"
 
@@ -88,7 +89,7 @@ cloop:  lda     (tmp3), y
         sta     (tmp2), y
         dey
         bne     cloop
-xit:    jmp     pop_stack_2
+xit:    jmp     next_ins_incsp
 .endproc
 
 ; Concatenate the source string to the end of the destination string

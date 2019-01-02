@@ -28,29 +28,38 @@
 ; --------------------------------
 
         ; From interpreter.asm
-        .import         pushAX
-        .importzp       next_instruction
+        .importzp       next_instruction, sptr
+        .import         stack_l, stack_h
+        .export         pushXX_set0
 
         .segment        "RUNTIME"
 
-.proc   EXE_1
-        jsr     pushAX
-ret_1:  lda     #1
-ret_0:  ldx     #0
-        jmp     next_instruction
-.endproc
+        ; Pushes X as "comparison return" into stack.
+.proc   pushXX_set0
+        ldy     sptr
+        txa
+        sta     stack_l, y
+        sta     stack_h, y
+.endproc        ; Fall through
 
 .proc   EXE_0
-        jsr     pushAX
         lda     #0
-        beq     EXE_1::ret_0
+        beq     ret_0   ; Skip next 2 inst
+.endproc
+
+.proc   EXE_1
+::ret_1:
+        lda     #1
+::ret_0:
+        ldx     #0
+        jmp     next_instruction
 .endproc
 
 .proc   EXE_COMP_0  ; AX = AX != 0
         tay
-        bne     EXE_1::ret_1
+        bne     ret_1
         txa
-        bne     EXE_1::ret_1
+        bne     ret_1
         jmp     next_instruction
 .endproc
 

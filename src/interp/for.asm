@@ -43,9 +43,9 @@ EXE_FOR_EXIT    = pop_stack_3
         ;            keeps the address in the stack.
 .proc   EXE_FOR_START
         ; In stack we have:
-        ;       AX = start value
-        ;       y  = var_address
-        dec     sptr    ; Keeps address into stack!
+        ;       AX   = start value
+        ;       (SP) = var_address
+        dec     sptr  ; Keeps address into stack!
         jmp     EXE_DPOKE
 .endproc
 
@@ -60,24 +60,23 @@ EXE_FOR_EXIT    = pop_stack_3
 .proc   EXE_FOR_NEXT
         clc     ; Clear carry for ADC
 
-        ; Store STEP into stack (and also to temporary)
-        pha
-        stx     tmp2+1
-        jsr     pushAX
-
         ; In stack we have:
-        ;      sptr     y-1 = step
-        ;      sptr+1   y   = limit
-        ;      sptr+2   y+1 = var_address
+        ;      sptr     y   = step
+        ;      sptr+1   y+1 = limit
+        ;      sptr+2   y+2 = var_address
         ; Read variable address value
-        lda     stack_h+1, y
+        lda     stack_h+2, y
         sta     tmp3+1
-        lda     stack_l+1, y
+        lda     stack_l+2, y
         sta     tmp3
 
         ; Adds STEP to VAR if not in first iteration
+        lda     stack_l, y
+        ldx     stack_h, y
+        ; Store SIGN bit to temporary
+        php
+
         ldy     #0
-        pla
 
         bcc     do_add
         ; Set AX to -1 to skip the ADD (as we also add C=1)
@@ -114,7 +113,7 @@ do_add:
         ;      sptr+2   y+2 = var_address
 
         ; Check sign of STEP
-        bit     tmp2+1
+        plp
         bmi     EXE_GT
 positive:
         ; Fall through

@@ -28,7 +28,8 @@
 ; -----------------------------------
 
         ; From interpreter.asm
-        .import         stack_l, stack_h, pop_stack_2
+        .import         stack_l, stack_h
+        .importzp       pop_stack
         ; From runtime.asm
         .importzp       tmp1
 
@@ -57,7 +58,7 @@ save_h: sta     $FF01, x
         pla
 save_l: sta     $FF00, x
 .endif
-        jmp     pop_stack_2
+        jmp     pop_stack
 .endproc
 
         .include "../deftok.inc"

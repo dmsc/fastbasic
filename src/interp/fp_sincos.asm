@@ -27,7 +27,7 @@
 ; SIN / COS functions
 ; -------------------
 
-        .importzp       fp_tmp_a, fp_tmp_x, DEGFLAG, tmp2
+        .importzp       DEGFLAG, tmp2
         .import         fp_sin_coef, fp_pi1_2, fp_90
         .import         eval_poly_x2, check_fp_err, FP_SET_1
 
@@ -70,10 +70,6 @@
 FPNORM=$DC00
 
         sty     tmp2    ; Store quadrant into tmp2
-
-        ; Save integer stack
-        sta     fp_tmp_a
-        stx     fp_tmp_x
 
         ldy     #>fp_pi1_2
         ldx     #<fp_pi1_2

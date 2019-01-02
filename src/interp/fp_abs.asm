@@ -35,17 +35,15 @@
 
 .proc   EXE_FP_ABS
         asl     FR0
-lft:    lsr     FR0
+        lsr     FR0
         jmp     next_instruction
 .endproc
 
 .proc   EXE_FP_NEG
-        asl     FR0
-        beq     ok
-        bcs     EXE_FP_ABS::lft
-        sec
-        ror     FR0
-ok:     jmp     next_instruction
+        lda     FR0
+        and     #$7F
+        sta     FR0
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

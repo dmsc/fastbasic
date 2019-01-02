@@ -31,7 +31,7 @@
         .import         putc
         .importzp       tmp1, tmp2
         ; From interpreter.asm
-        .import         pop_stack
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
@@ -47,7 +47,7 @@ loop:   iny
         jsr     putc
         cpy     tmp2
         bne     loop
-nil:    jmp     pop_stack
+nil:    jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

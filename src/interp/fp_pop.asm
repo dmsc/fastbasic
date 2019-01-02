@@ -27,24 +27,22 @@
 ; Pop values from FP stack
 ; ------------------------
 
-        .importzp       fp_tmp_a, fp_tmp_x, fptr
+        .importzp       fptr
         .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
-        .export         save_pop_fr1, nosave_pop_fr1, pop_fr0
+        .export         pop_fr1, pop_fr0
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
-        ; Save INT stack to temporary, move FR0 to FR1
+        ; Move FR0 to FR1
         ; and pop stack to FR0
-.proc   save_pop_fr1
-        sta     fp_tmp_a
-        stx     fp_tmp_x
-::nosave_pop_fr1:
+.proc   pop_fr1
         jsr     FMOVE
         ; Fall through
 .endproc
         ; Pops FP stack discarding FR0
+        ; keeps X intact
 .proc   pop_fr0
         ldy     fptr
         inc     fptr

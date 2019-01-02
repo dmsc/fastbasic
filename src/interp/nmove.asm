@@ -31,7 +31,7 @@
         .export         move_dwn_src, move_dwn_dst, move_dwn
 
         ; From interpreter.asm
-        .import         stack_l, stack_h, pop_stack_3
+        .import         stack_l, stack_h, pop_stack_2
 
         .include "atari.inc"
 
@@ -49,7 +49,7 @@
         sta     move_dwn_src+1
         pla
         jsr     move_dwn
-        jmp     pop_stack_3
+        jmp     pop_stack_2
 .endproc
 
         ; Note: this is used from alloc.asm, so can't be inlined above

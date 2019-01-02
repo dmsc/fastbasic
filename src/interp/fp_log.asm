@@ -27,7 +27,6 @@
 ; Natural LOG function
 ; --------------------
 
-        .importzp       fp_tmp_a, fp_tmp_x
         .import         check_fp_err
 
         .include "atari.inc"
@@ -35,8 +34,6 @@
         .segment        "RUNTIME"
 
 .proc   EXE_FP_LOG
-        sta     fp_tmp_a
-        stx     fp_tmp_x
         jsr     LOG
         jmp     check_fp_err
 .endproc

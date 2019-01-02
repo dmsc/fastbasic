@@ -27,19 +27,22 @@
 ; Store Floating Point number to address
 ; --------------------------------------
 
-        .import         pop_fr0, pop_stack
+        .import         pop_fr0, stack_l, stack_h
+        .importzp       next_ins_incsp
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_STORE
+        lda     stack_l, y
+        ldx     stack_h, y
         stx     FLPTR+1
         sta     FLPTR
         jsr     FST0P
         ; Pop FP stack
         jsr     pop_fr0
-        jmp     pop_stack
+        jmp     next_ins_incsp
 .endproc
 
         .include "../deftok.inc"

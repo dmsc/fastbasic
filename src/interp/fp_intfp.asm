@@ -28,25 +28,23 @@
 ; -------------------------
 
         ; From fpmain.asm
-        .import         save_push_fr0
-        .importzp       fp_tmp_a, fp_tmp_x
+        .import         push_fr0
         ; From runtime.asm
         .import         int_to_fp
         ; From interpreter.asm
-        .import         pop_stack
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
-.proc   EXE_INT_FP      ; Convert INT to FP
-        ; Save INT stack, push FP stack
-        jsr     save_push_fr0
-        ; Restore TOS
-        lda     fp_tmp_a
-        ldx     fp_tmp_x
+.proc   EXE_INT_FP      ; Convert AX to FP
+        pha
+        ; Save INT stack
+        jsr     push_fr0
+        ; Restore A
+        pla
         ; Convert to FP
         jsr     int_to_fp
-        ; Discard top of INT stack
-        jmp     pop_stack
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

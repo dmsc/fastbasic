@@ -27,8 +27,8 @@
 ; Square root
 ; -----------
 
-        .importzp       fp_tmp_a, fp_tmp_x, tmp2
-        .import         check_fp_err, fp_return_interpreter, fp_ret_err3
+        .importzp       tmp2
+        .import         check_fp_err
 
         .include "atari.inc"
 
@@ -38,8 +38,6 @@
         ; Copyright (C) 2015 Avery Lee, All Rights Reserved.
 .proc   EXE_FP_SQRT
 FPHALF= $DF6C
-        sta     fp_tmp_a
-        stx     fp_tmp_x
 
         ; Store original X
         ldx     #<FPSCR

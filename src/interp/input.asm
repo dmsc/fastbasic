@@ -31,7 +31,6 @@
         .importzp       IOCHN, IOERROR
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       next_instruction
 
         .include "atari.inc"
@@ -41,7 +40,6 @@
 line_buf        = LBUFF
 
 .proc   EXE_INPUT_STR   ; INPUT to string buffer (INBUFF)
-        jsr     pushAX
         ldx     IOCHN
 
         lda     #>line_buf

@@ -24,31 +24,21 @@
 ; linked into a combine executable.)
 
 
-; Pause for a number of jiffies
-; -----------------------------
+; Stack push
+; ----------
 
         ; From interpreter.asm
+        .import         pushAX
         .importzp       next_instruction
-
-        .include "atari.inc"
 
         .segment        "RUNTIME"
 
-.proc   EXE_PAUSE
-        tay
-        iny
-        inx
-wait:   lda     RTCLOK+2
-:       cmp     RTCLOK+2
-        beq     :-
-        dey
-        bne     wait
-        dex
-        bne     wait
+.proc   EXE_PUSH  ; push AX into stack
+        jsr     pushAX
         jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
-        deftoken "PAUSE"
+        deftoken "PUSH"
 
 ; vi:syntax=asm_ca65

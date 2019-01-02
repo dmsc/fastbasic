@@ -31,7 +31,6 @@
         .importzp       IOCHN, IOERROR
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       next_instruction
 
         .include "atari.inc"
@@ -39,7 +38,6 @@
         .segment        "RUNTIME"
 
 .proc   EXE_GET
-        jsr     pushAX
         ldx     IOCHN
         lda     #GETCHR
         sta     ICCOM, x

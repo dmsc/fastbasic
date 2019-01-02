@@ -29,11 +29,11 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr, tmp1
+        .export         jump_ax
 
         .segment        "RUNTIME"
 
 .proc   EXE_CALL
-        tay
         lda     cptr
         clc
         adc     #2
@@ -41,22 +41,17 @@
         lda     cptr+1
         adc     #0
         pha
-        tya
 .endproc        ; Fall through
 
 .proc   EXE_JUMP
-        ; NOTE: this could be a little faster (but larger) by
-        ;       using STA/LDA instead of PHA/PLA.
-        pha                     ; 3     1
         ldy     #1              ; 2     2
         lda     (cptr), y       ; 5     2
-        pha                     ; 3     1
+        tax                     ; 2     1
         dey                     ; 2     1
         lda     (cptr), y       ; 5     2
+ ::jump_ax:
         sta     cptr            ; 3     2
-        pla                     ; 4     1
-        sta     cptr+1          ; 3     2
-        pla                     ; 4 =34 1 =15
+        stx     cptr+1          ; 3     2
         jmp     next_instruction
 .endproc
 

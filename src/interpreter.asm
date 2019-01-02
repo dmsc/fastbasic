@@ -168,12 +168,9 @@ pop_stack_3:
         inc     sptr
 pop_stack_2:
         inc     sptr
-pop_stack:
-        ldy     sptr
-pop_stack_y:
-        lda     stack_l, y
-        ldx     stack_h, y
         jmp     next_ins_incsp
+pop_stack = next_ins_incsp
+pop_stack_y = next_ins_incsp
 
         ; Stores AX into stack, at return Y is the stack pointer.
 .proc   pushAX

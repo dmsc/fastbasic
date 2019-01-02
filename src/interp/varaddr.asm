@@ -30,7 +30,7 @@
         .export get_op_var
 
         ; From interpreter.asm
-        .importzp       next_instruction, cptr
+        .importzp       next_instruction, cptr, sptr
         .import         pushAX
         ; From allloc.asm
         .importzp       var_buf
@@ -42,11 +42,17 @@
         jmp     next_instruction
 .endproc
 
+.proc   EXE_VAR_ADDR_PUSH ; (SP) = address of variable
+        jsr     get_op_var
+        ldy     sptr
+        jsr     pushAX
+        jmp     next_instruction
+.endproc
+
         ; Reads variable number from opcode stream, returns
         ; variable address in AX
         ;   var_address = var_num * 2 + var_buf
 .proc   get_op_var
-        jsr     pushAX
         ldy     #0
         lda     (cptr), y
         inc     cptr
@@ -67,5 +73,6 @@
 
         .include "../deftok.inc"
         deftoken "VAR_ADDR"
+        deftoken "VAR_ADDR_PUSH"
 
 ; vi:syntax=asm_ca65

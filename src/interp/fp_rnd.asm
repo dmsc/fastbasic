@@ -27,8 +27,7 @@
 ; Random number from 0.0 to 0.9999999999
 ; --------------------------------------
 
-        .importzp       fp_tmp_a, fp_tmp_x
-        .import         check_fp_err, save_push_fr0
+        .import         check_fp_err, push_fr0
 
         .include "atari.inc"
 
@@ -38,7 +37,7 @@
         ; Based on code from Altirra BASIC, (C) 2015 Avery Lee.
 .proc   EXE_FP_RND
 FPNORM=$DC00
-        jsr     save_push_fr0
+        jsr     push_fr0
 
         lda     #$3F
         sta     FR0

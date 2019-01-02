@@ -28,13 +28,11 @@
 ; ----------------------------------------------
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       next_instruction
 
         .segment        "RUNTIME"
 
 .proc   EXE_TIME
-        jsr     pushAX
 retry:  ldx     19
         lda     20
         cpx     19

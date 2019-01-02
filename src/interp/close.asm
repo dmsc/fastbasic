@@ -27,35 +27,36 @@
 ; Calls CIO CLOSE
 ; ---------------
 
-        .export         CIOV_POP, CIOV_CMD_POP, CIOV_IOERR_POP, CIOV_IOCHN0_POP
+        .export         CIOV_CMD_POP, CIOV_IOERR_POP
 
         ; From runtime.asm
         .importzp       IOCHN, IOERROR
 
         ; From interpreter.asm
-        .import         pushAX, pop_stack
+        .importzp       next_instruction
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 EXE_CLOSE:
-        jsr     pushAX
-        ldx     IOCHN
+        asl
+        asl
+        asl
+        asl
+        tax
         lda     #CLOSE
 
         ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack
 CIOV_CMD_POP:
         sta     ICCOM, x
         ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
-CIOV_POP:
         jsr     CIOV
 CIOV_IOERR_POP:
         sty     IOERROR
-CIOV_IOCHN0_POP:
         ldy     #0
         sty     IOCHN
-        jmp     pop_stack
+        jmp     next_instruction
 
         .include "../deftok.inc"
         deftoken "CLOSE"

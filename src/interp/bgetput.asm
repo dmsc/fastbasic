@@ -47,11 +47,20 @@
 .proc   EXE_BGET
         sec
 
+        php
+
         pha
         txa
+        pha
 
-        ldx     IOCHN
+        lda     stack_l+1,y
+        asl
+        asl
+        asl
+        asl
+        tax
 
+        pla
         sta     ICBLH, x
         pla
         sta     ICBLL, x        ; Length
@@ -61,6 +70,7 @@
         lda     stack_h, y
         sta     ICBAH, x
 
+        plp
         lda     #GETCHR
         bcs     bget
         lda     #PUTCHR

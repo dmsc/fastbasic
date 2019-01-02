@@ -28,17 +28,15 @@
 ; ---------------------
 
         .importzp       tmp1, IOERROR
-        .import         pushAX, neg_AX, save_pop_fr1, fp_return_interpreter
+        .import         neg_AX, pop_fr1, next_instruction
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_INT      ; Convert FP to INT, with rounding
-        jsr     pushAX
-        asl     FR0
-        ror     tmp1    ; Store sign in tmp1
-        lsr     FR0
+        lda     FR0
+        php             ; Store sign
         jsr     FPI
         bcs     err3
         ldx     FR0+1
@@ -47,13 +45,22 @@
 err3:   lda     #3
         sta     IOERROR
         ; Negate result if original number was negative
-ok:     lda     FR0
-        ldy     tmp1
+ok:     plp
         bpl     pos
-        jsr     neg_AX
-        ; Store and pop FP stack
-pos:    jsr     save_pop_fr1
-        jmp     fp_return_interpreter
+
+        lda     #0
+        sec
+        sbc     FR0
+        sta     FR0
+        lda     #0
+        sbc     FR0+1
+        tax
+
+        ; Pop FP stack and restore
+pos:
+        jsr     pop_fr1
+        lda     FR0
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

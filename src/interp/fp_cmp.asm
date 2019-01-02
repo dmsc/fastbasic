@@ -28,7 +28,7 @@
 ; -------------------------
 
         .importzp       sptr
-        .import         pop_fr0, nosave_pop_fr1, pushAX, EXE_0
+        .import         pop_fr0, pop_fr1, pushXX_set0
 
         .include "atari.inc"
 
@@ -37,15 +37,12 @@
         ; Compare two FP numbers in stack, store 0, -1 or 1 in integer stack
         ; This is equivalent to INT(SGN(A - B)) and push a 0.
 .proc   EXE_FP_CMP
-        jsr     pushAX
-        jsr     nosave_pop_fr1
+        jsr     pop_fr1
         jsr     FSUB
         ; TODO: Don't check FP errors, assume SUB can't fail in comparisons
         ldx     FR0
         jsr     pop_fr0
-        txa
-        ldy     sptr
-        jmp     EXE_0
+        jmp     pushXX_set0
 .endproc
 
         .include "../deftok.inc"

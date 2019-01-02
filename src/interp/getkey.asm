@@ -31,7 +31,6 @@
         .importzp       IOERROR
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       next_instruction
 
         .include "atari.inc"
@@ -39,7 +38,6 @@
         .segment        "RUNTIME"
 
 .proc   EXE_GETKEY
-        jsr     pushAX
         jsr     getkey
         sty     IOERROR
         ldx     #0

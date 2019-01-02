@@ -27,20 +27,14 @@
 ; Push values to FP stack
 ; -----------------------
 
-        .importzp       fp_tmp_a, fp_tmp_x, fptr
+        .importzp       fptr
         .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
-        .export         save_push_fr0, push_fr0
+        .export         push_fr0
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
-        ; Save INT stack to temporary, push FP stack
-.proc   save_push_fr0
-        sta     fp_tmp_a
-        stx     fp_tmp_x
-        ; Fall through
-.endproc
         ; Push FP stack, FR0 remains unchanged.
 .proc   push_fr0
         dec     fptr

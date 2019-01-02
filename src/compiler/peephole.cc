@@ -110,6 +110,12 @@ class peephole
                 lnum = code[idx+current].linenum();
             code.insert(code.begin() + idx + current, codew::ctok(tok, lnum));
         }
+        // Detect "X (op) Y"
+        bool const_op(enum tokens tok)
+        {
+            return mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_PUSH) &&
+                   mtok(3,TOK_NUM) && mword(4) && mtok(5,tok);
+        }
         void copy(size_t idx, size_t from, size_t num)
         {
             changed = true;
@@ -253,25 +259,25 @@ class peephole
                 {
                     ioch = 0; // Tokens that set IOCHN to 0
                 }
-                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") &&
-                        mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_POKE) )
+                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_NUM) && mword(4) && mtok(5,TOK_POKE) )
                 {
-                    if( ioch == val(3) )
+                    if( ioch == val(4) )
                     {
                         // Remove redundant set IOCHN
-                        del(4); del(3); del(2); del(1); del(0);
+                        del(5); del(4); del(3); del(2); del(1); del(0);
                         current--;
                     }
                     else
-                        ioch = val(3);
+                        ioch = val(4);
                 }
                 else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") )
                 {
                     ioch = -1;
                 }
                 else if( mtok(0, TOK_IOCHN0) &&
-                         mtok(1,TOK_BYTE) && mcbyte(2, "IOCHN") &&
-                         mtok(3,TOK_NUM) && mword(4) && mtok(5,TOK_POKE) )
+                         mtok(1,TOK_BYTE) && mcbyte(2, "IOCHN") && mtok(3,TOK_PUSH) &&
+                         mtok(4,TOK_NUM) && mword(5) && mtok(6,TOK_POKE) )
                 {
                     // Setting I/O channel just after IOCHN0, delete redundant one
                     del(0);
@@ -377,66 +383,77 @@ class peephole
                         del(2); set_w(1, 256 * val(1)); i--;
                         continue;
                     }
-                    //   TOK_NUM / 4 / TOK_MUL   -> TOK_USHL TOK_USHL
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 4 && mtok(2,TOK_MUL) )
+                    //   TOK_PUSH / TOK_NUM / 4 / TOK_MUL   -> TOK_USHL TOK_USHL
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) &&
+                        mword(2) && val(2) == 4 && mtok(3,TOK_MUL) )
                     {
-                        del(2); set_tok(1, TOK_USHL); set_tok(0, TOK_USHL); i--;
+                        del(3); del(2); set_tok(1, TOK_USHL); set_tok(0, TOK_USHL); i--;
                         continue;
                     }
-                    //   TOK_NUM / 2 / TOK_MUL   -> TOK_USHL
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 2 && mtok(2,TOK_MUL) )
+                    //   TOK_PUSH / TOK_NUM / 2 / TOK_MUL   -> TOK_USHL
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 2 && mtok(3,TOK_MUL) )
                     {
-                        del(2); del(1); set_tok(0, TOK_USHL); i--;
+                        del(3); del(2); del(1); set_tok(0, TOK_USHL); i--;
                         continue;
                     }
-                    //   TOK_NUM / 1 / TOK_MUL   -> -
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 1 && mtok(2,TOK_MUL) )
+                    //   TOK_PUSH / TOK_NUM / 1 / TOK_MUL   -> -
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 1 && mtok(3,TOK_MUL) )
                     {
-                        del(2); del(1); del(0); i--;
+                        del(3); del(2); del(1); del(0); i--;
                         continue;
                     }
-                    //   TOK_NUM / 1 / TOK_DIV   -> -
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 1 && mtok(2,TOK_DIV) )
+                    //   TOK_PUSH / TOK_NUM / 1 / TOK_DIV   -> -
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 1 && mtok(3,TOK_DIV) )
                     {
-                        del(2); del(1); del(0); i--;
+                        del(3); del(2); del(1); del(0); i--;
                         continue;
                     }
-                    //   TOK_NUM / 0 / TOK_ADD   -> -
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 && mtok(2,TOK_ADD) )
+                    //   TOK_PUSH / TOK_NUM / 0 / TOK_ADD   -> -
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 0 && mtok(3,TOK_ADD) )
                     {
-                        del(2); del(1); del(0); i--;
+                        del(3); del(2); del(1); del(0); i--;
                         continue;
                     }
-                    //   TOK_NUM / 0 / TOK_SUB   -> -
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 && mtok(2,TOK_SUB) )
+                    //   TOK_PUSH / TOK_NUM / 0 / TOK_SUB   -> -
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 0 && mtok(3,TOK_SUB) )
                     {
-                        del(2); del(1); del(0); i--;
+                        del(3); del(2); del(1); del(0); i--;
                         continue;
                     }
-                    //   TOK_NUM / 0 / TOK_NEQ   -> TOK_COMP_0
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 && mtok(2,TOK_NEQ) )
+                    //   TOK_PUSH / TOK_NUM / 0 / TOK_NEQ   -> TOK_COMP_0
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 0 && mtok(3,TOK_NEQ) )
                     {
-                        del(2); del(1); set_tok(0,TOK_COMP_0); i--;
+                        del(3); del(2); del(1); set_tok(0,TOK_COMP_0); i--;
                         continue;
                     }
-                    //   TOK_BYTE / 0 / TOK_EQ   -> TOK_COMP_0 TOK_L_NOT
-                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 && mtok(2,TOK_EQ) )
+                    //   TOK_PUSH / TOK_BYTE / 0 / TOK_EQ   -> TOK_COMP_0 TOK_L_NOT
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
+                        val(2) == 0 && mtok(3,TOK_EQ) )
                     {
-                        del(2); set_tok(0,TOK_COMP_0); set_tok(1, TOK_L_NOT); i--;
+                        del(3); del(2); set_tok(0,TOK_COMP_0); set_tok(1, TOK_L_NOT); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_ADD   -> TOK_NUM (x+y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_ADD) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_ADD   -> TOK_NUM (x+y)
+                    if( const_op(TOK_ADD) )
                     {
-                        set_tok(0, TOK_NUM); set_w(1, val(1)+val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, val(1)+val(4));
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_SUB   -> TOK_NUM (x-y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_SUB) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_SUB   -> TOK_NUM (x-y)
+                    if( const_op(TOK_SUB) )
                     {
-                        set_tok(0, TOK_NUM); set_w(1, val(1)-val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, val(1)-val(4));
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
+#if 0
                     //   TOK_ADD / TOK_NUM / x / TOK_ADD
                     //      ->   TOK_NUM x / TOK_ADD / TOK_ADD
                     if( mtok(0,TOK_ADD) && mtok(1,TOK_NUM) && mword(2) && mtok(3,TOK_ADD) )
@@ -468,90 +485,98 @@ class peephole
                         set_tok(3, TOK_SUB); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_MUL   -> TOK_NUM (x*y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_MUL) )
+#endif
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_MUL   -> TOK_NUM (x*y)
+                    if( const_op(TOK_MUL) )
                     {
-                        set_tok(0, TOK_NUM); set_w(1, val(1) * val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, val(1) * val(4));
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_DIV   -> TOK_NUM (x/y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_DIV) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_DIV   -> TOK_NUM (x/y)
+                    if( const_op(TOK_DIV) )
                     {
-                        int16_t div = val(3);
+                        int16_t div = val(4);
                         if( div )
                             div = val(1) / div;
                         else if( val(1) < 0 )
                             div = 1;  // Probably a bug in the division routine, but we emulate the result
                         else
                             div = -1;
-                        set_tok(0, TOK_NUM); set_w(1, div); del(4); del(3); del(2); i--;
- continue;
+                        set_tok(0, TOK_NUM); set_w(1, div);
+                        del(5); del(4); del(3); del(2); i--;
+                        continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_MOD   -> TOK_NUM (x%y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_MOD) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_MOD   -> TOK_NUM (x%y)
+                    if( const_op(TOK_MOD) )
                     {
-                        int16_t div = val(3);
+                        int16_t div = val(4);
                         if( div )
                             div = val(1) % div;
                         else
                             div = val(1);  // Probably a bug in the division routine, but we emulate the result
-                        set_tok(0, TOK_NUM); set_w(1, div); del(4); del(3); del(2); i--;
- continue;
-                    }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_AND   -> TOK_NUM (x&y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_BIT_AND) )
-                    {
-                        set_tok(0, TOK_NUM); set_w(1, val(1) & val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, div);
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_OR   -> TOK_NUM (x|y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_BIT_OR) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_BIT_AND   -> TOK_NUM (x&y)
+                    if( const_op(TOK_BIT_AND) )
                     {
-                        set_tok(0, TOK_NUM); set_w(1, val(1) | val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, val(1) & val(4));
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
-                    //   TOK_NUM / x / TOK_NUM / y / TOK_BIT_EXOR   -> TOK_NUM (x^y)
-                    if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_NUM) && mword(3) && mtok(4,TOK_BIT_EXOR) )
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_BIT_OR   -> TOK_NUM (x|y)
+                    if( const_op(TOK_BIT_OR) )
                     {
-                        set_tok(0, TOK_NUM); set_w(1, val(1) ^ val(3)); del(4); del(3); del(2); i--;
+                        set_tok(0, TOK_NUM); set_w(1, val(1) | val(4));
+                        del(5); del(4); del(3); del(2); i--;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_PUSH / TOK_NUM / y / TOK_BIT_EXOR   -> TOK_NUM (x^y)
+                    if( const_op(TOK_BIT_EXOR) )
+                    {
+                        set_tok(0, TOK_NUM); set_w(1, val(1) ^ val(4));
+                        del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
                     //  VAR + VAR    ==>   2 * VAR
-                    //   TOK_VAR / x / TOK_VAR / x / TOK_ADD   -> TOK_VAR / x / TOK_USHL
-                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_VAR_LOAD) && mbyte(3) && mtok(4,TOK_ADD) && val(1) == val(3) )
+                    //   TOK_VAR / x / TOK_PUSH / TOK_VAR / x / TOK_ADD   -> TOK_VAR / x / TOK_USHL
+                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_ADD) && val(1) == val(4) )
                     {
-                        set_tok(2, TOK_USHL); del(4); del(3); i--;
+                        set_tok(2, TOK_USHL); del(5); del(4); del(3); i--;
                         continue;
                     }
                     //  VAR = VAR + 1   ==>  INC VAR
-                    //   TOK_VAR_A / x / TOK_VAR / x / TOK_NUM / 1 / TOK_ADD / TOK_DPOKE
+                    //   TOK_VAR_A / x / TOK_PUSH / TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_DPOKE
                     //        -> TOK_VAR_A / x / TOK_INC
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) &&
-                        mtok(2,TOK_VAR_LOAD) && mbyte(3) &&
-                        mtok(4,TOK_NUM) && mword(5) && val(5) == 1 &&
-                        mtok(6,TOK_ADD) && mtok(7,TOK_DPOKE) &&
-                        val(1) == val(3) )
+                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_PUSH) &&
+                        mtok(6,TOK_NUM) && mword(7) && val(7) == 1 &&
+                        mtok(8,TOK_ADD) && mtok(9,TOK_DPOKE) &&
+                        val(1) == val(4) )
                     {
-                        set_tok(2, TOK_INC); del(7); del(6); del(5); del(4); del(3); i--;
+                        set_tok(2, TOK_INC); del(9); del(8); del(7); del(6); del(5); del(4); del(3); i--;
                         continue;
                     }
                     //  VAR = VAR - 1   ==>  DEC VAR
-                    //   TOK_VAR_A / x / TOK_VAR / x / TOK_NUM / 1 / TOK_SUB / TOK_DPOKE
+                    //   TOK_VAR_A / x / TOK_PUSH / TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_SUB / TOK_DPOKE
                     //        -> TOK_VAR_A / x / TOK_DEC
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) &&
-                        mtok(2,TOK_VAR_LOAD) && mbyte(3) &&
-                        mtok(4,TOK_NUM) && mword(5) && val(5) == 1 &&
-                        mtok(6,TOK_SUB) && mtok(7,TOK_DPOKE) &&
-                        val(1) == val(3) )
+                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_PUSH) &&
+                        mtok(6,TOK_NUM) && mword(7) && val(7) == 1 &&
+                        mtok(8,TOK_SUB) && mtok(9,TOK_DPOKE) &&
+                        val(1) == val(4) )
                     {
-                        set_tok(2, TOK_DEC); del(7); del(6); del(5); del(4); del(3); i--;
+                        set_tok(2, TOK_DEC); del(9); del(8); del(7); del(6); del(5); del(4); del(3); i--;
                         continue;
                     }
-                    //   TOK_BYTE / IOCHN / TOK_NUM / 0 / TOK_POKE  -> TOK_IOCHN0
-                    if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") &&
-                        mtok(2,TOK_NUM) && mword(3) && val(3) == 0 && mtok(4,TOK_POKE) )
+                    //   TOK_BYTE / IOCHN / TOK_PUSH / TOK_NUM / 0 / TOK_POKE  -> TOK_IOCHN0
+                    if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_NUM) && mword(4) && val(4) == 0 && mtok(5,TOK_POKE) )
                     {
-                        set_tok(0, TOK_IOCHN0); del(4); del(3); del(2); del(1); i--;
+                        set_tok(0, TOK_IOCHN0); del(5); del(4); del(3); del(2); del(1); i--;
                         continue;
                     }
                     // NOT NOT A -> A
@@ -624,6 +649,7 @@ class peephole
                         set_w(1, 255);
                         continue;
                     }
+#if 0
                     // STRING[i][j,n] -> STRING[i+j-1,n]
                     //   TOK_NUM / 255 / TOK_STR_IDX /
                     //   ( TOK_NUM / j ) || ( TOK_VAR_LOAD / k ) /
@@ -682,6 +708,7 @@ class peephole
                         del(1); del(0);
                         continue;
                     }
+#endif
                     // NOT (A < x)  ==  A >= x  ->  A > x-1
                     //    TOK_NUM / x / TOK_LT / TOK_L_NOT -> TOK_NUM / x+1 / TOK_LT
                     if( mtok(0, TOK_NUM) && mword(1) &&

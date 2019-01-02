@@ -27,16 +27,17 @@
 ; Convert Floating Point number to string
 ; ---------------------------------------
 
-        .import         save_pop_fr1, fp_return_interpreter, fp_to_str, pushAX
+        .import         pop_fr0, fp_to_str
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_STR  ; AX = STRING (FP_STACK)
-        ; Store integer stack.
-        jsr     pushAX
         jsr     fp_to_str
-        jsr     save_pop_fr1
-        jmp     fp_return_interpreter
+        pha
+        jsr     pop_fr0
+        pla
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

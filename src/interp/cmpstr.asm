@@ -28,7 +28,7 @@
 ; ------------------
 
         ; From interpreter.asm
-        .import         pushAX, stack_l, stack_h, EXE_0
+        .import         stack_l, stack_h, pushXX_set0
         .importzp       sptr
         ; From runtime.asm
         .importzp       tmp1, tmp2, tmp3
@@ -79,10 +79,7 @@ end_str1:
 rtn_gt:
         inx
 xit:
-        txa
-        inc     sptr
-        ldy     sptr
-        jmp     EXE_0
+        jmp     pushXX_set0
 .endproc
 
         .include "../deftok.inc"

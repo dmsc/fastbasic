@@ -28,20 +28,31 @@
 ; ------------------
 
         ; From interpreter.asm
-        .import         EXE_JUMP, pushAX
-        .importzp       cptr
+        .import         EXE_JUMP, stack_l, stack_h
+        .importzp       cptr, sptr, tmp1
 
         .segment        "RUNTIME"
 
-.proc   EXE_CDATA       ; AX = address of data
-        jsr     pushAX
-        ldx     cptr+1
+.proc   EXE_CDATA       ; *(SP) = address of data
+
+        ; Store (cptr) + 2 to var address
+        lda     stack_h, y
+        sta     tmp1+1
+        lda     stack_l, y
+        sta     tmp1
+
+        ldy     #0
         lda     cptr
         clc
         adc     #2
-        bcc     :+
-        inx
-:       ; ldy     sptr ; EXE_JUMP does not use Y=sptr
+        sta     (tmp1), y
+        iny
+        lda     cptr+1
+        adc     #0
+        sta     (tmp1), y
+
+        ; ldy     sptr ; EXE_JUMP does not use Y=sptr
+        inc     sptr
         jmp     EXE_JUMP
 .endproc
 

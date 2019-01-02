@@ -28,7 +28,6 @@
 ; --------------------------
 
         .importzp       DEGFLAG
-        .importzp       fp_tmp_a, fp_tmp_x
         .importzp       tmp2
 
         .import         eval_atn_poly, check_fp_err
@@ -45,10 +44,6 @@
         ; reduced as:  ATN(x) = PI/2 - ATN(1/x)  if |x|>1.0
         ;
 .proc EXE_FP_ATN
-        ; Save integer stack
-        sta     fp_tmp_a
-        stx     fp_tmp_x
-
         lda     FR0
         asl
         ror     tmp2

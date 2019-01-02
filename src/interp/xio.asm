@@ -44,7 +44,13 @@
 
 .proc   EXE_XIO
         jsr     get_str_eol
-        ldx     IOCHN
+        ldy     sptr
+        lda     stack_l+2, y
+        asl
+        asl
+        asl
+        asl
+        tax
         lda     INBUFF
         sta     ICBAL, x
         lda     #0
@@ -53,7 +59,6 @@
         sta     ICBAH, x
         lda     #$FF
         sta     ICBLL, x
-        ldy     sptr
         lda     stack_l, y
         sta     ICAX1, x
         lda     stack_h, y
@@ -63,6 +68,7 @@
 .endproc        ; Fall through
         ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack twice
 CIOV_CMD_POP2:
+        inc     sptr
         inc     sptr
         jmp     CIOV_CMD_POP
 

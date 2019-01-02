@@ -27,14 +27,14 @@
 ; Floating Point Multiplication
 ; -----------------------------
 
-        .import         check_fp_err, save_pop_fr1
+        .import         check_fp_err, pop_fr1
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_MUL
-        jsr     save_pop_fr1
+        jsr     pop_fr1
         jsr     FMUL
         jmp     check_fp_err
 .endproc

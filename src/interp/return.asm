@@ -32,17 +32,22 @@
 
         .segment        "RUNTIME"
 
+.proc   EXE_CRET
+        lsr
+        bcs     skip
+.endproc        ; Fall through
+
 .proc   EXE_RET
-        tay
         pla
         sta     cptr+1
         pla
         sta     cptr
-        tya
+::skip:
         jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
         deftoken "RET"
+        deftoken "CRET"
 
 ; vi:syntax=asm_ca65

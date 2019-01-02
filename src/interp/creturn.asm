@@ -27,23 +27,5 @@
 ; Conditional return from subroutine
 ; ----------------------------------
 
-        ; From interpreter.asm
-        .importzp       cptr, sptr
-        .import         pop_stack_y
-
-        .segment        "RUNTIME"
-
-.proc   EXE_CRET
-        lsr
-        bcs     skip
-        pla
-        sta     cptr+1
-        pla
-        sta     cptr
-skip:   jmp     pop_stack_y
-.endproc
-
-        .include "../deftok.inc"
-        deftoken "CRET"
 
 ; vi:syntax=asm_ca65

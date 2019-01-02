@@ -28,7 +28,7 @@ ENDPROC
 '
 PROC InputFileName
   input " File Name? "; FileName$
-  if Len(FileName$) < 3 OR Asc(FileName$[2]) <> $3A OR Asc(FileName$[3]) <> $3A
+  if Len(FileName$) < 3 OR (Asc(FileName$[2]) <> $3A AND Asc(FileName$[3]) <> $3A)
     ' Don't use string operations to avoid allocations!!!
     -move Adr(FileName$) + 1, Adr(FileName$) + 3, Len(FileName$)
     poke Adr(FileName$), peek(Adr(FileName$)) + 2

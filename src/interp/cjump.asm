@@ -29,7 +29,7 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr
-        .import         pop_stack, pop_stack_y
+        .import         jump_ax
 
         .segment        "RUNTIME"
 
@@ -41,9 +41,7 @@
         tax
         dey
         lda     (cptr), y
-        sta     cptr
-        stx     cptr+1
-        jmp     pop_stack
+        jmp     jump_ax
 
 skip:   lda     cptr
 ;       sec             ; C is always set from above comparison
@@ -51,7 +49,7 @@ skip:   lda     cptr
         sta     cptr
         bcc     xit
         inc     cptr+1
-xit:    jmp     pop_stack_y
+xit:    jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

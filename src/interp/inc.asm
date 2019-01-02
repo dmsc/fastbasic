@@ -28,18 +28,18 @@
 ; ---------------------------
 
         ; From interpreter.asm
-        .import         pop_stack_y
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
-.proc   EXE_INC ; DPOKE(AX, DPEEK(AX) + 1) ; POP_AX
+.proc   EXE_INC ; DPOKE(AX, DPEEK(AX) + 1)
         stx     loadH+2
         stx     loadL+2
         tax
 loadL:  inc     $FF00, x
         bne     :+
 loadH:  inc     $FF01, x
-:       jmp     pop_stack_y
+:       jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

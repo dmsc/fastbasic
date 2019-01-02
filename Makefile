@@ -155,6 +155,7 @@ COMMON_AS_SRC=\
     src/interp/print_eol.asm\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\
+    src/interp/push.asm\
     src/interp/putchar.asm\
     src/interp/rand.asm\
     src/interp/return.asm\

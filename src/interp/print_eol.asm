@@ -32,13 +32,10 @@
         ; From runtime.asm
         .import         putc_nosave
         .importzp       tabpos, IOCHN
-        ; From interpreter.asm
-        .import         pushAX
 
         .segment        "RUNTIME"
 
 EXE_PRINT_EOL:          ; PRINT EOL
-        jsr     pushAX
         ; Reset tab position
         lda     #0
         sta     tabpos

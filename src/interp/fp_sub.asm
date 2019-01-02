@@ -27,14 +27,14 @@
 ; Floating Point Subtraction
 ; --------------------------
 
-        .import         check_fp_err, save_pop_fr1
+        .import         check_fp_err, pop_fr1
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_SUB
-        jsr     save_pop_fr1
+        jsr     pop_fr1
         jsr     FSUB
         jmp     check_fp_err
 .endproc

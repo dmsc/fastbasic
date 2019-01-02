@@ -27,9 +27,9 @@
 ; Load Floating Point constant (and also, ADD)
 ; --------------------------------------------
 
-        .export         fp_return_interpreter, check_fp_err
+        .export         check_fp_err
 
-        .import         save_push_fr0, save_pop_fr1
+        .import         push_fr0, pop_fr1
         .importzp       fp_tmp_x, fp_tmp_a
 
         ; From interpreter.asm
@@ -40,7 +40,7 @@
         .segment        "RUNTIME"
 
 .proc   EXE_FLOAT
-        jsr     save_push_fr0
+        jsr     push_fr0
 
         ldy     #5
 ldloop: lda     (cptr), y
@@ -52,28 +52,23 @@ ldloop: lda     (cptr), y
         clc
         adc     #6
         sta     cptr
-        bcc     fp_return_interpreter
+        bcc     xit
         inc     cptr+1
-        bcs     fp_return_interpreter
+        bcs     xit
 .endproc
 
 .proc   EXE_FP_ADD
-        jsr     save_pop_fr1
+        jsr     pop_fr1
         jsr     FADD
 .endproc        ; Fall-through
         ; Checks FP error, restores INT stack
         ; and returns to interpreter
 .proc   check_fp_err
         ; Check error from last FP op
-        bcc     ok
+        bcc     xit
         lda     #3
         sta     IOERROR
-ok:     ; Fall through
-.endproc
-.proc   fp_return_interpreter
-; Restore INT stack
-        lda     fp_tmp_a
-        ldx     fp_tmp_x
+::xit:
         jmp     next_instruction
 .endproc
 

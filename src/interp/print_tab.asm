@@ -31,17 +31,16 @@
         .import         putspc
         .importzp       tabpos
         ; From interpreter.asm
-        .import         pop_stack, pushAX
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
 .proc   EXE_PRINT_TAB   ; PRINT TAB
-        jsr     pushAX
         jsr     putspc
 :       jsr     putspc
         ldx     tabpos
         bne     :-
-        jmp     pop_stack
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

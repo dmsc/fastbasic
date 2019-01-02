@@ -27,7 +27,8 @@
 ; Load Floating Point number from address
 ; ---------------------------------------
 
-        .import         push_fr0, pop_stack
+        .import         push_fr0
+        .importzp       next_instruction
 
         .include "atari.inc"
 
@@ -38,7 +39,7 @@
         sta     FLPTR
         jsr     push_fr0
         jsr     FLD0P
-        jmp     pop_stack
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

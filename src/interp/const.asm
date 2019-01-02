@@ -1,6 +1,6 @@
 ;
 ; FastBasic - Fast basic interpreter for the Atari 8-bit computers
-; Copyright (C) 2017,2018 Daniel Serpell
+; Copyright (C) 2017,2019 Daniel Serpell
 ;
 ; This program is free software; you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -29,12 +29,10 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr
-        .import         pushAX
 
         .segment        "RUNTIME"
 
 .proc   EXE_NUM  ; AX = read from op (load byte first!)
-        jsr     pushAX
         ldy     #1              ; 2     2
         lda     (cptr), y       ; 5     2
         tax                     ; 2     1
@@ -50,7 +48,6 @@
 .endproc
 
 .proc   EXE_BYTE  ; AX = read 1 byte from op
-        jsr     pushAX
         ldx     #0
         lda     (cptr, x)
         inc     cptr
@@ -59,7 +56,6 @@
 .endproc
 
 .proc   EXE_CSTRING     ; AX = address of string
-        jsr     pushAX
         ldy     #0      ; Get string length into A
         sec
         lda     cptr

@@ -27,8 +27,8 @@
 ; Integer exponentiation
 ; ----------------------
 
-        .importzp       tmp1, tmp2, IOERROR
-        .import         check_fp_err, pop_stack, neg_AX, FP_SET_1
+        .importzp       tmp1, tmp2, IOERROR, next_instruction
+        .import         check_fp_err, neg_AX, FP_SET_1
 
         .include "atari.inc"
 
@@ -95,7 +95,7 @@ error:  lda     #3
         sta     IOERROR
 
 xit_1:  jsr     FP_SET_1
-xit:    jmp     pop_stack
+xit:    jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

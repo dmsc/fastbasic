@@ -28,8 +28,8 @@
 ; --------------------------------
 
         ; From interpreter.asm
-        .import         pop_stack_y
-        .importzp       next_instruction
+        .importzp       next_instruction, next_ins_incsp
+        .import         stack_l, stack_h
 
         .include "atari.inc"
 
@@ -39,18 +39,20 @@
         pha
         txa
         pha
-        jmp     pop_stack_y
+        jmp     next_instruction
 .endproc
 
 .proc   EXE_USR_ADDR
         ; Store out return address into the CPU stack
         jsr     next_instruction
-        jmp     next_instruction
+        jmp     next_ins_incsp
 .endproc
 
 .proc   EXE_USR_CALL
-        ; Calls the routine, address is in AX
+        ; Calls the routine, address in stack
+        lda     stack_l, y
         sta     jump+1
+        ldx     stack_h, y
         stx     jump+2
 jump:   jmp     $FFFF
 .endproc

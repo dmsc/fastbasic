@@ -31,7 +31,6 @@
         .importzp       array_ptr
 
         ; From interpreter.asm
-        .import         pushAX
         .importzp       next_instruction
 
         .include "atari.inc"
@@ -39,7 +38,6 @@
         .segment        "RUNTIME"
 
 .proc   EXE_FRE
-        jsr     pushAX
         lda     MEMTOP
         sec
         sbc     array_ptr

@@ -28,7 +28,7 @@
 ; ---------------------------
 
         ; From interpreter.asm
-        .import         pop_stack_y
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
@@ -41,7 +41,7 @@ loadL1: lda     $FF00, x
         bne     loadL2
 loadH:  dec     $FF01, x
 loadL2: dec     $FF00, x
-        jmp     pop_stack_y
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
