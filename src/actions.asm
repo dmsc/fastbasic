@@ -389,6 +389,7 @@ exit:
 
 ; Sets the type of a variable - variable number and new type must be in the stack:
 .proc   E_VAR_SET_TYPE
+        jsr     parser_skipws
         dec     opos            ; Remove variable TYPE from stack
         ldy     opos
         lda     (prog_ptr),y    ; The variable TYPE

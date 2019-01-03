@@ -399,9 +399,9 @@ VAR_FP_LVALUE:
         emit TOK_VAR_ADDR E_VAR_FP "%"
 #@endif FASTBASIC_FP
 
-# Parse an "=" sign, it's own rule to skip spaces before!
-EQUAL: variable assignment
-        "="
+# Parse an "=" sign and pushes address into stack.
+EQUAL_PUSH: variable assignment
+        "=" emit TOK_PUSH
 
 # Parse optional "STEP" in for
 STEP_OPTIONAL:
@@ -533,8 +533,10 @@ DATA_BYTES: data byte
         pass
 
 DATA_TYPE: data type
-        "Byte" emit VT_ARRAY_BYTE E_VAR_SET_TYPE EQUAL E_NUMBER_BYTE DATA_BYTES
-        "Word" emit VT_ARRAY_WORD E_VAR_SET_TYPE EQUAL E_NUMBER_WORD DATA_WORDS
+        # Note: E_VAR_SET_TYPE skips white space, this allows spaces between
+        #       the data type and the "=".
+        "Byte" emit VT_ARRAY_BYTE E_VAR_SET_TYPE "=" E_NUMBER_BYTE DATA_BYTES
+        "Word" emit VT_ARRAY_WORD E_VAR_SET_TYPE "=" E_NUMBER_WORD DATA_WORDS
 
 DATA_END:
         ","
@@ -566,7 +568,7 @@ PARSE_LINE_COMMAND:
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT THEN_OR_MULTILINE
-        "For" VAR_WORD_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_FOR_START "TO" EXPR emit TOK_PUSH STEP_OPTIONAL emit TOK_PUSH emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
+        "For" VAR_WORD_LVALUE EQUAL_PUSH EXPR emit TOK_FOR_START "TO" EXPR emit TOK_PUSH STEP_OPTIONAL emit TOK_PUSH emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "Else" emit TOK_JUMP E_ELSE
         "ELIf" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
@@ -601,12 +603,12 @@ PARSE_LINE_COMMAND:
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN:
-        VAR_WORD_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_DPOKE
-        VAR_BYTE_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_POKE
-        VAR_STR_LVALUE  emit TOK_PUSH EQUAL STR_EXPR emit TOK_COPY_STR
-        VAR_STR_LVALUE  emit TOK_PUSH EQUAL "+" STR_EXPR emit TOK_CAT_STR
+        VAR_WORD_LVALUE EQUAL_PUSH EXPR emit TOK_DPOKE
+        VAR_BYTE_LVALUE EQUAL_PUSH EXPR emit TOK_POKE
+        VAR_STR_LVALUE  EQUAL_PUSH STR_EXPR emit TOK_COPY_STR
+        VAR_STR_LVALUE  EQUAL_PUSH "+" STR_EXPR emit TOK_CAT_STR
 #@if FASTBASIC_FP
-        VAR_FP_LVALUE   emit TOK_PUSH EQUAL FP_EXPR emit TOK_FP_STORE
+        VAR_FP_LVALUE   EQUAL_PUSH FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
 SKIP_COMMENT:

@@ -704,6 +704,7 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
 {
     s.debug("E_VAR_SET_TYPE");
 
+    s.skipws();
     // Get type
     enum VarType type = get_vartype(s.remove_last().get_str());
     auto &v = s.vars;
