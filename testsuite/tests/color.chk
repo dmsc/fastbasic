@@ -1,0 +1,11 @@
+Name: Test COLOR, FCOLOR and PLOT statements
+Test: run
+Output:
+Start
+
+AA
+A
+3         501
+
+7         500
+123

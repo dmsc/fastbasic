@@ -575,8 +575,8 @@ PARSE_LINE_COMMAND:
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
-        "Color" emit TOK_BYTE emit COLOR EXPR emit TOK_POKE
-        "FColor" emit TOK_NUM word FILDAT EXPR emit TOK_POKE
+        "Color" emit TOK_BYTE emit COLOR emit TOK_PUSH EXPR emit TOK_POKE
+        "FColor" emit TOK_NUM word FILDAT emit TOK_PUSH EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_BYTE emit COLOR emit TOK_PEEK emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
