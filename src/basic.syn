@@ -26,7 +26,7 @@ TOKENS {
  TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
  TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
- TOK_PUSH, TOK_VAR_ADDR_PUSH, TOK_PUSH_VAR_LOAD
+ TOK_PUSH, TOK_PUSH_VAR_LOAD
  TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
@@ -387,11 +387,11 @@ VAR_CREATE_TYPE:
 #       rules using the created variable.
 VAR_WORD_LVALUE_PSH: integer variable
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
-        emit TOK_VAR_ADDR_PUSH E_VAR_WORD
+        emit TOK_VAR_ADDR E_VAR_WORD emit TOK_PUSH
         ARRAY_WORD_ADDR emit TOK_PUSH
 
 VAR_STR_LVALUE_PSH:
-        emit TOK_VAR_ADDR_PUSH E_VAR_STRING "$"
+        emit TOK_VAR_ADDR E_VAR_STRING "$" emit TOK_PUSH
         ARRAY_STRING_ADDR emit TOK_PUSH
 
 VAR_WORD_LVALUE: integer variable
@@ -400,7 +400,7 @@ VAR_WORD_LVALUE: integer variable
 
 #@if FASTBASIC_FP
 VAR_FP_LVALUE_PSH:
-        emit TOK_VAR_ADDR_PUSH E_VAR_FP "%"
+        emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_PUSH
 #@endif FASTBASIC_FP
 
 # Parse an "=" sign, it's own rule to skip spaces before!
@@ -482,7 +482,7 @@ DIM_VAR_TYPE:
         PAR_EXPR DIM_VAR_TYPE_NUM
 
 DIM_VAR: new variable name
-        emit TOK_VAR_ADDR_PUSH E_VAR_CREATE DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
+        emit TOK_VAR_ADDR E_VAR_CREATE emit TOK_PUSH DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
 
 # I/O expressions
 IO_CHAN: I/O channel number
@@ -545,7 +545,7 @@ DATA_END:
         E_POP_DATA
 
 DATA_VAR: new array name
-        emit TOK_VAR_ADDR_PUSH E_VAR_CREATE "()" emit TOK_CDATA emit LT_DATA E_PUSH_LT
+        emit TOK_VAR_ADDR E_VAR_CREATE "()" emit TOK_PUSH emit TOK_CDATA emit LT_DATA E_PUSH_LT
         pass
 
 # Parse a line
