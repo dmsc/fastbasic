@@ -385,22 +385,18 @@ VAR_CREATE_TYPE:
 # variable if not exist.
 # NOTE: the creation rule (E_VAR_SET_TYPE) always fails, so the parser uses the next
 #       rules using the created variable.
-VAR_WORD_LVALUE_PSH: integer variable
-        E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
-        emit TOK_VAR_ADDR E_VAR_WORD emit TOK_PUSH
-        ARRAY_WORD_ADDR emit TOK_PUSH
-
-VAR_STR_LVALUE_PSH:
-        emit TOK_VAR_ADDR E_VAR_STRING "$" emit TOK_PUSH
-        ARRAY_STRING_ADDR emit TOK_PUSH
-
 VAR_WORD_LVALUE: integer variable
+        E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         emit TOK_VAR_ADDR E_VAR_WORD
         ARRAY_WORD_ADDR
 
+VAR_STR_LVALUE:
+        emit TOK_VAR_ADDR E_VAR_STRING "$"
+        ARRAY_STRING_ADDR
+
 #@if FASTBASIC_FP
-VAR_FP_LVALUE_PSH:
-        emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_PUSH
+VAR_FP_LVALUE:
+        emit TOK_VAR_ADDR E_VAR_FP "%"
 #@endif FASTBASIC_FP
 
 # Parse an "=" sign, it's own rule to skip spaces before!
@@ -463,11 +459,11 @@ INPUT_VAR_MORE:
         pass
 
 INPUT_VAR:
-        VAR_WORD_LVALUE_PSH emit TOK_INPUT_STR emit TOK_VAL emit TOK_DPOKE
+        VAR_WORD_LVALUE emit TOK_PUSH emit TOK_INPUT_STR emit TOK_VAL emit TOK_DPOKE
         VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_INPUT_STR emit TOK_VAL emit TOK_POKE
-        VAR_STR_LVALUE_PSH  emit TOK_INPUT_STR emit TOK_COPY_STR
+        VAR_STR_LVALUE  emit TOK_PUSH emit TOK_INPUT_STR emit TOK_COPY_STR
 #@if FASTBASIC_FP
-        VAR_FP_LVALUE_PSH   emit TOK_INPUT_STR emit TOK_FP_VAL emit TOK_FP_STORE
+        VAR_FP_LVALUE   emit TOK_PUSH emit TOK_INPUT_STR emit TOK_FP_VAL emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
 
@@ -503,12 +499,12 @@ IO_CHAN_OPT_NOCOMMA:
 # Get from keyboard expression
 GETK_EXPR: variable name
         VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_GETKEY emit TOK_POKE
-        VAR_WORD_LVALUE_PSH emit TOK_GETKEY emit TOK_DPOKE
+        VAR_WORD_LVALUE emit TOK_PUSH emit TOK_GETKEY emit TOK_DPOKE
 
 # Get expression
 GET_EXPR: variable name
         "," VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_GET emit TOK_POKE GET_EXPR_MORE
-        "," VAR_WORD_LVALUE_PSH emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
+        "," VAR_WORD_LVALUE emit TOK_PUSH emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
 
 GET_EXPR_MORE:
         GET_EXPR
@@ -570,7 +566,7 @@ PARSE_LINE_COMMAND:
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT THEN_OR_MULTILINE
-        "For" VAR_WORD_LVALUE_PSH EQUAL EXPR emit TOK_FOR_START "TO" EXPR emit TOK_PUSH STEP_OPTIONAL emit TOK_PUSH emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
+        "For" VAR_WORD_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_FOR_START "TO" EXPR emit TOK_PUSH STEP_OPTIONAL emit TOK_PUSH emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "Else" emit TOK_JUMP E_ELSE
         "ELIf" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
@@ -605,12 +601,12 @@ PARSE_LINE_COMMAND:
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN:
-        VAR_WORD_LVALUE_PSH EQUAL EXPR emit TOK_DPOKE
+        VAR_WORD_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_DPOKE
         VAR_BYTE_LVALUE emit TOK_PUSH EQUAL EXPR emit TOK_POKE
-        VAR_STR_LVALUE_PSH  EQUAL STR_EXPR emit TOK_COPY_STR
-        VAR_STR_LVALUE_PSH  EQUAL "+" STR_EXPR emit TOK_CAT_STR
+        VAR_STR_LVALUE  emit TOK_PUSH EQUAL STR_EXPR emit TOK_COPY_STR
+        VAR_STR_LVALUE  emit TOK_PUSH EQUAL "+" STR_EXPR emit TOK_CAT_STR
 #@if FASTBASIC_FP
-        VAR_FP_LVALUE_PSH   EQUAL FP_EXPR emit TOK_FP_STORE
+        VAR_FP_LVALUE   emit TOK_PUSH EQUAL FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
 SKIP_COMMENT:
