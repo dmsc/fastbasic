@@ -29,11 +29,15 @@
 
         ; From interpreter.asm
         .importzp       next_instruction
-        .import         get_op_var
+        .import         get_op_var, pushAX
         ; From runtime.asm
         .importzp       tmp1
 
         .segment        "RUNTIME"
+
+.proc   EXE_PUSH_VAR_LOAD; push AX, load variable
+        jsr     pushAX
+.endproc        ; Fall through
 
 .proc   EXE_VAR_LOAD  ; AX = value of variable
         jsr     get_op_var
@@ -64,5 +68,6 @@ loadL:  lda     $FF00, y
         .include "../deftok.inc"
         deftoken "DPEEK"
         deftoken "VAR_LOAD"
+        deftoken "PUSH_VAR_LOAD"
 
 ; vi:syntax=asm_ca65

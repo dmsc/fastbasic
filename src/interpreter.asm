@@ -174,10 +174,10 @@ pop_stack_y = next_ins_incsp
 
         ; Stores AX into stack, at return Y is the stack pointer.
 .proc   pushAX
-        dec     sptr
         sta     stack_l-1, y
         txa
         sta     stack_h-1, y
+        dec     sptr            ; Note: PUSH_0 depends on return with Z flag not set!
         rts
 .endproc
 

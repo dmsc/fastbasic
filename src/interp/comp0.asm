@@ -29,10 +29,15 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, sptr
-        .import         stack_l, stack_h
+        .import         stack_l, stack_h, pushAX
         .export         pushXX_set0
 
         .segment        "RUNTIME"
+
+.proc   EXE_PUSH_0; push AX, load 0
+        jsr     pushAX
+        bne     EXE_0   ; Assume from pushAX that sptr is never 0
+.endproc
 
         ; Pushes X as "comparison return" into stack.
 .proc   pushXX_set0
@@ -46,6 +51,10 @@
         lda     #0
         beq     ret_0   ; Skip next 2 inst
 .endproc
+
+.proc   EXE_PUSH_1; push AX, load 1
+        jsr     pushAX
+.endproc        ; Fall through
 
 .proc   EXE_1
 ::ret_1:
@@ -67,5 +76,7 @@
         deftoken "COMP_0"
         deftoken "0"
         deftoken "1"
+        deftoken "PUSH_1"
+        deftoken "PUSH_0"
 
 ; vi:syntax=asm_ca65

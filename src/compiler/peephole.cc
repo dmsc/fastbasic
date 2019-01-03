@@ -217,6 +217,37 @@ class peephole
                 }
             }
         }
+        // Folds PUSH followed by known sequences
+        void fold_push()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                if( mtok(0,TOK_PUSH) )
+                {
+                    //   TOK_BYTE
+                    if( mtok(1,TOK_BYTE) )
+                    {
+                        set_tok(1, TOK_PUSH_BYTE); del(0);
+                    }
+                    //   TOK_1
+                    else if( mtok(1,TOK_1) )
+                    {
+                        set_tok(1, TOK_PUSH_1); del(0);
+                    }
+                    //   TOK_0
+                    else if( mtok(1,TOK_0) )
+                    {
+                        set_tok(1, TOK_PUSH_0); del(0);
+                    }
+                    //   TOK_VAR_LOAD / x
+                    if( mtok(1,TOK_VAR_LOAD) && mbyte(2) )
+                    {
+                        set_tok(1, TOK_PUSH_VAR_LOAD); del(0);
+                    }
+                }
+            }
+        }
         // Unused labels removal
         void remove_unused_labels()
         {
@@ -772,6 +803,7 @@ class peephole
                 }
             } while(changed);
             shorten_numbers();
+            fold_push();
         }
 };
 

@@ -27,7 +27,6 @@
 ; Floating Point comparison
 ; -------------------------
 
-        .importzp       sptr
         .import         pop_fr0, pop_fr1, pushXX_set0
 
         .include "atari.inc"

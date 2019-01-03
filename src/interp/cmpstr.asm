@@ -29,7 +29,6 @@
 
         ; From interpreter.asm
         .import         stack_l, stack_h, pushXX_set0
-        .importzp       sptr
         ; From runtime.asm
         .importzp       tmp1, tmp2, tmp3
 

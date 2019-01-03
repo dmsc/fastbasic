@@ -29,6 +29,7 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr
+        .import         pushAX
 
         .segment        "RUNTIME"
 
@@ -46,6 +47,10 @@
         bcs     inc_cptr_1      ; 2 =30 2 =18
         jmp     next_instruction
 .endproc
+
+.proc   EXE_PUSH_BYTE; push AX, load BYTE
+        jsr     pushAX
+.endproc        ; Fall through
 
 .proc   EXE_BYTE  ; AX = read 1 byte from op
         ldx     #0
@@ -73,6 +78,7 @@ xit:    jmp     next_instruction
         .include "../deftok.inc"
         deftoken "NUM"
         deftoken "BYTE"
+        deftoken "PUSH_BYTE"
         deftoken "CSTRING"
 
 ; vi:syntax=asm_ca65
