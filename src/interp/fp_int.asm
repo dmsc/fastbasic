@@ -28,7 +28,7 @@
 ; ---------------------
 
         .importzp       tmp1, IOERROR
-        .import         neg_AX, pop_fr1, next_instruction
+        .import         neg_AX, pop_fr0, next_instruction
 
         .include "atari.inc"
 
@@ -44,22 +44,18 @@
         ; Store error #3
 err3:   lda     #3
         sta     IOERROR
+ok:     lda     FR0
+        ; Save A, pop FP stack and restore
+        pha
+        jsr     pop_fr0
+        pla
+
         ; Negate result if original number was negative
-ok:     plp
+        plp
         bpl     pos
 
-        lda     #0
-        sec
-        sbc     FR0
-        sta     FR0
-        lda     #0
-        sbc     FR0+1
-        tax
-
-        ; Pop FP stack and restore
+        jsr     neg_AX
 pos:
-        jsr     pop_fr1
-        lda     FR0
         jmp     next_instruction
 .endproc
 
