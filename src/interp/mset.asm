@@ -28,7 +28,7 @@
 ; ---------------------------------------
 
         ; From interpreter.asm
-        .import         stack_l, stack_h, pop_stack_3
+        .import         stack_l, stack_h, pop_stack_2
         .import         mem_set
         .importzp       tmp1, tmp2
 
@@ -37,7 +37,7 @@
         .segment        "RUNTIME"
 
 .proc   EXE_MSET
-        pha             ; Store value to set into stack
+        pha             ; Store value to set
 
         lda     stack_l, y
         sta     tmp1
@@ -52,7 +52,7 @@
         tay
         jsr     mem_set
 
-        jmp     pop_stack_3
+        jmp     pop_stack_2
 .endproc
 
         .include "../deftok.inc"

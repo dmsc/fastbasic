@@ -1,0 +1,10 @@
+Name: Test MSET statement
+Test: run
+Output:
+Long string, filled with characters.
+Long striAAAAAAAAAAAAAAA characters.
+Long striABBBBBBBBBBBBBA characters.
+Long striABCCCCCCCCCCCBA characters.
+Long striABCDDDDDDDDDCBA characters.
+Long striABCDEEEEEEEDCBA characters.
+Long striABCDEFFFFFEDCBA characters.
