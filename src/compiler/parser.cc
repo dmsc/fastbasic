@@ -771,33 +771,37 @@ static bool SMB_E_VAR_STRING(parse &s)
 static atari_fp get_fp_number(parse &s)
 {
     auto start = s.pos;
+    bool ok = false;
 
     // Optional sign
     s.expect('-');
 
     // Integer part
-    while( s.range('0', '9') );
+    while( s.range('0', '9') )
+        ok = true;
 
     // Optional dot
     if( s.expect('.') )
     {
         // Fractional part
-        while( s.range('0', '9') );
+        while( s.range('0', '9') )
+            ok = true;
     }
+
+    if( !ok )
+        return atari_fp(HUGE_VAL); // return invalid number
 
     // Optional exponent, only if any number before
-    if( s.pos != start && s.expect('E') )
+    auto spos = s.save();
+    if( s.expect('E') && // "E"
+        (s.expect('-') || s.expect('+') || ok) && // '+' or '-' or nothing
+        s.range('0', '9') ) // One figit
     {
-        // Optional exponent sign
-        if( !s.expect('-') )
-            s.expect('+');
-        // And up to two numbers
-        s.range('0', '9');
+        // Optional second digit
         s.range('0', '9');
     }
-
-    if( s.pos == start )
-        return atari_fp(HUGE_VAL); // return invalid number
+    else
+        s.restore(spos);
 
     auto sn = s.str.substr(start, s.pos - start);
     s.debug("(got '" + sn + "')");
