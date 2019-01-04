@@ -31,32 +31,30 @@
         .import         stack_l, stack_h
         .importzp       next_ins_incsp
         ; From runtime.asm
-        .importzp       tmp1
+        .importzp       tmp1, tmp2
 
         .segment        "RUNTIME"
 
 .proc   EXE_DPOKE  ; DPOKE (SP++), AX
-        pha
-        lda     stack_h, y
+        stx     tmp2            ; Save X
+        ldx     stack_h, y
 .if 0
-        sta     tmp1+1
-        lda     stack_l, y
-        sta     tmp1
+        stx     tmp1+1
+        ldx     stack_l, y
+        stx     tmp1
         ldy     #0
-        pla
         sta     (tmp1), y
-        txa
         iny
+        lda     tmp2            ; Restore X
         sta     (tmp1), y
 .else
         ; Self-modifying code, 4 cycles faster and 1 byte larger than the above
-        sta     save_l+2
-        sta     save_h+2
-        txa
+        stx     save_l+2
+        stx     save_h+2
         ldx     stack_l, y
-save_h: sta     $FF01, x
-        pla
-save_l: sta     $FF00, x
+save_h: sta     $FF00, x
+        lda     tmp2            ; Restore X
+save_l: sta     $FF01, x
 .endif
         jmp     next_ins_incsp
 .endproc

@@ -36,19 +36,16 @@
         .segment        "RUNTIME"
 
 .proc   EXE_POKE  ; POKE (SP++), AX
-        tax
-        lda     stack_h, y
+        ldx     stack_h, y
 .if 0
-        sta     tmp1+1
-        lda     stack_l, y
-        sta     tmp1
-        txa
+        stx     tmp1+1
+        ldx     stack_l, y
+        stx     tmp1
         ldy     #0
         sta     (tmp1), y
 .else
-        ; Self-modifying code, 2 cycles faster and 2 bytes shorter than the above
-        sta     save+2
-        txa
+        ; Self-modifying code, 5 cycles faster and 2 bytes shorter than the above
+        stx     save+2
         ldx     stack_l, y
 save:   sta     $FF00, x
 .endif

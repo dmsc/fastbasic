@@ -38,15 +38,15 @@
 .if 0
         sta     tmp1
         stx     tmp1+1
-        ldy     #0
-        lda     (tmp1),y
+        ldx     #0
+        lda     (tmp1,x)
 .else
-        ; Self-modifying code, 3 cycles faster and 1 byte shorter than the above
+        ; Self-modifying code, 2 cycles faster and 1 byte larger than the above
         stx     load+2
         tax
 load:   lda     $FF00, x
-.endif
         ldx     #0
+.endif
         jmp     next_instruction
 .endproc
 
