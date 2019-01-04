@@ -52,6 +52,8 @@ EXE_FOR_EXIT    = pop_stack_3
         ; FOR: First iteration, goes to FOR_NEXT but does not add STEP
         ;      to variable
 .proc   EXE_FOR
+        jsr     pushAX
+        dey
         sec
         .byte   $90     ; BCC not taken, skips next CLC
 .endproc                ; Fall through
