@@ -217,6 +217,30 @@ class peephole
                 }
             }
         }
+        // Expands PUSH tokens
+        void expand_push()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                if( mtok(0,TOK_PUSH_BYTE) )
+                {
+                    set_tok(0, TOK_BYTE); ins_tok(0, TOK_PUSH);
+                }
+                else if( mtok(0,TOK_PUSH_0) )
+                {
+                    set_tok(0, TOK_0); ins_tok(0, TOK_PUSH);
+                }
+                else if( mtok(0,TOK_PUSH_1) )
+                {
+                    set_tok(0, TOK_1); ins_tok(0, TOK_PUSH);
+                }
+                else if( mtok(0,TOK_PUSH_VAR_LOAD) )
+                {
+                    set_tok(0, TOK_VAR_LOAD); ins_tok(0, TOK_PUSH);
+                }
+            }
+        }
         // Folds PUSH followed by known sequences
         void fold_push()
         {
@@ -359,6 +383,7 @@ class peephole
         peephole(std::vector<codew> &code):
             code(code), current(0)
         {
+            expand_push();
             expand_numbers();
             do
             {
