@@ -29,7 +29,6 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr, tmp1
-        .export         jump_ax
 
         .segment        "RUNTIME"
 
@@ -49,14 +48,27 @@
         tax                     ; 2     1
         dey                     ; 2     1
         lda     (cptr), y       ; 5     2
- ::jump_ax:
         sta     cptr            ; 3     2
         stx     cptr+1          ; 3     2
         jmp     next_instruction
 .endproc
 
+.proc   EXE_CJUMP
+        lsr
+        bcc     EXE_JUMP
+
+skip:   lda     cptr
+;       sec             ; C is always set from above comparison
+        adc     #1
+        sta     cptr
+        bcc     xit
+        inc     cptr+1
+xit:    jmp     next_instruction
+.endproc
+
         .include "../deftok.inc"
         deftoken "CALL"
         deftoken "JUMP"
+        deftoken "CJUMP"
 
 ; vi:syntax=asm_ca65

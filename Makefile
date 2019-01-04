@@ -118,7 +118,6 @@ COMMON_AS_SRC=\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
     src/interp/cdata.asm\
-    src/interp/cjump.asm\
     src/interp/close.asm\
     src/interp/chr.asm\
     src/interp/cmpstr.asm\
