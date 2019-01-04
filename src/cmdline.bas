@@ -99,7 +99,7 @@ PROC CompileFile
   ? "Compiling..."
   if USR( @compile_buffer, Adr(MemStart), MemEnd+1)
     ' Parse error, show
-    ? " at line "; dpeek(@@linenum) - 1; " column "; peek( @@bmax )
+    ? " at line "; dpeek(@@linenum); " column "; peek( @@bmax )
   else
     exec SaveCompiledFile
   endif
