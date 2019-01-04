@@ -309,15 +309,22 @@ int fbtest(const char *fname)
     /* File format:
      *   NAME: The name of the test
      *   TEST: The test to do
+     *   INPUT:
+     *   Optional input, up to a line with only a '.'.
      *   OUTPUT:
      *   The expected output, up to the end of the file.
      */
-    char *name = 0, *expected_out = 0;
+    char *name = 0, *expected_out = 0, *input_buf = 0;
     int test = 0, n = 0, line = 0;
-    char key[16], buf[256];
-    while (EOF != (n = fscanf(f, "%15[^:]:%*[ \t]%255[^\n\r]\n", key, buf)))
+    char lbuf[256];
+    while ( 0 != fgets(lbuf, sizeof(lbuf)-1, f) )
     {
         line ++;
+        if ( !*lbuf || *lbuf == '\n' )
+            continue;
+
+        char key[16], buf[256];
+        n = sscanf(lbuf, "%15[^:]: %255[^\n\r]", key, buf);
         if (n < 1)
         {
             fprintf(stderr, "%s:%d: error, can't parse 'key: value'\n", fname, line);
@@ -351,26 +358,67 @@ int fbtest(const char *fname)
                 return -1;
             }
         }
+        else if (!strcasecmp(key, "input"))
+        {
+            size_t input_size = 0;
+            if (n > 1 && *buf)
+            {
+                fprintf(stderr, "%s:%d: error, extra characters in INPUT '%s'\n", fname, line, buf);
+                return -1;
+            }
+            if (input_buf)
+            {
+                fprintf(stderr, "%s:%d: more than one INPUT section.\n", fname, line);
+                free(input_buf);
+                return -1;
+            }
+            // Get the rest of the file until the end
+            input_buf = calloc(8192, 1);
+            // Read lines
+            while ( 0 != fgets(lbuf, sizeof(lbuf)-1, f) )
+            {
+                line++;
+                if ( !strcmp(lbuf, ".") || !strcmp(lbuf, ".\n") )
+                    break;
+                size_t l = strlen(lbuf);
+                if (l + input_size > 8191)
+                {
+                    fprintf(stderr, "%s:%d: error, extra characters in output '%s'\n", fname, line, buf);
+                    free(input_buf);
+                    return -1;
+                }
+                memcpy(input_buf + input_size, lbuf, l);
+                input_size += l;
+            }
+            input_buf[input_size] = 0;
+            if (feof(f))
+            {
+                fprintf(stderr, "%s:%d: unfinished INPUT section.\n", fname, line);
+                free(input_buf);
+                return -1;
+            }
+        }
         else if (!strcasecmp(key, "output"))
         {
             if (n > 1 && *buf)
             {
-                fprintf(stderr, "%s:%d: error, extra characters in output '%s'\n", fname, line, buf);
+                fprintf(stderr, "%s:%d: error, extra characters in OUTPUT '%s'\n", fname, line, buf);
+                free(input_buf);
                 return -1;
             }
-            // Read end of line
-            fscanf(f, "%*[\n\r]");
             // Get the rest of the file until the end
             expected_out = calloc(65536, 1);
             size_t len = fread(expected_out, 1, 65535, f);
             if (len >= 65535)
             {
                 fprintf(stderr, "%s: error, output text too long.\n", fname);
+                free(input_buf);
                 return -1;
             }
             else if(len < 1)
             {
                 fprintf(stderr, "%s: error, no output.\n", fname);
+                free(input_buf);
                 return -1;
             }
             expected_out[len] = 0;
@@ -394,6 +442,8 @@ int fbtest(const char *fname)
         name = "unnamed";
     if (!expected_out)
         expected_out = strdup("");
+    if (!input_buf)
+        input_buf = strdup("");
 
     // Get file names from test file
     const char *ext = rindex(fname, '.');
@@ -438,7 +488,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp native\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, "", expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out))
                     break;
             }
 
@@ -453,7 +503,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, "", expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out))
                     break;
             }
         }
@@ -470,7 +520,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run int cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, "", expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out))
                     break;
             }
         }
@@ -481,6 +531,7 @@ int fbtest(const char *fname)
 
     printf("TEST '%s': %s\n", name, test_ok ? "passed" : "not passed");
     free(cmd_out);
+    free(input_buf);
     free(expected_out);
     free(name);
     free(basname);
