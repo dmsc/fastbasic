@@ -29,7 +29,7 @@
 
         .export CIOV_CMD_POP2
         ; From close.asm
-        .import CIOV_CMD_POP
+        .import CIOV_CMD
         ; From runtime.asm
         .import         neg_AX
         .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR
@@ -70,7 +70,7 @@
 CIOV_CMD_POP2:
         inc     sptr
         inc     sptr
-        jmp     CIOV_CMD_POP
+        jmp     CIOV_CMD
 
         .include "../deftok.inc"
         deftoken "XIO"

@@ -27,7 +27,7 @@
 ; Graphics command
 ; ----------------
 
-        .import CIOV_CMD_POP
+        .import CIOV_CMD
 
         .include "atari.inc"
 
@@ -46,7 +46,7 @@
         lda     #>device_s
         sta     ICBAH, x
         lda     #OPEN
-        jmp     CIOV_CMD_POP
+        jmp     CIOV_CMD
 device_s: .byte "S:", $9B
 .endproc
 

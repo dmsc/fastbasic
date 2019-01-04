@@ -125,7 +125,6 @@ COMMON_AS_SRC=\
     src/interp/comp0.asm\
     src/interp/const.asm\
     src/interp/copystr.asm\
-    src/interp/creturn.asm\
     src/interp/dec.asm\
     src/interp/dim.asm\
     src/interp/div.asm\
@@ -138,7 +137,7 @@ COMMON_AS_SRC=\
     src/interp/graphics.asm\
     src/interp/inc.asm\
     src/interp/input.asm\
-    src/interp/iochn0.asm\
+    src/interp/iochn.asm\
     src/interp/ioget.asm\
     src/interp/jump.asm\
     src/interp/land.asm\

@@ -24,8 +24,27 @@
 ; linked into a combine executable.)
 
 
-; Conditional return from subroutine
-; ----------------------------------
+; Set I/O channel to 0
+; --------------------
 
+        ; From runtime.asm
+        .importzp       IOCHN
+
+        ; From interpreter.asm
+        .importzp       next_instruction
+
+        .segment        "RUNTIME"
+
+.proc   EXE_IOCHN
+        asl
+        asl
+        asl
+        asl
+        sta     IOCHN
+        jmp     next_instruction
+.endproc
+
+        .include "../deftok.inc"
+        deftoken "IOCHN"
 
 ; vi:syntax=asm_ca65

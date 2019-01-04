@@ -27,7 +27,7 @@
 ; CIO put character
 ; -----------------
 
-        .export putc, putc_nosave, putspc
+        .export putc, putc_direct, putspc
 
         ; From runtime.asm
         .importzp       IOCHN, tabpos
@@ -36,9 +36,8 @@
 
         .segment        "RUNTIME"
 
-.proc   putc_nosave
+.proc   putc_direct
         tay
-        ldx     IOCHN
         lda     ICAX1,X
         sta     ICAX1Z
         lda     ICPTH, x
@@ -52,8 +51,9 @@
 putspc:
         lda     #$20
 .proc   putc
+        ldx     IOCHN
         sty     save_y+1
-        jsr     putc_nosave
+        jsr     putc_direct
 save_y: ldy     #0
         dec     tabpos
         bpl     :+

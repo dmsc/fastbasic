@@ -27,11 +27,11 @@
 ; PUT character or PUT EOL
 ; ------------------------
 
-        .import CIOV_IOERR_POP
+        .import CIOV_IOERR
 
         ; From runtime.asm
-        .import         putc_nosave
-        .importzp       tabpos, IOCHN
+        .import         putc_direct
+        .importzp       tabpos, IOCHN, COLOR
 
         .segment        "RUNTIME"
 
@@ -41,13 +41,15 @@ EXE_PRINT_EOL:          ; PRINT EOL
         sta     tabpos
         lda     #$9b
 EXE_PUT:                ; PUT character
-        jsr     putc_nosave
-        jmp     CIOV_IOERR_POP
+        ldx     IOCHN
+call_putc:
+        jsr     putc_direct
+        jmp     CIOV_IOERR
 
 EXE_PLOT:
+        lda     COLOR
         ldx     #$60    ; IOCB #6
-        stx     IOCHN
-        bne     EXE_PUT
+        bne     call_putc
 
         .include "../deftok.inc"
         deftoken "PRINT_EOL"

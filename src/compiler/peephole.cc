@@ -278,51 +278,27 @@ class peephole
             {
                 if( mlabel(0) || mtok(0, TOK_CALL) )
                     ioch = 0; // Assume 0 after any label or CALL
-                else if( mtok(0, TOK_CLOSE) ||
-                         mtok(0, TOK_BPUT) ||
-                         mtok(0, TOK_BGET) ||
-                         mtok(0, TOK_DRAWTO) ||
-                         mtok(0, TOK_GRAPHICS) ||
-                         mtok(0, TOK_PLOT) ||
-                         mtok(0, TOK_PRINT_EOL) ||
-                         mtok(0, TOK_PUT) ||
-                         mtok(0, TOK_XIO) )
+                else if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_IOCHN) )
                 {
-                    ioch = 0; // Tokens that set IOCHN to 0
-                }
-                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") && mtok(2,TOK_PUSH) &&
-                        mtok(3,TOK_NUM) && mword(4) && mtok(5,TOK_POKE) )
-                {
-                    if( ioch == val(4) )
+                    if( ioch == val(1) )
                     {
                         // Remove redundant set IOCHN
-                        del(5); del(4); del(3); del(2); del(1); del(0);
+                        del(2); del(1); del(0);
                         current--;
                     }
                     else
-                        ioch = val(4);
+                        ioch = val(1);
                 }
-                else if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") )
+                else if( mtok(0,TOK_IOCHN) )
                 {
                     ioch = -1;
                 }
-                else if( mtok(0, TOK_IOCHN0) &&
-                         mtok(1,TOK_BYTE) && mcbyte(2, "IOCHN") && mtok(3,TOK_PUSH) &&
-                         mtok(4,TOK_NUM) && mword(5) && mtok(6,TOK_POKE) )
+                else if( mtok(0,TOK_NUM) && mword(1) && mtok(2,TOK_IOCHN) &&
+                         mtok(3,TOK_NUM) && mword(4) && mtok(5,TOK_IOCHN) )
                 {
-                    // Setting I/O channel just after IOCHN0, delete redundant one
-                    del(0);
-                    current++;
-                }
-                else if( mtok(0, TOK_IOCHN0 ) )
-                {
-                    if( ioch == 0 )
-                    {
-                        del(0);
-                        current--;
-                    }
-                    else
-                        ioch = 0;
+                    // Setting I/O channel just after IOCHN, delete redundant one
+                    del(2); del(1); del(0);
+                    current--;
                 }
             }
         }
@@ -601,13 +577,6 @@ class peephole
                         val(1) == val(4) )
                     {
                         set_tok(2, TOK_DEC); del(9); del(8); del(7); del(6); del(5); del(4); del(3); i--;
-                        continue;
-                    }
-                    //   TOK_BYTE / IOCHN / TOK_PUSH / TOK_NUM / 0 / TOK_POKE  -> TOK_IOCHN0
-                    if( mtok(0,TOK_BYTE) && mcbyte(1, "IOCHN") && mtok(2,TOK_PUSH) &&
-                        mtok(3,TOK_NUM) && mword(4) && val(4) == 0 && mtok(5,TOK_POKE) )
-                    {
-                        set_tok(0, TOK_IOCHN0); del(5); del(4); del(3); del(2); del(1); i--;
                         continue;
                     }
                     // NOT NOT A -> A

@@ -27,7 +27,7 @@
 ; Calls CIO CLOSE
 ; ---------------
 
-        .export         CIOV_CMD_POP, CIOV_IOERR_POP
+        .export         CIOV_CMD, CIOV_IOERR
 
         ; From runtime.asm
         .importzp       IOCHN, IOERROR
@@ -48,14 +48,12 @@ EXE_CLOSE:
         lda     #CLOSE
 
         ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack
-CIOV_CMD_POP:
+CIOV_CMD:
         sta     ICCOM, x
         ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
         jsr     CIOV
-CIOV_IOERR_POP:
+CIOV_IOERR:
         sty     IOERROR
-        ldy     #0
-        sty     IOCHN
         jmp     next_instruction
 
         .include "../deftok.inc"

@@ -50,8 +50,8 @@ TOKENS {
  # I/O
  TOK_GETKEY, TOK_INPUT_STR, TOK_XIO, TOK_CLOSE, TOK_GET, TOK_PUT
  TOK_BPUT, TOK_BGET
- # Optimization - set's IO channel to 0
- TOK_IOCHN0
+ # Set's IO channel (before PRINT/INPUT/PUT/GET)
+ TOK_IOCHN
  # Jumps
  TOK_JUMP, TOK_CJUMP, TOK_CALL, TOK_RET, TOK_CRET
  # FOR loop support
@@ -349,7 +349,7 @@ PRINT_EXPR:
 
 PRINT_NEXT:
 	PRINT_SEP PRINT_SEP_MORE PRINT_ONE PRINT_NEXT
-        PRINT_SEP PRINT_SEP_MORE emit TOK_IOCHN0
+        PRINT_SEP PRINT_SEP_MORE emit TOK_0 emit TOK_IOCHN
         emit TOK_PRINT_EOL
 #@endif !FASTBASIC_FP
 
@@ -365,7 +365,7 @@ PRINT_EXPR:
 
 PRINT_NEXT:
 	PRINT_SEP PRINT_SEP_MORE PRINT_ONE
-        PRINT_SEP PRINT_SEP_MORE emit TOK_IOCHN0
+        PRINT_SEP PRINT_SEP_MORE emit TOK_0 emit TOK_IOCHN
         E_EOL emit TOK_PRINT_EOL
 #@endif FASTBASIC_FP
 
@@ -446,7 +446,7 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        IO_CHAN_SET ","                                  # I/O channel, don't print prompt
+        IO_CHAN_SET ","                       # I/O channel, don't print prompt
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
         emit TOK_BYTE emit 63 emit TOK_PUT               # Prints a '?' by default
@@ -485,7 +485,7 @@ IO_CHAN: I/O channel number
         "#" EXPR
 
 IO_CHAN_SET: I/O channel number
-        "#" emit TOK_BYTE emit IOCHN emit TOK_PUSH EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_POKE
+        "#" EXPR emit TOK_IOCHN
 
 IO_CHAN_OPT:
         IO_CHAN_SET ","
@@ -508,7 +508,7 @@ GET_EXPR: variable name
 
 GET_EXPR_MORE:
         GET_EXPR
-        emit TOK_IOCHN0
+        emit TOK_0 emit TOK_IOCHN
 
 # A comma followed by an expression
 C_EXPR: comma followed by an expression
@@ -551,7 +551,7 @@ PARSE_LINE_COMMAND:
 	"." E_REM
 	"?" IO_CHAN_OPT PRINT_EXPR
 	"PRint" IO_CHAN_OPT PRINT_EXPR
-        "INput" INPUT_STR INPUT_VAR_LIST emit TOK_IOCHN0
+        "INput" INPUT_STR INPUT_VAR_LIST emit TOK_0 emit TOK_IOCHN
         "GEt" GETK_EXPR
         "GEt" IO_CHAN_SET GET_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT
@@ -578,7 +578,7 @@ PARSE_LINE_COMMAND:
         "Color" emit TOK_BYTE emit COLOR emit TOK_PUSH EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT emit TOK_PUSH EXPR emit TOK_POKE
         "POSition" POSITION
-        "PLot" POSITION emit TOK_BYTE emit COLOR emit TOK_PEEK emit TOK_PLOT
+        "PLot" POSITION emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
         "SEtcolor" EXPR emit TOK_PUSH emit TOK_NUM word COLOR0 emit TOK_ADD EXPR_AB emit TOK_POKE

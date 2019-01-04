@@ -55,7 +55,7 @@ PROC InputFilename
     elif key = 155
       pos. 6, 0
       poke @CH, 12: ' Force ENTER
-      input #0, FileName$
+      input ; FileName$
       key = 0
       exit
     elif key >= 30 and key <= 124 or key = 126
