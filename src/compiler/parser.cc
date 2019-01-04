@@ -394,6 +394,9 @@ static unsigned long get_number(parse &s)
     }
     else
     {
+        // Skip initial "-"
+        s.expect('-');
+
         if( !s.range('0', '9') )
             return 65536;
 
@@ -405,7 +408,10 @@ static unsigned long get_number(parse &s)
         }
         auto sn = s.str.substr(start, s.pos - start);
         s.debug("(got '" + sn + "')");
-        return std::stoul(sn);
+        if( sn.length() && sn[0] == '-' )
+            return 65536 - std::stoul(sn.substr(1));
+        else
+            return std::stoul(sn);
     }
 }
 
