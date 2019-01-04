@@ -169,6 +169,7 @@ COMMON_AS_SRC=\
     src/interp/usr.asm\
     src/interp/val.asm\
     src/interp/varaddr.asm\
+    src/interp/varstore.asm\
     src/interp/xio.asm\
 
 # FP Interpreter ASM files

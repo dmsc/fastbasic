@@ -27,6 +27,7 @@
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_ARRAY_STRING
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
+        .export         E_PUSH_VAR, E_POP_VAR
         .export         check_labels
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
@@ -589,6 +590,21 @@ start:
         bcc     start
         inc     tmp1+1
         bcs     start
+.endproc
+
+; PUSH/POP variables
+.proc   E_PUSH_VAR
+        dec     opos
+        ldy     opos
+        lda     (prog_ptr), y
+        sta     E_POP_VAR+1
+        clc
+        rts
+.endproc
+
+.proc   E_POP_VAR
+        lda     #0
+        jmp     parser_emit_byte
 .endproc
 
 ; Actions for LOOPS

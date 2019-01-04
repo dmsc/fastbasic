@@ -35,6 +35,7 @@ class parse {
                 LoopType type;
                 std::string label;
         };
+        int sto_var;
         int lvl, maxlvl;
         std::string str;
         size_t pos;
@@ -50,6 +51,7 @@ class parse {
         std::vector<codew> *code;
 
         parse():
+            sto_var(-1),
             lvl(0), maxlvl(0), pos(0),
             max_pos(0), linenum(0), label_num(0),
             finalized(false),
@@ -501,6 +503,32 @@ static bool SMB_E_REM(parse &s)
     s.debug("E_REM");
     while( !s.eos() && !s.expect('\n') && !s.expect('\x9b') )
         s.pos++;
+    return true;
+}
+
+static bool SMB_E_PUSH_VAR(parse &s)
+{
+    // nothing to do!
+    s.debug("E_PUSH_VAR");
+    if (s.sto_var >= 0)
+    {
+        s.debug("---------->ERROR: var already in stack!\n");
+        return false;
+    }
+    s.sto_var = s.remove_last().get_val();
+    return true;
+}
+
+static bool SMB_E_POP_VAR(parse &s)
+{
+    s.debug("E_POP_VAR");
+    if (s.sto_var < 0)
+    {
+        s.debug("---------->ERROR: var stack empty!\n");
+        return false;
+    }
+    s.emit_byte( s.sto_var );
+    s.sto_var = -1;
     return true;
 }
 

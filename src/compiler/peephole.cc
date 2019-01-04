@@ -581,6 +581,18 @@ class peephole
                         continue;
                     }
                     //  VAR = VAR + 1   ==>  INC VAR
+                    //   TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_VAR_STORE / x
+                    //        -> TOK_VAR_A / x / TOK_INC
+                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_NUM) && mword(4) && val(4) == 1 &&
+                        mtok(5,TOK_ADD) && mtok(6,TOK_VAR_STORE) && mbyte(7) &&
+                        val(1) == val(7) )
+                    {
+                        set_tok(0, TOK_VAR_ADDR); set_tok(2, TOK_INC);
+                        del(7); del(6); del(5); del(4); del(3); i--;
+                        continue;
+                    }
+                    //  VAR = VAR + 1   ==>  INC VAR
                     //   TOK_VAR_A / x / TOK_PUSH / TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_DPOKE
                     //        -> TOK_VAR_A / x / TOK_INC
                     if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_PUSH) &&
@@ -590,6 +602,18 @@ class peephole
                         val(1) == val(4) )
                     {
                         set_tok(2, TOK_INC); del(9); del(8); del(7); del(6); del(5); del(4); del(3); i--;
+                        continue;
+                    }
+                    //  VAR = VAR - 1   ==>  DEC VAR
+                    //   TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_SUB / TOK_VAR_STORE / x
+                    //        -> TOK_VAR_A / x / TOK_DEC
+                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_NUM) && mword(4) && val(4) == 1 &&
+                        mtok(5,TOK_SUB) && mtok(6,TOK_VAR_STORE) && mbyte(7) &&
+                        val(1) == val(7) )
+                    {
+                        set_tok(0, TOK_VAR_ADDR); set_tok(2, TOK_DEC);
+                        del(7); del(6); del(5); del(4); del(3); i--;
                         continue;
                     }
                     //  VAR = VAR - 1   ==>  DEC VAR
