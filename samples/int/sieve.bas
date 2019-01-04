@@ -1,9 +1,10 @@
 ? "Starting!"
-NumIter = 1
+NumIter = 10
 sTime = TIME
 ' Arrays are initialized to 0
 DIM A(8190) Byte
 FOR Iter= 1 TO NumIter
+  MSET Adr(A), 8190, 0
   Count = 0
   FOR I = 0 TO 8190
     IF NOT A(I)
