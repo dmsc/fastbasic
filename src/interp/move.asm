@@ -28,7 +28,7 @@
 ; -------------------------
 
         ; From interpreter.asm
-        .import         stack_l, stack_h, pop_stack_2
+        .import         stack_l, stack_h, next_ins_incsp_2
 
         .include "atari.inc"
 
@@ -79,7 +79,7 @@ dst:    sta     $FF00,y
 cpage:  dex
         bne     cloop
 
-xit:    jmp     pop_stack_2
+xit:    jmp     next_ins_incsp_2
 
 .endproc
 

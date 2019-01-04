@@ -30,8 +30,8 @@
         ; From fpmain.asm
         .import         push_fr0
         ; From interpreter.asm
-        .import         get_str_eol, pop_stack
-        .importzp       IOERROR
+        .import         get_str_eol
+        .importzp       IOERROR, next_ins_incsp
 
         .include "atari.inc"
 
@@ -44,7 +44,7 @@
         bcc     :+
         lda     #18
         sta     IOERROR
-:       jmp     pop_stack
+:       jmp     next_ins_incsp
 .endproc
 
         .include "../deftok.inc"

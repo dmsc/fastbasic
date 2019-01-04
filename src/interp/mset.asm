@@ -28,7 +28,7 @@
 ; ---------------------------------------
 
         ; From interpreter.asm
-        .import         stack_l, stack_h, pop_stack_2
+        .import         stack_l, stack_h, next_ins_incsp_2
         .import         mem_set
         .importzp       tmp1, tmp2
 
@@ -52,7 +52,7 @@
         tay
         jsr     mem_set
 
-        jmp     pop_stack_2
+        jmp     next_ins_incsp_2
 .endproc
 
         .include "../deftok.inc"

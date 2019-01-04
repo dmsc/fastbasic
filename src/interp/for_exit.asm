@@ -24,42 +24,27 @@
 ; linked into a combine executable.)
 
 
-; Convert FP to integer
-; ---------------------
+; Exit from FOR/NEXT
+; ------------------
 
-        .importzp       tmp1, IOERROR, next_instruction
-        .import         neg_AX, pop_fr0
+        ; From interpreter.asm
+        .importzp       next_ins_incsp, sptr
 
-        .include "atari.inc"
+        .export         next_ins_incsp_2
 
         .segment        "RUNTIME"
 
-.proc   EXE_FP_INT      ; Convert FP to INT, with rounding
-        lda     FR0
-        php             ; Store sign
-        jsr     FPI
-        bcs     err3
-        ldx     FR0+1
-        bpl     ok
-        ; Store error #3
-err3:   lda     #3
-        sta     IOERROR
-ok:     lda     FR0
-        ; Save A, pop FP stack and restore
-        pha
-        jsr     pop_fr0
-        pla
+        ; FOR_EXIT: Remove the FOR arguments from the stack!
+.proc   EXE_FOR_EXIT
+        inc     sptr
+.endproc        ; Fall through
 
-        ; Negate result if original number was negative
-        plp
-        bpl     pos
-
-        jsr     neg_AX
-pos:
-        jmp     next_instruction
+.proc   next_ins_incsp_2
+        inc     sptr
+        jmp     next_ins_incsp
 .endproc
 
         .include "../deftok.inc"
-        deftoken "FP_INT"
+        deftoken "FOR_EXIT"
 
 ; vi:syntax=asm_ca65

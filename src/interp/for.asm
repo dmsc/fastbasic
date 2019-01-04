@@ -30,14 +30,10 @@
         ; From interpreter.asm
         .importzp       next_instruction, next_ins_incsp, sptr
         .import         stack_l, stack_h, pushAX, EXE_DPOKE
-        .import         pop_stack_3
         ; From runtime.asm
         .importzp       tmp1, tmp2, tmp3
 
         .segment        "RUNTIME"
-
-        ; FOR_EXIT: Remove the FOR arguments from the stack!
-EXE_FOR_EXIT    = pop_stack_3
 
         ; FOR_START: Stores starting value to FOR variable and
         ;            keeps the address in the stack.
@@ -181,6 +177,5 @@ positive:
         deftoken "FOR"
         deftoken "FOR_START"
         deftoken "FOR_NEXT"
-        deftoken "FOR_EXIT"
 
 ; vi:syntax=asm_ca65

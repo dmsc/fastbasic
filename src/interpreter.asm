@@ -28,8 +28,8 @@
 ; ----------------------
 
         .export         interpreter_run, saved_cpu_stack, stack_l, stack_h
-        .export         pushAX, stack_end, pop_stack, pop_stack_2, pop_stack_3
-        .export         pop_stack_y, EXE_END
+        .export         pushAX, stack_end
+        .export         EXE_END
 
         .exportzp       interpreter_cptr, var_count, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
@@ -163,14 +163,6 @@ interpreter_cptr        =       cptr
         ; Interpret opcodes
         jmp     next_instruction
 .endproc
-
-pop_stack_3:
-        inc     sptr
-pop_stack_2:
-        inc     sptr
-        jmp     next_ins_incsp
-pop_stack = next_ins_incsp
-pop_stack_y = next_ins_incsp
 
         ; Stores AX into stack, at return Y is the stack pointer.
 .proc   pushAX
