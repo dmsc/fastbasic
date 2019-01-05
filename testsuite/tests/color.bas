@@ -1,23 +1,20 @@
 
-' Simulates graphics mode!
-open #6, 12, 0, "E:"
-
 ? "Start"
-color 65
+
+gr. 8
+
+color 1
 plot 0,0
 plot 1,0
-plot 500,3
-x = peek($54)
-y = dpeek($55)
-?
-? x, y
+plot 310,76
+drawto 20,30
 
-pos. 500,7
-x = peek($54)
-y = dpeek($55)
-?
-? x, y
+gr.9+16
 
-fcolor 123
-? peek($02FD)
+color 3
+plot 3,7
+dr. 5,23
+
+fcolor 7
+fillto 45,30
 

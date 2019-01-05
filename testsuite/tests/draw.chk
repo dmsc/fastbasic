@@ -1,4 +1,72 @@
-Name: Test int/fp math
+Name: Test plot/drawto
 Test: run
 Output:
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+SCREEN: set graphics 7 with text window
+SCREEN: plot 100,0  color 2
+SCREEN: draw to 0,0  color 2
+SCREEN: plot 97,0  color 2
+SCREEN: draw to 0,3  color 2
+SCREEN: plot 94,0  color 2
+SCREEN: draw to 0,6  color 2
+SCREEN: plot 91,0  color 2
+SCREEN: draw to 0,9  color 2
+SCREEN: plot 88,0  color 2
+SCREEN: draw to 0,12  color 2
+SCREEN: plot 85,0  color 2
+SCREEN: draw to 0,15  color 2
+SCREEN: plot 82,0  color 2
+SCREEN: draw to 0,18  color 2
+SCREEN: plot 79,0  color 2
+SCREEN: draw to 0,21  color 2
+SCREEN: plot 76,0  color 2
+SCREEN: draw to 0,24  color 2
+SCREEN: plot 73,0  color 2
+SCREEN: draw to 0,27  color 2
+SCREEN: plot 70,0  color 2
+SCREEN: draw to 0,30  color 2
+SCREEN: plot 67,0  color 2
+SCREEN: draw to 0,33  color 2
+SCREEN: plot 64,0  color 2
+SCREEN: draw to 0,36  color 2
+SCREEN: plot 61,0  color 2
+SCREEN: draw to 0,39  color 2
+SCREEN: plot 58,0  color 2
+SCREEN: draw to 0,42  color 2
+SCREEN: plot 55,0  color 2
+SCREEN: draw to 0,45  color 2
+SCREEN: plot 52,0  color 2
+SCREEN: draw to 0,48  color 2
+SCREEN: plot 49,0  color 2
+SCREEN: draw to 0,51  color 2
+SCREEN: plot 46,0  color 2
+SCREEN: draw to 0,54  color 2
+SCREEN: plot 43,0  color 2
+SCREEN: draw to 0,57  color 2
+SCREEN: plot 40,0  color 2
+SCREEN: draw to 0,60  color 2
+SCREEN: plot 37,0  color 2
+SCREEN: draw to 0,63  color 2
+SCREEN: plot 34,0  color 2
+SCREEN: draw to 0,66  color 2
+SCREEN: plot 31,0  color 2
+SCREEN: draw to 0,69  color 2
+SCREEN: plot 28,0  color 2
+SCREEN: draw to 0,72  color 2
+SCREEN: plot 25,0  color 2
+SCREEN: draw to 0,75  color 2
+SCREEN: plot 22,0  color 2
+SCREEN: draw to 0,78  color 2
+SCREEN: plot 19,0  color 2
+SCREEN: draw to 0,81  color 2
+SCREEN: plot 16,0  color 2
+SCREEN: draw to 0,84  color 2
+SCREEN: plot 13,0  color 2
+SCREEN: draw to 0,87  color 2
+SCREEN: plot 10,0  color 2
+SCREEN: draw to 0,90  color 2
+SCREEN: plot 7,0  color 2
+SCREEN: draw to 0,93  color 2
+SCREEN: plot 4,0  color 2
+SCREEN: draw to 0,96  color 2
+SCREEN: plot 1,0  color 2
+SCREEN: draw to 0,99  color 2

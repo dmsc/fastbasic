@@ -2,10 +2,12 @@ Name: Test COLOR, FCOLOR and PLOT statements
 Test: run
 Output:
 Start
-
-AA
-A
-3         501
-
-7         500
-123
+SCREEN: set graphics 8 with text window
+SCREEN: plot 0,0  color 1
+SCREEN: plot 1,0  color 1
+SCREEN: plot 310,76  color 1
+SCREEN: draw to 20,30  color 1
+SCREEN: set graphics 9
+SCREEN: plot 3,7  color 3
+SCREEN: draw to 5,23  color 3
+SCREEN: fill to 45,30  color 3, fill color 7
