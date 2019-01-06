@@ -351,7 +351,7 @@ PRINT_EXPR:
 
 PRINT_NEXT:
 	PRINT_SEP PRINT_SEP_MORE PRINT_ONE PRINT_NEXT
-        PRINT_SEP PRINT_SEP_MORE emit TOK_0 emit TOK_IOCHN
+        PRINT_SEP PRINT_SEP_MORE IO_CHAN0
         emit TOK_PRINT_EOL
 #@endif !FASTBASIC_FP
 
@@ -367,7 +367,7 @@ PRINT_EXPR:
 
 PRINT_NEXT:
 	PRINT_SEP PRINT_SEP_MORE PRINT_ONE
-        PRINT_SEP PRINT_SEP_MORE emit TOK_0 emit TOK_IOCHN
+        PRINT_SEP PRINT_SEP_MORE IO_CHAN0
         E_EOL emit TOK_PRINT_EOL
 #@endif FASTBASIC_FP
 
@@ -452,7 +452,7 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        IO_CHAN_SET ","                       # I/O channel, don't print prompt
+        IO_CHAN emit TOK_IOCHN ","                       # I/O channel, don't print prompt
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
         emit TOK_BYTE emit 63 emit TOK_PUT               # Prints a '?' by default
@@ -490,17 +490,18 @@ DIM_VAR: new variable name
 IO_CHAN: I/O channel number
         "#" EXPR
 
-IO_CHAN_SET: I/O channel number
-        "#" EXPR emit TOK_IOCHN
-
 IO_CHAN_OPT:
-        IO_CHAN_SET ","
+        IO_CHAN emit TOK_IOCHN ","
         pass
 
 # Used only for CLS
 IO_CHAN_OPT_NOCOMMA:
-        IO_CHAN_SET
+        IO_CHAN emit TOK_IOCHN
         pass
+
+# Resets I/O channel to 0
+IO_CHAN0:
+        emit TOK_0 emit TOK_IOCHN
 
 # Get from keyboard expression
 GETK_EXPR: variable name
@@ -515,7 +516,7 @@ GET_EXPR: variable name
 
 GET_EXPR_MORE:
         GET_EXPR
-        emit TOK_0 emit TOK_IOCHN
+        IO_CHAN0
 
 # A comma followed by an expression
 C_EXPR: comma followed by an expression
@@ -558,11 +559,11 @@ PARSE_LINE_COMMAND:
 	"." E_REM
 	"?" IO_CHAN_OPT PRINT_EXPR
 	"PRint" IO_CHAN_OPT PRINT_EXPR
-        "INput" INPUT_STR INPUT_VAR_LIST emit TOK_0 emit TOK_IOCHN
+        "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
-        "GEt" IO_CHAN_SET GET_EXPR
-        "PUt" IO_CHAN_OPT EXPR emit TOK_PUT
-        "CLS" IO_CHAN_OPT_NOCOMMA emit TOK_BYTE emit CLS emit TOK_PUT
+        "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
+        "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
+        "CLS" IO_CHAN_OPT_NOCOMMA emit TOK_BYTE emit CLS emit TOK_PUT IO_CHAN0
         "Poke"  EXPR C_EXPR emit TOK_POKE
         "Dpoke" EXPR C_EXPR emit TOK_DPOKE
         "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET

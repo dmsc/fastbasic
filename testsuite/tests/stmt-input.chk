@@ -1,0 +1,17 @@
+Name: Test statement "INPUT"
+Test: run
+Input:
+1234
+2345
+3456
+
+hello
+.
+Output:
+Start
+?1         1234
+1         2345
+Prompt:   1         3456
+?18        18
+?1         hello
+?136       

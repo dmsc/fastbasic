@@ -1,0 +1,7 @@
+Name: Test statement "CLS"
+Test: run
+Output:
+Start
+SCREEN: set graphics 1 with text window
+}SCREEN: plot 3,1  color 125
+Ok
