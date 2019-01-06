@@ -1,0 +1,10 @@
+Name: Test statement "GET" from keyboard
+Test: run
+Input:
+ABC
+.
+Output:
+Start
+Get: 65   66        67        1
+Get: 10   1
+Get: 12   136
