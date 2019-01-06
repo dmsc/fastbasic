@@ -1,5 +1,5 @@
 '
-'  FastBasic v3.6 -  (c) 2018 dmsc
+'  FastBasic v4.0 -  (c) 2019 dmsc
 '
 ' Editor Help
 ' -----------

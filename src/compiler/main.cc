@@ -93,7 +93,7 @@ static bool readLine(std::string &r, std::istream &is)
 
 static int show_version()
 {
-    std::cerr << "FastBasic v3.6 - (c) 2018 dmsc\n";
+    std::cerr << "FastBasic v4.0 - (c) 2019 dmsc\n";
     return 0;
 }
 
