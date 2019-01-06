@@ -387,6 +387,8 @@ int fbtest(const char *fname)
                     free(input_buf);
                     return -1;
                 }
+                if (l && (lbuf[l-1] == '\n'))
+                        lbuf[l-1] = 0x9B;
                 memcpy(input_buf + input_size, lbuf, l);
                 input_size += l;
             }
