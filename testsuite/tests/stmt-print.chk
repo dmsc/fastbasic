@@ -1,0 +1,27 @@
+Name: Test statement "PRINT"
+Test: run
+Output:
+Start
+SCREEN: set graphics 1 with text window
+->1
+SCREEN: plot 2,2  color 155
+->2
+SCREEN: plot 2,3  color 97
+SCREEN: plot 2,3  color 155
+->3
+SCREEN: plot 2,4  color 98
+->4
+SCREEN: plot 2,5  color 99
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+SCREEN: plot 2,5  color 32
+->5
+          1         23                  4
+
+          -
