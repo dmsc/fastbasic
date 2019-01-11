@@ -114,11 +114,20 @@ int run_test_xex(const char *fname, const char *input, const char *expected_out)
         {
             size_t l = 0;
             for (l = 0; out[l] == expected_out[l] && out[l]; l++);
-            if (!out[l] || !out[l+1] )
-                fprintf(stderr, "%s: output does not match, too short.\n", fname);
-            else
-                fprintf(stderr, "%s: output does not match from %d, got:\n"
-                        "%s\n", fname, (int)l, out + l);
+
+            size_t l1 = l > 20 ? l - 20 : 0;
+            size_t l2 = l + 20;
+            fprintf(stderr, "%s: output does not match:\n", fname);
+            fprintf(stderr, "expected: ");
+            for(const char *x = expected_out + l1; x<(expected_out+l2) && *x; x++)
+                putc(*x > 31 && *x < 127 ? *x : '.', stderr);
+            fprintf(stderr, "\ngot:      ");
+            for(const char *x = out + l1; x<(out+l2) && *x; x++)
+                putc(*x > 31 && *x < 127 ? *x : '.', stderr);
+            fprintf(stderr, "\n          ");
+            for(size_t x = l1; x<l; x++)
+                putc(' ', stderr);
+            fprintf(stderr, "^\n");
             e = -1;
         }
     }
