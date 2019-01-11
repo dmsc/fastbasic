@@ -28,7 +28,7 @@ MINI65_SRC=\
   mathpack.c\
   sim65.c\
 
-TESTS := $(wildcard tests/*.chk)
+TESTS := $(sort $(wildcard tests/*.chk))
 
 all: runtests
 

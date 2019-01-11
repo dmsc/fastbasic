@@ -1,0 +1,7 @@
+Name: Test statements "DEG" and "RAD"
+Test: run-fp
+Output:
+Start
+841       540
+17        1000
+841       540
