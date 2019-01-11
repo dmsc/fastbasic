@@ -94,10 +94,14 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
         free(s);
         return -1;
     }
+    // Return the current value of FastBasic stack, used to check for stack errors
+    // TODO: this should depend on actual compiled value, we currently expect the
+    //       value to be constant.
+    int x = 0x28 != (sim65_get_byte(s, 0x90) & 0xFF);
     // Update output length
     *output_len = str_out_pos;
     free(s);
-    return 0;
+    return x;
 }
 
 // Run's an XEX file testing if the output matches the expected output
@@ -131,6 +135,8 @@ int run_test_xex(const char *fname, const char *input, const char *expected_out)
             e = -1;
         }
     }
+    else if (e > 0)
+        fprintf(stderr,"%s: unexpected stack value.\n", fname);
     else
         fprintf(stderr, "%s: error on execution.\n", fname);
     free(out);
