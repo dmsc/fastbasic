@@ -1,6 +1,6 @@
 #
 #  FastBasic - Fast basic interpreter for the Atari 8-bit computers
-#  Copyright (C) 2017,2018 Daniel Serpell
+#  Copyright (C) 2017-2019 Daniel Serpell
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ LSTS=$(OBJS:%.o=%.lst)
 
 MAPS=$(PROGS:.xex=.map) $(SAMPLE_X_BAS:%.bas=bin/%.map)
 LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=bin/%.lbl)
-SYNT=gen/synt
+ASYNT=gen/asynt
 CSYNT=gen/csynt
 
 all: $(ATR) $(NATIVES) $(COMPILER)
@@ -254,7 +254,7 @@ all: $(ATR) $(NATIVES) $(COMPILER)
 dist: $(ATR) $(ZIPFILE)
 
 clean:
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(SYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
 
 distclean: clean
 	rm -f gen/int/basic.asm gen/fp/basic.asm \
@@ -301,11 +301,11 @@ disk/%.com: bin/%.xex
 	cp $< $@
 
 # Parser generator for 6502
-$(SYNT): src/synt.cc | gen
+$(ASYNT): src/syntax/asynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Parser generator for C++
-$(CSYNT): src/csynt.cc | gen
+$(CSYNT): src/syntax/csynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Native compiler
@@ -333,12 +333,12 @@ $(CROSS_FP): src/compiler/main.cc gen/fp/basic.cc
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
-gen/fp/%.asm: src/%.syn $(SYNT) | gen/fp
-	$(SYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
+gen/fp/%.asm: src/%.syn $(ASYNT) | gen/fp
+	$(ASYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
 
 # Generator for syntax file - 6502 version - INTEGER
-gen/int/%.asm: src/%.syn $(SYNT) | gen/int
-	$(SYNT) $(SYNTFLAGS) $< -o $@
+gen/int/%.asm: src/%.syn $(ASYNT) | gen/int
+	$(ASYNT) $(SYNTFLAGS) $< -o $@
 
 # Generator for syntax file - C++ version - FLOAT
 gen/fp/%.cc: src/%.syn $(CSYNT) | gen/fp
@@ -417,8 +417,20 @@ $(COMMON_OBJS_FP): src/deftok.inc
 $(COMMON_OBJS_INT): src/deftok.inc
 obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
 obj/int/parse.o: src/parse.asm gen/int/basic.asm
-$(CSYNT): src/csynt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-cc.h src/synt-read.h
-$(SYNT): src/synt.cc src/synt-parse.h src/synt-wlist.h src/synt-sm.h src/synt-emit-asm.h src/synt-read.h
+$(CSYNT): \
+ src/syntax/csynt.cc \
+ src/syntax/synt-parse.h \
+ src/syntax/synt-wlist.h \
+ src/syntax/synt-sm.h \
+ src/syntax/synt-emit-cc.h \
+ src/syntax/synt-read.h
+$(ASYNT): \
+ src/syntax/asynt.cc \
+ src/syntax/synt-parse.h \
+ src/syntax/synt-wlist.h \
+ src/syntax/synt-sm.h \
+ src/syntax/synt-emit-asm.h \
+ src/syntax/synt-read.h
 $(NATIVES) $(CROSS_INT) $(CROSS_FP): \
  src/compiler/main.cc src/compiler/atarifp.cc \
  src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
