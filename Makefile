@@ -35,7 +35,7 @@ CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
 
 ATR=build/fastbasic.atr
 ZIPFILE=build/fastbasic.zip
-PROGS=bin/fb.xex bin/fbi.xex
+PROGS=bin/fb.xex bin/fbi.xex bin/fbc.xex
 NATIVE_INT=bin/fastbasic-int
 NATIVE_FP=bin/fastbasic-fp
 CROSS_INT=compiler/fastbasic-int$(EXT)
@@ -239,8 +239,13 @@ COMPILER=\
 	 compiler/MANUAL.md\
 
 # All Output files
-OBJS=$(RT_OBJS_FP) $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) $(CMD_BAS_OBSJ_FP) \
-     $(RT_OBJS_INT) $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) \
+OBJS=$(RT_OBJS_FP) \
+     $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
+     $(COMMON_OBJS_FP) \
+     $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
+     $(RT_OBJS_INT) \
+     $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
+     $(COMMON_OBJS_INT) \
      $(SAMP_OBJS)
 LSTS=$(OBJS:%.o=%.lst)
 
@@ -255,19 +260,17 @@ dist: $(ATR) $(ZIPFILE)
 
 clean:
 	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
+	rm -f compiler/MANUAL.md
 
 distclean: clean
 	rm -f gen/int/basic.asm gen/fp/basic.asm \
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
 	    gen/int/basic.inc  gen/fp/basic.inc  \
-	    $(IDE_BAS_SRC:src/%.bas=gen/fp/%.asm) \
-	    $(CMD_BAS_SRC:src/%.bas=gen/fp/%.asm) \
-	    $(IDE_BAS_SRC:src/%.bas=gen/int/%.asm) \
-	    $(SAMPLE_BAS:%.bas=gen/%.asm) \
 	    $(NATIVES)
 	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
 	-rmdir bin gen obj
+	make -C testsuite distclean
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build

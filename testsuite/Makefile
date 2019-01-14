@@ -21,6 +21,7 @@ CC=gcc
 CFLAGS=-g -O2 -Wall -I$(MINI65) -I$(MINI65)/../ccan/
 LDLIBS=-lm
 
+RUNTEST=fbtest
 
 MINI65_SRC=\
   atari.c\
@@ -30,15 +31,27 @@ MINI65_SRC=\
 
 TESTS := $(sort $(wildcard tests/*.chk))
 
+TESTS_XEX=$(TESTS:.chk=.xex)
+TESTS_ASM=$(TESTS:.chk=.asm)
+TESTS_OBJ=$(TESTS:.chk=.o)
+TESTS_ATB=$(TESTS:.chk=.atb)
+TESTS_LBL=$(TESTS:.chk=.lbl)
+
+OBJS=obj/fbtest.o $(MINI65_SRC:%.c=obj/%.o)
+
 all: runtests
 
-.PHONY: runtests
+.PHONY: runtests clean distclean
 runtests: $(TESTS) fbtest
 	./fbtest $(TESTS)
 
-MINI65_OBJ=$(MINI65_SRC:%.c=obj/%.o)
+clean:
+	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST)
 
-fbtest: obj/fbtest.o $(MINI65_OBJ)
+distclean: clean
+	-rmdir obj
+
+$(RUNTEST): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 obj/%.o: $(MINI65)/%.c | obj
