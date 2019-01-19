@@ -35,8 +35,9 @@
         .segment        "RUNTIME"
 
 .proc   EXE_FP_INT      ; Convert FP to INT, with rounding
-        lda     FR0
+        asl     FR0
         php             ; Store sign
+        lsr     FR0
         jsr     FPI
         bcs     err3
         ldx     FR0+1
@@ -52,7 +53,7 @@ ok:     lda     FR0
 
         ; Negate result if original number was negative
         plp
-        bpl     pos
+        bcc     pos
 
         jsr     neg_AX
 pos:

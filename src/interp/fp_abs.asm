@@ -41,7 +41,7 @@
 
 .proc   EXE_FP_NEG
         lda     FR0
-        and     #$7F
+        eor     #$80
         sta     FR0
         jmp     next_instruction
 .endproc
