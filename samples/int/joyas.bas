@@ -77,6 +77,9 @@ do
   ' Exit on any key pressed
   if key() then end
 
+  ' Disable attract mode
+  poke 77,0
+
   ' Call game loop
   while nmoves > 0
     exec GameLoop
@@ -92,6 +95,8 @@ proc MoveCursor
 
   ' Loop
   do
+    ' Disable attract mode
+    poke 77,0
 
     ' Wait for valid move
     repeat

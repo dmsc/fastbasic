@@ -49,22 +49,18 @@ NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 SAMPLE_FP_BAS=\
     fp/ahlbench.bas \
     fp/draw.bas \
+    fp/fedora.bas \
 
 SAMPLE_INT_BAS=\
-    int/pi.bas \
     int/carrera3d.bas \
+    int/iospeed.bas \
     int/joyas.bas \
+    int/pi.bas \
     int/pmtest.bas \
     int/sieve.bas \
 
 SAMPLE_BAS=$(SAMPLE_INT_BAS) $(SAMPLE_FP_BAS)
 SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
-
-# Test programs
-TEST_BAS=\
-    testio.bas \
-    testproc.bas \
-    testusr.bas \
 
 # Output files inside the ATR
 FILES=\
@@ -75,7 +71,6 @@ FILES=\
     disk/manual.txt \
     disk/startup.bat \
     disk/help.txt \
-    $(TEST_BAS:%=disk/%) \
     $(SAMPLE_X_BAS:%=disk/%) \
     $(SAMPLE_X_BAS:%.bas=disk/%.com) \
 
