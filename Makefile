@@ -53,6 +53,7 @@ SAMPLE_FP_BAS=\
 SAMPLE_INT_BAS=\
     int/pi.bas \
     int/carrera3d.bas \
+    int/joyas.bas \
     int/pmtest.bas \
     int/sieve.bas \
 
