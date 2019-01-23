@@ -818,6 +818,13 @@ class peephole
                         del(1);
                         continue;
                     }
+                    // Convert PRINT CHR$(X) to PUT X
+                    // TOK_CHR / TOK_PRINT_STR -> TOK_PUT
+                    if( mtok(0,TOK_CHR) && mtok(1,TOK_PRINT_STR) )
+                    {
+                        set_tok(0, TOK_PUT); del(1);
+                        continue;
+                    }
                 }
             } while(changed);
             shorten_numbers();
