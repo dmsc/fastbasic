@@ -30,7 +30,7 @@
         .export putc, putc_direct, putspc
 
         ; From runtime.asm
-        .importzp       IOCHN, tabpos
+        .importzp       IOCHN, tabpos, IOERROR
 
         .include "atari.inc"
 
@@ -54,6 +54,7 @@ putspc:
         ldx     IOCHN
         sty     save_y+1
         jsr     putc_direct
+        sty     IOERROR
 save_y: ldy     #0
         dec     tabpos
         bpl     :+

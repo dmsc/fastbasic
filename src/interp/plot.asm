@@ -24,28 +24,22 @@
 ; linked into a combine executable.)
 
 
-; PUT character or PUT EOL
-; ------------------------
+; PLOT statement
+; --------------
 
-        .import CIOV_IOERR
-
-        ; From runtime.asm
-        .import         putc
-        .importzp       tabpos, next_instruction
+        .import         putc_direct, CIOV_IOERR
+        .importzp       COLOR
 
         .segment        "RUNTIME"
 
-EXE_PRINT_EOL:          ; PRINT EOL
-        ; Reset tab position
-        lda     #1
-        sta     tabpos
-        lda     #$9b
-EXE_PUT:                ; PUT character
-        jsr     putc
-        jmp     next_instruction
+.proc EXE_PLOT
+        lda     COLOR
+        ldx     #$60    ; IOCB #6
+        jsr     putc_direct
+        jmp     CIOV_IOERR
+.endproc
 
         .include "../deftok.inc"
-        deftoken "PRINT_EOL"
-        deftoken "PUT"
+        deftoken "PLOT"
 
 ; vi:syntax=asm_ca65
