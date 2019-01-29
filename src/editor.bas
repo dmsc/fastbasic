@@ -57,17 +57,6 @@ MemEnd = Adr(MemStart)
 
 
 '-------------------------------------
-' Shows file error
-'
-PROC FileError
-  pos. 0,0
-  ? "ERROR: "; err(); ", press any key˝";
-  close #1
-  get key
-  exec ShowInfo
-ENDPROC
-
-'-------------------------------------
 ' Gets a filename with minimal line editing
 '
 PROC InputFilename
@@ -130,88 +119,6 @@ PROC SaveCompiledFile
 ENDPROC
 
 '-------------------------------------
-' Save edited file
-'
-PROC AskSaveFile
-  exec SaveLine
-  pos. 0, 0
-  ? "úùSave?";
-  exec InputFileName
-  if key
-    ' Don't save
-    exit
-  endif
-
-  open #1, 8, 0, FileName$
-  if err() < 128
-    ' Open ok, write dile
-    bput #1, Adr(MemStart), MemEnd - Adr(MemStart)
-    if err() < 128
-      ' Save ok, close
-      close #1
-      if err() < 128
-        fileChanged = 0
-        Exit
-      endif
-    endif
-  endif
-
-  exec FileError
-ENDPROC
-
-'-------------------------------------
-' Ask to save a file if it is changed
-' from last save.
-PROC AskSaveFileChanged
-  key = 0
-  while fileChanged
-   exec AskSaveFile
-   ' ESC means "don't save, cancel operation"
-   if key = 27
-     exit
-   endif
-   ' CONTROL-C means "don't save, lose changes"
-   if key = 3
-     key = 0
-     exit
-   endif
-  wend
-ENDPROC
-
-'-------------------------------------
-' Redraw screen after new file
-'
-PROC RedrawNewFile
-  fileChanged = 0
-  column = 0
-  line = 0
-  scrLine = 0
-  exec RedrawScreen
-ENDPROC
-
-
-'-------------------------------------
-' Load file into editor
-'
-PROC LoadFile
-
-  open #1, 4, 0, FileName$
-  if err() < 128
-    bget #1, Adr(MemStart), fre()
-    if err() = 136
-      MemEnd = dpeek($358) + adr(MemStart)
-      close #1
-    endif
-  endif
-
-  if err() > 127
-    exec FileError
-  endif
-
-  exec RedrawNewFile
-ENDPROC
-
-'-------------------------------------
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
@@ -239,18 +146,6 @@ PROC CompileFile
 ENDPROC
 
 '-------------------------------------
-' Deletes the character over the cursor
-'
-PROC DeleteChar
-  fileChanged = 1
-  edited = 1
-  linLen = linLen - 1
-  ptr = EditBuf + column
-  move ptr+1, ptr, linLen - column
-  exec ForceDrawCurrentLine
-ENDPROC
-
-'-------------------------------------
 ' Insert a character over the cursor
 '
 PROC InsertChar
@@ -260,6 +155,18 @@ PROC InsertChar
   ptr = EditBuf + column
   -move ptr, ptr+1, linLen - column
   poke ptr, key
+ENDPROC
+
+'-------------------------------------
+' Deletes the character over the cursor
+'
+PROC DeleteChar
+  fileChanged = 1
+  edited = 1
+  linLen = linLen - 1
+  ptr = EditBuf + column
+  move ptr+1, ptr, linLen - column
+  exec ForceDrawCurrentLine
 ENDPROC
 
 '-------------------------------------
@@ -358,33 +265,129 @@ PROC CopyToEdit
 ENDPROC
 
 '-------------------------------------
-' Change current line.
+' Save edited file
 '
-PROC ChgLine
-
+PROC AskSaveFile
   exec SaveLine
-
-  ' Restore last line, if needed
-  if hDraw <> 0
-    y = lDraw
-    exec DrawLineOrig
+  pos. 0, 0
+  ? "úùSave?";
+  exec InputFileName
+  if key
+    ' Don't save
+    exit
   endif
 
-  ' Keep new line in range
-  while scrLine and ScrAdr(scrLine) = MemEnd
-    line = line - 1
-    scrLine = scrLine - 1
+  open #1, 8, 0, FileName$
+  if err() < 128
+    ' Open ok, write dile
+    bput #1, Adr(MemStart), MemEnd - Adr(MemStart)
+    if err() < 128
+      ' Save ok, close
+      close #1
+      if err() < 128
+        fileChanged = 0
+        Exit
+      endif
+    endif
+  endif
+
+  exec FileError
+ENDPROC
+
+'-------------------------------------
+' Shows file error
+'
+PROC FileError
+  pos. 0,0
+  ? "ERROR: "; err(); ", press any key˝";
+  close #1
+  get key
+  exec ShowInfo
+ENDPROC
+
+'-------------------------------------
+' Prints line info and changes line
+'
+PROC ShowInfo
+  ' Print two "-", then filename, then complete with '-' until right margin
+  pos. 0, 0 : put $12 : put $12
+  ? FileName$;
+  repeat : put $12 : until peek(@@RMARGN) = peek(@@COLCRS)
+  ' Fill last character
+  poke @@OLDCHR, $52
+  ' Go to cursor position
+  pos. scrColumn, scrLine
+  put 29
+ENDPROC
+
+'-------------------------------------
+' Ask to save a file if it is changed
+' from last save.
+PROC AskSaveFileChanged
+  key = 0
+  while fileChanged
+   exec AskSaveFile
+   ' ESC means "don't save, cancel operation"
+   if key = 27
+     exit
+   endif
+   ' CONTROL-C means "don't save, lose changes"
+   if key = 3
+     key = 0
+     exit
+   endif
   wend
+ENDPROC
 
-  exec CopyToEdit
+'-------------------------------------
+' Moves the cursor down 1 line
+PROC CursorDown
+  if scrLine = 22
+    exec SaveLine
+    exec ScrollUp
+  else
+    inc scrLine
+  endif
+  inc line
+ENDPROC
 
-  ' Print status
-  pos. 32, 0 : ? line+1;
-  put $12
+'-------------------------------------
+' Moves the cursor up 1 line
+PROC CursorUp
+  if scrLine
+    dec scrLine
+    dec line
+  else
+    exec SaveLine
+    exec ScrollDown
+  endif
+ENDPROC
 
-  ' Redraw line
-  hDraw = 0
-  exec DrawCurrentLine
+'-------------------------------------
+' Scrolls screen Down (like page-up)
+PROC ScrollDown
+  ' Don't scroll if already at beginning of file
+  if Adr(MemStart) = ScrAdr(0) then Exit
+
+  ' Scroll screen image inserting a line
+  poke @CRSINH, 1
+  pos. 0, 1
+  put 157
+  ' Move screen pointers
+  -move adr(ScrAdr), adr(ScrAdr)+2, 46
+  ' Get first screen line by searching last '$9B'
+  for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
+    if peek(ptr) = $9B then Exit
+  next ptr
+  inc ptr
+  ScrAdr(0) = ptr
+
+  ' Adjust line
+  dec line
+
+  ' Draw first line
+  y = 0
+  exec DrawLineOrig
 
 ENDPROC
 
@@ -444,48 +447,6 @@ proc PutBlanks
   while max : put 32 : dec max : wend
 endproc
 
-'-------------------------------------
-' Prints line info and changes line
-'
-PROC ShowInfo
-  ' Print two "-", then filename, then complete with '-' until right margin
-  pos. 0, 0 : put $12 : put $12
-  ? FileName$;
-  repeat : put $12 : until peek(@@RMARGN) = peek(@@COLCRS)
-  ' Fill last character
-  poke @@OLDCHR, $52
-  ' Go to cursor position
-  pos. scrColumn, scrLine
-  put 29
-ENDPROC
-
-'-------------------------------------
-' Scrolls screen Down (like page-up)
-PROC ScrollDown
-  ' Don't scroll if already at beginning of file
-  if Adr(MemStart) = ScrAdr(0) then Exit
-
-  ' Scroll screen image inserting a line
-  poke @CRSINH, 1
-  pos. 0, 1
-  put 157
-  ' Move screen pointers
-  -move adr(ScrAdr), adr(ScrAdr)+2, 46
-  ' Get first screen line by searching last '$9B'
-  for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
-    if peek(ptr) = $9B then Exit
-  next ptr
-  inc ptr
-  ScrAdr(0) = ptr
-
-  ' Adjust line
-  dec line
-
-  ' Draw first line
-  y = 0
-  exec DrawLineOrig
-
-ENDPROC
 
 '-------------------------------------
 ' Calls 'CountLines
@@ -523,27 +484,35 @@ PROC ScrollUp
 ENDPROC
 
 '-------------------------------------
-' Moves the cursor down 1 line
-PROC CursorDown
-  if scrLine = 22
-    exec SaveLine
-    exec ScrollUp
-  else
-    inc scrLine
+' Load file into editor
+'
+PROC LoadFile
+
+  open #1, 4, 0, FileName$
+  if err() < 128
+    bget #1, Adr(MemStart), fre()
+    if err() = 136
+      MemEnd = dpeek($358) + adr(MemStart)
+      close #1
+    endif
   endif
-  inc line
+
+  if err() > 127
+    exec FileError
+  endif
+
+  exec RedrawNewFile
 ENDPROC
 
 '-------------------------------------
-' Moves the cursor up 1 line
-PROC CursorUp
-  if scrLine
-    dec scrLine
-    dec line
-  else
-    exec SaveLine
-    exec ScrollDown
-  endif
+' Redraw screen after new file
+'
+PROC RedrawNewFile
+  fileChanged = 0
+  column = 0
+  line = 0
+  scrLine = 0
+  exec RedrawScreen
 ENDPROC
 
 '-------------------------------------
@@ -586,6 +555,37 @@ PROC RedrawScreen
   line = line + scrLine
 
   exec ChgLine
+ENDPROC
+
+'-------------------------------------
+' Change current line.
+'
+PROC ChgLine
+
+  exec SaveLine
+
+  ' Restore last line, if needed
+  if hDraw <> 0
+    y = lDraw
+    exec DrawLineOrig
+  endif
+
+  ' Keep new line in range
+  while scrLine and ScrAdr(scrLine) = MemEnd
+    line = line - 1
+    scrLine = scrLine - 1
+  wend
+
+  exec CopyToEdit
+
+  ' Print status
+  pos. 32, 0 : ? line+1;
+  put $12
+
+  ' Redraw line
+  hDraw = 0
+  exec DrawCurrentLine
+
 ENDPROC
 
 '-------------------------------------

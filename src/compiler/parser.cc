@@ -355,9 +355,21 @@ class parse {
                 // Correctly terminate main code
                 if( !p.size() || !p.back().is_tok(TOK_END) )
                     p.push_back(codew::ctok(TOK_END,0));
+                // To emit procs sorted by line number, copy to a vector
+                std::vector< std::vector<codew>* > sprocs;
                 for(auto &c: procs)
-                    if( !c.first.empty() )
-                        p.insert(std::end(p), std::begin(c.second), std::end(c.second));
+                    if( !c.first.empty() && c.second.size() )
+                        sprocs.push_back( &c.second );
+                // Sort by line number
+                std::sort(std::begin(sprocs), std::end(sprocs),
+                        [](const std::vector<codew>* a,
+                           const std::vector<codew>* b)
+                        {
+                           return (*a)[0].linenum() < (*b)[0].linenum();
+                        });
+                // Emit into code
+                for(auto &c: sprocs)
+                    p.insert(std::end(p), std::begin(*c), std::end(*c));
             }
             return p;
         }
