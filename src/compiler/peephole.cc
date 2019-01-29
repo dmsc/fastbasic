@@ -806,6 +806,14 @@ class peephole
                         set_tok(0, TOK_L_NOT); set_tok(2, TOK_CRET); del(1);
                         continue;
                     }
+                    // Bypass JUMP to next instruction
+                    //   TOK_JUMP / x / LABEL x
+                    //     -> LABEL x
+                    if( mtok(0,TOK_JUMP) && mlabel(2) && lbl(2) == wlbl(1) )
+                    {
+                        del(1); del(0);
+                        continue;
+                    }
                     // Remove dead code after a JUMP
                     if( mtok(0,TOK_JUMP) && !mlabel(2) )
                     {
