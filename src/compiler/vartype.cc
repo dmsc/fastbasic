@@ -49,6 +49,27 @@ static VarType get_vartype(std::string t)
     return VT_UNDEF;
 }
 
+static std::string get_vt_name(enum VarType t)
+{
+    switch(t) {
+        case VT_ARRAY_WORD:
+            return "Word Array";
+        case VT_ARRAY_BYTE:
+            return "Byte Array";
+        case VT_ARRAY_STRING:
+            return "String Array";
+        case VT_WORD:
+            return "Word";
+        case VT_STRING:
+            return "String";
+        case VT_FLOAT:
+            return "Float";
+        case VT_UNDEF:
+            break;
+    }
+    return "UNDEFINED";
+}
+
 // Properties of variable types:
 static bool var_type_is_array(enum VarType t)
 {

@@ -265,8 +265,20 @@ int main(int argc, char **argv)
     }
     ofile << ";-----------------------------\n"
              "; Variables\n"
-             "NUM_VARS = " << s.vars.size() << "\n"
-             ";-----------------------------\n"
+             "\t.import heap_start\n"
+             "NUM_VARS = " << s.vars.size() << "\n";
+    for(auto &v: s.vars)
+        if (!v.first.empty() && v.first[0] != '-' )
+            ofile << "\t.export fb_var_" << v.first << "\n";
+    for(auto &v: s.vars)
+        if (!v.first.empty() && v.first[0] != '-' )
+    {
+        auto vnum  = v.second >> 8;
+        auto vtype = VarType(v.second & 0xFF);
+        ofile << "fb_var_" << v.first << "\t= heap_start + " << vnum * 2
+              << "\t; " << get_vt_name(vtype) << " variable\n";
+    }
+    ofile << ";-----------------------------\n"
              "; Bytecode\n"
              "bytecode_start:\n";
     ln = -1;;

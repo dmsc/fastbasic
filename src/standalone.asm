@@ -28,7 +28,7 @@
 ; ----------------------
 
         ; Main symbol
-        .export         start
+        .export         start, heap_start
         ; From intrepreter.asm
         .import         interpreter_run
         .importzp       var_count, var_buf

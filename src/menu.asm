@@ -21,8 +21,8 @@
 
         .export start
 
-        ; Export to editor.bas
-        .export COMPILE_BUFFER, BMAX, LINENUM
+        ; Export and imports from editor.bas
+        .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
         .exportzp       reloc_addr
 
         ; From runtime.asm

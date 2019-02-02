@@ -22,7 +22,7 @@
         .export start
 
         ; Export to editor.bas
-        .export COMPILE_BUFFER, BMAX, LINENUM
+        .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
         .exportzp reloc_addr
 
         ; From parser.asm

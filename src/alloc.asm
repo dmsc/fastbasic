@@ -69,8 +69,6 @@
         ; From runtime.asm
         .import         move_dwn_src, move_dwn_dst, move_dwn
         .importzp       tmp1
-        ; From interpreter.asm
-        .importzp       var_count
 
 
 mem_start = prog_ptr
