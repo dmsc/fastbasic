@@ -29,11 +29,20 @@
 
         ; From interpreter.asm
         .import         stack_l, stack_h
-        .importzp       next_ins_incsp
+        .importzp       next_ins_incsp, sptr
         ; From runtime.asm
         .importzp       tmp1, tmp2
 
         .segment        "RUNTIME"
+
+        ; FOR_START: Stores starting value to FOR variable and
+        ;            keeps the address in the stack.
+.proc   EXE_FOR_START
+        ; In stack we have:
+        ;       AX   = start value
+        ;       (SP) = var_address
+        dec     sptr  ; Keeps address into stack!
+.endproc        ; Fall through
 
 .proc   EXE_DPOKE  ; DPOKE (SP++), AX
         stx     tmp2            ; Save X
@@ -61,5 +70,6 @@ save_l: sta     $FF01, x
 
         .include "../deftok.inc"
         deftoken "DPOKE"
+        deftoken "FOR_START"
 
 ; vi:syntax=asm_ca65

@@ -2,24 +2,43 @@ Name: Test comparisons
 Test: run-fp
 Output:
 INTEGER TESTS
-1 < : PASS
-2 < : PASS
-3 < : PASS
-1 > : PASS
-2 > : PASS
-3 > : PASS
-1 <=: PASS
-2 <=: PASS
-3 <=: PASS
-1 >=: PASS
-2 >=: PASS
-3 >=: PASS
-1 = : PASS
-2 = : PASS
-3 = : PASS
-1 <>: PASS
-2 <>: PASS
-3 <>: PASS
+Pos <=> Pos EQ
+0         1         0         1         0         1
+0         0         1         1         1         0
+1         1         0         0         1         0
+Pos <=> Pos -256
+1         1         0         0         1         0
+1         1         0         0         1         0
+1         1         0         0         1         0
+Pos <=> Neg EQ
+1         1         0         0         1         0
+1         1         0         0         1         0
+1         1         0         0         1         0
+Pos <=> Neg -256
+1         1         0         0         1         0
+1         1         0         0         1         0
+1         1         0         0         1         0
+Neg <=> Pos -256
+0         0         1         1         1         0
+0         0         1         1         1         0
+0         0         1         1         1         0
+Neg <=> Pos EQ
+0         0         1         1         1         0
+0         0         1         1         1         0
+0         0         1         1         1         0
+Neg <=> Neg EQ
+0         1         0         1         0         1
+1         1         0         0         1         0
+0         0         1         1         1         0
+Neg <=> Neg -256
+1         1         0         0         1         0
+1         1         0         0         1         0
+1         1         0         0         1         0
+0 <=> 0
+0         1         0         1         0         1
+0         0         1         1         1         0
+1         1         0         0         1         0
+0         0         1         1         1         0
 FP TESTS
 1 < : PASS
 2 < : PASS

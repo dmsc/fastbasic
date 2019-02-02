@@ -29,21 +29,13 @@
 
         ; From interpreter.asm
         .importzp       next_instruction, next_ins_incsp, sptr
-        .import         stack_l, stack_h, pushAX, EXE_DPOKE
+        .import         stack_l, stack_h, pushAX
         ; From runtime.asm
         .importzp       tmp1, tmp2, tmp3
 
         .segment        "RUNTIME"
 
-        ; FOR_START: Stores starting value to FOR variable and
-        ;            keeps the address in the stack.
-.proc   EXE_FOR_START
-        ; In stack we have:
-        ;       AX   = start value
-        ;       (SP) = var_address
-        dec     sptr  ; Keeps address into stack!
-        jmp     EXE_DPOKE
-.endproc
+        ; NOTE: FOR_START is defined with DPOKE.
 
         ; FOR: First iteration, goes to FOR_NEXT but does not add STEP
         ;      to variable
@@ -118,13 +110,11 @@ positive:
 .endproc
 
 .proc   EXE_LT  ; AX = (SP+) >= AX
-        eor     #255
-        sec
-        adc     stack_l, y
+        clc
+        sbc     stack_l, y
         txa
-        eor     #255
-        adc     stack_h, y
-        bvs     LTGT_set01
+        sbc     stack_h, y
+        bvc     LTGT_set01
 ::LTGT_set10:
         bmi     set1
 .endproc        ; fall-through
@@ -175,7 +165,6 @@ positive:
         deftoken "EQ"
         deftoken "NEQ"
         deftoken "FOR"
-        deftoken "FOR_START"
         deftoken "FOR_NEXT"
 
 ; vi:syntax=asm_ca65
