@@ -265,8 +265,8 @@ int main(int argc, char **argv)
     }
     ofile << ";-----------------------------\n"
              "; Variables\n"
-             "\t.import heap_start\n"
-             "NUM_VARS = " << s.vars.size() << "\n";
+             "NUM_VARS = " << s.vars.size() << "\n"
+             "\t.import heap_start\n";
     for(auto &v: s.vars)
         if (!v.first.empty() && v.first[0] != '-' )
             ofile << "\t.export fb_var_" << v.first << "\n";

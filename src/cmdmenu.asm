@@ -24,6 +24,7 @@
         ; Export to editor.bas
         .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
         .exportzp reloc_addr
+        .import fb_var_NEWPTR
 
         ; From parser.asm
         .import parser_start
@@ -107,7 +108,7 @@ COMPILE_BUFFER:
 sto_loop:
         tay
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
-        sta     COMP_END - $FE,x
+        sta     fb_var_NEWPTR - $FE,x
         adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
         sta     COMP_HEAD_2+2 - $FE,x
         inx
@@ -152,10 +153,6 @@ COMP_HEAD_1:
         .export COMP_HEAD_2
 COMP_HEAD_2:
         .word   __JUMPTAB_RUN__
-        .word   0
-
-        .export COMP_END
-COMP_END:
         .word   0
 
         .export COMP_TRAILER

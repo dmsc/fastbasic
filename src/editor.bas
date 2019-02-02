@@ -80,45 +80,6 @@ PROC InputFilename
 ENDPROC
 
 '-------------------------------------
-' Save compiled file
-'
-PROC SaveCompiledFile
-  ' Save original filename
-  move Adr(FileName$), EditBuf, 128
-  poke Adr(FileName$) + Len(FileName$), $58
-
-  pos. 0, 0
-  ? "úùName?";
-  exec InputFileName
-  if key
-    ' Don't save
-    exit
-  endif
-
-  open #1, 8, 0, FileName$
-  if err() < 128
-    ' Open ok, write header
-    bput #1, @COMP_HEAD_1, 6
-    bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
-    bput #1, @COMP_HEAD_2, 4
-    bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
-    bput #1, MemEnd + 1, dpeek(@COMP_END) - MemEnd
-    if err() < 128
-      bput #1, @COMP_TRAILER, 6
-      ' Save ok, close
-      close #1
-    endif
-  endif
-
-  if err() > 127
-    exec FileError
-  endif
-
-  ' Restore original filename
-  move EditBuf, Adr(FileName$), 128
-ENDPROC
-
-'-------------------------------------
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
@@ -215,14 +176,14 @@ PROC SaveLine
     ' Move file memory to make room for new line
     nptr = ScrAdr(lDraw) + linLen
     ptr = ScrAdr(lDraw+1) - 1
-    dif = nptr - ptr
+    newPtr = nptr - ptr
 
-    if dif < 0
+    if newPtr < 0
       move  ptr, nptr, MemEnd - ptr
-    elif dif > 0
+    elif newPtr > 0
       -move ptr, nptr, MemEnd - ptr
     endif
-    MemEnd = MemEnd + dif
+    MemEnd = MemEnd + newPtr
 
     ' Copy new line
     ptr  = ScrAdr(lDraw)
@@ -231,7 +192,7 @@ PROC SaveLine
     y = lDraw
     repeat
       inc y
-      ScrAdr(y) = ScrAdr(y) + dif
+      ScrAdr(y) = ScrAdr(y) + newPtr
     until y > 22
     ' End
     edited = 0
@@ -880,6 +841,46 @@ PROC ProcessKeys
       ' Unknown Control Key
     endif
   endif
+ENDPROC
+
+'-------------------------------------
+' Save compiled file
+'
+PROC SaveCompiledFile
+  ' Save original filename
+  move Adr(FileName$), EditBuf, 128
+  poke Adr(FileName$) + Len(FileName$), $58
+
+  pos. 0, 0
+  ? "úùName?";
+  exec InputFileName
+  if key
+    ' Don't save
+    exit
+  endif
+
+  open #1, 8, 0, FileName$
+  if err() < 128
+    ' Open ok, write header
+    bput #1, @COMP_HEAD_1, 6
+    bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
+    bput #1, @COMP_HEAD_2, 4
+    bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
+    ' Note, the compiler writes to "NewPtr" the end of program code
+    bput #1, MemEnd + 1, NewPtr - MemEnd
+    if err() < 128
+      bput #1, @COMP_TRAILER, 6
+      ' Save ok, close
+      close #1
+    endif
+  endif
+
+  if err() > 127
+    exec FileError
+  endif
+
+  ' Restore original filename
+  move EditBuf, Adr(FileName$), 128
 ENDPROC
 
 ' vi:syntax=tbxl

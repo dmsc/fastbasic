@@ -33,6 +33,7 @@ FileName$ = ""
 dim MemStart(0)
 ' MemEnd: the end of the current file, initialized to MemStart.
 MemEnd = Adr(MemStart)
+NewPtr = 0
 
 '-------------------------------------
 ' Shows file error
@@ -77,7 +78,8 @@ PROC SaveCompiledFile
     bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
     bput #1, @COMP_HEAD_2, 4
     bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
-    bput #1, MemEnd + 1, dpeek(@COMP_END) - MemEnd
+    ' Note, the compiler writes to "NewPtr" the end of program code
+    bput #1, MemEnd + 1, NewPtr - MemEnd
     if err() < 128
       bput #1, @COMP_TRAILER, 6
       ' Save ok, close

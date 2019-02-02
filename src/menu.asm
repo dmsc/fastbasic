@@ -24,6 +24,7 @@
         ; Export and imports from editor.bas
         .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
         .exportzp       reloc_addr
+        .import fb_var_NEWPTR
 
         ; From runtime.asm
         .import putc
@@ -119,12 +120,13 @@ no_save:
 sto_loop:
         tay
         lda     prog_ptr - $7E,x
-        sta     COMP_END - $7E,x
+        sta     fb_var_NEWPTR - $7E,x
         adc     reloc_addr - $7E,x
         sta     COMP_HEAD_2+2 - $7E,x
         inx
         bpl     sto_loop
 
+        ; AY = end of program code + 1, start of heap
         sta     compiled_var_buf_h+1
         sty     compiled_var_buf_l+1
 
@@ -229,10 +231,6 @@ COMP_HEAD_1:
         .export COMP_HEAD_2
 COMP_HEAD_2:
         .word   __JUMPTAB_RUN__
-        .word   0
-
-        .export COMP_END
-COMP_END:
         .word   0
 
         .export COMP_TRAILER
