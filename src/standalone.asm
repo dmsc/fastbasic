@@ -31,7 +31,7 @@
         .export         start, heap_start
         ; From intrepreter.asm
         .import         interpreter_run
-        .importzp       var_count, var_buf
+        .importzp       var_count, var_page
         ; From bytecode
         .import         bytecode_start
         .importzp       NUM_VARS
@@ -40,17 +40,15 @@
 
         .include "atari.inc"
 
-        ; Start of HEAP
-heap_start=     __BSS_RUN__+__BSS_SIZE__
+        ; Start of HEAP - aligned to 256 bytes
+heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
 
         .code
 start:
         lda     #NUM_VARS
         sta     var_count
-        lda     #<heap_start
-        sta     var_buf
         lda     #>heap_start
-        sta     var_buf+1
+        sta     var_page
 
         lda     #<bytecode_start
         ldx     #>bytecode_start

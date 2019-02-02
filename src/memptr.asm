@@ -29,6 +29,7 @@
 
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
+        .exportzp       var_page
 
         .zeropage
 
@@ -42,6 +43,7 @@ mem_start:
 prog_ptr:       .res    2
         ; Pointer to variable name table   / variable value table
 var_buf:        .res    2
+var_page=       var_buf + 1
 var_ptr=        array_buf
         ; Pointer to labels name table     / strings/arrays table
 array_buf:      .res    2

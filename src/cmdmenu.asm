@@ -33,7 +33,7 @@
         .import interpreter_run, saved_cpu_stack
         .importzp var_count
         ; From alloc.asm
-        .importzp  prog_ptr, var_buf
+        .importzp  prog_ptr, var_page
         .import parser_alloc_init
         ; From bytecode
         .import bytecode_start
@@ -44,8 +44,8 @@
 
         .include "atari.inc"
 
-        ; Start of HEAP
-heap_start=     __BSS_RUN__+__BSS_SIZE__
+        ; Start of HEAP - aligned to 256 bytes
+heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
         ; Start of relocated bytecode
 BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
 
@@ -114,8 +114,11 @@ sto_loop:
         inx
         bne     sto_loop
 
-        sta     compiled_var_buf_h+1
-        sty     compiled_var_buf_l+1
+        ; AY = end of program code + 1, start of heap
+        ; Align up to 256 bytes
+        cpy     #1
+        adc     #0
+        sta     compiled_var_page+1
 
         lda     var_count
         sta     compiled_var_count+1
@@ -135,10 +138,8 @@ load_program_stack:
 load_program:
         ldy     #NUM_VARS
         sty     var_count
-        ldy     #<heap_start
-        sty     var_buf
         ldy     #>heap_start
-        sty     var_buf+1
+        sty     var_page
         rts
 
 
@@ -174,12 +175,9 @@ compiled_start:
 compiled_var_count:
         lda     #00
         sta     var_count
-compiled_var_buf_l:
+compiled_var_page:
         lda     #00
-        sta     var_buf
-compiled_var_buf_h:
-        lda     #00
-        sta     var_buf+1
+        sta     var_page
 
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR

@@ -36,7 +36,6 @@
         .exportzp       tabpos, IOCHN, IOERROR, COLOR, tmp1, tmp2, tmp3, divmod_sign
 
         ; From allloc.asm
-        .importzp       var_buf
         .import         clear_data
 
         ; From jumptab.asm

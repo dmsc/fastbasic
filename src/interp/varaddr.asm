@@ -32,8 +32,7 @@
         ; From interpreter.asm
         .importzp       next_instruction, cptr, sptr
         .import         pushAX
-        ; From allloc.asm
-        .importzp       var_buf
+        .importzp       var_page
 
         .segment        "RUNTIME"
 
@@ -44,20 +43,15 @@
 
         ; Reads variable number from opcode stream, returns
         ; variable address in AX
-        ;   var_address = var_num * 2 + var_buf
+        ;   var_address = var_num * 2 + var_page * 256
 .proc   get_op_var
         ldy     #0
         lda     (cptr), y
         inc     cptr
         bne     :+
         inc     cptr+1
-:       ldx     var_buf+1
+:       ldx     var_page
         asl
-        bcc     :+
-        inx
-        clc
-:
-        adc     var_buf
         bcc     :+
         inx
 :

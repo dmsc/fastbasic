@@ -30,7 +30,7 @@
         .export         clear_data, alloc_array, mem_set
 
         .import         move_dwn_src, move_dwn_dst, move_dwn, putc, EXE_END
-        .importzp       mem_end, var_buf, tmp1, tmp2, array_ptr, var_count
+        .importzp       mem_end, var_page, tmp1, tmp2, array_ptr, var_count
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -44,8 +44,8 @@ alloc_size=     tmp1
         ; Clears data pointers before starting the interpreter
 .proc   clear_data
         ; Init all pointers to end of program data
-        lda     var_buf
-        ldx     var_buf+1
+        lda     #0
+        ldx     var_page
         sta     array_ptr
         stx     array_ptr+1
         ; Allocate and clear 2 bytes of memory for each variable
@@ -94,7 +94,8 @@ alloc_size=     tmp1
         inx
         ldy     alloc_size
         beq     nxt
-        .byte   $2C   ; Skip 2 bytes over next "DEC"
+;        .byte   $2C   ; Skip 2 bytes over next "DEC"
+        bne     loop    ; Prefer branch, is faster
 
 pgloop: dec     tmp2+1
 loop:   dey
