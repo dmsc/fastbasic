@@ -28,21 +28,21 @@
 ; --------------------------------------
 
         .import         pop_fr0, stack_l, stack_h
-        .importzp       next_ins_incsp
+        .importzp       next_instruction, saddr
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
 .proc   EXE_FP_STORE
-        lda     stack_l, y
-        ldx     stack_h, y
-        stx     FLPTR+1
+        lda     saddr
+        ldx     saddr+1
         sta     FLPTR
+        stx     FLPTR+1
         jsr     FST0P
         ; Pop FP stack
         jsr     pop_fr0
-        jmp     next_ins_incsp
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

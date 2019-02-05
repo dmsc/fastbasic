@@ -32,11 +32,10 @@
         .import         alloc_array
 
         ; From runtime.asm
-        .importzp       tmp1, tmp2, tmp3
+        .importzp       tmp1, tmp2, tmp3, saddr
 
         ; From interpreter.asm
-        .importzp       next_ins_incsp
-        .import         stack_l, stack_h
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
@@ -47,27 +46,23 @@
         sta     tmp3
         stx     tmp3+1
         ; Get destination pointer - allocate if 0
-        lda     stack_l, y
-        sta     tmp1
-        lda     stack_h, y
-        sta     tmp1+1
         ldy     #1
-        lda     (tmp1), y
+        lda     (saddr), y
         beq     alloc
 
         sta     tmp2+1
         dey
-        lda     (tmp1), y
+        lda     (saddr), y
         sta     tmp2
         rts
 
 alloc:
         ; Copy current memory pointer to the variable
         lda     array_ptr+1
-        sta     (tmp1), y
+        sta     (saddr), y
         dey
         lda     array_ptr
-        sta     (tmp1), y
+        sta     (saddr), y
         ; Allocate 256 bytes
         tya
         ldx     #1
@@ -89,7 +84,7 @@ cloop:  lda     (tmp3), y
         sta     (tmp2), y
         dey
         bne     cloop
-xit:    jmp     next_ins_incsp
+xit:    jmp     next_instruction
 .endproc
 
 ; Concatenate the source string to the end of the destination string

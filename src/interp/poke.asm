@@ -27,29 +27,15 @@
 ; Writes an 8-bit value to an address
 ; -----------------------------------
 
-        ; From interpreter.asm
-        .import         stack_l, stack_h
-        .importzp       next_ins_incsp
-        ; From runtime.asm
-        .importzp       tmp1
+        .importzp       next_instruction
+        .importzp       saddr
 
         .segment        "RUNTIME"
 
-.proc   EXE_POKE  ; POKE (SP++), AX
-        ldx     stack_h, y
-.if 0
-        stx     tmp1+1
-        ldx     stack_l, y
-        stx     tmp1
+.proc   EXE_POKE  ; POKE SADDR, A
         ldy     #0
-        sta     (tmp1), y
-.else
-        ; Self-modifying code, 5 cycles faster and 2 bytes shorter than the above
-        stx     save+2
-        ldx     stack_l, y
-save:   sta     $FF00, x
-.endif
-        jmp     next_ins_incsp
+        sta     (saddr), y
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

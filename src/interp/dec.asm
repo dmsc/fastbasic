@@ -29,10 +29,13 @@
 
         ; From interpreter.asm
         .importzp       next_instruction
+        .import         get_op_var
 
         .segment        "RUNTIME"
 
-.proc   EXE_DEC ; DPOKE(AX, DPEEK(AX) - 1) ; POP_AX
+EXE_DECVAR:     ; VAR = VAR - 1
+        jsr     get_op_var
+.proc   EXE_DEC ; *(AX) = *(AX) - 1
         stx     loadH+2
         stx     loadL1+2
         stx     loadL2+2
@@ -46,5 +49,6 @@ loadL2: dec     $FF00, x
 
         .include "../deftok.inc"
         deftoken "DEC"
+        deftoken "DECVAR"
 
 ; vi:syntax=asm_ca65

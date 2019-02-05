@@ -38,7 +38,7 @@
 
         .segment        "RUNTIME"
 
-.proc   EXE_DIM         ; AX = array size, (SP) = variable address
+.proc   EXE_DIM         ; AX = array size, (SPTR) = variable address
         jsr     alloc_array
         lda     tmp2
         ldx     tmp2+1

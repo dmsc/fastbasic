@@ -44,9 +44,18 @@ class opstat
                 {
                     if( c.is_byte() && old == TOK_BYTE )
                         c3[{old,c.get_val()}] ++;
+                    else if( c.is_sbyte() && old == TOK_BYTE )
+                        continue;
                     else if( c.is_word() && old == TOK_NUM )
                         c3[{old,c.get_val()}] ++;
-                    old = TOK_LAST_TOKEN;
+                    else if( c.is_sword() && old == TOK_NUM )
+                        continue;
+                    else if( c.is_byte() && old == TOK_VAR_LOAD )
+                        continue;
+                    else if( c.is_byte() && old == TOK_VAR_ADDR )
+                        continue;
+                    else
+                        old = TOK_LAST_TOKEN;
                 }
             }
             // Show results

@@ -27,49 +27,35 @@
 ; Writes a 16-bit value to an address
 ; -----------------------------------
 
-        ; From interpreter.asm
-        .import         stack_l, stack_h
-        .importzp       next_ins_incsp, sptr
-        ; From runtime.asm
-        .importzp       tmp1, tmp2
+        .import         stack_l, stack_h, get_op_var
+        .importzp       next_instruction, sptr
+        .exportzp       saddr
+
+        .zeropage
+saddr:  .res 2
 
         .segment        "RUNTIME"
 
-        ; FOR_START: Stores starting value to FOR variable and
-        ;            keeps the address in the stack.
-.proc   EXE_FOR_START
-        ; In stack we have:
-        ;       AX   = start value
-        ;       (SP) = var_address
-        dec     sptr  ; Keeps address into stack!
-.endproc        ; Fall through
-
-.proc   EXE_DPOKE  ; DPOKE (SP++), AX
-        stx     tmp2            ; Save X
-        ldx     stack_h, y
-.if 0
-        stx     tmp1+1
-        ldx     stack_l, y
-        stx     tmp1
+.proc   EXE_DPOKE  ; DPOKE SADDR, AX
         ldy     #0
-        sta     (tmp1), y
+        sta     (saddr), y
         iny
-        lda     tmp2            ; Restore X
-        sta     (tmp1), y
-.else
-        ; Self-modifying code, 4 cycles faster and 1 byte larger than the above
-        stx     save_l+2
-        stx     save_h+2
-        ldx     stack_l, y
-save_h: sta     $FF00, x
-        lda     tmp2            ; Restore X
-save_l: sta     $FF01, x
-.endif
-        jmp     next_ins_incsp
+        txa
+        sta     (saddr), y
+        jmp     next_instruction
+.endproc
+
+EXE_VAR_SADDR:     ; SADDR = VAR address
+        jsr     get_op_var
+.proc   EXE_SADDR  ; SADDR = AX
+        sta     saddr
+        stx     saddr+1
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
         deftoken "DPOKE"
-        deftoken "FOR_START"
+        deftoken "SADDR"
+        deftoken "VAR_SADDR"
 
 ; vi:syntax=asm_ca65

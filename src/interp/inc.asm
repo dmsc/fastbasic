@@ -29,10 +29,13 @@
 
         ; From interpreter.asm
         .importzp       next_instruction
+        .import         get_op_var
 
         .segment        "RUNTIME"
 
-.proc   EXE_INC ; DPOKE(AX, DPEEK(AX) + 1)
+EXE_INCVAR:     ; VAR = VAR + 1
+        jsr     get_op_var
+.proc   EXE_INC ; *(AX) = *(AX) + 1
         stx     loadH+2
         stx     loadL+2
         tax
@@ -44,5 +47,6 @@ loadH:  inc     $FF01, x
 
         .include "../deftok.inc"
         deftoken "INC"
+        deftoken "INCVAR"
 
 ; vi:syntax=asm_ca65

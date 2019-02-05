@@ -23,7 +23,7 @@ TOKENS {
  # First token must be "END"
  TOK_END
  # Constant and variable loading
- TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_LOAD
+ TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_SADDR, TOK_VAR_LOAD
  TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
  TOK_PUSH, TOK_PUSH_VAR_LOAD
@@ -43,7 +43,7 @@ TOKENS {
  TOK_COMP_0
  # Low level statements
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
- TOK_VAR_STORE
+ TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR
  # Graphic support statements
  TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # Print statements
@@ -56,7 +56,7 @@ TOKENS {
  # Jumps
  TOK_JUMP, TOK_CJUMP, TOK_CALL, TOK_RET, TOK_CRET
  # FOR loop support
- TOK_FOR, TOK_FOR_START, TOK_FOR_NEXT, TOK_FOR_EXIT
+ TOK_FOR, TOK_FOR_NEXT, TOK_FOR_EXIT
  # Arrays
  TOK_DIM, TOK_USHL
  # Strings
@@ -389,8 +389,8 @@ VAR_FP_LVALUE:
 #@endif FASTBASIC_FP
 
 # Parse an "=" sign and pushes address into stack.
-EQUAL_PUSH: variable assignment
-        "=" emit TOK_PUSH
+EQUAL_SADDR: variable assignment
+        "=" emit TOK_SADDR
 
 # Parse optional "STEP" in for
 STEP_OPTIONAL:
@@ -405,15 +405,15 @@ NEXT_VARNAME:
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
-        emit TOK_BYTE emit COLCRS emit TOK_PUSH EXPR emit TOK_DPOKE emit TOK_BYTE emit ROWCRS C_EXPR emit TOK_POKE
+        emit TOK_BYTE emit COLCRS emit TOK_SADDR EXPR emit TOK_DPOKE emit TOK_BYTE emit ROWCRS emit TOK_SADDR "," EXPR emit TOK_POKE
 
 # SOUND arguments, three possibilities:
 #  SOUND voice, freq, distort, vol
 #  SOUND voice
 #  SOUND
 SOUND:
-        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD C_EXPR EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_PUSH_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_PUSH_BYTE emit 3 emit TOK_POKE
-        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_PUSH_0 emit TOK_DPOKE
+        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
+        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
 
 # Word Arrays
@@ -448,11 +448,11 @@ INPUT_VAR_MORE:
         pass
 
 INPUT_VAR:
-        VAR_WORD_LVALUE emit TOK_PUSH emit TOK_INPUT_STR emit TOK_VAL emit TOK_DPOKE
-        VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_INPUT_STR emit TOK_VAL emit TOK_POKE
-        VAR_STR_LVALUE  emit TOK_PUSH emit TOK_INPUT_STR emit TOK_COPY_STR
+        VAR_WORD_LVALUE emit TOK_SADDR emit TOK_INPUT_STR emit TOK_VAL emit TOK_DPOKE
+        VAR_BYTE_LVALUE emit TOK_SADDR emit TOK_INPUT_STR emit TOK_VAL emit TOK_POKE
+        VAR_STR_LVALUE  emit TOK_SADDR emit TOK_INPUT_STR emit TOK_COPY_STR
 #@if FASTBASIC_FP
-        VAR_FP_LVALUE   emit TOK_PUSH emit TOK_INPUT_STR emit TOK_FP_VAL emit TOK_FP_STORE
+        VAR_FP_LVALUE   emit TOK_SADDR emit TOK_INPUT_STR emit TOK_FP_VAL emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
 
@@ -467,7 +467,7 @@ DIM_VAR_TYPE:
         PAR_EXPR DIM_VAR_TYPE_NUM
 
 DIM_VAR: new variable name
-        emit TOK_VAR_ADDR E_VAR_CREATE emit TOK_PUSH DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
+        emit TOK_VAR_SADDR E_VAR_CREATE DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
 
 # I/O expressions
 IO_CHAN: I/O channel number
@@ -488,14 +488,13 @@ IO_CHAN0:
 
 # Get from keyboard expression
 GETK_EXPR: variable name
-        VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_GETKEY emit TOK_POKE
-        VAR_WORD_SAVE   emit TOK_GETKEY emit TOK_VAR_STORE E_POP_VAR
-        VAR_WORD_LVALUE emit TOK_PUSH emit TOK_GETKEY emit TOK_DPOKE
+        VAR_BYTE_LVALUE emit TOK_SADDR emit TOK_GETKEY emit TOK_POKE
+        VAR_WORD_LVALUE emit TOK_SADDR emit TOK_GETKEY emit TOK_DPOKE
 
 # Get expression
 GET_EXPR: variable name
-        "," VAR_BYTE_LVALUE emit TOK_PUSH emit TOK_GET emit TOK_POKE GET_EXPR_MORE
-        "," VAR_WORD_LVALUE emit TOK_PUSH emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
+        "," VAR_BYTE_LVALUE emit TOK_SADDR emit TOK_GET emit TOK_POKE GET_EXPR_MORE
+        "," VAR_WORD_LVALUE emit TOK_SADDR emit TOK_GET emit TOK_DPOKE GET_EXPR_MORE
 
 GET_EXPR_MORE:
         GET_EXPR
@@ -507,7 +506,7 @@ C_EXPR: comma followed by an expression
 
 # Get two comma separated expressions ",A,B" and returns "A*16+B"
 EXPR_AB:
-        C_EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL C_EXPR emit TOK_ADD
+        "," EXPR emit TOK_USHL emit TOK_USHL emit TOK_USHL emit TOK_USHL C_EXPR emit TOK_ADD
 
 # Parses a XIO AUX1/AUX2/STRING expression
 XIO_EXPR:
@@ -534,7 +533,7 @@ DATA_END:
         E_POP_DATA
 
 DATA_VAR: new array name
-        emit TOK_VAR_ADDR E_VAR_CREATE "()" emit TOK_PUSH emit TOK_CDATA emit LT_DATA E_PUSH_LT
+        emit TOK_VAR_SADDR E_VAR_CREATE "()" emit TOK_CDATA emit LT_DATA E_PUSH_LT
         pass
 
 # Parse a line
@@ -547,8 +546,8 @@ PARSE_LINE_COMMAND:
         "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
         "CLS" IO_CHAN_OPT_NOCOMMA emit TOK_BYTE emit CLS emit TOK_PUT IO_CHAN0
-        "Poke"  EXPR C_EXPR emit TOK_POKE
-        "Dpoke" EXPR C_EXPR emit TOK_DPOKE
+        "Poke"  EXPR emit TOK_SADDR "," EXPR emit TOK_POKE
+        "Dpoke" EXPR emit TOK_SADDR "," EXPR emit TOK_DPOKE
         "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET
         "Move"  EXPR C_EXPR C_EXPR emit TOK_MOVE
         "-move" EXPR C_EXPR C_EXPR emit TOK_NMOVE
@@ -559,20 +558,20 @@ PARSE_LINE_COMMAND:
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT THEN_OR_MULTILINE
-        "For" VAR_WORD_LVALUE EQUAL_PUSH EXPR emit TOK_FOR_START "TO" EXPR STEP_OPTIONAL emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
+        "For" VAR_WORD_LVALUE EQUAL_SADDR emit TOK_PUSH EXPR emit TOK_DPOKE "TO" EXPR STEP_OPTIONAL emit TOK_FOR emit TOK_L_NOT emit TOK_CJUMP emit LT_FOR_2 E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "Else" emit TOK_JUMP E_ELSE
         "ELIf" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
-        "Color" emit TOK_BYTE emit COLOR emit TOK_PUSH EXPR emit TOK_POKE
-        "FColor" emit TOK_NUM word FILDAT emit TOK_PUSH EXPR emit TOK_POKE
+        "Color" emit TOK_BYTE emit COLOR emit TOK_SADDR EXPR emit TOK_POKE
+        "FColor" emit TOK_NUM word FILDAT emit TOK_SADDR EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
-        "SEtcolor" EXPR emit TOK_PUSH emit TOK_NUM word COLOR0 emit TOK_ADD EXPR_AB emit TOK_POKE
+        "SEtcolor" EXPR emit TOK_PUSH emit TOK_NUM word COLOR0 emit TOK_ADD emit TOK_SADDR EXPR_AB emit TOK_POKE
         "Sound" SOUND
         "DIm" DIM_VAR DIM_MORE
         "CLose" IO_CHAN emit TOK_CLOSE
@@ -589,18 +588,18 @@ PARSE_LINE_COMMAND:
         "DAta" DATA_VAR DATA_TYPE DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
-        "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_PUSH_1 emit TOK_POKE
-        "RAd" emit TOK_BYTE emit DEGFLAG emit TOK_PUSH_0 emit TOK_POKE
+        "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_SADDR emit TOK_1 emit TOK_POKE
+        "RAd" emit TOK_BYTE emit DEGFLAG emit TOK_SADDR emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN:
         VAR_WORD_SAVE   "=" EXPR emit TOK_VAR_STORE E_POP_VAR
-        VAR_WORD_LVALUE EQUAL_PUSH EXPR emit TOK_DPOKE
-        VAR_BYTE_LVALUE EQUAL_PUSH EXPR emit TOK_POKE
-        VAR_STR_LVALUE  EQUAL_PUSH STR_EXPR emit TOK_COPY_STR
-        VAR_STR_LVALUE  EQUAL_PUSH "+" STR_EXPR emit TOK_CAT_STR
+        VAR_WORD_LVALUE EQUAL_SADDR EXPR emit TOK_DPOKE
+        VAR_BYTE_LVALUE EQUAL_SADDR EXPR emit TOK_POKE
+        VAR_STR_LVALUE  EQUAL_SADDR STR_EXPR emit TOK_COPY_STR
+        VAR_STR_LVALUE  EQUAL_SADDR "+" STR_EXPR emit TOK_CAT_STR
 #@if FASTBASIC_FP
-        VAR_FP_LVALUE   EQUAL_PUSH FP_EXPR emit TOK_FP_STORE
+        VAR_FP_LVALUE   EQUAL_SADDR FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
 SKIP_COMMENT:
