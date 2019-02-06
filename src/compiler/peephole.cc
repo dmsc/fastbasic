@@ -217,7 +217,7 @@ class peephole
                 }
             }
         }
-        // Expands PUSH tokens
+        // Expands PUSH and SADDR tokens
         void expand_push()
         {
             for(size_t i=0; i<code.size(); i++)
@@ -238,6 +238,14 @@ class peephole
                 else if( mtok(0,TOK_PUSH_VAR_LOAD) )
                 {
                     set_tok(0, TOK_VAR_LOAD); ins_tok(0, TOK_PUSH);
+                }
+                else if( mtok(0,TOK_VAR_SADDR) )
+                {
+                    set_tok(0, TOK_VAR_ADDR); ins_tok(2, TOK_SADDR);
+                }
+                else if( mtok(0,TOK_BYTE_SADDR) )
+                {
+                    set_tok(0, TOK_BYTE); ins_tok(2, TOK_SADDR);
                 }
             }
         }
@@ -269,6 +277,24 @@ class peephole
                     {
                         set_tok(1, TOK_PUSH_VAR_LOAD); del(0);
                     }
+                }
+            }
+
+        }
+        // Folds SADDR after known sequences
+        void fold_saddr()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                //   TOK_BYTE
+                if( mtok(0,TOK_BYTE) && mtok(2,TOK_SADDR) )
+                {
+                    set_tok(0, TOK_BYTE_SADDR); del(2);
+                }
+                if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_SADDR) )
+                {
+                    set_tok(0, TOK_VAR_SADDR); del(2);
                 }
             }
         }
@@ -664,13 +690,6 @@ class peephole
                         del(2); i--;
                         continue;
                     }
-                    //   TOK_VAR_A / x / TOK_SADDR -> TOK_VAR_SADDR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_SADDR) )
-                    {
-                        set_tok(0, TOK_VAR_SADDR);
-                        del(2); i--;
-                        continue;
-                    }
                     // NOT NOT A -> A
                     //   TOK_L_NOT / TOK_L_NOT -> TOK_COMP_0
                     if( mtok(0, TOK_L_NOT) && mtok(1, TOK_L_NOT) )
@@ -880,6 +899,7 @@ class peephole
             } while(changed);
             shorten_numbers();
             fold_push();
+            fold_saddr();
         }
 };
 

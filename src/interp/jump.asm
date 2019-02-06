@@ -48,8 +48,8 @@
         tax                     ; 2     1
         dey                     ; 2     1
         lda     (cptr), y       ; 5     2
-        sta     cptr            ; 3     2
         stx     cptr+1          ; 3     2
+sto:    sta     cptr            ; 3     2
         jmp     next_instruction
 .endproc
 
@@ -60,10 +60,9 @@
 skip:   lda     cptr
 ;       sec             ; C is always set from above comparison
         adc     #1
-        sta     cptr
-        bcc     xit
+        bcc     EXE_JUMP::sto
         inc     cptr+1
-xit:    jmp     next_instruction
+        bcs     EXE_JUMP::sto
 .endproc
 
         .include "../deftok.inc"

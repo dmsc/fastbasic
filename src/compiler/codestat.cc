@@ -46,6 +46,8 @@ class opstat
                         c3[{old,c.get_val()}] ++;
                     else if( c.is_sbyte() && old == TOK_BYTE )
                         continue;
+                    else if( c.is_sbyte() && old == TOK_BYTE_SADDR )
+                        continue;
                     else if( c.is_word() && old == TOK_NUM )
                         c3[{old,c.get_val()}] ++;
                     else if( c.is_sword() && old == TOK_NUM )

@@ -24,7 +24,7 @@ TOKENS {
  TOK_END
  # Constant and variable loading
  TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_SADDR, TOK_VAR_LOAD
- TOK_SHL8, TOK_0, TOK_1
+ TOK_BYTE_SADDR, TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
  TOK_PUSH, TOK_PUSH_VAR_LOAD
  TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
@@ -405,7 +405,7 @@ NEXT_VARNAME:
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
-        emit TOK_BYTE emit COLCRS emit TOK_SADDR EXPR emit TOK_DPOKE emit TOK_BYTE emit ROWCRS emit TOK_SADDR "," EXPR emit TOK_POKE
+        emit TOK_BYTE_SADDR emit COLCRS EXPR emit TOK_DPOKE emit TOK_BYTE_SADDR emit ROWCRS "," EXPR emit TOK_POKE
 
 # SOUND arguments, three possibilities:
 #  SOUND voice, freq, distort, vol
@@ -565,7 +565,7 @@ PARSE_LINE_COMMAND:
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
-        "Color" emit TOK_BYTE emit COLOR emit TOK_SADDR EXPR emit TOK_POKE
+        "Color" emit TOK_BYTE_SADDR emit COLOR EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT emit TOK_SADDR EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
@@ -588,8 +588,8 @@ PARSE_LINE_COMMAND:
         "DAta" DATA_VAR DATA_TYPE DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
-        "DEG" emit TOK_BYTE emit DEGFLAG emit TOK_SADDR emit TOK_1 emit TOK_POKE
-        "RAd" emit TOK_BYTE emit DEGFLAG emit TOK_SADDR emit TOK_0 emit TOK_POKE
+        "DEG" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_1 emit TOK_POKE
+        "RAd" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
 
 PARSE_LINE_ASSIGN:
