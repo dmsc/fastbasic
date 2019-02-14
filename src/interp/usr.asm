@@ -28,7 +28,7 @@
 ; --------------------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, next_ins_incsp
+        .importzp       next_instruction, next_ins_incsp, tmp1
         .import         stack_l, stack_h
 
         .include "atari.inc"
@@ -43,7 +43,8 @@
 .endproc
 
 .proc   EXE_USR_ADDR
-        ; Store out return address into the CPU stack
+        ; Store out return address into the CPU stack. This should be pushed to the
+        ; stack *before* the arguments, so it needs to be a special token.
         jsr     next_instruction
         jmp     next_ins_incsp
 .endproc
@@ -51,10 +52,10 @@
 .proc   EXE_USR_CALL
         ; Calls the routine, address in stack
         lda     stack_l, y
-        sta     jump+1
         ldx     stack_h, y
-        stx     jump+2
-jump:   jmp     $FFFF
+        sta     tmp1
+        stx     tmp1+1
+        jmp     (tmp1)  ; 7 bytes, 11 cycles
 .endproc
 
         .include "../deftok.inc"
