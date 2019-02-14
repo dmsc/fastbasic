@@ -29,7 +29,7 @@
 
         .export         clear_data, alloc_array, mem_set
 
-        .import         move_dwn_src, move_dwn_dst, move_dwn, putc, EXE_END
+        .import         putc, EXE_END
         .importzp       mem_end, var_page, tmp1, tmp2, array_ptr, var_count
 
         ; Top of available memory

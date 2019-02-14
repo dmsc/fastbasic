@@ -64,12 +64,14 @@
         .export         alloc_prog, alloc_laddr
         .export         parser_alloc_init, alloc_area_8
 
-        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf
+        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1
+        .import         move_dwn
 
-        ; From runtime.asm
-        .import         move_dwn_src, move_dwn_dst, move_dwn
-        .importzp       tmp1
-
+.ifdef  NO_SMCODE
+        .importzp       move_dwn_src, move_dwn_dst
+.else
+        .import         move_dwn_src, move_dwn_dst
+.endif
 
 mem_start = prog_ptr
 prog_end  = var_buf

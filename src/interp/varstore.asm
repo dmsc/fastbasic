@@ -27,25 +27,33 @@
 ; Store value into variable
 ; -------------------------
 
-        ; From interpreter.asm
+        .importzp       next_instruction, tmp2
         .import         get_op_var
-        .importzp       next_instruction
-        ; From runtime.asm
-        .importzp       tmp2
 
         .segment        "RUNTIME"
 
 .proc   EXE_VAR_STORE  ; DPOKE (VAR), AX
         pha
-        stx     tmp2
+        stx     tmp2+1
         jsr     get_op_var
+.ifdef NO_SMCODE
+        sta     tmp2
+        lda     tmp2+1
+        stx     tmp2+1
+        ldy     #1
+        sta     (tmp2),y
+        dey
+        pla
+        sta     (tmp2),y        ; 14 bytes, 29 cycles
+.else
         stx     save_l+2
         stx     save_h+2
         tax
         pla
 save_h: sta     $FF00, x
-        lda     tmp2            ; Restore X
-save_l: sta     $FF01, x
+        lda     tmp2+1          ; Restore X
+save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
+.endif
         jmp     next_instruction
 .endproc
 

@@ -27,11 +27,8 @@
 ; Reads a 16-bit value from an address
 ; ------------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       next_instruction, tmp1
         .import         get_op_var, pushAX
-        ; From runtime.asm
-        .importzp       tmp1
 
         .segment        "RUNTIME"
 
@@ -41,12 +38,10 @@
 
 .proc   EXE_VAR_LOAD  ; AX = value of variable
         jsr     get_op_var
-        ; Fall through:
-        ; jmp     EXE_DPEEK
-.endproc
+.endproc        ; Fall through:
 
 .proc   EXE_DPEEK  ; AX = PEEK(AX) + 256 * PEEK(AX+1)
-.if 0
+.ifdef NO_SMCODE
         sta     tmp1
         stx     tmp1+1
         ldy     #1

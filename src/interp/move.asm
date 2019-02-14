@@ -32,6 +32,11 @@
 
         .include "atari.inc"
 
+.ifdef NO_SMCODE
+        .importzp       tmp3, tmp4
+src = tmp3-1
+dst = tmp4-1
+.endif
         .segment        "RUNTIME"
 
 .proc   EXE_MOVE  ; move memory up
@@ -69,8 +74,15 @@
         eor     #$ff
         tay
 cloop:
-src:    lda     $FF00,y
-dst:    sta     $FF00,y
+.ifdef NO_SMCODE
+        ; 16/17 cycles / iteration
+        lda     (src+1),y       ; 5/6
+        sta     (dst+1),y       ; 6
+.else
+        ; 14/15 cycles / iteration, plus 10 cycles more at preparation
+src:    lda     $FF00,y         ; 5/4
+dst:    sta     $FF00,y         ; 5
+.endif
         iny
         bne     cloop
         ; From now-on we copy full pages!

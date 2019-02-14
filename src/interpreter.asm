@@ -53,6 +53,10 @@ var_count:
 tmp1:   .res    2
 tmp2:   .res    2
 tmp3:   .res    2
+.ifdef NO_SMCODE
+        .exportzp       tmp4
+tmp4:   .res    2
+.endif
 divmod_sign:
         .res    1
 IOCHN:  .res    1

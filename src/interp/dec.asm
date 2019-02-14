@@ -27,8 +27,7 @@
 ; Decrement a memory location
 ; ---------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       next_instruction, tmp1
         .import         get_op_var
 
         .segment        "RUNTIME"
@@ -36,6 +35,22 @@
 EXE_DECVAR:     ; VAR = VAR - 1
         jsr     get_op_var
 .proc   EXE_DEC ; *(AX) = *(AX) - 1
+.ifdef NO_SMCODE
+        ; This is too long, it misses DEC A
+        sta     tmp1
+        stx     tmp1+1
+        ldy     #0
+        lda     (tmp1),y
+        clc
+        adc     #$FF
+        sta     (tmp1),y
+        bcs     :+              ; Longer, but much faster
+        iny
+        lda     (tmp1),y
+        adc     #$FF
+        sta     (tmp1),y
+:
+.else
         stx     loadH+2
         stx     loadL1+2
         stx     loadL2+2
@@ -44,6 +59,7 @@ loadL1: lda     $FF00, x
         bne     loadL2
 loadH:  dec     $FF01, x
 loadL2: dec     $FF00, x
+.endif
         jmp     next_instruction
 .endproc
 

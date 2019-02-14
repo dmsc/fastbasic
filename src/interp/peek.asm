@@ -27,25 +27,22 @@
 ; Reads an 8-bit value from an address
 ; ------------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction
-        ; From runtime.asm
-        .importzp       tmp1
+        .importzp       next_instruction, tmp1
 
         .segment        "RUNTIME"
 
 .proc   EXE_PEEK  ; AX = *(AX)
-.if 0
+.ifdef NO_SMCODE
         sta     tmp1
         stx     tmp1+1
         ldx     #0
-        lda     (tmp1,x)
+        lda     (tmp1,x)        ; 13 cycles, 8 bytes
 .else
-        ; Self-modifying code, 2 cycles faster and 1 byte larger than the above
+        ; Self-modifying code, 1 cycle faster and 1 byte larger than the above
         stx     load+2
         tax
 load:   lda     $FF00, x
-        ldx     #0
+        ldx     #0              ; 12 cycles, 9 bytes
 .endif
         jmp     next_instruction
 .endproc

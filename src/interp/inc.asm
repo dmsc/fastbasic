@@ -27,8 +27,7 @@
 ; Increment a memory location
 ; ---------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       next_instruction, tmp1
         .import         get_op_var
 
         .segment        "RUNTIME"
@@ -36,13 +35,31 @@
 EXE_INCVAR:     ; VAR = VAR + 1
         jsr     get_op_var
 .proc   EXE_INC ; *(AX) = *(AX) + 1
+.ifdef NO_SMCODE
+        ; This is too long, it misses INC A
+        sta     tmp1
+        stx     tmp1+1
+        ldy     #0
+        lda     (tmp1),y
+        clc
+        adc     #1
+        sta     (tmp1),y
+        bcc     :+              ; Longer, but much faster
+        iny
+        lda     (tmp1),y
+        adc     #0
+        sta     (tmp1),y
+:
+.else
         stx     loadH+2
         stx     loadL+2
         tax
 loadL:  inc     $FF00, x
         bne     :+
 loadH:  inc     $FF01, x
-:       jmp     next_instruction
+:
+.endif
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

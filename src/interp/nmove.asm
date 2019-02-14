@@ -28,12 +28,21 @@
 ; ----------------------------
 
         ; memory move
-        .export         move_dwn_src, move_dwn_dst, move_dwn
+        .export         move_dwn
 
         ; From interpreter.asm
         .import         stack_l, stack_h, next_ins_incsp_2
 
         .include "atari.inc"
+
+.ifdef NO_SMCODE
+        .exportzp       move_dwn_src, move_dwn_dst
+        .importzp       tmp3, tmp4, divmod_sign
+move_dwn_src= tmp3
+move_dwn_dst= tmp4
+.else
+        .export         move_dwn_src, move_dwn_dst
+.endif
 
         .segment        "RUNTIME"
 
@@ -54,15 +63,20 @@
 
         ; Note: this is used from alloc.asm, so can't be inlined above
 .proc   move_dwn
-        ; Store len_l
-        sta     len_l+1
-
         ; Here, we will copy (X-1) * 255 + Y bytes, up to src+Y / dst+Y
         ; X*255 - 255 + Y = A*256+B
         ; Calculate our new X/Y values
-        txa
+
         clc
+.ifdef NO_SMCODE
+        sta     divmod_sign
+        txa
+        adc     divmod_sign
+.else
+        sta     len_l+1         ; Store len_l
+        txa
 len_l:  adc     #$FF
+.endif
         tay
         bcc     :+
         inx
@@ -73,24 +87,24 @@ chk_len:
         txa
         clc
         eor     #$FF
-        adc     src+1
-        sta     src+1
+        adc     move_dwn_src
+        sta     move_dwn_src
         txa
         adc     #$FF
         clc
-        adc     src+2
-        sta     src+2
+        adc     move_dwn_src+1
+        sta     move_dwn_src+1
 
         txa
         clc
         eor     #$FF
-        adc     dst+1
-        sta     dst+1
+        adc     move_dwn_dst
+        sta     move_dwn_dst
         txa
         adc     #$FF
         clc
-        adc     dst+2
-        sta     dst+2
+        adc     move_dwn_dst+1
+        sta     move_dwn_dst+1
 
         inx
 
@@ -99,19 +113,26 @@ chk_len:
         beq     xit
 ploop:
 cloop:
+.ifdef NO_SMCODE
+        ; 17 cycles / iteration
+        lda     (move_dwn_src),y
+        sta     (move_dwn_dst),y
+.else
+        ; 15 cycles / iteration, plus 14 cycles more at preparation
 src:    lda     $FF00,y
 dst:    sta     $FF00,y
+.endif
         dey
         bne     cloop
 
         ; We need to decrease the pointers by 255
 next_page:
-        inc     src+1
+        inc     move_dwn_src
         beq     :+
-        dec     src+2
-:       inc     dst+1
+        dec     move_dwn_src+1
+:       inc     move_dwn_dst
         beq     :+
-        dec     dst+2
+        dec     move_dwn_dst+1
 :
         ; And copy 255 bytes more!
         dey
@@ -120,8 +141,11 @@ next_page:
 
 xit:    rts
 .endproc
+
+.ifndef NO_SMCODE
 move_dwn_src     = move_dwn::src+1
 move_dwn_dst     = move_dwn::dst+1
+.endif
 
 
         .include "../deftok.inc"
