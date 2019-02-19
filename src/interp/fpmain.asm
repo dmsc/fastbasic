@@ -27,7 +27,7 @@
 ; Floating Point stack and variables
 ; ----------------------------------
 
-        .exportzp       DEGFLAG, FPSTK_SIZE, fptr, fp_tmp_a, fp_tmp_x
+        .exportzp       DEGFLAG, FPSTK_SIZE, fptr
         .export         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
 
         ; From interpreter.asm
@@ -37,9 +37,6 @@
 
         ; FP stack pointer
 fptr:   .res    1
-        ; Temporary store for INT TOS
-fp_tmp_a:       .res    1
-fp_tmp_x:       .res    1
         ; DEG/RAD flag
 DEGFLAG:        .res    1
 

@@ -42,7 +42,6 @@
         jsr     alloc_array
         lda     tmp2
         ldx     tmp2+1
-        ldy     sptr
         jmp     EXE_DPOKE
 .endproc
 

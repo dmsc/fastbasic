@@ -38,7 +38,7 @@
 
 .proc   EXE_INT_FP      ; Convert AX to FP
         pha
-        ; Save INT stack
+        ; Save FP stack
         jsr     push_fr0
         ; Restore A
         pla

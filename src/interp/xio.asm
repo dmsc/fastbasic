@@ -28,15 +28,10 @@
 ; --------------
 
         .export CIOV_CMD_POP2
-        ; From close.asm
-        .import CIOV_CMD
-        ; From runtime.asm
-        .import         neg_AX
-        .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR
 
-        ; From interpreter.asm
+        .import CIOV_CMD
+        .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR, sptr
         .import         stack_l, stack_h, get_str_eol
-        .importzp       sptr
 
         .include "atari.inc"
 

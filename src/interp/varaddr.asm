@@ -29,10 +29,7 @@
 
         .export get_op_var
 
-        ; From interpreter.asm
-        .importzp       next_instruction, cptr, sptr
-        .import         pushAX
-        .importzp       var_page
+        .importzp       next_instruction, cptr, var_page
 
         .segment        "RUNTIME"
 

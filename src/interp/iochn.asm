@@ -24,7 +24,7 @@
 ; linked into a combine executable.)
 
 
-; Set I/O channel to 0
+; Set I/O channel to A
 ; --------------------
 
         ; From runtime.asm

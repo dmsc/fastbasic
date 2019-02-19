@@ -28,7 +28,6 @@
 ; --------------
 
         ; From runtime.asm
-        .import         neg_AX
         .importzp       tmp1, tmp2, tmp3
 
         ; From interpreter.asm

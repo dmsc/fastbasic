@@ -35,11 +35,11 @@
 
 .proc   EXE_GRAPHICS  ; OPEN #6,12,0,
         ldx     #$60
-        pha
+        tay
         and     #$F0
         eor     #$1C    ; Get AUX1 from BASIC mode
         sta     ICAX1, x
-        pla             ; And AUX2
+        tya             ; And AUX2
         sta     ICAX2, x
         lda     #<device_s
         sta     ICBAL, x

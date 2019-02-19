@@ -30,7 +30,6 @@
         .export         check_fp_err
 
         .import         push_fr0, pop_fr1
-        .importzp       fp_tmp_x, fp_tmp_a
 
         ; From interpreter.asm
         .importzp       next_instruction, cptr, IOERROR

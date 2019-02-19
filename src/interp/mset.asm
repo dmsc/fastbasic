@@ -37,19 +37,17 @@
         .segment        "RUNTIME"
 
 .proc   EXE_MSET
-        pha             ; Store value to set
 
-        lda     stack_l, y
-        sta     tmp1
+        ldx     stack_l+1, y
+        stx     tmp2
+        ldx     stack_h+1, y
+        stx     tmp2+1
+
+        ldx     stack_l, y
+        stx     tmp1
         ldx     stack_h, y
 
-        lda     stack_l+1, y
-        sta     tmp2
-        lda     stack_h+1, y
-        sta     tmp2+1
-
-        pla             ; Recover value to set into Y
-        tay
+        tay             ; Store value to set into Y
         jsr     mem_set
 
         jmp     next_ins_incsp_2
