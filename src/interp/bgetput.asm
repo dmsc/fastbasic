@@ -68,12 +68,11 @@
         lda     stack_l, y
         sta     ICBAL, x        ; Address
         lda     stack_h, y
-        sta     ICBAH, x
 
         plp
-        lda     #GETCHR
+        ldy     #GETCHR
         bcs     bget
-        lda     #PUTCHR
+        ldy     #PUTCHR
 bget:
         jmp     CIOV_CMD_POP2   ; Note: A is never 0
 .endproc

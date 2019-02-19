@@ -28,7 +28,7 @@
 ; -------------------------------------
 
         ; From interpreter.asm
-        .importzp       next_instruction, cptr
+        .importzp       next_instruction, cptr, saddr
         .import         pushAX
 
         .segment        "RUNTIME"
@@ -55,10 +55,19 @@
 .proc   EXE_BYTE  ; AX = read 1 byte from op
         ldx     #0
         lda     (cptr, x)
-        inc     cptr
+incc:   inc     cptr
         beq     inc_cptr_1
         jmp     next_instruction
 .endproc
+
+.proc   EXE_BYTE_SADDR  ; SADDR = read 1 byte from op   (+14 bytes)
+        ldy     #0
+        lda     (cptr), y
+        sta     saddr
+        sty     saddr+1
+        jmp     EXE_BYTE::incc
+.endproc
+
 
 .proc   EXE_CSTRING     ; AX = address of string
         ldy     #0      ; Get string length into A
@@ -79,6 +88,7 @@ xit:    jmp     next_instruction
         deftoken "NUM"
         deftoken "BYTE"
         deftoken "PUSH_BYTE"
+        deftoken "BYTE_SADDR"
         deftoken "CSTRING"
 
 ; vi:syntax=asm_ca65

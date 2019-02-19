@@ -53,19 +53,9 @@ EXE_VAR_SADDR:     ; SADDR = VAR address
         jmp     next_instruction
 .endproc
 
-.proc   EXE_BYTE_SADDR  ; SADDR = read 1 byte from op   (+14 bytes)
-        ldx     #0
-        lda     (cptr, x)
-        inc     cptr
-        bne     EXE_SADDR
-        inc     cptr+1
-        bne     EXE_SADDR
-.endproc
-
         .include "../deftok.inc"
         deftoken "DPOKE"
         deftoken "SADDR"
         deftoken "VAR_SADDR"
-        deftoken "BYTE_SADDR"
 
 ; vi:syntax=asm_ca65

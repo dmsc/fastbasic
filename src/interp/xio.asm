@@ -27,7 +27,7 @@
 ; CIO operations
 ; --------------
 
-        .export CIOV_CMD_POP2
+        .export CIOV_CMD_POP2, CIOV_CMD_AH
 
         .import CIOV_CMD
         .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR, sptr
@@ -50,8 +50,6 @@
         sta     ICBAL, x
         lda     #0
         sta     ICBLH, x
-        lda     INBUFF+1
-        sta     ICBAH, x
         lda     #$FF
         sta     ICBLL, x
         lda     stack_l, y
@@ -59,12 +57,17 @@
         lda     stack_h, y
         sta     ICAX2, x
         lda     stack_l+1, y
+        tay
+        lda     INBUFF+1
         inc     sptr
 .endproc        ; Fall through
         ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack twice
 CIOV_CMD_POP2:
         inc     sptr
         inc     sptr
+CIOV_CMD_AH:
+        sta     ICBAH, x
+        tya
         jmp     CIOV_CMD
 
         .include "../deftok.inc"
