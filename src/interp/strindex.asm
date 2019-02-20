@@ -27,8 +27,8 @@
 ; String indexing
 ; ---------------
 
-        .importzp       tmp1, tmp3, sptr, next_ins_incsp
-        .import         stack_l, stack_h
+        .importzp       tmp1, tmp3
+        .import         stack_l, stack_h, next_ins_incsp_2
 
         .include "atari.inc"
 
@@ -42,9 +42,6 @@
         ; AX   = Count
         ; SP   = Position
         ; SP+1 = String address
-
-        ; Fix stack pointer
-        inc     sptr
 
         cpx     #0
         bmi     zero
@@ -85,7 +82,7 @@ xit:
         ; Return new string position
         lda     #<(LBUFF-1)
         ldx     #>(LBUFF-1)
-        jmp     next_ins_incsp
+        jmp     next_ins_incsp_2
 
 zero:
         ldx     #0
