@@ -27,8 +27,8 @@
 ; Decrement a memory location
 ; ---------------------------
 
-        .importzp       next_instruction, tmp1
         .import         get_op_var
+        .importzp       next_instruction, tmp1
 
         .segment        "RUNTIME"
 

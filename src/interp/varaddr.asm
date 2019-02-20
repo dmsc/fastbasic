@@ -27,8 +27,7 @@
 ; Get's variable address
 ; ----------------------
 
-        .export get_op_var
-
+        .export         get_op_var
         .importzp       next_instruction, cptr, var_page
 
         .segment        "RUNTIME"

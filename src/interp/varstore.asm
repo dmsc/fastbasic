@@ -27,8 +27,8 @@
 ; Store value into variable
 ; -------------------------
 
-        .importzp       next_instruction, tmp2
         .import         get_op_var
+        .importzp       next_instruction, tmp2
 
         .segment        "RUNTIME"
 

@@ -27,9 +27,7 @@
 ; CIO put character
 ; -----------------
 
-        .export putc, putc_direct, putspc
-
-        ; From runtime.asm
+        .export         putc, putc_direct, putspc
         .importzp       IOCHN, tabpos, IOERROR
 
         .include "atari.inc"

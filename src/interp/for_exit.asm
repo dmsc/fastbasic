@@ -27,10 +27,9 @@
 ; Exit from FOR/NEXT
 ; ------------------
 
-        ; From interpreter.asm
+        .export         next_ins_incsp_2
         .importzp       next_ins_incsp, sptr
 
-        .export         next_ins_incsp_2
 
         .segment        "RUNTIME"
 

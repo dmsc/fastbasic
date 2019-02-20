@@ -27,10 +27,7 @@
 ; Convert string to floating point
 ; --------------------------------
 
-        ; From fpmain.asm
-        .import         push_fr0
-        ; From interpreter.asm
-        .import         get_str_eol
+        .import         push_fr0, get_str_eol
         .importzp       IOERROR, next_ins_incsp
 
         .include "atari.inc"

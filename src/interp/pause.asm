@@ -27,7 +27,6 @@
 ; Pause for a number of jiffies
 ; -----------------------------
 
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .include "atari.inc"

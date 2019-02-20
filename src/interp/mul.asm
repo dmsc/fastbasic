@@ -27,12 +27,8 @@
 ; Multiplication
 ; --------------
 
-        ; From runtime.asm
-        .importzp       tmp1, tmp2, tmp3
-
-        ; From interpreter.asm
         .import         stack_l, stack_h
-        .importzp       next_ins_incsp
+        .importzp       tmp1, tmp2, tmp3, next_ins_incsp
 
         .segment        "RUNTIME"
 

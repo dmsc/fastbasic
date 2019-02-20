@@ -27,9 +27,9 @@
 ; SIN / COS functions
 ; -------------------
 
-        .importzp       DEGFLAG, tmp2
         .import         fp_sin_coef, fp_pi1_2, fp_90
         .import         eval_poly_x2, check_fp_err, FP_SET_1
+        .importzp       DEGFLAG, tmp2
 
         .include "atari.inc"
 

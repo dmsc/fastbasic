@@ -27,11 +27,8 @@
 ; Print a tabulation (comma separator in print)
 ; ---------------------------------------------
 
-        ; From runtime.asm
         .import         putspc
-        .importzp       tabpos
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       tabpos, next_instruction
 
         .segment        "RUNTIME"
 

@@ -27,9 +27,7 @@
 ; Silence all sound channels (SOUND without parameters)
 ; -----------------------------------------------------
 
-        .export sound_off
-
-        ; From interpreter.asm
+        .export         sound_off
         .importzp       next_instruction
 
         .include "atari.inc"

@@ -27,7 +27,7 @@
 ; Store Floating Point number to address
 ; --------------------------------------
 
-        .import         pop_fr0, stack_l, stack_h
+        .import         pop_fr0
         .importzp       next_instruction, saddr
 
         .include "atari.inc"
@@ -35,11 +35,9 @@
         .segment        "RUNTIME"
 
 .proc   EXE_FP_STORE
-        lda     saddr
-        ldx     saddr+1
-        sta     FLPTR
-        stx     FLPTR+1
-        jsr     FST0P
+        ldx     saddr
+        ldy     saddr+1
+        jsr     FST0R
         ; Pop FP stack
         jsr     pop_fr0
         jmp     next_instruction

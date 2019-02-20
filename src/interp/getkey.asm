@@ -27,11 +27,7 @@
 ; GET from keyboard
 ; -----------------
 
-        ; From runtime.asm
-        .importzp       IOERROR
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       IOERROR, next_instruction
 
         .include "atari.inc"
 

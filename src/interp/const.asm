@@ -27,9 +27,8 @@
 ; Load constants (Byte/Word and String)
 ; -------------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction, cptr, saddr
         .import         pushAX
+        .importzp       next_instruction, cptr, saddr
 
         .segment        "RUNTIME"
 

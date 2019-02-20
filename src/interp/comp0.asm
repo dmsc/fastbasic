@@ -27,10 +27,9 @@
 ; Boolean constants and conversion
 ; --------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction, sptr
-        .import         stack_l, stack_h, pushAX
         .export         pushXX_set0
+        .import         stack_l, stack_h, pushAX
+        .importzp       next_instruction, sptr
 
         .segment        "RUNTIME"
 

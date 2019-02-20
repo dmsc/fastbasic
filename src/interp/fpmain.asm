@@ -27,10 +27,8 @@
 ; Floating Point stack and variables
 ; ----------------------------------
 
-        .exportzp       DEGFLAG, FPSTK_SIZE, fptr
         .export         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
-
-        ; From interpreter.asm
+        .exportzp       DEGFLAG, FPSTK_SIZE, fptr
         .import         stack_end
 
         .zeropage

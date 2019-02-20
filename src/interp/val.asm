@@ -27,15 +27,9 @@
 ; Convert string to number
 ; ------------------------
 
-        .export read_word
-
-        ; From runtime.asm
-        .importzp       IOERROR, tmp1, tmp2, divmod_sign
-        .import         neg_AX
-
-        ; From interpreter.asm
-        .import         get_str_eol
-        .importzp       next_instruction
+        .export         read_word
+        .import         neg_AX, get_str_eol
+        .importzp       IOERROR, tmp1, tmp2, next_instruction
 
         .include "atari.inc"
 

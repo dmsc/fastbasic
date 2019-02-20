@@ -27,9 +27,8 @@
 ; Read constant data
 ; ------------------
 
-        ; From interpreter.asm
         .import         EXE_JUMP
-        .importzp       cptr, sptr, saddr
+        .importzp       cptr, saddr
 
         .segment        "RUNTIME"
 

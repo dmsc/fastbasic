@@ -27,8 +27,7 @@
 ; Writes an 8-bit value to an address
 ; -----------------------------------
 
-        .importzp       next_instruction
-        .importzp       saddr
+        .importzp       next_instruction, saddr
 
         .segment        "RUNTIME"
 

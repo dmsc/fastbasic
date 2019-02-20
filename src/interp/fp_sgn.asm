@@ -27,7 +27,6 @@
 ; Floating Point SGN
 ; ------------------
 
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .include "atari.inc"

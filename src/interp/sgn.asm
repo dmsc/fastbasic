@@ -27,7 +27,6 @@
 ; SGN, extract sign
 ; -----------------
 
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .segment        "RUNTIME"

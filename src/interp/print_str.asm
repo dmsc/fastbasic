@@ -27,11 +27,8 @@
 ; Print string
 ; ------------
 
-        ; From runtime.asm
         .import         putc
-        .importzp       tmp1, tmp2
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       tmp1, tmp2, next_instruction
 
         .segment        "RUNTIME"
 

@@ -27,10 +27,7 @@
 ; -MOVE: copy memory downwards
 ; ----------------------------
 
-        ; memory move
         .export         move_dwn
-
-        ; From interpreter.asm
         .import         stack_l, stack_h, next_ins_incsp_2
 
         .include "atari.inc"

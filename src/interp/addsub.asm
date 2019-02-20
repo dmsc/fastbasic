@@ -27,11 +27,7 @@
 ; Add / Sub routines
 ; ------------------
 
-        ; From runtime.asm
-        .import         neg_AX
-
-        ; From interpreter.asm
-        .import         stack_l, stack_h
+        .import         neg_AX, stack_l, stack_h
         .importzp       next_ins_incsp
 
         .segment        "RUNTIME"

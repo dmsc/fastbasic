@@ -27,11 +27,9 @@
 ; CIO operations
 ; --------------
 
-        .export CIOV_CMD_POP2, CIOV_CMD_AH
-
-        .import CIOV_CMD
-        .importzp       tmp1, tmp2, tmp3, IOCHN, IOERROR, sptr
-        .import         stack_l, stack_h, get_str_eol
+        .export         CIOV_CMD_POP2, CIOV_CMD_AH
+        .import         CIOV_CMD, stack_l, stack_h, get_str_eol
+        .importzp       sptr
 
         .include "atari.inc"
 
@@ -61,7 +59,7 @@
         lda     INBUFF+1
         inc     sptr
 .endproc        ; Fall through
-        ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack twice
+        ; Calls CIO with given command, stores I/O error, and pops stack twice
 CIOV_CMD_POP2:
         inc     sptr
         inc     sptr

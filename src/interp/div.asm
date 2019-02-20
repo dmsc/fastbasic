@@ -27,13 +27,8 @@
 ; Division and Modulus
 ; --------------------
 
-        ; From runtime.asm
-        .import         neg_AX
-        .importzp       tmp1, tmp2, tmp3, divmod_sign
-
-        ; From interpreter.asm
-        .import         stack_l, stack_h
-        .importzp       next_ins_incsp, sptr
+        .import         neg_AX, stack_l, stack_h
+        .importzp       tmp1, tmp2, tmp3, divmod_sign, next_ins_incsp, sptr
 
         .segment        "RUNTIME"
 

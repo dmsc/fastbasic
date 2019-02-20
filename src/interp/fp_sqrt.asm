@@ -27,8 +27,8 @@
 ; Square root
 ; -----------
 
-        .importzp       tmp2
         .import         check_fp_err
+        .importzp       tmp2
 
         .include "atari.inc"
 

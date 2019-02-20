@@ -27,18 +27,12 @@
 ; Array dimensioning - assigns an address to given array variable
 ; ---------------------------------------------------------------
 
-        ; From allloc.asm
-        .import         alloc_array
-
-        ; From runtime.asm
-        .importzp       tmp2, sptr
-
-        ; From interpreter.asm
-        .import         EXE_DPOKE
+        .import         alloc_array, EXE_DPOKE
+        .importzp       tmp2
 
         .segment        "RUNTIME"
 
-.proc   EXE_DIM         ; AX = array size, (SPTR) = variable address
+.proc   EXE_DIM         ; AX = array size, SADDR = variable address
         jsr     alloc_array
         lda     tmp2
         ldx     tmp2+1

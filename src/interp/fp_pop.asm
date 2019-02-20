@@ -27,9 +27,9 @@
 ; Pop values from FP stack
 ; ------------------------
 
-        .importzp       fptr
-        .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
         .export         pop_fr1, pop_fr0
+        .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+        .importzp       fptr
 
         .include "atari.inc"
 

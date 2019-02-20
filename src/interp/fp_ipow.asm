@@ -27,8 +27,8 @@
 ; Integer exponentiation
 ; ----------------------
 
-        .importzp       tmp1, tmp2, IOERROR, next_instruction
         .import         check_fp_err, neg_AX, FP_SET_1
+        .importzp       tmp1, tmp2, IOERROR, next_instruction
 
         .include "atari.inc"
 

@@ -27,7 +27,6 @@
 ; TIME function, returns current time in jiffies
 ; ----------------------------------------------
 
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .segment        "RUNTIME"

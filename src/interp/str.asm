@@ -28,10 +28,10 @@
 ; ------------------
 
 .ifdef FASTBASIC_FP
-        .export int_to_fp, fp_to_str
+        .export         int_to_fp, fp_to_str
 .endif
-        .import neg_AX
-        .importzp next_instruction
+        .import         neg_AX
+        .importzp       next_instruction
 
 
         .segment        "RUNTIME"

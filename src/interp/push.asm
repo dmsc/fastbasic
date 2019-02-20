@@ -27,7 +27,6 @@
 ; Stack push
 ; ----------
 
-        ; From interpreter.asm
         .import         pushAX
         .importzp       next_instruction
 

@@ -27,14 +27,7 @@
 ; Block-GET and Block-PUT
 ; -----------------------
 
-        .import CIOV_CMD_POP2
-
-        ; From runtime.asm
-        .importzp       IOCHN
-
-        ; From interpreter.asm
-        .importzp       sptr
-        .import         stack_l, stack_h
+        .import         CIOV_CMD_POP2, stack_l, stack_h
 
         .include "atari.inc"
 

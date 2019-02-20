@@ -27,9 +27,7 @@
 ; MSET: sets a range of memory to a value
 ; ---------------------------------------
 
-        ; From interpreter.asm
-        .import         stack_l, stack_h, next_ins_incsp_2
-        .import         mem_set
+        .import         stack_l, stack_h, next_ins_incsp_2, mem_set
         .importzp       tmp1, tmp2
 
         .include "atari.inc"

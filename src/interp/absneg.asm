@@ -27,10 +27,7 @@
 ; ABS / NEG routines
 ; ------------------
 
-        ; From runtime.asm
         .import         neg_AX
-
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .segment        "RUNTIME"

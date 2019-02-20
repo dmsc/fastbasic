@@ -27,11 +27,7 @@
 ; String indexing
 ; ---------------
 
-        ; From runtime.asm
-        .importzp       tmp1, tmp2, tmp3, sptr
-
-        ; From interpreter.asm
-        .importzp       next_ins_incsp
+        .importzp       tmp1, tmp3, sptr, next_ins_incsp
         .import         stack_l, stack_h
 
         .include "atari.inc"

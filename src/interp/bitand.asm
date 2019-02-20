@@ -27,7 +27,6 @@
 ; Bitwise AND
 ; -----------
 
-        ; From interpreter.asm
         .import         stack_l, stack_h
         .importzp       next_ins_incsp
 

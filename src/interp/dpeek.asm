@@ -27,8 +27,8 @@
 ; Reads a 16-bit value from an address
 ; ------------------------------------
 
-        .importzp       next_instruction, tmp1
         .import         get_op_var, pushAX
+        .importzp       next_instruction, tmp1
 
         .segment        "RUNTIME"
 

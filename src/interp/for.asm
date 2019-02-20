@@ -27,11 +27,8 @@
 ; FOR/NEXT and integer comparisons
 ; --------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction, next_ins_incsp, sptr
         .import         stack_l, stack_h, pushAX
-        ; From runtime.asm
-        .importzp       tmp1, tmp2, tmp3
+        .importzp       next_ins_incsp, sptr, tmp3
 
         .segment        "RUNTIME"
 

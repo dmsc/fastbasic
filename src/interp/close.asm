@@ -28,12 +28,7 @@
 ; ---------------
 
         .export         CIOV_CMD, CIOV_IOERR
-
-        ; From runtime.asm
-        .importzp       IOCHN, IOERROR
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       IOERROR, next_instruction
 
         .include "atari.inc"
 
@@ -47,10 +42,10 @@ EXE_CLOSE:
         tax
         lda     #CLOSE
 
-        ; Calls CIO with given command, stores I/O error, resets IOCHN, pops stack
+        ; Calls CIO with given command, stores I/O error and pops stack
 CIOV_CMD:
         sta     ICCOM, x
-        ; Calls CIOV, stores I/O error, resets IOCHN and pops stack
+        ; Calls CIOV, stores I/O error and pops stack
         jsr     CIOV
 CIOV_IOERR:
         sty     IOERROR

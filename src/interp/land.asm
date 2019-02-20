@@ -27,7 +27,6 @@
 ; Logical AND
 ; -----------
 
-        ; From interpreter.asm
         .import         stack_l
         .importzp       next_ins_incsp
 

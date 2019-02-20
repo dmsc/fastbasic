@@ -27,11 +27,7 @@
 ; CIO GET character
 ; -----------------
 
-        ; From runtime.asm
-        .importzp       IOCHN, IOERROR
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       IOCHN, IOERROR, next_instruction
 
         .include "atari.inc"
 

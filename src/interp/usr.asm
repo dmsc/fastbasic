@@ -27,9 +27,8 @@
 ; USR - call user assembly routine
 ; --------------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction, next_ins_incsp, tmp1
         .import         stack_l, stack_h
+        .importzp       next_instruction, next_ins_incsp, tmp1
 
         .include "atari.inc"
 

@@ -27,10 +27,8 @@
 ; DRAWTO and FILLTO
 ; -----------------
 
-        .import CIOV_CMD
-
-        ; From interpreter.asm
-        .importzp       COLOR, sptr
+        .import         CIOV_CMD
+        .importzp       COLOR
 
         .include "atari.inc"
 

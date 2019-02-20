@@ -27,15 +27,8 @@
 ; String copy (assign) and concatenate
 ; ------------------------------------
 
-        ; From allloc.asm
-        .importzp       array_ptr
         .import         alloc_array
-
-        ; From runtime.asm
-        .importzp       tmp1, tmp2, tmp3, saddr
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       array_ptr, tmp1, tmp2, tmp3, saddr, next_instruction
 
         .segment        "RUNTIME"
 

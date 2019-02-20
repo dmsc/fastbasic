@@ -27,7 +27,6 @@
 ; Logical NOT
 ; -----------
 
-        ; From interpreter.asm
         .importzp       next_instruction
 
         .segment        "RUNTIME"

@@ -27,9 +27,9 @@
 ; Push values to FP stack
 ; -----------------------
 
-        .importzp       fptr
-        .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
         .export         push_fr0
+        .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+        .importzp       fptr
 
         .include "atari.inc"
 

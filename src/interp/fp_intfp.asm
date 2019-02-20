@@ -27,11 +27,7 @@
 ; Integer to Floating Point
 ; -------------------------
 
-        ; From fpmain.asm
-        .import         push_fr0
-        ; From runtime.asm
-        .import         int_to_fp
-        ; From interpreter.asm
+        .import         push_fr0, int_to_fp
         .importzp       next_instruction
 
         .segment        "RUNTIME"

@@ -27,13 +27,9 @@
 ; ATN (arc-tangent) function
 ; --------------------------
 
-        .importzp       DEGFLAG
-        .importzp       tmp2
-
         .import         eval_atn_poly, check_fp_err
-        .import         fp_180pi, fp_pi1_2
-        .import         FP_SET_1
-
+        .import         fp_180pi, fp_pi1_2, FP_SET_1
+        .importzp       DEGFLAG, tmp2
 
         .include "atari.inc"
 

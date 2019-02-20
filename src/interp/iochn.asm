@@ -27,11 +27,7 @@
 ; Set I/O channel to A
 ; --------------------
 
-        ; From runtime.asm
-        .importzp       IOCHN
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       IOCHN, next_instruction
 
         .segment        "RUNTIME"
 

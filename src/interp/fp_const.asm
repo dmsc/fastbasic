@@ -30,8 +30,6 @@
         .export         check_fp_err
 
         .import         push_fr0, pop_fr1
-
-        ; From interpreter.asm
         .importzp       next_instruction, cptr, IOERROR
 
         .include "atari.inc"

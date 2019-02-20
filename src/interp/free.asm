@@ -27,11 +27,7 @@
 ; FRE function, returns bytes free
 ; --------------------------------
 
-        ; From allloc.asm
-        .importzp       array_ptr
-
-        ; From interpreter.asm
-        .importzp       next_instruction
+        .importzp       array_ptr, next_instruction
 
         .include "atari.inc"
 

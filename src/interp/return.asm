@@ -27,7 +27,6 @@
 ; Return from subroutine
 ; ----------------------
 
-        ; From interpreter.asm
         .importzp       next_instruction, cptr
 
         .segment        "RUNTIME"

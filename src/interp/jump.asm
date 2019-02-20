@@ -27,8 +27,7 @@
 ; Call and Jump to address
 ; ------------------------
 
-        ; From interpreter.asm
-        .importzp       next_instruction, cptr, tmp1
+        .importzp       next_instruction, cptr
 
         .segment        "RUNTIME"
 

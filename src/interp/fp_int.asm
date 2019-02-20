@@ -27,8 +27,8 @@
 ; Convert FP to integer
 ; ---------------------
 
-        .importzp       tmp1, IOERROR, next_instruction
         .import         neg_AX, pop_fr0
+        .importzp       IOERROR, next_instruction
 
         .include "atari.inc"
 

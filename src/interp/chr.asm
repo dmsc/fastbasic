@@ -29,7 +29,6 @@
 
         .importzp next_instruction
 
-
         .segment        "RUNTIME"
 
 EXE_CHR:        ; AX = CHR( AX )

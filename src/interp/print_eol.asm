@@ -27,10 +27,7 @@
 ; PUT character or PUT EOL
 ; ------------------------
 
-        .import CIOV_IOERR
-
-        ; From runtime.asm
-        .import         putc
+        .import         CIOV_IOERR, putc
         .importzp       tabpos, next_instruction
 
         .segment        "RUNTIME"
