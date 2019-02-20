@@ -45,8 +45,8 @@
         jsr     get_str_eol
         jsr     read_word
         bcc     :+
-        lda     #18
-        sta     IOERROR
+        ldy     #18
+        sty     IOERROR
 :       jmp     next_instruction
 .endproc
 
@@ -56,10 +56,6 @@
 SKBLANK = $DBA1
         ; Skips white space at start
         jsr     SKBLANK
-
-        ; Clears result
-        ldx     #0
-        stx     tmp1
 
         ; Reads a '+' or '-'
         lda     (INBUFF), y
@@ -77,34 +73,39 @@ SKBLANK = $DBA1
 skip:   iny
 convert:
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
+        ; Clears result
+        lda     #0
+        tax
 loop:
+        ; Store A/X
+        sta     tmp1
+        stx     tmp1+1
+
         ; Reads one character
         lda     (INBUFF), y
         sec
         sbc     #'0'
         cmp     #10
+        sta     tmp2    ; save digit
+        lda     tmp1    ; and restore A
+
         bcs     xit_n ; Not a number
 
         iny             ; Accept
 
-        sta     tmp2    ; and save digit
+        cpx     #26     ; Reject numbers > $1A00 (6656)
+        bcs     ebig
 
         ; Multiply "tmp1" by 10 - uses A,X, keeps Y
-        lda     tmp1
-        stx     tmp1+1
-
         asl
         rol     tmp1+1
-        bcs     ebig
         asl
         rol     tmp1+1
-        bcs     ebig
 
         adc     tmp1
         sta     tmp1
         txa
         adc     tmp1+1
-        bcs     ebig
 
         asl     tmp1
         rol     a
@@ -114,7 +115,6 @@ loop:
         ; Add new digit
         lda     tmp2
         adc     tmp1
-        sta     tmp1
         bcc     loop
         inx
         bne     loop
@@ -124,9 +124,8 @@ ebig:
 xit:    rts
 
 xit_n:  cpy     tmp2+1
-        beq     ebig    ; No digits read
+        beq     xit    ; No digits read
 
-        lda     tmp1
         clc
         rts
 .endproc

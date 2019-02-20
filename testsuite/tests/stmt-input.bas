@@ -8,6 +8,10 @@ input "Prompt:", a
 ? err(), a
 input a
 ? err(), a
+input a
+? err(), a
+input a
+? err(), a
 input s$
 ? err(), s$
 input s$
