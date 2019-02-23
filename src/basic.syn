@@ -419,9 +419,12 @@ POSITION:
 #  SOUND voice
 #  SOUND
 SOUND:
-        EXPR emit TOK_USHL emit TOK_PUSH_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
-        EXPR emit TOK_USHL emit TOK_PUSH_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR emit TOK_0 emit TOK_DPOKE
+        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
+        SOUND_S1 emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
+
+SOUND_S1:
+        EXPR emit TOK_USHL emit TOK_PUSH_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR
 
 # Word Arrays
 ARRAY_WORD_ADDR:
