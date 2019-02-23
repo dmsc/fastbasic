@@ -277,13 +277,16 @@ COMP_OR_BOOL:
 #@endif FASTBASIC_FP
         emit TOK_COMP_0
 
+PUSH_INT_EXPR:
+        emit TOK_PUSH INT_EXPR
+
 COMP_EXPR_RIGHT: integer comparison operator
-        "<=" emit TOK_PUSH INT_EXPR emit TOK_GT emit TOK_L_NOT
-        ">=" emit TOK_PUSH INT_EXPR emit TOK_LT emit TOK_L_NOT
-        "<>" emit TOK_PUSH INT_EXPR emit TOK_NEQ
-        "<"  emit TOK_PUSH INT_EXPR emit TOK_LT
-        ">"  emit TOK_PUSH INT_EXPR emit TOK_GT
-        "="  emit TOK_PUSH INT_EXPR emit TOK_EQ
+        "<=" PUSH_INT_EXPR emit TOK_GT emit TOK_L_NOT
+        ">=" PUSH_INT_EXPR emit TOK_LT emit TOK_L_NOT
+        "<>" PUSH_INT_EXPR emit TOK_NEQ
+        "<"  PUSH_INT_EXPR emit TOK_LT
+        ">"  PUSH_INT_EXPR emit TOK_GT
+        "="  PUSH_INT_EXPR emit TOK_EQ
 
 #@if FASTBASIC_FP
 # FP Comparisons:
@@ -296,13 +299,17 @@ COMP_FP_RIGHT: floating-point comparison operator
         "<"  FP_EXPR emit TOK_FP_CMP emit TOK_LT
 #@endif FASTBASIC_FP
 
+# Push and string expression
+PCMP_STR_EXPR:
+        emit TOK_PUSH STR_EXPR emit TOK_CMP_STR
+
 COMP_STR_RIGHT: comparison operator
-        "="  emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_EQ
-        ">"  emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_GT
-        ">=" emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_LT emit TOK_L_NOT
-        "<>" emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_NEQ
-        "<=" emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_GT emit TOK_L_NOT
-        "<"  emit TOK_PUSH STR_EXPR emit TOK_CMP_STR emit TOK_LT
+        "="  PCMP_STR_EXPR emit TOK_EQ
+        ">"  PCMP_STR_EXPR emit TOK_GT
+        ">=" PCMP_STR_EXPR emit TOK_LT emit TOK_L_NOT
+        "<>" PCMP_STR_EXPR emit TOK_NEQ
+        "<=" PCMP_STR_EXPR emit TOK_GT emit TOK_L_NOT
+        "<"  PCMP_STR_EXPR emit TOK_LT
 
 COMP_EXPR_MORE:
         COMP_EXPR_RIGHT COMP_EXPR_MORE
