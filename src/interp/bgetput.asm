@@ -27,7 +27,7 @@
 ; Block-GET and Block-PUT
 ; -----------------------
 
-        .import         CIOV_CMD_POP2, stack_l, stack_h
+        .import         CIOV_CMD_POP2, stack_l, stack_h, IOCHN_16
 
         .include "atari.inc"
 
@@ -40,33 +40,26 @@
 .proc   EXE_BGET
         sec
 
-        php
-
-        pha
+        pha                     ; Length
         txa
         pha
 
-        lda     stack_l+1,y
-        asl
-        asl
-        asl
-        asl
-        tax
+        lda     stack_h, y      ; Address H
+        pha
 
-        pla
-        sta     ICBLH, x
-        pla
-        sta     ICBLL, x        ; Length
+        lda     stack_l, y      ; Address L
+        pha
 
-        lda     stack_l, y
-        sta     ICBAL, x        ; Address
-        lda     stack_h, y
+        lda     stack_l+1,y     ; I/O channel
 
-        plp
-        ldy     #GETCHR
+        ldy     #GETCHR         ; Command
         bcs     bget
         ldy     #PUTCHR
 bget:
+
+        jsr     IOCHN_16
+
+        pla
         jmp     CIOV_CMD_POP2   ; Note: A is never 0
 .endproc
 

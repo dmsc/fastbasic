@@ -114,7 +114,6 @@ COMMON_AS_SRC=\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
     src/interp/cdata.asm\
-    src/interp/close.asm\
     src/interp/chr.asm\
     src/interp/cmpstr.asm\
     src/interp/comp0.asm\
@@ -125,7 +124,6 @@ COMMON_AS_SRC=\
     src/interp/div.asm\
     src/interp/dpeek.asm\
     src/interp/dpoke.asm\
-    src/interp/drawto.asm\
     src/interp/for.asm\
     src/interp/for_exit.asm\
     src/interp/free.asm\
@@ -134,7 +132,6 @@ COMMON_AS_SRC=\
     src/interp/inc.asm\
     src/interp/input.asm\
     src/interp/iochn.asm\
-    src/interp/ioget.asm\
     src/interp/jump.asm\
     src/interp/land.asm\
     src/interp/lnot.asm\

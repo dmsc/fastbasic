@@ -27,8 +27,8 @@
 ; CIO operations
 ; --------------
 
-        .export         CIOV_CMD_POP2, CIOV_CMD_AH
-        .import         CIOV_CMD, stack_l, stack_h, get_str_eol
+        .export         CIOV_CMD_POP2
+        .import         CIOV_CMD_A, IOCHN_16, stack_l, stack_h, get_str_eol
         .importzp       sptr
 
         .include "atari.inc"
@@ -38,35 +38,33 @@
 .proc   EXE_XIO
         jsr     get_str_eol
         ldy     sptr
-        lda     stack_l+2, y
-        asl
-        asl
-        asl
-        asl
-        tax
-        lda     INBUFF
-        sta     ICBAL, x
-        lda     #0
-        sta     ICBLH, x
-        lda     #$FF
-        sta     ICBLL, x
-        lda     stack_l, y
+        lda     stack_l+2, y    ; I/O channel
+        jsr     IOCHN_16
+
+        lda     stack_l, y      ; AUX
         sta     ICAX1, x
         lda     stack_h, y
         sta     ICAX2, x
-        lda     stack_l+1, y
+
+        lda     stack_l+1, y    ; Command
         tay
-        lda     INBUFF+1
+
+        lda     #$FF            ; Length
+        pha
+        lda     #0
+        pha
+        lda     INBUFF+1        ; Address
+        pha
+        lda     INBUFF
+
         inc     sptr
 .endproc        ; Fall through
         ; Calls CIO with given command, stores I/O error, and pops stack twice
 CIOV_CMD_POP2:
+
         inc     sptr
         inc     sptr
-CIOV_CMD_AH:
-        sta     ICBAH, x
-        tya
-        jmp     CIOV_CMD
+        jmp     CIOV_CMD_A
 
         .include "../deftok.inc"
         deftoken "XIO"

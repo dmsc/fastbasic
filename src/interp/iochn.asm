@@ -27,17 +27,24 @@
 ; Set I/O channel to A
 ; --------------------
 
+        .export         IOCHN_16
         .importzp       IOCHN, next_instruction
 
         .segment        "RUNTIME"
 
 .proc   EXE_IOCHN
-        asl
-        asl
-        asl
-        asl
-        sta     IOCHN
+        jsr     IOCHN_16
+        stx     IOCHN
         jmp     next_instruction
+.endproc
+
+.proc   IOCHN_16
+        asl
+        asl
+        asl
+        asl
+        tax
+        rts
 .endproc
 
         .include "../deftok.inc"

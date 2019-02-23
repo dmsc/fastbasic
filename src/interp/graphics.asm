@@ -24,32 +24,78 @@
 ; linked into a combine executable.)
 
 
-; Graphics command
-; ----------------
+; Graphics commands and I/O:
+; GRAPHICS; DRAWTO (and FILLTO), GET and CLOSE
+; --------------------------------------------
 
-        .import CIOV_CMD_AH
+        .export         CIOV_CMD_A, CIOV_CMD, CIOV_IOERR
+        .import         IOCHN_16
+        .importzp       COLOR, IOCHN, IOERROR, next_instruction
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
-.proc   EXE_GRAPHICS  ; OPEN #6,12,0,
+.proc   EXE_GRAPHICS    ; OPEN #6,12,MODE,"S:"
         ldx     #$60
-        tay
+        sta     ICAX2, x; Store BASIC mode into AUX2
         and     #$F0
-        eor     #$1C    ; Get AUX1 from BASIC mode
+        eor     #$1C    ; and flags into AUX1
         sta     ICAX1, x
-        tya             ; And AUX2
-        sta     ICAX2, x
-        lda     #<device_s
-        sta     ICBAL, x
+        pha
+        pha
         lda     #>device_s
+        pha
+        lda     #<device_s
         ldy     #OPEN
-        jmp     CIOV_CMD_AH
+.endproc
+
+CIOV_CMD_A:
+        sta     ICBAL, x        ; Address
+        pla
+        sta     ICBAH, x
+        pla                     ; Length
+CIOV_CMD_L:
+        sta     ICBLH, x
+        pla
+        sta     ICBLL, x
+        tya                     ; Command
+        ; Calls CIO with given command, stores I/O error and pops stack
+CIOV_CMD:
+        sta     ICCOM, x
+        ; Calls CIOV, stores I/O error and pops stack
+        jsr     CIOV
+        ldx     #0      ; Needed for TOK_GET
+CIOV_IOERR:
+        sty     IOERROR
+        jmp     next_instruction
+
 device_s: .byte "S:", $9B
+
+EXE_CLOSE:
+        jsr     IOCHN_16
+        lda     #CLOSE
+        bne     CIOV_CMD
+
+.proc   EXE_DRAWTO      ; CIO COMMAND in A
+        ldx     COLOR
+        stx     ATACHR
+        ldx     #$60    ; IOCB #6
+        bne     CIOV_CMD
+.endproc
+
+.proc   EXE_GET
+        ldx     IOCHN
+        lda     #0      ; Length = 0
+        pha
+        ldy     #GETCHR
+        bne     CIOV_CMD_L
 .endproc
 
         .include "../deftok.inc"
+        deftoken "CLOSE"
+        deftoken "DRAWTO"
+        deftoken "GET"
         deftoken "GRAPHICS"
 
 ; vi:syntax=asm_ca65
