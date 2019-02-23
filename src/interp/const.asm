@@ -32,6 +32,10 @@
 
         .segment        "RUNTIME"
 
+.proc   EXE_PUSH_NUM    ; push AX, load NUM
+        jsr     pushAX
+.endproc        ; Fall through
+
 .proc   EXE_NUM  ; AX = read from op (load byte first!)
         ldy     #1              ; 2     2
         lda     (cptr), y       ; 5     2
@@ -86,6 +90,7 @@ xit:    jmp     next_instruction
         .include "../deftok.inc"
         deftoken "NUM"
         deftoken "BYTE"
+        deftoken "PUSH_NUM"
         deftoken "PUSH_BYTE"
         deftoken "BYTE_SADDR"
         deftoken "CSTRING"

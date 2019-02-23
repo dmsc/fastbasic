@@ -27,7 +27,7 @@ TOKENS {
  TOK_BYTE_SADDR, TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
  TOK_PUSH, TOK_PUSH_VAR_LOAD
- TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
+ TOK_PUSH_NUM, TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
  # Bitwise operators
@@ -419,8 +419,8 @@ POSITION:
 #  SOUND voice
 #  SOUND
 SOUND:
-        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
-        EXPR emit TOK_USHL emit TOK_PUSH emit TOK_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR emit TOK_0 emit TOK_DPOKE
+        EXPR emit TOK_USHL emit TOK_PUSH_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
+        EXPR emit TOK_USHL emit TOK_PUSH_NUM word AUDF1 emit TOK_ADD emit TOK_SADDR emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
 
 # Word Arrays
@@ -578,7 +578,7 @@ PARSE_LINE_COMMAND:
         "PLot" POSITION emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO
         "FIllto" POSITION emit TOK_BYTE emit FILLIN emit TOK_DRAWTO
-        "SEtcolor" EXPR emit TOK_PUSH emit TOK_NUM word COLOR0 emit TOK_ADD emit TOK_SADDR EXPR_AB emit TOK_POKE
+        "SEtcolor" EXPR emit TOK_PUSH_NUM word COLOR0 emit TOK_ADD emit TOK_SADDR EXPR_AB emit TOK_POKE
         "Sound" SOUND
         "DIm" DIM_VAR DIM_MORE
         "CLose" IO_CHAN emit TOK_CLOSE

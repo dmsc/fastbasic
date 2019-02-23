@@ -227,6 +227,10 @@ class peephole
                 {
                     set_tok(0, TOK_BYTE); ins_tok(0, TOK_PUSH);
                 }
+                else if( mtok(0,TOK_PUSH_NUM) )
+                {
+                    set_tok(0, TOK_NUM); ins_tok(0, TOK_PUSH);
+                }
                 else if( mtok(0,TOK_PUSH_0) )
                 {
                     set_tok(0, TOK_0); ins_tok(0, TOK_PUSH);
@@ -261,6 +265,11 @@ class peephole
                     if( mtok(1,TOK_BYTE) )
                     {
                         set_tok(1, TOK_PUSH_BYTE); del(0);
+                    }
+                    //   TOK_NUM
+                    else if( mtok(1,TOK_NUM) )
+                    {
+                        set_tok(1, TOK_PUSH_NUM); del(0);
                     }
                     //   TOK_1
                     else if( mtok(1,TOK_1) )
