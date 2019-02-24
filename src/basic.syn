@@ -46,6 +46,8 @@ TOKENS {
  TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR
  # Graphic support statements
  TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
+ # P/M statements
+ TOK_PMGRAPHICS
  # Print statements
  TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_EOL
  # I/O
@@ -197,6 +199,7 @@ T_EXPR: integer constant, variable or function
         "PTRIG"  emit TOK_NUM word PTRIG0 emit TOK_PUSH_BYTE emit 7 RD_PORT
         "STICK"  emit TOK_NUM word STICK0 emit TOK_PUSH_BYTE emit 3 RD_PORT
         "STRIG"  emit TOK_NUM word STRIG0 emit TOK_PUSH_BYTE emit 3 RD_PORT
+        "PMADR"  PAR_EXPR emit TOK_PUSH_BYTE emit 4 emit TOK_ADD emit TOK_PUSH_NUM word PMGMODE emit TOK_PEEK emit TOK_USHL emit TOK_MUL emit TOK_PUSH_NUM word PMGBASE emit TOK_PEEK emit TOK_SHL8 emit TOK_ADD
 #@if FASTBASIC_FP
         "INT"    FP_PAR_EXPR emit TOK_FP_INT
 #@endif FASTBASIC_FP
@@ -574,7 +577,7 @@ PARSE_LINE_COMMAND:
         "ELIf" emit TOK_JUMP E_ELIF FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_IF E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
-        "Graphics" emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
+        "Graphics" emit TOK_0 emit TOK_PMGRAPHICS emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
         "Color" emit TOK_BYTE_SADDR emit COLOR EXPR emit TOK_POKE
         "FColor" emit TOK_NUM word FILDAT emit TOK_SADDR EXPR emit TOK_POKE
         "POSition" POSITION
@@ -601,6 +604,7 @@ PARSE_LINE_COMMAND:
         "DEG" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_1 emit TOK_POKE
         "RAd" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
+        "PMGraphics" EXPR emit TOK_PMGRAPHICS
 
 PARSE_LINE_ASSIGN:
         VAR_WORD_SAVE   "=" EXPR emit TOK_VAR_STORE E_POP_VAR

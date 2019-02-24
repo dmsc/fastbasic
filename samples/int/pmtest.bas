@@ -1,19 +1,13 @@
 ' P/M test program
-RAMTOP = $6A   : SDMCTL = $22F  : PCOLR0 = $2C0
-HPOSP0 = $D000 : GRACTL = $D01D : PMBASE = $D407
-' Reserve memory at TOP
-MemTop = Peek(RAMTOP) - 4
-P0Mem  = $100 * MemTop + $200
-oldPos = P0Mem
-poke RAMTOP, MemTop
+HPOSP0 = $D000
 
-' Activate and configure P/M data
-graphics 0
-mset P0Mem, 128, 0  ' Clears Memory
-poke PCOLR0, $1F
-poke SDMCTL, Peek(SDMCTL) ! 8
-poke PMBASE, MemTop
-poke GRACTL, 2
+graphics 0          ' Setups graphics mode
+pmgraphics 2        ' And P/M mode
+P0Mem = pmadr(0)    ' Get player 0 address
+oldPos = P0Mem      ' and into "old position"
+
+mset P0Mem, 128, 0  ' Clears P/M 0 Memory
+setcolor -4, 1, 15
 
 ' P/M data and blank (to clear P/M)
 DATA PMdata()  byte = $38,$44,$54,$44,$38
@@ -37,10 +31,6 @@ repeat
  exec MovePm  ' Move P/M Graphics
 until Key()
 
-' Restore RAMTOP and SDMCTL
-poke GRACTL, 0
-poke SDMCTL, Peek(SDMCTL) & 247
-poke RAMTOP, MemTop + 4
 graphics 0
 
 END

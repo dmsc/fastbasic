@@ -27,7 +27,7 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, alloc_array, mem_set
+        .export         clear_data, alloc_array, mem_set, err_nomem
 
         .import         putc, EXE_END
         .importzp       mem_end, var_page, tmp1, tmp2, array_ptr, var_count

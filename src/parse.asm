@@ -40,7 +40,7 @@
         .import         putc
         ; From interpreter.asm
         .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
-        .import         EXE_END, saved_cpu_stack
+        .import         EXE_END, saved_cpu_stack, PMGMODE, PMGBASE
         ; From errors.asm
         .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
