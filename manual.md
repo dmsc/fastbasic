@@ -560,6 +560,11 @@ functions supported by FastBasic.
 - PADDLE(_n_): Returns the value of the
                PADDLE controller _n_.
 
+- PMADR(_n_):  Returns the address of
+               the data for Player _n_
+               or the address of the
+               Missiles with _n_ = -1.
+
 - PTRIG(_n_) : Returns 0 if the PADDLE
                controller _n_ button is
                pressed, 1 otherwise.
@@ -1049,12 +1054,35 @@ Graphic and Sound Statements
   and _y_ coordinates, with the current
   `COLOR` number.
 
+**Player/Missile graphic mode**  
+**PMGRAPHICS _num_ / PM.**
+
+  Set ups Atari Player / Missile
+  graphics.  A value of 0 disables all
+  player and missiles, a value of 1 set
+  ups for single line resolution, a
+  value of 2 set ups for double line
+  resolution.
+
+  Single line uses 256 bytes per
+  player, double line uses 128 bytes
+  per player.
+
+  For retrieving the memory address of
+  the player or missile data use the
+  `PMADR()` function.
+
 **Sets displayed color**
 **SETCOLOR _num_, _hue_, _lum_ / SE.**  
 
   Alters the color registers so that
   color number _num_ has the given
   _hue_ and _luminance_.
+
+  To set Player/Missile colors use
+  negative values of _num_, -4 for
+  player 0, -3 for player 1, -2 for
+  player 2 and -1 for player 3.
 
 **Adjust voice sound parameters**  
 **SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  
