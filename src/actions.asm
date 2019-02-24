@@ -186,19 +186,23 @@ xit:    sec
         beq     read_hex
 
         jsr     read_word
-        bcs     E_EOL::xit
 
 .ifdef FASTBASIC_FP
+        bcs     E_EOL::xit
+
         ; In FP version, fails if number is followed by decimal dot
         sta     tmp1
         lda     (bptr), y
         cmp     #'.'
         beq     E_EOL::xit
         lda     tmp1
-.endif ; FASTBASIC_FP
 
         sty     bpos
         jmp     emit_AX
+.else
+        bcc     xit_emit
+        rts
+.endif ; FASTBASIC_FP
 
 read_hex:
 nloop:
@@ -209,11 +213,11 @@ nloop:
         sbc     #'0'
         cmp     #10
         bcc     digit
-        cmp     #'A'-'0'
-        bcc     xit
-        sbc     #'A'-'0'-10
-        cmp     #16
+
+        sbc     #'A'-'0'
+        cmp     #6
         bcs     xit ; Not an hex number
+        adc     #10 ; set to range 10-15
 
 digit:
         sta     tmp1    ; and save digit
@@ -225,14 +229,11 @@ digit:
 
         ; Multiply tmp by 16
         txa
-        asl
+        ldx     #4
+:       asl
         rol     tmp1+1
-        asl
-        rol     tmp1+1
-        asl
-        rol     tmp1+1
-        asl
-        rol     tmp1+1
+        dex
+        bne     :-
 
         ; Add new digit
         ora     tmp1
@@ -249,10 +250,11 @@ xit:
 ;       cpy     bpos    ; Check that we consumed at least one character
 ;       beq     ret     ; Exit with C = 1 (if Y == bpos, C = 1)
 
-        sty     bpos
-
         txa
         ldx     tmp1+1
+xit_emit:
+
+        sty     bpos
         jmp     emit_AX
 .endproc
 
