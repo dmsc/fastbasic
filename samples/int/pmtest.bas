@@ -1,5 +1,4 @@
 ' P/M test program
-HPOSP0 = $D000
 
 graphics 0          ' Setups graphics mode
 pmgraphics 2        ' And P/M mode
@@ -39,8 +38,8 @@ proc MovePm
  x = xPos / 128 : y = P0Mem + yPos / 128
  poke $D01A,$74 ' Change background color
  pause 0
- poke HPOSP0, x
- mset oldPos, 5, 0
- move adr(PMdata), y, 5
+ pmhpos 0, x            ' Set new horizontal position
+ mset oldPos, 5, 0      ' Clear old sprite
+ move adr(PMdata), y, 5 ' Draw at new vertical pos.
  oldPos = y
 endproc

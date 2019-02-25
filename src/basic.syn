@@ -605,6 +605,7 @@ PARSE_LINE_COMMAND:
         "RAd" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_0 emit TOK_POKE
 #@endif FASTBASIC_FP
         "PMGraphics" EXPR emit TOK_PMGRAPHICS
+        "PMHpos"  EXPR emit TOK_PUSH_NUM word HPOSP0 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_POKE
 
 PARSE_LINE_ASSIGN:
         VAR_WORD_SAVE   "=" EXPR emit TOK_VAR_STORE E_POP_VAR

@@ -1072,8 +1072,22 @@ Graphic and Sound Statements
   the player or missile data use the
   `PMADR()` function.
 
-**Sets displayed color**
-**SETCOLOR _num_, _hue_, _lum_ / SE.**  
+**Player/Missile horizontal move**  
+**PMHPOS _num_,_pos_ / PMH.**
+
+  Set horizontal position register for
+  the player or missile _num_ to _pos_.
+
+  Players 0 to 3 correspond to values 0
+  to 3 of _num_, missiles 0 to 3
+  correspond to the values 4 to 7
+  respectively.
+
+  This is the same as writing:
+  `POKE $D000 + num , pos`
+
+**Sets displayed color**  
+**SETCOLOR _num_, _hue_, _lum_ / SE.**
 
   Alters the color registers so that
   color number _num_ has the given
