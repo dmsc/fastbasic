@@ -557,41 +557,9 @@ functions supported by FastBasic.
                be used with integers
                and floating point.
 
-- PADDLE(_n_): Returns the value of the
-               PADDLE controller _n_.
-
-- PMADR(_n_):  Returns the address of
-               the data for Player _n_
-               or the address of the
-               Missiles with _n_ = -1.
-
-- PTRIG(_n_) : Returns 0 if the PADDLE
-               controller _n_ button is
-               pressed, 1 otherwise.
-
-- STICK(_n_) : Returns the JOYSTICK
-               controller _n_ position,
-               this is 15 if centered.
-               See Atari Basic manual
-               for all possible values.
-
-- STRIG(_n_) : Returns 0 if JOYSTICK
-               controller _n_ button is
-               pressed, 1 otherwise.
-
 - RAND(_num_) : Returns a random, non
                 negative number, less
                 than _num_.
-
-- KEY() : Returns 0 if no key was
-          pressed, or a keycode. The
-          returned value only goes to 0
-          after reading the key in the
-          OS (via a `GET` or `POKE
-          764,0` statement).  _Hint:
-          The value returned is
-          actually the same as_
-          `(PEEK(764) EXOR 255)`.
 
 - FRE() : Returns the free memory
           available in bytes.
@@ -615,6 +583,49 @@ functions supported by FastBasic.
                   code of the first
                   character of the
                   *string*.
+
+
+Atari Specific Functions
+------------------------
+
+The following functions allows
+interacting to the Atari hardware to
+read controller and keyboard input and
+to program with Player/Missile
+graphics.
+
+
+- PADDLE(_n_): Returns the value of the
+               PADDLE controller _n_.
+
+- PMADR(_n_):  Returns the address of
+               the data for Player _n_
+               or the address of the
+               Missiles with _n_ = -1.
+
+- PTRIG(_n_) : Returns 0 if the PADDLE
+               controller _n_ button is
+               pressed, 1 otherwise.
+
+- STICK(_n_) : Returns the JOYSTICK
+               controller _n_ position,
+               this is 15 if centered.
+               See Atari Basic manual
+               for all possible values.
+
+- STRIG(_n_) : Returns 0 if JOYSTICK
+               controller _n_ button is
+               pressed, 1 otherwise.
+
+- KEY() : Returns 0 if no key was
+          pressed, or a keycode. The
+          returned value only goes to 0
+          after reading the key in the
+          OS (via a `GET` or `POKE
+          764,0` statement).  _Hint:
+          The value returned is
+          actually the same as_
+          `(PEEK(764) EXOR 255)`.
 
 
 Floating Point functions
