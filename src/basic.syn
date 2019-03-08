@@ -468,16 +468,19 @@ INPUT_VAR:
         VAR_FP_LVALUE   emit TOK_SADDR emit TOK_INPUT_STR emit TOK_FP_VAL emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
+# Optional WORD array type
+TYPE_WORD:
+        "Word" emit VT_ARRAY_WORD
+        emit VT_ARRAY_WORD
 
-# Dim variable types
-DIM_VAR_TYPE_NUM: array type
-        "Byte"               emit VT_ARRAY_BYTE
-        "Word" emit TOK_USHL emit VT_ARRAY_WORD
-               emit TOK_USHL emit VT_ARRAY_WORD
+# BYTE array type
+TYPE_BYTE:
+        "Byte" emit VT_ARRAY_BYTE
 
 DIM_VAR_TYPE:
         "$" PAR_EXPR emit TOK_USHL emit VT_ARRAY_STRING
-        PAR_EXPR DIM_VAR_TYPE_NUM
+        PAR_EXPR TYPE_BYTE
+        PAR_EXPR emit TOK_USHL TYPE_WORD
 
 DIM_VAR: new variable name
         emit TOK_VAR_SADDR E_VAR_CREATE DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM
@@ -538,8 +541,8 @@ DATA_BYTES: data byte
 DATA_TYPE: data type
         # Note: E_VAR_SET_TYPE skips white space, this allows spaces between
         #       the data type and the "=".
-        "Byte" emit VT_ARRAY_BYTE E_VAR_SET_TYPE "=" E_NUMBER_BYTE DATA_BYTES
-        "Word" emit VT_ARRAY_WORD E_VAR_SET_TYPE "=" E_NUMBER_WORD DATA_WORDS
+        TYPE_BYTE E_VAR_SET_TYPE "=" E_NUMBER_BYTE DATA_BYTES
+        TYPE_WORD E_VAR_SET_TYPE "=" E_NUMBER_WORD DATA_WORDS
 
 DATA_END:
         ","

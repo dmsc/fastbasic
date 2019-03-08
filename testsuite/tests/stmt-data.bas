@@ -5,7 +5,10 @@ data arr1() byte = 1,2,3,4,254,255,0,
 data        byte = 123,134,65,$ff,$0A
 
 
-data arr2() word = -7,-5,-3,-1,0,7,123,$5678,65535
+data arr2() word = -7,-5,-3,-1,0,7,
+data             = 123,$5678,65535
+
+data arr3() = 1,2,3,4
 
 ? "1: "; arr1(0);
 for i=1 to 11 : ? ", "; arr1(i); : next

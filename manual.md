@@ -1286,7 +1286,8 @@ General Statements
   The array name should not be used
   before, and type can be `BYTE`
   (abbreviated `B.`) or `WORD`
-  (abbreviated `W.`).
+  (abbreviated `W.`). If no type is
+  given, a word data is assumed.
 
   If you end the `DATA` statement with
   a comma, the following line must be
