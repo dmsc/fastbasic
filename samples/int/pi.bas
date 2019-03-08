@@ -9,7 +9,7 @@
 
 ' The arrays store two digits on each
 ' location (from 00 to 99).
-DIM P(130), T(130), SV(130)
+DIM P(130), T(130) BYTE, SV(130) BYTE
 
 ' Arguments to procedures bellow
 MULT=0
@@ -77,6 +77,7 @@ ENDPROC
 '
 PROC ARCTAN
  T(0)=1
+ ZERO=0
  DIVI=AT
  EXEC DIV
  EXEC SAVE_T
@@ -88,12 +89,12 @@ PROC ARCTAN
   EXEC DIV
   EXEC DIV
   EXEC SAVE_T
+  EXEC CHKZERO
   N=N+2
   DIVI=N
   EXEC DIV
-  EXEC CHKZERO
   PRINT ".";
- UNTIL ZERO
+ UNTIL ZERO<0
 ENDPROC
 
 '-------------------------------------
@@ -103,6 +104,7 @@ ENDPROC
 '
 PROC ARCTAN_SMALL
  T(0)=1
+ ZERO=0
  DIVI=AT
  EXEC DIV
  EXEC SAVE_T
@@ -114,12 +116,12 @@ PROC ARCTAN_SMALL
   N=N+2
   DIVI=AT
   EXEC DIV
+  EXEC CHKZERO
   EXEC SAVE_T
   DIVI=N
   EXEC DIV
-  EXEC CHKZERO
   PRINT ".";
- UNTIL ZERO
+ UNTIL ZERO<0
 ENDPROC
 
 '-------------------------------------
@@ -141,10 +143,10 @@ ENDPROC
 ' the series.
 '
 PROC CHKZERO
- ZERO=1
+ ZERO=-1
  FOR I=0 TO Q
   IF T(I)
-   ZERO=0
+   ZERO=I
    EXIT
   ENDIF
  NEXT
@@ -154,7 +156,7 @@ ENDPROC
 ' Adds T() to P(), so P()=P()+T()
 '
 PROC ADD
- FOR J=Q TO 0 STEP -1
+ FOR J=Q TO ZERO STEP -1
   S=P(J)+T(J)
   IF S>99
    INC P(J-1)
@@ -162,19 +164,39 @@ PROC ADD
   ENDIF
   P(J)=S
  NEXT
+ FOR J=ZERO-1 TO 0 STEP -1
+  S=P(J)
+  IF S>99
+   INC P(J-1)
+   S=S-100
+   P(J)=S
+  ELSE
+   EXIT
+  ENDIF
+ NEXT
 ENDPROC
 
 '-------------------------------------
 ' Subtract T() from P(), so P()=P()-T()
 '
 PROC SUB
- FOR J=Q TO 0 STEP -1
+ FOR J=Q TO ZERO STEP -1
   S=P(J)-T(J)
   IF S<0
    DEC P(J-1)
    S=S+100
   ENDIF
   P(J)=S
+ NEXT
+ FOR J=ZERO-1 TO 0 STEP -1
+  S=P(J)
+  IF S<0
+   DEC P(J-1)
+   S=S+100
+   P(J)=S
+  ELSE
+   EXIT
+  ENDIF
  NEXT
 ENDPROC
 
@@ -197,7 +219,7 @@ ENDPROC
 '
 PROC DIV
  C=0
- FOR I=0 TO Q
+ FOR I=ZERO TO Q
   B = 100 * C + T(I)
   T(I) = B / DIVI
   C = B MOD DIVI
@@ -232,14 +254,14 @@ ENDPROC
 ' Saves the value of T
 '
 PROC SAVE_T
- MOVE ADR(T), ADR(SV), Q*2
+ MOVE ADR(T), ADR(SV), Q+1
 ENDPROC
 
 '-------------------------------------
 ' Restores the value of T
 '
 PROC RESTORE_T
- MOVE ADR(SV), ADR(T), Q*2
+ MOVE ADR(SV), ADR(T), Q+1
 ENDPROC
 
 
