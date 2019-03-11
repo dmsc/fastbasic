@@ -21,6 +21,7 @@ SCREEN: plot 2,5  color 32
 SCREEN: plot 2,5  color 32
 SCREEN: plot 2,5  color 32
 SCREEN: plot 2,5  color 32
+in proc
 ->5
           1         23                  4
 

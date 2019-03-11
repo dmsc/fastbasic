@@ -10,6 +10,7 @@ gr.1
 ? #6,"b";
 ? "->4"
 ? #6,"c",
+exec print1
 ? "->5"
 ' Test combinations of separators
 ? ,1,2;;;3;,;,4
@@ -17,3 +18,7 @@ gr.1
 ? ,
 ? ;
 ? "-"
+
+proc print1
+ ? "in proc"
+endproc

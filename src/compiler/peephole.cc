@@ -346,7 +346,10 @@ class peephole
                         current--;
                     }
                     else
+                    {
                         ioch = val(1);
+                        current += 2;
+                    }
                 }
                 else if( mtok(0,TOK_IOCHN) )
                 {
