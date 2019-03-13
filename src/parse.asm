@@ -106,21 +106,21 @@ parser_emit_byte:
 parser_inc_opos:
         inc     opos
         bne     rts1
-        lda     #ERR_TOO_LONG
+too_long:
+        ldx     #ERR_TOO_LONG
         ; Fall through
 
 .proc parser_error
-        ; Prints error message
-        tax
+        ; Prints error message in X
         ldy     #$FF
 ploop:  iny
         cpx     #1      ; C=1 if X != 0
         lda     error_msg_list, y
         bcs     skip    ; Skip if X != 0
-        pha
+        php
         and     #$7F
         jsr     putc
-        pla
+        plp
 skip:   bpl     ploop
         dex
         bpl     ploop
@@ -133,13 +133,13 @@ skip:   bpl     ploop
         ; Check if parser stack is empty
         lda     loop_sp
         beq     ok_loop
-        lda     #ERR_NO_ELOOP
+        ldx     #ERR_NO_ELOOP
         bne     parser_error
 ok_loop:
         ; Check for missing labels
         jsr     check_labels
         bcs     ok
-        lda     #ERR_LABEL
+        ldx     #ERR_LABEL
         bne     parser_error
 ok:     lda     #TOK_END
         jsr     emit_const
@@ -417,7 +417,7 @@ go_ploop:
 :       jmp     ploop
 
 set_parse_error:
-        lda     #ERR_PARSE
+        ldx     #ERR_PARSE
         jmp     parser_error
 
 ; vi:syntax=asm_ca65
