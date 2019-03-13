@@ -240,6 +240,9 @@ parse_start:
 parser_sub:
         stx     pptr
         sty     pptr+1
+        tsx
+        cpx     #16
+        bcc     err_too_long
         ; Always skip WS at start of new token
         jsr     parser_skipws
 
@@ -333,6 +336,9 @@ pexit_ok:
 
         ; End parsing of current line
         jmp     parse_line
+
+err_too_long:
+        jmp     too_long
 
         ; Calls a machine-language subroutine
 pcall_ml:
