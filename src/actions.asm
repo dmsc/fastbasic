@@ -52,8 +52,6 @@
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
         .export         E_VAR_FP, E_NUMBER_FP
-        ; From alloc.asm
-        .import         alloc_area_8
 
 read_fp = AFP
 .endif ; FASTBASIC_FP

@@ -90,6 +90,7 @@ alloc_size=     tmp1
 .endproc        ; Fall through
 
         ; Increase program memory area X by A (size in bytes)
+        ; Returns with carry set on errors.
 .proc alloc_area_8
         sta     alloc_size
         clc
@@ -97,7 +98,6 @@ alloc_size=     tmp1
         tay
 
         lda     #0
-        sta     alloc_size+1
         adc     mem_end+1
 
         cpy     MEMTOP
@@ -133,6 +133,13 @@ alloc_size=     tmp1
 
         ; Adjust pointers
 save_x: ldx     #0
+        cpx     #prog_end - mem_start
+        bne     no_prog
+        ; Special case - we need to adjust prog_ptr, but we
+        ; don't move that areas as it has the current parsed line.
+        ldx     #prog_ptr - mem_start
+no_prog:
+        ldy     #0
 
 .endproc        ; Fall through
 
@@ -143,8 +150,8 @@ loop:   clc
         adc     alloc_size
         sta     mem_start, x
         inx
-        lda     mem_start, x
-        adc     alloc_size+1
+        tya
+        adc     mem_start, x
         sta     mem_start, x
         inx
         cpx     #mem_end - mem_start + 2
@@ -171,26 +178,16 @@ loop:
         ldy     #0
         sty     alloc_size
         iny
-        sty     alloc_size+1
         bne     add_pointers
 .endproc
 
-        ; Increase program memory area by A (size in bytes)
+        ; Increase program memory area by "opos" (size in bytes)
 .proc alloc_prog
         .importzp       opos
         lda     opos
         ; Move from "prog_end", up by "alloc_size"
         ldx     #prog_end - mem_start
-        jsr     alloc_area_8
-        ; Special case - we need to adjust prog_ptr, but we
-        ; don't move that areas as it has the current parsed line.
-        lda     prog_ptr
-        clc
-        adc     alloc_size
-        sta     prog_ptr
-        bcc     :+
-        inc     prog_ptr+1
-:       rts
+        jmp     alloc_area_8
 .endproc
 
 ; vi:syntax=asm_ca65

@@ -144,7 +144,6 @@ ok_loop:
 ok:     lda     #TOK_END
         jsr     emit_const
         jsr     alloc_prog
-        clc
         bcc     parse_end       ; exit
 .endproc
 
