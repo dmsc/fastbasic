@@ -169,9 +169,9 @@ parser_start:
         sta     var_count
         sta     label_count
 parse_line:
-        lda     #0
-        sta     bpos
-        sta     bmax
+        ldx     #0
+        stx     bpos
+        stx     bmax
 
         lda     buf_ptr
         cmp     end_ptr
@@ -190,6 +190,7 @@ parse_line:
         jsr     INTLBUF
 
         ; Convert to uppercase and copy to line buffer
+        ;ldx     #0   ; X is 0 from above, assume INTLBUF does not overwrite X.
         ldy     #$FF
 loop:
         iny
@@ -200,21 +201,19 @@ loop_redo:
         beq     ucase_end
 
         cmp     #'"'
-        beq     skip_str        ; Skip string constants
-        sbc     #'a'
+        bne     skip_str        ; Skip string constants
+        txa
+        eor     #1
+        tax
+skip_str:
+        cpx     #1
+        beq     loop
+        sbc     #'a'-1
         cmp     #'z'-'a'+1
         bcs     loop
         adc     #'A'
         bcc     loop_redo
 
-skip_str:
-        iny
-        lda     (buf_ptr), y
-        sta     (bptr), y
-        cmp     #'"'
-        beq     loop
-        cmp     #$9b
-        bne     skip_str
 ucase_end:
 .endproc
 
