@@ -72,7 +72,7 @@ compile_osx() {
           compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
     #  Pack
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
-    mv build/fastbasic.zip "${out}-maxosx.zip"
+    mv build/fastbasic.zip "${out}-macosx.zip"
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" clean
     PATH="$OPATH"
 }
