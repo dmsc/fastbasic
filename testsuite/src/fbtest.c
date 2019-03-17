@@ -172,7 +172,7 @@ static int atascii_convert(const char *infile, const char *outfile)
 }
 
 // Compile file using native (emulated) compiler
-static int compile_native(const char *atbname, const char *xexname, int comp_ok)
+static int compile_native(const char *atbname, const char *xexname, const char *error_data)
 {
     char *cmd = calloc(strlen(atbname) + strlen(xexname) + 16, 1);
     char *out = calloc(2048, 1);
@@ -193,16 +193,16 @@ static int compile_native(const char *atbname, const char *xexname, int comp_ok)
     else if (0 != (err = strstr(out, "at line")))
     {
         // Compilation error (expected succeed)!
-        if (comp_ok)
+        if (!error_data || !strstr(out, error_data))
         {
             // Extract full error line
             for (char *eol = err; *eol && !(*eol == '\n' && (*eol = 0)); eol ++);
             for (; err > out && err[-1] != '\n'; err --);
-            fprintf(stderr, "%s: compile error: '%s'\n", atbname, err);
+            fprintf(stderr, "%s: unexpected compile error: '%s'\n", atbname, err);
             e = -1;
         }
     }
-    else if (!comp_ok)
+    else if (error_data)
     {
         // Compilation succeeded (expected fail!)
         fprintf(stderr, "%s: compiled without error, unexpected\n", atbname);
@@ -308,7 +308,8 @@ enum tests {
     test_run = 1,
     test_fp = 2,
     test_int = 4,
-    test_compile_error = 8
+    test_native = 8,
+    test_compile_error = 16
 };
 
 // Runs one test from the test-file
@@ -329,7 +330,7 @@ int fbtest(const char *fname)
      *   OUTPUT:
      *   The expected output, up to the end of the file.
      */
-    char *name = 0, *expected_out = 0, *input_buf = 0;
+    char *name = 0, *expected_out = 0, *input_buf = 0, *error_data = 0;
     int test = 0, n = 0, line = 0;
     char lbuf[256];
     while ( 0 != fgets(lbuf, sizeof(lbuf)-1, f) )
@@ -350,21 +351,23 @@ int fbtest(const char *fname)
         else if (!strcasecmp(key, "test"))
         {
             if (!strcasecmp(buf, "run"))
-                test = test_run | test_fp | test_int;
+                test = test_run | test_fp | test_int | test_native;
             else if (!strcasecmp(buf, "run-fp"))
-                test = test_run | test_fp;
+                test = test_run | test_fp | test_native;
             else if (!strcasecmp(buf, "run-int"))
                 test = test_run | test_int;
             else if (!strcasecmp(buf, "compile"))
-                test = test_fp | test_int;
+                test = test_fp | test_int | test_native;
             else if (!strcasecmp(buf, "compile-fp"))
-                test = test_fp;
+                test = test_fp | test_native;
             else if (!strcasecmp(buf, "compile-int"))
                 test = test_int;
             else if (!strcasecmp(buf, "compile-error"))
-                test = test_compile_error | test_fp | test_int;
+                test = test_compile_error | test_fp | test_int | test_native;
+            else if (!strcasecmp(buf, "compile-error-native"))
+                test = test_compile_error | test_native;
             else if (!strcasecmp(buf, "compile-error-fp"))
-                test = test_compile_error | test_fp;
+                test = test_compile_error | test_fp | test_native;
             else if (!strcasecmp(buf, "compile-error-int"))
                 test = test_compile_error | test_int;
             else
@@ -373,6 +376,8 @@ int fbtest(const char *fname)
                 return -1;
             }
         }
+        else if (!strcasecmp(key, "error"))
+            error_data = strdup(buf);
         else if (!strcasecmp(key, "input"))
         {
             size_t input_size = 0;
@@ -461,6 +466,13 @@ int fbtest(const char *fname)
         expected_out = strdup("");
     if (!input_buf)
         input_buf = strdup("");
+    if (error_data && !(test & test_compile_error))
+    {
+        fprintf(stderr, "%s: error data but no compile error expected\n", fname);
+        return -1;
+    }
+    if ((test & test_compile_error) && !error_data)
+        error_data = strdup("");
 
     // Get file names from test file
     const char *ext = rindex(fname, '.');
@@ -492,12 +504,12 @@ int fbtest(const char *fname)
 
     do
     {
-        if (0 != (test & test_fp))
+        if (0 != (test & test_native))
         {
             if (verbose)
                 fprintf(stderr, "%s: compile fp native\n", fname);
             // Floating Point: native
-            if (compile_native(atbname, xexname, !(test & test_compile_error)))
+            if (compile_native(atbname, xexname, error_data))
                 break;
 
             if (test & test_run)
@@ -508,7 +520,9 @@ int fbtest(const char *fname)
                 if (run_test_xex(xexname, input_buf, expected_out))
                     break;
             }
-
+        }
+        if (0 != (test & test_fp))
+        {
             if (verbose)
                 fprintf(stderr, "%s: compile fp cross\n", fname);
             // Floating Point: cross
@@ -548,6 +562,7 @@ int fbtest(const char *fname)
 
     printf("TEST '%s': %s\n", name, test_ok ? "passed" : "not passed");
     free(cmd_out);
+    free(error_data);
     free(input_buf);
     free(expected_out);
     free(name);

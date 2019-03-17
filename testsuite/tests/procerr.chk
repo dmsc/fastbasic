@@ -1,2 +1,3 @@
 Name: Check detection of missing PROC
 Test: compile-error
+Error: undef label
