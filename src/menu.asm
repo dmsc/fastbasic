@@ -73,9 +73,6 @@ start:
 
         ; Called from editor
 COMPILE_BUFFER:
-        lda     #0
-        sta     reloc_addr
-        sta     reloc_addr+1
 
         ; Buffer end pointer
         pla
@@ -93,17 +90,19 @@ COMPILE_BUFFER:
         ; Compile / Run
         pla
         pla
+        tax
         beq     no_save
 
         ; We need to relocate the bytecode, calculate the offset:
         lda     #<BYTECODE_ADDR
         sec
         sbc     end_ptr
-        sta     reloc_addr
+        tax
         lda     #>BYTECODE_ADDR
         sbc     end_ptr+1
-        sta     reloc_addr+1
 no_save:
+        stx     reloc_addr
+        sta     reloc_addr+1
 
         ; Save our CPU return stack
         lda     saved_cpu_stack
@@ -112,19 +111,19 @@ no_save:
         ; Parse
         jsr     parser_start
 
-        ldx     #$7E
-        bcs     load_editor_stack ; On error, exit returning <> 0 (0x7E7E)
+        ldx     #$FE
+        bcs     load_editor_stack ; On error, exit returning <> 0 (0xFEFE)
 
-        ; Loops 2 times with X=$7E and X=$7F, exits with X=$80 (not positive)
-        ; C = clear and X = $7E on enter
+        ; Loops 2 times with X=$FE and X=$FF, exits with X=0
+        ; C = clear and X = $FE on enter
 sto_loop:
         tay
-        lda     prog_ptr - $7E,x
-        sta     fb_var_NEWPTR - $7E,x
-        adc     reloc_addr - $7E,x
-        sta     COMP_HEAD_2+2 - $7E,x
+        lda     <(prog_ptr - $FE),x
+        sta     fb_var_NEWPTR - $FE,x
+        adc     <(reloc_addr - $FE),x
+        sta     COMP_HEAD_2+2 - $FE,x
         inx
-        bpl     sto_loop
+        bne     sto_loop
 
         ; AY = end of program code + 1, start of heap
         ; Align up to 256 bytes
@@ -138,7 +137,7 @@ sto_loop:
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
-        bne     return_0
+        bne     load_editor_stack ; Exit returning X = 0 (from loop above)
 
         ; Runs current parsed program
 run_program:
@@ -166,7 +165,6 @@ run_program:
         sta     sptr
 
         ; Exit to editor returning 0
-return_0:
         ldx     #0
 
         ; Restore saved CPU stack
