@@ -29,17 +29,21 @@
 
         .export         move_dwn
         .import         stack_l, stack_h, next_ins_incsp_2
+        .importzp       divmod_sign
 
         .include "atari.inc"
 
 .ifdef NO_SMCODE
         .exportzp       move_dwn_src, move_dwn_dst
-        .importzp       tmp3, tmp4, divmod_sign
+        .importzp       tmp3, tmp4
 move_dwn_src= tmp3
 move_dwn_dst= tmp4
 .else
         .export         move_dwn_src, move_dwn_dst
 .endif
+
+        ; Used as a temporary value
+tmp5=divmod_sign
 
         .segment        "RUNTIME"
 
@@ -60,55 +64,66 @@ move_dwn_dst= tmp4
 
         ; Note: this is used from alloc.asm, so can't be inlined above
 .proc   move_dwn
-        ; Here, we will copy (X-1) * 255 + Y bytes, up to src+Y / dst+Y
-        ; X*255 - 255 + Y = A*256+B
-        ; Calculate our new X/Y values
-
+        ; On input:
+        ;    Length:            AX
+        ;    Source Pointer:    move_dwn_src
+        ;    Destination Ptr:   move_dwn_dst
+        ;
+        ; Copy 255 bytes at a time, in total X * 255 + Y bytes, with
+        ; 0 <= X < 255, 0 <= Y < 255; so we need:
+        ;    X * 255 + Y  =  Length
+        ;
+        ; The values of X and Y can be calculated with:
+        ;
+        ;    X * 256 + Y = X * 255 + X + Y
+        ;                = X * 255 + Y + X
+        ;                = Length      + X
+        ;                = Length      + X*255/256 + X/256 + Y/256 - Y/256
+        ;                = Length      + X*255/256 + Y/256 + X/256 - Y/256
+        ;                = Length      + Length/256        + (X-Y)/256
+        ;
+        ; As we have |X-Y| < 255, the last term is always 0, so we can use
+        ; the expression: Length + Length/256 to calculate our X and Y:
+        ;
         clc
-.ifdef NO_SMCODE
-        sta     divmod_sign
+        sta     tmp5
         txa
-        adc     divmod_sign
-.else
-        sta     len_l+1         ; Store len_l
-        txa
-len_l:  adc     #$FF
-.endif
+        adc     tmp5
         tay
         bcc     :+
-        inx
-        iny
+        inx     ; On carry, we need to add 1 to X and Y (because we are
+        iny     ; calculating modulo 255).
 :
-chk_len:
-        ; Adds 255*X to SRC/DST
-        txa
+        ; Here, the only possibility of Y = 0 is that the Length is 0
+        beq     xit
+
+        ; Now we add "255*X - 1" to the source and destination pointers,
+        ; to start the copy from the end of the block.
+        ; This simplifies to adding:
+        ;    256 * (X-1) + (255-X) = 255 * X - 1
+        stx     tmp5
+        dex
+
         clc
-        eor     #$FF
-        adc     move_dwn_src
+        lda     move_dwn_src
+        sbc     tmp5
         sta     move_dwn_src
         txa
-        adc     #$FF
-        clc
         adc     move_dwn_src+1
         sta     move_dwn_src+1
 
-        txa
         clc
-        eor     #$FF
-        adc     move_dwn_dst
+        lda     move_dwn_dst
+        sbc     tmp5
         sta     move_dwn_dst
         txa
-        adc     #$FF
-        clc
         adc     move_dwn_dst+1
         sta     move_dwn_dst+1
 
-        inx
+        inx     ; Restore X
+        inx     ; Add 1, now value is from 1 to 255
 
-        ; Copy 255 bytes down - last byte can't be copied without two comparisons!
-        tya
-        beq     xit
-ploop:
+        ; Copy Y bytes down in the first iteration, 255 in the following
 cloop:
 .ifdef NO_SMCODE
         ; 17 cycles / iteration
