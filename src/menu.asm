@@ -23,17 +23,17 @@
 
         ; Export and imports from editor.bas
         .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
-        .exportzp       reloc_addr
+        .exportzp reloc_addr
         .import fb_var_NEWPTR
 
         ; From runtime.asm
         .import putc
-        .importzp IOCHN, IOERROR, tabpos, tmp1, tmp2
+        .importzp tmp1, tmp2
         ; From parser.asm
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, saved_cpu_stack, stack_h, stack_l
+        .import interpreter_run, saved_cpu_stack
         .importzp interpreter_cptr, var_count, sptr
         ; From alloc.asm
         .importzp  prog_ptr, var_page
@@ -56,6 +56,9 @@ BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
         ; Relocation amount
 reloc_addr:     .res    2
 
+        ; Ensure that the EDITOR bytecode starts at same address that
+        ; compiled bytecode, so we have only one initialization
+        .assert	BYTECODE_ADDR = bytecode_start, error, "Bytecode location differ in menu!"
 
         ; Exported to EDITOR.BAS
 BMAX=bmax
@@ -65,11 +68,7 @@ LINENUM=linenum
 
 start:
         jsr     load_editor
-
-        lda     #<bytecode_start
-        ldx     #>bytecode_start
-        jsr     interpreter_run
-        jmp     (DOSVEC)
+        jmp     compiled_run
 
         ; Called from editor
 COMPILE_BUFFER:
@@ -118,9 +117,9 @@ no_save:
         ; C = clear and X = $FE on enter
 sto_loop:
         tay
-        lda     <(prog_ptr - $FE),x
+        lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
         sta     fb_var_NEWPTR - $FE,x
-        adc     <(reloc_addr - $FE),x
+        adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
         sta     COMP_HEAD_2+2 - $FE,x
         inx
         bne     sto_loop
@@ -255,6 +254,7 @@ compiled_var_page:
         lda     #00
         sta     var_page
 
+compiled_run:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
         jsr     interpreter_run

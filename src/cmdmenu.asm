@@ -21,7 +21,7 @@
 
         .export start
 
-        ; Export to editor.bas
+        ; Export and imports from cmdline.bas
         .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
         .exportzp reloc_addr
         .import fb_var_NEWPTR
@@ -53,6 +53,9 @@ BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
         ; Relocation amount
 reloc_addr:     .res    2
 
+        ; Ensure that the EDITOR bytecode starts at same address that
+        ; compiled bytecode, so we have only one initialization
+        .assert	BYTECODE_ADDR = bytecode_start, error, "Bytecode location differ in menu!"
 
         ; Exported to CMDLINE.BAS
 BMAX=bmax
@@ -62,11 +65,7 @@ LINENUM=linenum
 
 start:
         jsr     load_program
-
-        lda     #<bytecode_start
-        ldx     #>bytecode_start
-        jsr     interpreter_run
-        jmp     (DOSVEC)
+        jmp     compiled_run
 
         ; Called from editor
 COMPILE_BUFFER:
@@ -100,11 +99,11 @@ COMPILE_BUFFER:
         ; Parse
         jsr     parser_start
 
-        bcs     load_program_stack ; On error, exit returning <> 0 (0x7E7E)
-
-        ; Loops 2 times with X=$FE and X=$FF, exits with X=$0
-        ; C = clear on enter (from BCS above)
         ldx     #$FE
+        bcs     load_program_stack ; On error, exit returning <> 0 (0xFEFE)
+
+        ; Loops 2 times with X=$FE and X=$FF, exits with X=0
+        ; C = clear and X = $FE on enter
 sto_loop:
         tay
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
@@ -179,6 +178,7 @@ compiled_var_page:
         lda     #00
         sta     var_page
 
+compiled_run:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
         jsr     interpreter_run
