@@ -33,22 +33,20 @@
 
         .segment        "RUNTIME"
 
-.proc   EXE_PUSH_0; push AX, load 0
-        jsr     pushAX
-        bne     EXE_0   ; Assume from pushAX that sptr is never 0
-.endproc
-
         ; Pushes X as "comparison return" into stack.
 .proc   pushXX_set0
         ldy     sptr
         txa
-        sta     stack_l, y
-        sta     stack_h, y
+.endproc        ; Fall through
+
+.proc   EXE_PUSH_0; push AX, load 0
+        jsr     pushAX
 .endproc        ; Fall through
 
 .proc   EXE_0
         lda     #0
-        beq     ret_0   ; Skip next 2 inst
+        tax
+        jmp     next_instruction
 .endproc
 
 .proc   EXE_PUSH_1; push AX, load 1
@@ -56,18 +54,16 @@
 .endproc        ; Fall through
 
 .proc   EXE_1
-::ret_1:
         lda     #1
-::ret_0:
         ldx     #0
         jmp     next_instruction
 .endproc
 
 .proc   EXE_COMP_0  ; AX = AX != 0
         tay
-        bne     ret_1
+        bne     EXE_1
         txa
-        bne     ret_1
+        bne     EXE_1
         jmp     next_instruction
 .endproc
 

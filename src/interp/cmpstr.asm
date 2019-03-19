@@ -28,7 +28,7 @@
 ; ------------------
 
         .import         stack_l, stack_h, pushXX_set0
-        .importzp       tmp1, tmp2, tmp3
+        .importzp       tmp1, tmp2, tmp3, sptr
 
         .segment        "RUNTIME"
 
@@ -76,6 +76,7 @@ end_str1:
 rtn_gt:
         inx
 xit:
+        inc     sptr
         jmp     pushXX_set0
 .endproc
 

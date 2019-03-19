@@ -28,7 +28,6 @@
 ; -------------------------
 
         .import         pop_fr0, pop_fr1, pushXX_set0
-        .importzp       sptr
 
         .include "atari.inc"
 
@@ -42,7 +41,6 @@
         ; TODO: Don't check FP errors, assume SUB can't fail in comparisons
         ldx     FR0
         jsr     pop_fr0
-        dec     sptr
         jmp     pushXX_set0
 .endproc
 
