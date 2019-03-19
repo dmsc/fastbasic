@@ -27,9 +27,9 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, alloc_array, mem_set, err_nomem
+        .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
 
-        .import         putc, EXE_END
+        .import         putc
         .importzp       mem_end, var_page, tmp1, tmp2, array_ptr, var_count
 
         ; Top of available memory
@@ -77,6 +77,7 @@ alloc_size=     tmp1
         sta     tmp2+1
         adc     alloc_size+1
         sta     array_ptr+1
+        bcs     err_nomem
 
         cpy     MEMTOP
         sbc     MEMTOP+1
@@ -108,6 +109,10 @@ nxt:    dex
         rts
 .endproc
 
+memory_error_msg:
+        .byte $9b, "rorrE yromeM", $9b
+memory_error_len=    * - memory_error_msg
+
 err_nomem:
         ; Show message and end program
         ldy     #memory_error_len-1
@@ -115,9 +120,18 @@ loop:   lda     memory_error_msg, y
         jsr     putc
         dey
         bpl     loop
-        jmp     EXE_END
-memory_error_msg:
-        .byte $9b, "rorrE yromeM", $9b
-memory_error_len=    * - memory_error_msg
+        ; Fall through
+
+.proc   EXE_END ; EXIT from interpreter
+        ldx     #0
+::saved_cpu_stack = * - 1
+        txs
+        rts
+.endproc
+
+        .include "deftok.inc"
+        deftoken "END"
+
+        .assert	TOK_END = 0, error, "TOK_END must be 0"
 
 ; vi:syntax=asm_ca65

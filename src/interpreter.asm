@@ -27,20 +27,18 @@
 ; The opcode interpreter
 ; ----------------------
 
-        .export         interpreter_run, saved_cpu_stack, stack_l, stack_h
+        .export         interpreter_run, stack_l, stack_h
         .export         pushAX, stack_end
-        .export         EXE_END
 
         .exportzp       interpreter_cptr, var_count, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
         .exportzp       tabpos, IOCHN, IOERROR, COLOR, tmp1, tmp2, tmp3, divmod_sign
 
-        ; From allloc.asm
-        .import         clear_data
+        ; From clearmem.asm
+        .import         clear_data, saved_cpu_stack
 
         ; From jumptab.asm
         .import         __JUMPTAB_RUN__
-
 
         ; From soundoff.asm
         .import         sound_off
@@ -182,17 +180,5 @@ interpreter_cptr        =       cptr
 ;        ldx     stack_h-1, y
 ;        jmp     next_instruction
 ;.endproc
-
-.proc   EXE_END ; EXIT from interpreter
-        ldx     #0
-::saved_cpu_stack = * - 1
-        txs
-        rts
-.endproc
-
-        .include "deftok.inc"
-        deftoken "END"
-
-        .assert	TOK_END = 0, error, "TOK_END must be 0"
 
 ; vi:syntax=asm_ca65

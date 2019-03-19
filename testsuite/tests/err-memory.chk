@@ -1,0 +1,7 @@
+Name: Check memory runtime error
+Test: run
+Output:
+Start
+Ok
+
+Memory Error
