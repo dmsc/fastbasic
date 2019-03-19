@@ -103,11 +103,12 @@ static int show_help()
     std::cerr << "Usage: fastbasic [options] <input.bas> <output.asm>\n"
                  "\n"
                  "Options:\n"
-                 " -d\tenable parser debug options (only useful to debug parser)\n"
-                 " -n\tdon't run the optimizer, produces same code as 6502 version\n"
-                 " -prof\tshow token usage statistics\n"
-                 " -v\tshow version and exit\n"
-                 " -h\tshow this help\n";
+                 " -d\t\tenable parser debug options (only useful to debug parser)\n"
+                 " -n\t\tdon't run the optimizer, produces same code as 6502 version\n"
+                 " -prof\t\tshow token usage statistics\n"
+                 " -s=<name>\tplace code into given segment\n"
+                 " -v\t\tshow version and exit\n"
+                 " -h\t\tshow this help\n";
     return 0;
 }
 
@@ -120,7 +121,7 @@ static int show_error(std::string msg)
 int main(int argc, char **argv)
 {
     std::vector<std::string> args(argv+1, argv+argc);
-    std::string iname;
+    std::string iname, segname = "BYTECODE";
     std::ifstream ifile;
     std::ofstream ofile;
     bool show_stats = false;
@@ -140,6 +141,12 @@ int main(int argc, char **argv)
             return show_help();
         else if( arg.empty() )
             return show_error("invalid argument, try -h for help");
+        else if( arg.rfind("-s=", 0) == 0 )
+        {
+            segname = arg.substr(3);
+            if( !segname.size() || (segname.find('"') != std::string::npos) )
+                return show_error("invalid segment name");
+        }
         else if( arg[0] == '-' )
             return show_error("invalid option '" + arg + "', try -h for help");
         else if( !ifile.is_open() )
@@ -280,6 +287,7 @@ int main(int argc, char **argv)
     }
     ofile << ";-----------------------------\n"
              "; Bytecode\n"
+             "\t.segment \"" << segname << "\"\n"
              "bytecode_start:\n";
     ln = -1;;
     for(auto c: s.full_code())
