@@ -8,27 +8,28 @@ the BASIC language on the Atari 8-bit
 computers.
 
 One big difference from other BASIC
-interpreters in the old 8-bit computers
-is the lack of line numbers and the
+interpreters in 1980s era 8-bit computers
+is the lack of line numbers, as well as an
 integrated full-screen editor. This is
 similar to newer programming
 environments, giving the programmer a
-lot of flexibility.
+higher degree of flexibility.
 
 Another big difference is that default
 variables and operations are done using
-integer numbers, this is one of the
-reasons that the programs run so fast.
+integer numbers; this is one of the
+reasons that the programs run so fast relative
+to its peers from the 1980s.
 The other reason is that the program is
 parsed on run, generating optimized
 code for very fast execution.
 
-Currently, FastBasic support:
+Currently, FastBasic supports:
 
 - Integer and floating point variables,
   including all standard arithmetic
   operators.
-- All graphic, sound and color commands
+- All graphic, sound, and color commands
   from Atari Basic, plus some
   extensions from Turbo Basic.
 - All control flow structures from
@@ -75,7 +76,7 @@ You are now in the integrated editor.
 In the first line of the screen the
 name of the currently edited file is
 shown, and at the right the line of the
-cursor.  Note that lines that show an
+cursor.  Please note that lines that show an
 arrow pointing to the top-left are
 empty lines beyond the last line of the
 current file.
@@ -89,12 +90,12 @@ As the help text says, just press the
 the same time) to begin editing a new
 file.  If the text was changed, the
 editor asks if you want to save the
-current file to disk, to skip saving
-simply type `CONTROL-C`, to cancel the
+current file to disk; to skip saving
+simply type `CONTROL-C`; to cancel the
 New File command type `ESC`.
 
-Now, you can start writing your BASIC
-program. Try the following example,
+Now you are ready to start writing your
+own BASIC program. Try the following example,
 pressing `RETURN` after each line to
 advance to the next:
 
@@ -102,14 +103,15 @@ advance to the next:
     ?
     ? "HELLO", NAME$
 
-If you made any mistake, simply move
+The parser will let you made any mistakes.
+To make corrections move
 back using the cursor keys, this is
 `CONTROL` and `-`, `=`, `+` or `*`,
 then press `BACKSPACE` key to delete
 the character before the cursor or
 press `DELETE` (`CONTROL` and
 `BACKSPACE`) to delete the character
-bellow the cursor.  To join two lines,
+below the cursor.  To join two lines,
 go to the end of the first line and
 press `DELETE`.
 
@@ -117,24 +119,23 @@ After typing the last line, you can run
 the program by pressing `CONTROL` and
 `R`.
 
-If you correctly typed your program,
-the computer will ask you for your
-name, type anything you want and press
-`RETURN`
+If there are no errors with your program,
+the computer will ask you for a filenam.
+Type an 8 character filename, with or without
+a file extension, and press `RETURN`.
 
 After this, the IDE waits for any key
 press to return to the editor, so you
-have a chance to see all your program
-output.
+have a chance to see your program's code.
 
-If you made a mistake in the program,
-instead of running the cursor will be
-moved to the line and column of the
+If you made a mistake typing in the 
+program code, instead of the program running,
+the cursor will move to the line and column of the
 error so you can correct it and retry.
 
-Remember to save often, pressing the
-`CONTROL` and `S` keys, you need to
-supply a filename. Type the name, and
+Remember to save often by pressing the
+`CONTROL` and `S` keys and entering 
+a filename. Type the name and
 press `ENTER` to save.  As with any
 prompt, you can press `ESC` to cancel
 the save operation.  Use the
@@ -142,7 +143,7 @@ the save operation.  Use the
 if you want to change it.
 
 
-Compiling the program to disk
+Compiling The Program To Disk
 =============================
 
 Once you are satisfied with your
@@ -150,13 +151,13 @@ program, you can compile to a disk
 file, producing a program that can be
 run directly from DOS.
 
-Press the `CONTROL` and `W` key, and
-type a name for your compiled program.
+Press the `CONTROL` and `W` key and
+type a filename for your compiled program.
 It is common practice to name your
 compiled programs with an extension of
-".COM" or ".XEX", also with ".COM"
+".COM" or ".XEX." With ".COM" extension
 files you don't need to type the
-extension in some DOS.
+extension in some versions of DOS.
 
 Compiled programs include the full
 runtime, so you can distribute them
@@ -166,12 +167,12 @@ You can also compile a program directly
 from DOS by using the included command
 line compiler `FBC.COM`. The compiler
 prompts for the input file name, loads
-the BASIC source, compiles it and
-prompts for a executable output file
-name to write the compiled program.
+the BASIC source, compiles it, and
+prompts for a executable output filename
+to write the compiled program.
 
 
-About the syntax
+About The Syntax
 ================
 
 The syntax of FastBasic language is
@@ -196,7 +197,7 @@ the following main rules:
    language is case insensitive.
 
 3. Statements can be abbreviated to
-   reduce typing, each statement have a
+   reduce typing, each statement has a
    different abbreviation.
 
 4. Multiple statements can be put on
@@ -227,7 +228,7 @@ calculations in the language.
 
 There are numeric expressions (integer
 and floating point), boolean
-expressions and string expressions.
+expressions, and string expressions.
 
 In FastBasic, standard  numeric
 expressions are evaluated as integers
@@ -241,11 +242,11 @@ standard Atari BCD representation, with
 a range from 1E-98 to 1E+98.
 
 Boolean expressions are "true" or
-"false", represented as the numbers 1
+"false." represented as the numbers 1
 and 0.
 
 String expressions contain arbitrary
-text, in FastBasic strings can have up
+text. In FastBasic strings can have up
 to 255 characters of length.
 
 
@@ -280,8 +281,8 @@ valid names are `MyNum%`, `x1%`.
 Numeric Operators
 -----------------
 
-There are various "operators" the
-perform calculation in expressions, the
+There are various "operators" that
+perform calculation in expressions; the
 operators with higher precedence always
 execute first. These are the *integer*
 operators in order of precedence:
@@ -296,7 +297,7 @@ operators in order of precedence:
                   right.
 - `+` `-`      : positive / negative.
 
-For example, an expression like
+For example, an expression like:
 `1 + 2 * 3 - 4 * -5` is evaluated in
 the following order:
 
@@ -312,7 +313,7 @@ the following order:
 
 So, in this example the result is 27.
 
-If there is need to alter the
+If there is a need to alter the
 precedence, you can put the expression
 between parenthesis.
 
@@ -329,13 +330,13 @@ the operators are:
 
 Note that integer expressions are
 automatically converted to floating
-point if needed, this allows mixing
+point if needed, as this allows mixing
 integers and floating point in some
-calculations, but you must have care to
+calculations, but you must take care to
 force floating point calculations to
 avoid integer overflows.
 
-Example: the expression
+Example: the expression -
 
     a% = 1000 * 1000 + 1.2
 
@@ -346,7 +347,7 @@ calculation, but:
     x=1000: a% = x * x + 1.2
 
 gives incorrect results as the
-multiplication result is bigger tan
+multiplication result is bigger than
 32767.
 
 Note that after any floating point
@@ -377,7 +378,7 @@ order of precedence, are:
 - `NOT`  : Logical NOT, true only if
            operand is false.
 - `<=` `>=` `<>` `<` `>` `=`
-  Integer or floating point comparison,
+  For integer or floating point comparisons,
   compare the two numbers and return
   true or false.  Note that `<>` is
   _not equal_.
@@ -393,13 +394,13 @@ Arrays
 ------
 
 Arrays hold many ordered values (called
-elements), the elements can be accessed
+elements). The array elements can be accessed
 by an index.
 
 In FastBasic, arrays must be
 dimensioned before use (see `DIM`
-statement bellow), the index of the
-element is written between parenthesis
+statement below). The index of the
+element is written between parentheses
 and goes from 0 to the number of
 elements less 1.
 
@@ -417,8 +418,8 @@ Arrays can be of three types:
 - `BYTE` arrays use only one byte for
   each element, but the numeric range
   is reduced from 0 to 255.
-- String arrays store an string in each
-  element. String arrays use two byte
+- String arrays store a string in each
+  element. String arrays use two bytes
   of memory for each element that is
   not yet assigned (containing empty
   strings), and 258 bytes for each
@@ -535,14 +536,14 @@ Standard Functions
 ------------------
 
 Functions take parameters between
-parenthesis and produce a result.
+parentheses and produce a result.
 Following is a list of all the
 functions supported by FastBasic.
 
-- TIME : Returns the curren time in
-         "jiffies". This is about 60
+- TIME : Returns the current time in
+         "jiffies." This is about 60
          times per second in NTSC
-         systems, 50 times per second
+         systems or 50 times per second
          in PAL systems.
 
 - ABS(_num_) : Returns the absolute
@@ -558,8 +559,8 @@ functions supported by FastBasic.
                and floating point.
 
 - RAND(_num_) : Returns a random, non
-                negative number, less
-                than _num_.
+                negative number, a maximum 
+                of 1 less than _num_.
 
 - FRE() : Returns the free memory
           available in bytes.
@@ -571,15 +572,15 @@ functions supported by FastBasic.
 - LEN(*string*) : Returns the length of
                   the *string*.
 
-- VAL(*string*) : Convert *string* to a
+- VAL(*string*) : Converts *string* to a
                   number. If no
                   conversion is
                   possible, ERR() is
                   set to 18. Can be
                   used with integers
-                  and floatign point.
+                  and floating point.
 
-- ASC(*string*) : Returns the ATASCI
+- ASC(*string*) : Returns the ATASCII
                   code of the first
                   character of the
                   *string*.
@@ -588,8 +589,8 @@ functions supported by FastBasic.
 Atari Specific Functions
 ------------------------
 
-The following functions allows
-interacting to the Atari hardware to
+The following functions allow
+interacting with the Atari hardware to
 read controller and keyboard input and
 to program with Player/Missile
 graphics.
@@ -608,11 +609,14 @@ graphics.
                pressed, 1 otherwise.
 
 - STICK(_n_) : Returns the JOYSTICK
-               controller _n_ position,
-               this is 15 if centered.
-               See Atari Basic manual
-               for all possible values.
-
+               controller _n_ position.
+               STICK(_n_) values are:
+               10        14        6
+                                       
+               11        15        7
+                             
+               9         13        5
+                
 - STRIG(_n_) : Returns 0 if JOYSTICK
                controller _n_ button is
                pressed, 1 otherwise.
@@ -628,7 +632,7 @@ graphics.
           `(PEEK(764) EXOR 255)`.
 
 
-Floating Point functions
+Floating Point Functions
 ------------------------
 
 This functions use floating point
@@ -637,8 +641,8 @@ floating point version.
 
 In case of errors (such as logarithm or
 square root of negative numbers and
-overflow in the results), the functions
-returns an invalid value, and the ERR()
+overflow in the results), the functions will
+return an invalid value, and the ERR()
 function returns 3.
 
 
@@ -667,7 +671,7 @@ function returns 3.
 - SQR(_n_): Square root of _n_.
 
 
-String functions
+String Functions
 ----------------
 
 - STR$(_num_): Returns a string with a
@@ -692,7 +696,7 @@ Low level Functions
 
 The following functions are called "low
 level" because they interact directly
-with the hardware. Use with care!.
+with the hardware. Use with care!
 
 
 - ADR(_arr_): Returns the address of
@@ -720,7 +724,7 @@ with the hardware. Use with care!.
                    _address_.
 
 - USR(_address_[,_num1_ ...]):
-    Low level function, calls the user
+    Low level function that calls the user
     supplied machine code subroutine at
     _address_.
 
@@ -735,7 +739,7 @@ with the hardware. Use with care!.
   function, with A the low part and X
   the high part.
 
-  This is a sample usage:
+  This is a sample usage code snippet:
 
       ' PLA / EOR $FF / TAX / PLA / EOR $FF / RTS
       DATA ml() byte = $68,$49,$FF,$AA,$68,$49,$FF,$60
@@ -744,10 +748,10 @@ with the hardware. Use with care!.
       NEXT i
 
 
-List of statements
+List Of Statements
 ==================
 
-In the following descriptions, the
+In the following descriptions, 
 statement usage is presented and the
 abbreviation is given after a /.
 
@@ -755,15 +759,15 @@ abbreviation is given after a /.
 Console Print and Input Statements
 ----------------------------------
 
-**Reads key from Keyboard**  
+**Reads Key From Keyboard**  
 **GET _var_ / GE.**
 
-  Waits for a key-press and writes the
+  Waits for a keypress and writes the
   key value to _var_, which can be a
   variable name or an array position
   (like "array(123)")
 
-**Input variable or string**  
+**Input Variable Or String**  
 **INPUT _var_ / I.**  
 **INPUT "prompt"; _var_**  
 **INPUT "prompt", _var_**
@@ -789,7 +793,7 @@ Console Print and Input Statements
   value can't be converted to a number,
   the value 18 is stored in ERR().
 
-**Moves the screen cursor**  
+**Moves The Screen Cursor**  
 **POSITION _row_, _column_ / POS.**
 
   Moves the screen cursor position to
@@ -800,7 +804,7 @@ Console Print and Input Statements
   Rows and columns are numerated from
   0.
 
-**Print strings and numbers**  
+**Print Strings And Numbers**  
 **PRINT _expr_, ... / ?**
 
   Outputs strings and numbers to the
@@ -823,14 +827,14 @@ Console Print and Input Statements
   tabulated data can be printed.
 
 
-**Writes a character to the screen**  
+**Writes A Character To Screen**  
 **PUT _num_ / PU.**
 
   Outputs one character to the screen,
-  given by it's ATASCI code.
+  given by it's ATASCII code.
 
 
-**Clears the screen**  
+**Clears The Screen**  
 **CLS**
 
   Clears the text screen. This is the
@@ -842,20 +846,20 @@ Console Print and Input Statements
 Control Statements
 ------------------
 
-**Endless loops**  
-**DO**  
+**Endless Loops**  
+**DO**    
 **LOOP / L.**
 
   Starts and ends an endless
-  repetition, when reaching the LOOP
-  statement the program begins again
+  repetition. When reaching the LOOP
+  statement the program begins again, 
   executing from the DO statement.
 
   The only way to terminate the loop is
-  via de EXIT statement.
+  via an EXIT statement.
 
 
-**Calls a subroutine**  
+**Calls A Subroutine**  
 **EXEC _name_ / EXE.**
 
   Calls the subroutine _name_. Note
@@ -864,19 +868,19 @@ Control Statements
   or after the call.
 
 
-**Exits from loop or PROC**  
+**Exits From Loop Or PROC**  
 **EXIT / EX.**
 
-  Exits current loop or subroutine, by
+  Exits current loop or subroutine by
   jumping to the end.
 
   In case of loops, the program
   continues after the last statement of
-  the loop, in case of PROC, the
+  the loop. In case of PROC, the
   program returns to the calling EXEC.
 
 
-**Loop over values of a variable**  
+**Loop Over Values Of A Variable**  
 **FOR _var_=_value_ TO _end_ [STEP _step_] / F. TO S.**  
 **NEXT _var_ / N.**
 
@@ -884,14 +888,14 @@ Control Statements
   specified number of times while
   keeping a counting variable.
 
-  First, assigns the _value_ to _var_,
+  First assigns the _value_ to _var_,
   and starts iterations. _var_ can be
   any variable name or a word array
   position (like "array(2)").
 
-  In each iteration, first compares the
+  In each iteration, the command first compares the
   value of _var_ with _end_, if the
-  value is past the end, terminates the
+  value is past the end it terminates the
   loop.
 
   At the end of the loop, _var_ is
@@ -902,13 +906,13 @@ Control Statements
   loop and skips to the end.
 
   Note that if _step_ is positive,
-  iteration ends if value of _var_ is
+  the iteration ends and the if value of _var_ is
   bigger than _end_, but if _step_ is
-  negative, iteration ends if value of
+  negative, the iteration ends if value of
   _var_ is less than _end_.
 
   Also, _end_ and _step_ are evaluated
-  only once at beginning of the loop,
+  only once at beginning of the loop;
   that value is stored and used for all
   loop iterations.
 
@@ -916,13 +920,19 @@ Control Statements
   is already past _end_, the loop is
   completely skipped.
 
-  As an extension, you can left out the
-  variable name in NEXT, and currently
-  the variable name is actually
-  ignored.
+  A slightly modified usage of the FOR/NEXT loop
+  allows for excluding the variable name from NEXT.
+  
+    This is an example of of NEXT variable exclusion:
 
+      ' sample of FOR/NEXT loop without NEXT variable name
+      FOR i=0 to 1000 step 100
+        ? i
+      NEXT 
 
-**Conditional execution**  
+  
+
+**Conditional Execution**  
 **IF _condition_ THEN _statement_ / I. T.**  
 **IF _condition_**  
 **ELIF _condition_ / ELI.**  
@@ -935,10 +945,10 @@ Control Statements
 
   The second form executes all
   statements following the IF (up until
-  any of ELIF, ELSE, ENDIF) only if
+  an ELIF, ELSE, ENDIF) only if
   condition is true.
 
-  If condition is false, optional
+  If the condition is false, optional
   statements following the ELSE (until
   an ENDIF) are executed.
 
@@ -966,12 +976,12 @@ Control Statements
     ENDIF
 
 
-**Define a subroutine.**  
+**Define A Subroutine.**  
 **PROC _name_ / PRO.**  
 **ENDPROC / ENDP.**
 
-  PROC statement starts definition of a
-  subroutine, that can be called via
+  PROC statement starts the definition of a
+  subroutine that can be called via
   EXEC.
 
   Note that if the PROC statement is
@@ -981,7 +991,7 @@ Control Statements
   appear any place in the program.
 
 
-**Loop until condition is true**  
+**Loop Until Condition Is True**  
 **REPEAT / R.**  
 **UNTIL _condition_ / U.**
 
@@ -1006,9 +1016,9 @@ Control Statements
   a condition evaluated at the
   beginning of each iteration.
 
-  First, evaluates the condition. If
-  false, skips the whole loop to the
-  end. If true, executes the statements
+  Firstly it evaluates the condition. If
+  false, it skips the whole loop to the
+  end. If true, it executes the statements
   between `WHILE` and `WEND` and
   returns to the top to test the
   condition again.
@@ -1020,84 +1030,103 @@ Control Statements
 Graphic and Sound Statements
 ----------------------------
 
-**Set color number**  
+**Set Color Number**  
 **COLOR _num_ / C.**
 
   Changes the color of `PLOT`, `DRAWTO`
   and the line color on `FILLTO` to
   _num_.
 
-**Draws a line**  
+**Draws A Line**  
 **DRAWTO _x_, _y_ / DR.**
 
-  Draws a line from last position to
+  Draws a line from the last position to
   the given _x_ and _y_ positions.
 
-**Sets fill color number**  
+**Sets Fill Color Number**  
 **FCOLOR _num_ & FC.**
 
   Changes the filling color of `FILLTO`
   operation to _num_.
 
-**Fill from line to the right**  
+**Fill From Line To The Right**  
 **FILLTO _x_, _y_ / FI.**
 
-  Draws a line from last position to
-  the given _x_ and _y_ position, using
-  `COLOR` number, and for each plotted
-  point also paint all points to the
-  right with the `FCOLOR` number until
+  Draws a line from the last position to
+  the given _x_ and _y_ position using
+  `COLOR` number. For each plotted
+  point it also paints all points to the
+  right with the `FCOLOR` number, until
   a point with different color than the
-  first.
+  first is reached.
 
-**Sets graphic mode**  
+**Sets Graphic Mode**  
 **GRAPHICS _num_ / G.**
 
-  Sets the graphics mode for graphics
-  operations. See Atari Basic manual
-  for a list of graphics modes, sizes
-  and number of colors.
+  Sets the graphics mode for graphics  
+  operations. Below is a basic chart of
+  GRAPHICS modes, their full screen 
+  resolution and number of available colors.
+    
+Mode #  - Resolution - # Of Colors
+GR. 0   - Text 40x24 -        1
+GR. 1   - Text 20x24 -        5
+GR. 2   - Text 20x12 -        5
+GR. 3   - 40x24      -        4
+GR. 4   - 80x48      -        2
+GR. 5   - 80x48      -        4
+GR. 6   - 160x96     -        2
+GR. 7   - 160x96     -        4
+GR. 8   - 320x192    -        1
+GR. 9   - 80x192     - 16 shades of 1 color
+GR. 10  - 80x192     -        9
+GR. 11  - 80x192     -       16
+GR. 12  - Text 40x24 -        4
+GR. 13  - Text 40x12 -        4
+GR. 14  - 160x192    -        2
+GR. 15  - 160x192    -        4
 
-**Plots a single point**  
+  
+**Plots A Single Point**  
 **PLOT _x_, _y_ / PL.**
 
   Plots a point in the specified _x_
   and _y_ coordinates, with the current
   `COLOR` number.
 
-**Player/Missile graphic mode**  
+**Player/Missile Graphics Mode**  
 **PMGRAPHICS _num_ / PM.**
 
-  Set ups Atari Player / Missile
+  Set up Atari Player / Missile
   graphics.  A value of 0 disables all
-  player and missiles, a value of 1 set
-  ups for single line resolution, a
-  value of 2 set ups for double line
+  player and missiles; a value of 1 sets
+  up single line resolution; a
+  value of 2 sets up double line
   resolution.
 
-  Single line uses 256 bytes per
-  player, double line uses 128 bytes
+  Single line mode uses 256 bytes per
+  player, while double line uses 128 bytes
   per player.
 
   For retrieving the memory address of
   the player or missile data use the
   `PMADR()` function.
 
-**Player/Missile horizontal move**  
+**Player/Missile Horizontal Move**  
 **PMHPOS _num_,_pos_ / PMH.**
 
-  Set horizontal position register for
+  Set the horizontal position register for
   the player or missile _num_ to _pos_.
 
   Players 0 to 3 correspond to values 0
-  to 3 of _num_, missiles 0 to 3
-  correspond to the values 4 to 7
+  to 3 of _num_; missiles 0 to 3
+  correspond to the values 4 to 7,
   respectively.
 
   This is the same as writing:
   `POKE $D000 + num , pos`
 
-**Sets displayed color**  
+**Sets Displayed Color**  
 **SETCOLOR _num_, _hue_, _lum_ / SE.**
 
   Alters the color registers so that
@@ -1107,22 +1136,22 @@ Graphic and Sound Statements
   To set Player/Missile colors use
   negative values of _num_, -4 for
   player 0, -3 for player 1, -2 for
-  player 2 and -1 for player 3.
+  player 2, and -1 for player 3.
 
-**Adjust voice sound parameters**  
+**Adjust Voice Sound Parameters**  
 **SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  
 **SOUND _voice_**  
 **SOUND**
 
-  Adjust sound parameters for _voice_
-  (from 0 to 3) ot the given _pitch_,
+  Adjusts sound parameters for _voice_
+  (from 0 to 3) of the given _pitch_,
   _distortion_ and _volume_.
 
   If only the _voice_ parameter is
   present, that voice is cleared so no
   sound is produced by that voice.
 
-  If no parameters are given, clears
+  If no parameters are given, it clears
   all voices so that no sounds are
   produced.
 
@@ -1145,7 +1174,7 @@ Device Input and Output Statements
   error code, on success `ERR()` reads
   1.
 
-**Binary read from file**  
+**Binary Read From File**  
 **BPUT #_iochn_,_address_,_len_ / BP.**
 
   Similar to `BPUT`, but writes
@@ -1156,7 +1185,7 @@ Device Input and Output Statements
   error code, on success `ERR()` reads
   1.
 
-**Close channel**  
+**Close Channel**  
 **CLOSE #_iochn_  / CL.**
 
   Closes the input output channel
@@ -1184,7 +1213,7 @@ Device Input and Output Statements
   In case of any error, `ERR()` returns
   the error value.
 
-**Input variable or string from file**  
+**Input Variable Or String From File**  
 **INPUT #_iochn_, _var_ / IN.**
 
   Reads a line from channel _iochn_ and
@@ -1200,7 +1229,7 @@ Device Input and Output Statements
   error code, on success `ERR()` reads
   1.
 
-**Opens I/O channel**  
+**Opens I/O Channel**  
 **OPEN #_ioc_,_mode_,_ax_,*dev* / O.**
 
   Opens I/O channel _ioc_ with _mode_,
@@ -1216,16 +1245,16 @@ Device Input and Output Statements
 
   See Atari Basic manual for more
   documentation in the open modes, aux
-  values and device names.
+  values, and device names.
 
   On any error, `ERR()` will hold an
   error code, on success `ERR()` reads
   1.
 
-**Print strings and numbers to a file**  
+**Print Strings And Numbers To A File**  
 **PRINT #_iochn_, ... / ?**
 
-  Same rules as the normal print, but
+  Uses the same rules as the normal print, but
   all the output is to the channel
   _iochn_.  Note that you must put a
   comma after the channel number, not a
@@ -1237,7 +1266,7 @@ Device Input and Output Statements
   Note that you can only read the error
   for the last element printed.
 
-**Outputs one byte to the file**  
+**Outputs One Byte To The File**  
 **PUT #_iochn_, _num_ / PU.**
 
   Outputs one byte _num_ to the channel
@@ -1247,18 +1276,18 @@ Device Input and Output Statements
   error code, on success ERR() reads 1.
 
 
-**Generic I/O operation**  
+**Generic I/O Operation**  
 **XIO #_iochn_, _cmd_, _aux1_, _aux2_, *dev* / X.**
 
   Performs a general input/output
   operation on device *dev*, over
   channel _ioc_, with the command _cmd_
-  and auxiliary bytes _aux1_ and
+  ,and auxiliary bytes _aux1_ and
   _aux2_.
 
   Note that the arguments of XIO
   statements are in different order
-  than Atari Basic, for consistency
+  than Atari BASIC, for consistency
   with other statements the _iochn_ is
   the first argument.
 
@@ -1275,13 +1304,14 @@ General Statements
 **' / .**
 
   Any line starting with a dot or an
-  apostrophe will be ignored.
+  apostrophe will be ignored. This is 
+  analogous to REM in Atari BASIC.
 
 **Defines array with initial values**  
 **DATA _arr()_ [type] = n1,n2, / DA.**
 
   This statement defines an array of
-  fixes length with the values given.
+  fixed length with the values given.
 
   The array name should not be used
   before, and type can be `BYTE`
@@ -1307,12 +1337,12 @@ General Statements
 **Decrements variable by 1**  
 **DEC _var_ / DE.**
 
-  Decrements the variable by 1, this is
+  Decrements the variable by 1; this is
   equivalent to "_var_ = _var_ - 1",
   but faster.
 
 
-**Allocate an array**  
+**Allocate An Array**  
 **DIM _arr_(_size_) [type], .../ DI.**
 
   The `DIM` statement allows defining
@@ -1341,13 +1371,13 @@ General Statements
   string.
 
 
-**Ends program**  
+**Ends Program**  
 **END : Ends program.**
 
-  Terminates current program, only valid at end of input.
+  Terminates current program. END is only valid at end of input.
 
 
-**Increments variable by 1**  
+**Increments Variable By 1**  
 **INC _var_**
 
   Increments the variable by 1, this is
@@ -1355,7 +1385,7 @@ General Statements
   but faster.
 
 
-**Pauses execution**  
+**Pauses Execution**  
 **PAUSE _num_ / PA.**
 
   Stops the current execution until the
@@ -1367,12 +1397,13 @@ General Statements
   NTSC or 50 per second in PAL.
 
   A value of 0 pauses until the
-  vertical retrace, this is useful to
-  synchronize to the TV and get fluid
-  animations.
+  vertical retrace. This is useful for 
+  synchronization to the TV refresh and for fluid
+  animation.
+ 
 
 
-Floating point statements
+Floating Point Statements
 -------------------------
 
 Those statements are only available in
@@ -1397,11 +1428,11 @@ the floating point version.
   This mode is the default on startup.
 
 
-Low level statements
+Low Level Statements
 --------------------
 
-Those are statements that directly
-modify memory. Use with care.
+These are statements that directly
+modify memory. Use with care!
 
 
 **Writes a 16bit number to memory**  
@@ -1413,7 +1444,7 @@ modify memory. Use with care.
   (low byte first).
 
 
-**Copies bytes in memory**  
+**Copies Bytes In Memory**  
 **MOVE _from_, _to_, _length_ / M.**  
 **-MOVE _from_, _to_, _length_ / -.**  
 
@@ -1421,16 +1452,16 @@ modify memory. Use with care.
   address _from_ to address _to_.
 
   The `MOVE` version copies from the
-  lower address to the upper address,
+  lower address to the upper address;
   the `-MOVE` version copies from upper
   address to lower address.
 
-  The difference of the two statements
-  is in case the memory ranges overlap,
+  The difference between the two MOVE statements
+  is in case the memory ranges overlap;
   if _from_ is lower in memory than
   _to_, you need to use `-MOVE`, else
   you need to use `MOVE`, otherwise the
-  result will no be a copy.
+  result will not be a copy.
 
   `MOVE a, b, c` is equivalent to:
 
@@ -1445,7 +1476,7 @@ modify memory. Use with care.
       NEXT I
 
 
-**Sets memory to a value**  
+**Sets Memory To A Value**  
 **MSET _address_, _length_, _value_ / MS.**  
 
   Writes _length_ bytes in memory at
@@ -1462,7 +1493,7 @@ modify memory. Use with care.
       NEXT I
 
 
-**Writes a byte to memory**  
+**Writes A Byte To Memory**  
 **POKE _address_, _value_ / P.**
 
   Writes the _value_ (modulo 256) to
