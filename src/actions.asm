@@ -28,7 +28,6 @@
         .export         E_VAR_SET_TYPE, E_VAR_STRING
         .export         E_LABEL, E_LABEL_DEF
         .export         E_PUSH_VAR, E_POP_VAR
-        .export         check_labels
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
@@ -570,32 +569,6 @@ nfound: lda     #0
         jsr     add_laddr_list
         bcc     emit_end
 ret:    rts
-.endproc
-
-; Check if all labels are defined
-; Returns C=1 if ok.
-.proc   check_labels
-        ldy     #0
-        sty     tmp1
-        ldy     laddr_buf
-        lda     laddr_buf+1
-        sta     tmp1+1
-start:
-        cpy     laddr_ptr
-        lda     tmp1+1
-        sbc     laddr_ptr+1
-        bcs     E_LABEL::ret
-
-        lda     (tmp1), y
-        beq     E_LABEL::ret
-
-        ; Note: C = 0 from above!
-        tya
-        adc     #4
-        tay
-        bcc     start
-        inc     tmp1+1
-        bcs     start
 .endproc
 
 ; PUSH/POP variables

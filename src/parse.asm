@@ -29,7 +29,6 @@
         .importzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
         .importzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
         .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
-        .import         check_labels
         ; From alloc.asm
         .import         alloc_prog
         .importzp       prog_ptr
@@ -131,17 +130,34 @@ skip:   bpl     ploop
 
 .proc parse_eof
         ; Check if parser stack is empty
-        lda     loop_sp
-        beq     ok_loop
         ldx     #ERR_NO_ELOOP
+        lda     loop_sp
         bne     parser_error
-ok_loop:
-        ; Check for missing labels
-        jsr     check_labels
-        bcs     ok
+
+        .importzp       laddr_ptr, laddr_buf
+; Check if all labels are defined
         ldx     #ERR_LABEL
-        bne     parser_error
-ok:     lda     #TOK_END
+        ldy     #0
+lbl_chk_start:
+        lda     laddr_buf
+        cmp     laddr_ptr
+        lda     laddr_buf+1
+        sbc     laddr_ptr+1
+        beq     ok
+
+        lda     (laddr_buf), y
+        beq     parser_error
+
+        ; Note: C = 0 from above!
+        lda     laddr_buf
+        adc     #4
+        sta     laddr_buf
+        bcc     lbl_chk_start
+        inc     laddr_buf+1
+        bcs     lbl_chk_start
+
+ok:     ;lda     #TOK_END       ; Already A=0 from above
+        .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
         jsr     emit_const
         jsr     alloc_prog
         bcc     parse_end       ; exit
