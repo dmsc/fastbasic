@@ -112,6 +112,14 @@ loop_stk        =       $400
 ;----------------------------------------------------------
         .code
 
+; Removes one token from output, returns it
+.proc   get_last_tok
+        dec     opos
+        ldy     opos
+        lda     (prog_ptr),y
+        rts
+.endproc
+
 ; Returns the current code pointer in AX
 .proc   get_codep
         lda     prog_ptr
@@ -391,9 +399,7 @@ exit:
 ; Sets the type of a variable - variable number and new type must be in the stack:
 .proc   E_VAR_SET_TYPE
         jsr     parser_skipws
-        dec     opos            ; Remove variable TYPE from stack
-        ldy     opos
-        lda     (prog_ptr),y    ; The variable TYPE
+        jsr     get_last_tok    ; Get variable TYPE from last token
 
 .ifdef FASTBASIC_FP
         .assert VT_FLOAT & 128 , error, "VT_FLOAT must be > 127"
@@ -594,9 +600,7 @@ start:
 
 ; PUSH/POP variables
 .proc   E_PUSH_VAR
-        dec     opos
-        ldy     opos
-        lda     (prog_ptr), y
+        jsr     get_last_tok    ; Get variable ID from last token
         sta     E_POP_VAR+1
         clc
         rts
@@ -611,9 +615,7 @@ start:
 
 .proc   E_PUSH_LT
         ; Push current position, don't emit
-        dec     opos            ; Remove LOOP TYPE from stack
-        ldy     opos
-        lda     (prog_ptr),y    ; Get the LOOP TYPE
+        jsr     get_last_tok    ; Get LOOP TYPE from last token
 .endproc        ; Fall through
 .proc   push_codep
         ; Saves current code position in loop stack
