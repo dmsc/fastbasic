@@ -8,18 +8,20 @@ the BASIC language on the Atari 8-bit
 computers.
 
 One big difference from other BASIC
-interpreters in 1980s era 8-bit computers
-is the lack of line numbers, as well as an
-integrated full-screen editor. This is
-similar to newer programming
-environments, giving the programmer a
-higher degree of flexibility.
+interpreters in 1980s era 8-bit
+computers is the lack of line numbers,
+as well as an integrated full-screen
+editor. This is similar to newer
+programming environments, giving the
+programmer a higher degree of
+flexibility.
 
 Another big difference is that default
 variables and operations are done using
 integer numbers; this is one of the
-reasons that the programs run so fast relative
-to its peers from the 1980s.
+reasons that the programs run so fast
+relative to its peers from the 1980s.
+
 The other reason is that the program is
 parsed on run, generating optimized
 code for very fast execution.
@@ -29,8 +31,8 @@ Currently, FastBasic supports:
 - Integer and floating point variables,
   including all standard arithmetic
   operators.
-- All graphic, sound, and color commands
-  from Atari Basic, plus some
+- All graphic, sound, and color
+  commands from Atari Basic, plus some
   extensions from Turbo Basic.
 - All control flow structures from
   Atari Basic and Turbo Basic.
@@ -76,10 +78,10 @@ You are now in the integrated editor.
 In the first line of the screen the
 name of the currently edited file is
 shown, and at the right the line of the
-cursor.  Please note that lines that show an
-arrow pointing to the top-left are
-empty lines beyond the last line of the
-current file.
+cursor.  Please note that lines that
+show an arrow pointing to the top-left
+are empty lines beyond the last line of
+the current file.
 
 In this example, the cursor is in the
 first column of the first line of the
@@ -95,16 +97,16 @@ simply type `CONTROL-C`; to cancel the
 New File command type `ESC`.
 
 Now you are ready to start writing your
-own BASIC program. Try the following example,
-pressing `RETURN` after each line to
-advance to the next:
+own BASIC program. Try the following
+example, pressing `RETURN` after each
+line to advance to the next:
 
     INPUT "WHAT IS YOUR NAME?";NAME$
     ?
     ? "HELLO", NAME$
 
-The parser will let you made any mistakes.
-To make corrections move
+The parser will let you made any
+mistakes.  To make corrections move
 back using the cursor keys, this is
 `CONTROL` and `-`, `=`, `+` or `*`,
 then press `BACKSPACE` key to delete
@@ -119,28 +121,31 @@ After typing the last line, you can run
 the program by pressing `CONTROL` and
 `R`.
 
-If there are no errors with your program,
-the computer will ask you for a filenam.
-Type an 8 character filename, with or without
-a file extension, and press `RETURN`.
+If there are no errors with your
+program, the computer will ask you for
+a filename.  Type an 8 character
+filename, with or without a file
+extension, and press `RETURN`.
 
 After this, the IDE waits for any key
-press to return to the editor, so you
-have a chance to see your program's code.
+press before returning to the editor,
+so you have a chance to see your
+program's output.
 
-If you made a mistake typing in the 
-program code, instead of the program running,
-the cursor will move to the line and column of the
-error so you can correct it and retry.
+If you made a mistake typing in the
+program code, instead of the program
+running, the cursor will move to the
+line and column of the error so you can
+correct it and retry.
 
 Remember to save often by pressing the
-`CONTROL` and `S` keys and entering 
-a filename. Type the name and
-press `ENTER` to save.  As with any
-prompt, you can press `ESC` to cancel
-the save operation.  Use the
-`BACKSPACE` over the proposed file name
-if you want to change it.
+`CONTROL` and `S` keys and entering a
+filename. Type the name and press
+`ENTER` to save.  As with any prompt,
+you can press `ESC` to cancel the save
+operation.  Use the `BACKSPACE` over
+the proposed file name if you want to
+change it.
 
 
 Compiling The Program To Disk
@@ -152,12 +157,13 @@ file, producing a program that can be
 run directly from DOS.
 
 Press the `CONTROL` and `W` key and
-type a filename for your compiled program.
-It is common practice to name your
-compiled programs with an extension of
-".COM" or ".XEX." With ".COM" extension
-files you don't need to type the
-extension in some versions of DOS.
+type a filename for your compiled
+program.  It is common practice to name
+your compiled programs with an
+extension of ".COM" or ".XEX." With
+".COM" extension files you don't need
+to type the extension in some versions
+of DOS.
 
 Compiled programs include the full
 runtime, so you can distribute them
@@ -168,8 +174,8 @@ from DOS by using the included command
 line compiler `FBC.COM`. The compiler
 prompts for the input file name, loads
 the BASIC source, compiles it, and
-prompts for a executable output filename
-to write the compiled program.
+prompts for a executable output
+filename to write the compiled program.
 
 
 About The Syntax
@@ -378,10 +384,10 @@ order of precedence, are:
 - `NOT`  : Logical NOT, true only if
            operand is false.
 - `<=` `>=` `<>` `<` `>` `=`
-  For integer or floating point comparisons,
-  compare the two numbers and return
-  true or false.  Note that `<>` is
-  _not equal_.
+  For integer or floating point
+  comparisons, compare the two numbers
+  and return true or false.  Note that
+  `<>` is _not equal_.
   You can only compare two values of
   the same type, so an expression like
   `x = 1.2` is invalid, but `1.2 = x`
@@ -394,8 +400,8 @@ Arrays
 ------
 
 Arrays hold many ordered values (called
-elements). The array elements can be accessed
-by an index.
+elements). The array elements can be
+accessed by an index.
 
 In FastBasic, arrays must be
 dimensioned before use (see `DIM`
@@ -459,9 +465,9 @@ another, and accepts two forms:
 
  - [ _num1_ , _num2_ ]
    This form selects at most _num2_
-   characters from _num1_, or up to
-   the end of the string if there is
-   not enough characters.
+   characters from _num1_, or up to the
+   end of the string if there is not
+   enough characters.
 
 Example:
 
@@ -505,9 +511,9 @@ numeric variables but must end with a
 `Text$`, `NAME1$`.
 
 String variables always use 256 bytes,
-the first byte stores the string
-length and the following bytes store up
-to 255 characters.
+the first byte stores the string length
+and the following bytes store up to 255
+characters.
 
 There are two types of string
 assignments:
@@ -559,8 +565,9 @@ functions supported by FastBasic.
                and floating point.
 
 - RAND(_num_) : Returns a random, non
-                negative number, a maximum 
-                of 1 less than _num_.
+                negative number, a
+                maximum of 1 less than
+                _num_.
 
 - FRE() : Returns the free memory
           available in bytes.
@@ -572,8 +579,8 @@ functions supported by FastBasic.
 - LEN(*string*) : Returns the length of
                   the *string*.
 
-- VAL(*string*) : Converts *string* to a
-                  number. If no
+- VAL(*string*) : Converts *string* to
+                  a number. If no
                   conversion is
                   possible, ERR() is
                   set to 18. Can be
@@ -611,12 +618,13 @@ graphics.
 - STICK(_n_) : Returns the JOYSTICK
                controller _n_ position.
                STICK(_n_) values are:
-               10        14        6
-                                       
-               11        15        7
-                             
-               9         13        5
-                
+               
+               `10`  `14`  ` 6`
+               
+               `11`  `15`  ` 7`
+               
+               ` 9`  `13`  ` 5`
+
 - STRIG(_n_) : Returns 0 if JOYSTICK
                controller _n_ button is
                pressed, 1 otherwise.
@@ -641,9 +649,9 @@ floating point version.
 
 In case of errors (such as logarithm or
 square root of negative numbers and
-overflow in the results), the functions will
-return an invalid value, and the ERR()
-function returns 3.
+overflow in the results), the functions
+will return an invalid value, and the
+ERR() function returns 3.
 
 
 - ATN(_n_): Arc-Tangent of _n_.
@@ -652,7 +660,8 @@ function returns 3.
 
 - EXP(_n_) : Natural exponentiation.
 
-- EXP10(_n_) : Returns ten raised to _n_.
+- EXP10(_n_) : Returns ten raised to
+               _n_.
 
 - INT(_num_) : Converts the floating
                point number _num_ to
@@ -724,9 +733,9 @@ with the hardware. Use with care!
                    _address_.
 
 - USR(_address_[,_num1_ ...]):
-    Low level function that calls the user
-    supplied machine code subroutine at
-    _address_.
+    Low level function that calls the
+    user supplied machine code
+    subroutine at _address_.
 
   Parameters are pushed to the CPU
   stack, with the LOW part pushed
@@ -751,7 +760,7 @@ with the hardware. Use with care!
 List Of Statements
 ==================
 
-In the following descriptions, 
+In the following descriptions,
 statement usage is presented and the
 abbreviation is given after a /.
 
@@ -893,10 +902,10 @@ Control Statements
   any variable name or a word array
   position (like "array(2)").
 
-  In each iteration, the command first compares the
-  value of _var_ with _end_, if the
-  value is past the end it terminates the
-  loop.
+  In each iteration, the command first
+  compares the value of _var_ with
+  _end_, if the value is past the end
+  it terminates the loop.
 
   At the end of the loop, _var_ is
   incremented by _step_ (or 1 if STEP
@@ -905,11 +914,12 @@ Control Statements
   An EXIT statement also terminates the
   loop and skips to the end.
 
-  Note that if _step_ is positive,
-  the iteration ends and the if value of _var_ is
-  bigger than _end_, but if _step_ is
-  negative, the iteration ends if value of
-  _var_ is less than _end_.
+  Note that if _step_ is positive, the
+  iteration ends and the if value of
+  _var_ is bigger than _end_, but if
+  _step_ is negative, the iteration
+  ends if value of _var_ is less than
+  _end_.
 
   Also, _end_ and _step_ are evaluated
   only once at beginning of the loop;
@@ -920,17 +930,19 @@ Control Statements
   is already past _end_, the loop is
   completely skipped.
 
-  A slightly modified usage of the FOR/NEXT loop
-  allows for excluding the variable name from NEXT.
-  
-    This is an example of of NEXT variable exclusion:
+  A slightly modified usage of the
+  FOR/NEXT loop allows for excluding
+  the variable name from NEXT.
 
-      ' sample of FOR/NEXT loop without NEXT variable name
+  This is an example of of NEXT
+  variable exclusion:
+
+      ' sample of FOR/NEXT loop without
+      ' NEXT variable name
       FOR i=0 to 1000 step 100
         ? i
-      NEXT 
+      NEXT
 
-  
 
 **Conditional Execution**  
 **IF _condition_ THEN _statement_ / I. T.**  
@@ -980,9 +992,9 @@ Control Statements
 **PROC _name_ / PRO.**  
 **ENDPROC / ENDP.**
 
-  PROC statement starts the definition of a
-  subroutine that can be called via
-  EXEC.
+  PROC statement starts the definition
+  of a subroutine that can be called
+  via EXEC.
 
   Note that if the PROC statement is
   encountered while executing
@@ -1016,11 +1028,11 @@ Control Statements
   a condition evaluated at the
   beginning of each iteration.
 
-  Firstly it evaluates the condition. If
-  false, it skips the whole loop to the
-  end. If true, it executes the statements
-  between `WHILE` and `WEND` and
-  returns to the top to test the
+  Firstly it evaluates the condition.
+  If false, it skips the whole loop to
+  the end. If true, it executes the
+  statements between `WHILE` and `WEND`
+  and returns to the top to test the
   condition again.
 
   An EXIT statement also terminates the
@@ -1040,8 +1052,8 @@ Graphic and Sound Statements
 **Draws A Line**  
 **DRAWTO _x_, _y_ / DR.**
 
-  Draws a line from the last position to
-  the given _x_ and _y_ positions.
+  Draws a line from the last position
+  to the given _x_ and _y_ positions.
 
 **Sets Fill Color Number**  
 **FCOLOR _num_ & FC.**
@@ -1052,41 +1064,43 @@ Graphic and Sound Statements
 **Fill From Line To The Right**  
 **FILLTO _x_, _y_ / FI.**
 
-  Draws a line from the last position to
-  the given _x_ and _y_ position using
-  `COLOR` number. For each plotted
-  point it also paints all points to the
-  right with the `FCOLOR` number, until
-  a point with different color than the
-  first is reached.
+  Draws a line from the last position
+  to the given _x_ and _y_ position
+  using `COLOR` number. For each
+  plotted point it also paints all
+  points to the right with the `FCOLOR`
+  number, until a point with different
+  color than the first is reached.
 
 **Sets Graphic Mode**  
 **GRAPHICS _num_ / G.**
 
-  Sets the graphics mode for graphics  
+  Sets the graphics mode for graphics
   operations. Below is a basic chart of
-  GRAPHICS modes, their full screen 
-  resolution and number of available colors.
-    
-Mode #  - Resolution - # Of Colors
-GR. 0   - Text 40x24 -        1
-GR. 1   - Text 20x24 -        5
-GR. 2   - Text 20x12 -        5
-GR. 3   - 40x24      -        4
-GR. 4   - 80x48      -        2
-GR. 5   - 80x48      -        4
-GR. 6   - 160x96     -        2
-GR. 7   - 160x96     -        4
-GR. 8   - 320x192    -        1
-GR. 9   - 80x192     - 16 shades of 1 color
-GR. 10  - 80x192     -        9
-GR. 11  - 80x192     -       16
-GR. 12  - Text 40x24 -        4
-GR. 13  - Text 40x12 -        4
-GR. 14  - 160x192    -        2
-GR. 15  - 160x192    -        4
+  GRAPHICS modes, their full screen
+  resolution and number of available
+  colors.
 
-  
+| Mode  | Resolution | # Of Colors  |
+| ----- | ---------- | ------------ |
+|GR. 0  | Text 40x24 |        1     |
+|GR. 1  | Text 20x24 |        5     |
+|GR. 2  | Text 20x12 |        5     |
+|GR. 3  | 40x24      |        4     |
+|GR. 4  | 80x48      |        2     |
+|GR. 5  | 80x48      |        4     |
+|GR. 6  | 160x96     |        2     |
+|GR. 7  | 160x96     |        4     |
+|GR. 8  | 320x192    |        1     |
+|GR. 9  | 80x192     | 16 shades of 1 color |
+|GR. 10 | 80x192     |        9     |
+|GR. 11 | 80x192     |       16     |
+|GR. 12 | Text 40x24 |        4     |
+|GR. 13 | Text 40x12 |        4     |
+|GR. 14 | 160x192    |        2     |
+|GR. 15 | 160x192    |        4     |
+
+
 **Plots A Single Point**  
 **PLOT _x_, _y_ / PL.**
 
@@ -1099,14 +1113,14 @@ GR. 15  - 160x192    -        4
 
   Set up Atari Player / Missile
   graphics.  A value of 0 disables all
-  player and missiles; a value of 1 sets
-  up single line resolution; a
+  player and missiles; a value of 1
+  sets up single line resolution; a
   value of 2 sets up double line
   resolution.
 
   Single line mode uses 256 bytes per
-  player, while double line uses 128 bytes
-  per player.
+  player, while double line uses 128
+  bytes per player.
 
   For retrieving the memory address of
   the player or missile data use the
@@ -1115,8 +1129,9 @@ GR. 15  - 160x192    -        4
 **Player/Missile Horizontal Move**  
 **PMHPOS _num_,_pos_ / PMH.**
 
-  Set the horizontal position register for
-  the player or missile _num_ to _pos_.
+  Set the horizontal position register
+  for the player or missile _num_ to
+  _pos_.
 
   Players 0 to 3 correspond to values 0
   to 3 of _num_; missiles 0 to 3
@@ -1254,11 +1269,11 @@ Device Input and Output Statements
 **Print Strings And Numbers To A File**  
 **PRINT #_iochn_, ... / ?**
 
-  Uses the same rules as the normal print, but
-  all the output is to the channel
-  _iochn_.  Note that you must put a
-  comma after the channel number, not a
-  semicolon.
+  Uses the same rules as the normal
+  print, but all the output is to the
+  channel _iochn_.  Note that you must
+  put a comma after the channel number,
+  not a semicolon.
 
   On any error, ERR() will hold an
   error code, on success ERR() reads 1.
@@ -1304,7 +1319,7 @@ General Statements
 **' / .**
 
   Any line starting with a dot or an
-  apostrophe will be ignored. This is 
+  apostrophe will be ignored. This is
   analogous to REM in Atari BASIC.
 
 **Defines array with initial values**  
@@ -1374,7 +1389,8 @@ General Statements
 **Ends Program**  
 **END : Ends program.**
 
-  Terminates current program. END is only valid at end of input.
+  Terminates current program. END is
+  only valid at end of input.
 
 
 **Increments Variable By 1**  
@@ -1397,10 +1413,10 @@ General Statements
   NTSC or 50 per second in PAL.
 
   A value of 0 pauses until the
-  vertical retrace. This is useful for 
-  synchronization to the TV refresh and for fluid
-  animation.
- 
+  vertical retrace. This is useful for
+  synchronization to the TV refresh and
+  for fluid animation.
+
 
 
 Floating Point Statements
@@ -1456,12 +1472,13 @@ modify memory. Use with care!
   the `-MOVE` version copies from upper
   address to lower address.
 
-  The difference between the two MOVE statements
-  is in case the memory ranges overlap;
-  if _from_ is lower in memory than
-  _to_, you need to use `-MOVE`, else
-  you need to use `MOVE`, otherwise the
-  result will not be a copy.
+  The difference between the two MOVE
+  statements is in case the memory
+  ranges overlap; if _from_ is lower in
+  memory than _to_, you need to use
+  `-MOVE`, else you need to use `MOVE`,
+  otherwise the result will not be a
+  copy.
 
   `MOVE a, b, c` is equivalent to:
 
