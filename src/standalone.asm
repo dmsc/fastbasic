@@ -31,7 +31,7 @@
         .export         start, heap_start
         ; From intrepreter.asm
         .import         interpreter_run
-        .importzp       var_count, var_page
+        .importzp       var_page
         ; From bytecode
         .import         bytecode_start
         .importzp       NUM_VARS
@@ -45,13 +45,14 @@ heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
 
         .code
 start:
-        lda     #NUM_VARS
-        sta     var_count
         lda     #>heap_start
         sta     var_page
 
         lda     #<bytecode_start
         ldx     #>bytecode_start
+
+        ldy     #NUM_VARS
+
         jsr     interpreter_run
         jmp     (DOSVEC)
 

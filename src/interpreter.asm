@@ -30,7 +30,7 @@
         .export         interpreter_run, stack_l, stack_h
         .export         pushAX, stack_end
 
-        .exportzp       interpreter_cptr, var_count, sptr, cptr
+        .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
         .exportzp       tabpos, IOCHN, IOERROR, COLOR, tmp1, tmp2, tmp3, divmod_sign
 
@@ -46,8 +46,6 @@
         .include "atari.inc"
 
         .zeropage
-var_count:
-        .res    1
 tmp1:   .res    2
 tmp2:   .res    2
 tmp3:   .res    2
@@ -111,6 +109,8 @@ interpreter_cptr        =       cptr
         .segment        "RUNTIME"
 
         ; Main interpreter call
+        ;  AX : address of code start
+        ;   Y : number of variables
 .proc   interpreter_run
 
         ; Init code pointer

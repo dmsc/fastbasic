@@ -30,7 +30,7 @@
         .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
 
         .import         putc
-        .importzp       mem_end, var_page, tmp1, tmp2, array_ptr, var_count
+        .importzp       mem_end, var_page, tmp1, tmp2, array_ptr
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -50,7 +50,7 @@ alloc_size=     tmp1
         stx     array_ptr+1
         ; Allocate and clear 2 bytes of memory for each variable
         ldx     #0
-        lda     var_count
+        tya
         asl
         bcc     :+
         inx

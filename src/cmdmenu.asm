@@ -62,11 +62,6 @@ BMAX=bmax
 LINENUM=linenum
 
         .code
-
-start:
-        jsr     load_program
-        jmp     compiled_run
-
         ; Called from editor
 COMPILE_BUFFER:
 
@@ -135,8 +130,6 @@ load_program_stack:
         ; Load all pointer to execute the basic program
         ; Does not modify A/X
 load_program:
-        ldy     #NUM_VARS
-        sty     var_count
         ldy     #>heap_start
         sty     var_page
         rts
@@ -165,22 +158,22 @@ COMP_TRAILER:
         .export COMP_RT_SIZE
 COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
 
-        ; This is the runtime startup code, copied into the resulting
-        ; executables.
-        ; Note that this code is patched before writing to a file.
+        ; This is the runtime startup code, loads the command line.
+        ; Note that this code is patched before writing to a file
+        ; and copied into the resulting executables.
         .segment        "RUNTIME"
+start:
 compiled_start:
-
-compiled_var_count:
-        lda     #00
-        sta     var_count
-compiled_var_page:
-        lda     #00
-        sta     var_page
-
-compiled_run:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
+
+compiled_var_page:
+        ldy     #>heap_start
+        sty     var_page
+
+compiled_var_count:
+        ldy     #NUM_VARS
+
         jsr     interpreter_run
         jmp     (DOSVEC)
 

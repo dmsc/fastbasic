@@ -66,10 +66,6 @@ LINENUM=linenum
 
         .code
 
-start:
-        jsr     load_editor
-        jmp     compiled_run
-
         ; Called from editor
 COMPILE_BUFFER:
 
@@ -131,8 +127,8 @@ sto_loop:
         sta     compiled_var_page+1
         sta     var_page
 
-        lda     var_count
-        sta     compiled_var_count+1
+        ldy     var_count
+        sty     compiled_var_count+1
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
@@ -152,6 +148,7 @@ run_program:
         lda     #125
         jsr     putc
 
+        ; Note: Y keeps var_count from above
         lda     end_ptr
         ldx     end_ptr+1
         jsr     interpreter_run
@@ -177,8 +174,6 @@ load_editor_stack:
         ; Load all pointer to execute the editor
         ; Does not modify A/X
 load_editor:
-        ldy     #NUM_VARS
-        sty     var_count
         ldy     #>heap_start
         sty     var_page
         rts
@@ -241,22 +236,22 @@ COMP_TRAILER:
         .export COMP_RT_SIZE
 COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
 
-        ; This is the runtime startup code, copied into the resulting
-        ; executables.
-        ; Note that this code is patched before writing to a file.
+        ; This is the runtime startup code, loads the editor.
+        ; Note that this code is patched before writing to a file
+        ; and copied into the resulting executables.
         .segment        "RUNTIME"
+start:
 compiled_start:
-
-compiled_var_count:
-        lda     #00
-        sta     var_count
-compiled_var_page:
-        lda     #00
-        sta     var_page
-
-compiled_run:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
+
+compiled_var_page:
+        ldy     #>heap_start
+        sty     var_page
+
+compiled_var_count:
+        ldy     #NUM_VARS
+
         jsr     interpreter_run
         jmp     (DOSVEC)
 

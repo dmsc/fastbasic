@@ -20,10 +20,8 @@
 ; --------------------------------------------
 
         .export         var_search, label_search, name_new
-        .exportzp       var_namelen, label_count
+        .exportzp       var_namelen, label_count, var_count
 
-        ; From interpreter.asm
-        .importzp       var_count
         ; From alloc.asm
         .importzp       var_buf, label_buf, prog_ptr
         .import         alloc_area_8
@@ -47,6 +45,7 @@ name:   .res 2
 var:    .res 2
 len:    .res 1
 label_count:    .res 1
+var_count:      .res    1
 
 ; Use a longer name for external references
 var_namelen=    len
