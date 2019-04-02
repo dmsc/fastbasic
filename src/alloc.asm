@@ -109,10 +109,11 @@ alloc_size=     tmp1
         ;  alloc_size : amount to move up
         stx     save_x+1
 
+        ;clc    ; C cleared from BCS above
+
         ;       Setup pointers
         lda     mem_start, x
         sta     move_dwn_src
-        clc
         adc     alloc_size
         sta     move_dwn_dst
         lda     mem_start+1, x
@@ -133,26 +134,16 @@ alloc_size=     tmp1
 
         ; Adjust pointers
 save_x: ldx     #0
-        cpx     #prog_end - mem_start
-        bne     no_prog
-        ; Special case - we need to adjust prog_ptr, but we
-        ; don't move that areas as it has the current parsed line.
-        ldx     #prog_ptr - mem_start
-no_prog:
-        ldy     #0
-
-.endproc        ; Fall through
 
         ; Increase all pointers from "Y" to the last by AX
-.proc   add_pointers
 loop:   clc
         lda     mem_start, x
         adc     alloc_size
         sta     mem_start, x
+        bcc     skip
+        inc     mem_start + 1, x
+skip:
         inx
-        tya
-        adc     mem_start, x
-        sta     mem_start, x
         inx
         cpx     #mem_end - mem_start + 2
         bne     loop
@@ -167,27 +158,27 @@ loop:   clc
 .proc   parser_alloc_init
         ; Init all pointers to AY
         ldx     #(mem_end-mem_start)
+        ; Adds 256 bytes as program buffer
+        iny
 loop:
         sta     mem_start, x
         sty     mem_start+1, x
         dex
         dex
         bpl     loop
-        ; Adds 256 bytes as program buffer
-        ldx     #prog_end - mem_start
-        ldy     #0
-        sty     alloc_size
-        iny
-        bne     add_pointers
+        ; Remove 256 bytes at program start
+        dec     prog_ptr+1
+        rts
 .endproc
 
         ; Increase program memory area by "opos" (size in bytes)
 .proc alloc_prog
         .importzp       opos
+        ; Move from "prog_ptr", up by "alloc_size"
+        ldx     #prog_ptr - mem_start
         lda     opos
-        ; Move from "prog_end", up by "alloc_size"
-        ldx     #prog_end - mem_start
-        jmp     alloc_area_8
+        bne     alloc_area_8
+        rts
 .endproc
 
 ; vi:syntax=asm_ca65
