@@ -27,8 +27,7 @@
 ; USR - call user assembly routine
 ; --------------------------------
 
-        .import         stack_l, stack_h
-        .importzp       next_instruction, next_ins_incsp, tmp1
+        .importzp       next_instruction
 
         .include "atari.inc"
 
@@ -42,20 +41,22 @@
 .endproc
 
 .proc   EXE_USR_ADDR
+        ; Store USR address into jump instruction, this prevents calling
+        ; USR routines recursively like " A = USR( r1, USR(r2) ) ", but is
+        ; faster and smaller.
+        sta     usr_addr
+        stx     usr_addr+1
         ; Store out return address into the CPU stack. This should be pushed to the
         ; stack *before* the arguments, so it needs to be a special token.
         jsr     next_instruction
-        jmp     next_ins_incsp
+        jmp     next_instruction
 .endproc
 
 .proc   EXE_USR_CALL
-        ; Calls the routine, address in stack
-        lda     stack_l, y
-        ldx     stack_h, y
-        sta     tmp1
-        stx     tmp1+1
-        jmp     (tmp1)  ; 7 bytes, 11 cycles
+        ; Calls the routine
+        jmp     $FF00
 .endproc
+usr_addr = EXE_USR_CALL + 1
 
         .include "../deftok.inc"
         deftoken "USR_PARAM"

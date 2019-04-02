@@ -207,7 +207,7 @@ T_EXPR: integer constant, variable or function
         "DPEEK"  PAR_EXPR emit TOK_DPEEK
         "FRE()"  emit TOK_FRE
         "ERR()"  emit TOK_BYTE emit IOERROR emit TOK_PEEK
-        "USR("   EXPR emit TOK_USR_ADDR emit TOK_PUSH USR_EXPR_MORE ")" emit TOK_USR_CALL
+        "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
         "LEN"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
         "VAL"    STR_PAR_EXPR emit TOK_VAL
