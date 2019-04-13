@@ -253,11 +253,11 @@ all: $(ATR) $(NATIVES) $(COMPILER)
 
 dist: $(ATR) $(ZIPFILE)
 
-clean:
+clean: test-clean
 	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
 	rm -f compiler/MANUAL.md
 
-distclean: clean
+distclean: clean test-distclean
 	rm -f gen/int/basic.asm gen/fp/basic.asm \
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
@@ -403,8 +403,16 @@ $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 
 # Runs the test suite
 .PHONY: test
+.PHONY: test-clean
+.PHONY: test-distclean
 test: $(COMPILER) bin/fbc.xex
 	make -C testsuite
+
+test-clean:
+	make -C testsuite clean
+
+test-distclean:
+	make -C testsuite distclean
 
 # Copy manual to compiler
 compiler/MANUAL.md: manual.md
