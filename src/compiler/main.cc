@@ -39,6 +39,7 @@ static bool do_debug = false;
 #include "peephole.cc"
 #include "codestat.cc"
 
+#include "codegen.cc"
 
 static bool readLine(std::string &r, std::istream &is)
 {
@@ -107,6 +108,7 @@ static int show_help()
                  " -n\t\tdon't run the optimizer, produces same code as 6502 version\n"
                  " -prof\t\tshow token usage statistics\n"
                  " -s=<name>\tplace code into given segment\n"
+                 " -f\t\tcompile to assembler instead of bytecode\n"
                  " -v\t\tshow version and exit\n"
                  " -h\t\tshow this help\n";
     return 0;
@@ -126,6 +128,7 @@ int main(int argc, char **argv)
     std::ofstream ofile;
     bool show_stats = false;
     bool optimize = true;
+    bool do_codegen = false;
 
     for(auto &arg: args)
     {
@@ -133,6 +136,8 @@ int main(int argc, char **argv)
             do_debug = true;
         else if( arg == "-n" )
             optimize = false;
+        else if( arg == "-f" )
+            do_codegen = true;
         else if( arg == "-prof" )
             show_stats = true;
         else if( arg == "-v" )
@@ -249,6 +254,12 @@ int main(int argc, char **argv)
         }
     }
 
+    // Create codegen - only used on native code output
+    codegen cg(s.full_code(), globals, globals_zp, s.vars);
+
+    if( do_codegen )
+        cg.gen_code();
+
     // Output all global symbols
     ofile << "; Imported symbols\n";
     for(auto &c: globals)
@@ -263,13 +274,17 @@ int main(int argc, char **argv)
              "\t.exportzp NUM_VARS\n"
              "\n\t.include \"atari.inc\"\n\n";
 
-    // Write tokens
-    ofile << "; TOKENS:\n";
-    for(auto &i: s.used_tokens())
+    if( !do_codegen )
     {
-        if( token_names[i] && *token_names[i] )
-            ofile << "\t.importzp\t" << token_names[i] << "\n";
+        // Write tokens
+        ofile << "; TOKENS:\n";
+        for(auto &i: s.used_tokens())
+        {
+            if( token_names[i] && *token_names[i] )
+                ofile << "\t.importzp\t" << token_names[i] << "\n";
+        }
     }
+
     ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"
@@ -289,17 +304,30 @@ int main(int argc, char **argv)
              "; Bytecode\n"
              "\t.segment \"" << segname << "\"\n"
              "bytecode_start:\n";
-    ln = -1;;
-    for(auto c: s.full_code())
+
+    if( !do_codegen )
     {
-        if( c.linenum() != ln )
+        ln = -1;;
+        for(auto c: s.full_code())
         {
-            ln = c.linenum();
-            // Adds a label to facilitate debugging of resulting program
-            ofile << "@FastBasic_LINE_" << ln << ":  ";
-            ofile << "; LINE " << ln << "\n";
+            if( c.linenum() != ln )
+            {
+                ln = c.linenum();
+                // Adds a label to facilitate debugging of resulting program
+                ofile << "@FastBasic_LINE_" << ln << ":  ";
+                ofile << "; LINE " << ln << "\n";
+            }
+            ofile << c.to_asm() << "\n";
         }
-        ofile << c.to_asm() << "\n";
+    }
+    else
+    {
+        for(auto c: cg.full_code())
+            ofile << c << "\n";
+        ofile << ";-----------------------------\n"
+                 "\t.data\n";
+        for(auto c: cg.full_data())
+            ofile << c << "\n";
     }
 
     return 0;

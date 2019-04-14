@@ -444,5 +444,5 @@ $(NATIVES) $(CROSS_INT) $(CROSS_FP): \
  src/compiler/main.cc src/compiler/atarifp.cc \
  src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
  src/compiler/parser.cc src/compiler/peephole.cc \
- src/compiler/codestat.cc src/compiler/codew.h
+ src/compiler/codestat.cc src/compiler/codegen.cc src/compiler/codew.h
 

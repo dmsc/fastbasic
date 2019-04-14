@@ -189,6 +189,29 @@ class codew {
         {
             return lnum;
         }
+        std::string to_str()
+        {
+            switch(type)
+            {
+                case tok:
+                    return token_name(tk);
+                case byte:
+                    return std::to_string(num & 0xFF);
+                case word:
+                    return std::to_string(num & 0xFFFF);
+                case byte_str:
+                    return str;
+                case word_str:
+                    return str;
+                case fp:
+                    return x.to_asm();
+                case label:
+                    return str;
+                case string:
+                    return std::to_string(str.length()) + escape(str);
+            }
+            return std::string();
+        }
         std::string to_asm()
         {
             switch(type)
