@@ -28,7 +28,7 @@
 ; ----------------------------
 
         .export         move_dwn
-        .import         stack_l, stack_h, next_ins_incsp_2
+        .import         stack_l, stack_h
         .importzp       divmod_sign
 
         .include "atari.inc"
@@ -42,10 +42,10 @@ move_dwn_dst= tmp4
         .export         move_dwn_src, move_dwn_dst
 .endif
 
+        .include "toks.inc"
+
         ; Used as a temporary value
 tmp5=divmod_sign
-
-        .segment        "RUNTIME"
 
 .proc   EXE_NMOVE  ; move memory down
         pha
@@ -59,7 +59,7 @@ tmp5=divmod_sign
         sta     move_dwn_src+1
         pla
         jsr     move_dwn
-        jmp     next_ins_incsp_2
+        sub_exit_incsp_2
 .endproc
 
         ; Note: this is used from alloc.asm, so can't be inlined above
@@ -160,7 +160,6 @@ move_dwn_dst     = move_dwn::dst+1
 .endif
 
 
-        .include "../deftok.inc"
         deftoken "NMOVE"
 
 ; vi:syntax=asm_ca65

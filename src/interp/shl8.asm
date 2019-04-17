@@ -27,17 +27,14 @@
 ; SHL8, shift left by 8 (multiply by 256)
 ; ---------------------------------------
 
-        .importzp       next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_SHL8
         tax
         lda     #0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "SHL8"
 
 ; vi:syntax=asm_ca65

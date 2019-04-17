@@ -31,10 +31,8 @@
         .export         int_to_fp, fp_to_str
 .endif
         .import         neg_AX
-        .importzp       next_instruction
 
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_INT_STR:          ; AX = STRING( AX )
 
@@ -44,7 +42,7 @@ EXE_INT_STR:          ; AX = STRING( AX )
 .ifdef FASTBASIC_FP
         jsr     int_to_fp
         jsr     fp_to_str
-        jmp     next_instruction
+        sub_exit
 .endif
 
 int_to_fp:
@@ -92,10 +90,9 @@ ploop:  iny
 .ifdef FASTBASIC_FP
         rts
 .else
-        jmp     next_instruction
+        sub_exit
 .endif
 
-        .include "../deftok.inc"
         deftoken "INT_STR"
 
 ; vi:syntax=asm_ca65

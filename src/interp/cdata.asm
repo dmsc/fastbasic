@@ -28,9 +28,10 @@
 ; ------------------
 
         .import         EXE_JUMP
-        .importzp       cptr, saddr
+        .importzp       saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
+        use_cptr
 
 .proc   EXE_CDATA       ; *(SADDR) = address of data
 
@@ -50,7 +51,6 @@
         jmp     EXE_JUMP
 .endproc
 
-        .include "../deftok.inc"
         deftoken "CDATA"
 
 ; vi:syntax=asm_ca65

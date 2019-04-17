@@ -27,11 +27,10 @@
 ; INPUT string
 ; ------------
 
-        .importzp       IOCHN, IOERROR, next_instruction
+        .importzp       IOCHN, IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 line_buf        = LBUFF
 
@@ -64,10 +63,9 @@ line_buf        = LBUFF
 no_eol:
         lda     #<(line_buf-1)
         ldx     #>(line_buf-1)
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "INPUT_STR"
 
 ; vi:syntax=asm_ca65

@@ -27,22 +27,19 @@
 ; Bitwise AND
 ; -----------
 
-        .import         stack_l, stack_h
-        .importzp       next_ins_incsp
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_BIT_AND ; AX = (SP+) & AX
+        use_stack
         and     stack_l, y
         pha
         txa
         and     stack_h, y
         tax
         pla
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "BIT_AND"
 
 ; vi:syntax=asm_ca65

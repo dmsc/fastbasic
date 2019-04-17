@@ -29,9 +29,8 @@
 
         .import         check_fp_err, push_fr0
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Returns a random FP number in the interval 0 <= X < 1
         ; Based on code from Altirra BASIC, (C) 2015 Avery Lee.
@@ -62,7 +61,6 @@ get_bcd_digit:
         jmp     check_fp_err
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_RND"
 
 ; vi:syntax=asm_ca65

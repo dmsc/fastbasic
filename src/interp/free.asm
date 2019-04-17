@@ -27,11 +27,10 @@
 ; FRE function, returns bytes free
 ; --------------------------------
 
-        .importzp       array_ptr, next_instruction
+        .importzp       array_ptr
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FRE
         lda     MEMTOP
@@ -42,10 +41,9 @@
         sbc     array_ptr+1
         tax
         tya
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FRE"
 
 ; vi:syntax=asm_ca65

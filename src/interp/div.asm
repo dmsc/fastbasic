@@ -27,10 +27,11 @@
 ; Division and Modulus
 ; --------------------
 
-        .import         neg_AX, stack_l, stack_h
-        .importzp       tmp1, tmp2, tmp3, divmod_sign, next_ins_incsp, sptr
+        .import         neg_AX
+        .importzp       tmp1, tmp2, tmp3, divmod_sign, sptr
+        .import         stack_l, stack_h
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_DIV  ; AX = (SP+) / AX
         jsr     divmod_sign_adjust
@@ -39,7 +40,7 @@
         bit     divmod_sign
         bpl     pos
 neg:    jsr     neg_AX
-pos:    jmp     next_ins_incsp
+pos:    sub_exit_incsp
 .endproc
 
 .proc   EXE_MOD  ; AX = (SP+) % AX
@@ -47,7 +48,7 @@ pos:    jmp     next_ins_incsp
         ldx     tmp2+1
         bit     divmod_sign
         bvs     EXE_DIV::neg
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
 ; Adjust sign for SIGNED div/mod operations
@@ -128,7 +129,6 @@ L4:     dey
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "DIV"
         deftoken "MOD"
 

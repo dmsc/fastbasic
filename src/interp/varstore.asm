@@ -27,10 +27,10 @@
 ; Store value into variable
 ; -------------------------
 
-        .import         get_op_var, alloc_array
-        .importzp       next_instruction, tmp2
+        .import         alloc_array
+        .importzp       tmp2
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_DIM         ; AX = array size, SADDR = variable address
         jsr     alloc_array
@@ -41,7 +41,7 @@
 .proc   EXE_VAR_STORE  ; DPOKE (VAR), AX
         pha
         stx     tmp2+1
-        jsr     get_op_var
+        get_var
 .ifdef NO_SMCODE
         sta     tmp2
         lda     tmp2+1
@@ -60,10 +60,9 @@ save_h: sta     $FF00, x
         lda     tmp2+1          ; Restore X
 save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
 .endif
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "DIM"
         deftoken "VAR_STORE"
 

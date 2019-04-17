@@ -29,7 +29,7 @@
 
         .export neg_AX
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 ; Negate AX value : MUST PRESERVE Y
 .proc   neg_AX

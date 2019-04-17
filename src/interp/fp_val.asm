@@ -28,11 +28,10 @@
 ; --------------------------------
 
         .import         push_fr0, get_str_eol
-        .importzp       IOERROR, next_ins_incsp
+        .importzp       IOERROR
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_FP_VAL
         jsr     get_str_eol
@@ -41,10 +40,10 @@
         bcc     :+
         lda     #18
         sta     IOERROR
-:       jmp     next_ins_incsp
+:
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_VAL"
 
 ; vi:syntax=asm_ca65

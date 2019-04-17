@@ -29,7 +29,7 @@
 
         .export         fp_sin_coef, fp_pi1_2, fp_180pi, fp_90
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
         ; Coefficients of SIN function, pi/2, 90 and 180/pi.
 fp_sin_coef:

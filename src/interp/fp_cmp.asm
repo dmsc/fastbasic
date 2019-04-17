@@ -29,9 +29,8 @@
 
         .import         pop_fr0, pop_fr1, pushXX_set0
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Compare two FP numbers in stack, store 0, -1 or 1 in integer stack
         ; This is equivalent to INT(SGN(A - B)) and push a 0.
@@ -44,7 +43,6 @@
         jmp     pushXX_set0
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_CMP"
 
 ; vi:syntax=asm_ca65

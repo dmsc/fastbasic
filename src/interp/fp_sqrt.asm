@@ -30,9 +30,8 @@
         .import         check_fp_err
         .importzp       tmp2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Square Root: Copied from Altirra BASIC
         ; Copyright (C) 2015 Avery Lee, All Rights Reserved.
@@ -101,7 +100,6 @@ approx_compare_tab:
         .byte   $ff,$87,$66,$55,$36,$24,$14,$07,$02
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_SQRT"
 
 ; vi:syntax=asm_ca65

@@ -29,7 +29,7 @@
 
         .importzp       next_instruction, saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_DPOKE  ; DPOKE SADDR, AX
         ldy     #0
@@ -37,10 +37,9 @@
         iny
         txa
         sta     (saddr), y
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "DPOKE"
 
 ; vi:syntax=asm_ca65

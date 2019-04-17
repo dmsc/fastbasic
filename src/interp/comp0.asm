@@ -28,13 +28,13 @@
 ; --------------------------------
 
         .export         pushXX_set0
-        .import         stack_l, stack_h, pushAX
-        .importzp       next_instruction, sptr
+        .import         pushAX
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
         ; Pushes X as "comparison return" into stack.
 .proc   pushXX_set0
+        .importzp       sptr
         ldy     sptr
         txa
 .endproc        ; Fall through
@@ -46,7 +46,7 @@
 .proc   EXE_0
         lda     #0
         tax
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_PUSH_1; push AX, load 1
@@ -56,7 +56,7 @@
 .proc   EXE_1
         lda     #1
         ldx     #0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_COMP_0  ; AX = AX != 0
@@ -64,10 +64,9 @@
         bne     EXE_1
         txa
         bne     EXE_1
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "COMP_0"
         deftoken "0"
         deftoken "1"

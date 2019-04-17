@@ -32,8 +32,7 @@
         .importzp       sptr
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_XIO
         jsr     get_str_eol
@@ -66,7 +65,6 @@ CIOV_CMD_POP2:
         inc     sptr
         jmp     CIOV_CMD_A
 
-        .include "../deftok.inc"
         deftoken "XIO"
 
 ; vi:syntax=asm_ca65

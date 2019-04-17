@@ -28,9 +28,9 @@
 ; ------------------------------------
 
         .import         alloc_array
-        .importzp       array_ptr, tmp1, tmp2, tmp3, saddr, next_instruction
+        .importzp       array_ptr, tmp1, tmp2, tmp3, saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 ; Store source and destination pointers, allocating destination string if needed.
 ; Returns Y=0
@@ -77,7 +77,7 @@ cloop:  lda     (tmp3), y
         sta     (tmp2), y
         dey
         bne     cloop
-xit:    jmp     next_instruction
+xit:    sub_exit
 .endproc
 
 ; Concatenate the source string to the end of the destination string
@@ -110,7 +110,6 @@ ok_len:
         bcs     EXE_COPY_STR::cloop
 .endproc
 
-        .include "../deftok.inc"
         deftoken "COPY_STR"
         deftoken "CAT_STR"
 

@@ -27,11 +27,10 @@
 ; Block-GET and Block-PUT
 ; -----------------------
 
-        .import         CIOV_CMD_POP2, stack_l, stack_h, IOCHN_16
-
+        .import         CIOV_CMD_POP2, IOCHN_16
         .include "atari.inc"
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_BPUT
         clc
@@ -44,6 +43,7 @@
         txa
         pha
 
+        use_stack
         lda     stack_h, y      ; Address H
         pha
 
@@ -63,7 +63,6 @@ bget:
         jmp     CIOV_CMD_POP2   ; Note: A is never 0
 .endproc
 
-        .include "../deftok.inc"
         deftoken "BPUT"
         deftoken "BGET"
 

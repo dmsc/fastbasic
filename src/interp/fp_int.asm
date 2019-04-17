@@ -28,11 +28,10 @@
 ; ---------------------
 
         .import         neg_AX, pop_fr0
-        .importzp       IOERROR, next_instruction
+        .importzp       IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_INT      ; Convert FP to INT, with rounding
         asl     FR0
@@ -57,10 +56,9 @@ ok:     lda     FR0
 
         jsr     neg_AX
 pos:
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_INT"
 
 ; vi:syntax=asm_ca65

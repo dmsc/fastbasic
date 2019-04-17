@@ -29,16 +29,14 @@
 
         .import         check_fp_err
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_LOG10
         jsr     LOG10
         jmp     check_fp_err
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_LOG10"
 
 ; vi:syntax=asm_ca65

@@ -27,12 +27,11 @@
 ; MSET: sets a range of memory to a value
 ; ---------------------------------------
 
-        .import         stack_l, stack_h, next_ins_incsp_2, mem_set
+        .import         stack_l, stack_h, mem_set
         .importzp       tmp1, tmp2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_MSET
 
@@ -48,10 +47,9 @@
         tay             ; Store value to set into Y
         jsr     mem_set
 
-        jmp     next_ins_incsp_2
+        sub_exit_incsp_2
 .endproc
 
-        .include "../deftok.inc"
         deftoken "MSET"
 
 ; vi:syntax=asm_ca65

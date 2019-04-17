@@ -28,11 +28,10 @@
 ; ---------------
 
         .importzp       tmp1, tmp3
-        .import         stack_l, stack_h, next_ins_incsp_2
+        .import         stack_l, stack_h
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 ; Implement indexing by copying the sub-string to a new string at LBUFF.
 ; Note that this potentially overwrites from $600 to $67F.
@@ -82,14 +81,13 @@ xit:
         ; Return new string position
         lda     #<(LBUFF-1)
         ldx     #>(LBUFF-1)
-        jmp     next_ins_incsp_2
+        sub_exit_incsp_2
 
 zero:
         ldx     #0
         beq     xit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "STR_IDX"
 
 ; vi:syntax=asm_ca65

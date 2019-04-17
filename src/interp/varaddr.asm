@@ -28,13 +28,13 @@
 ; ----------------------
 
         .export         get_op_var
-        .importzp       next_instruction, cptr, var_page
+        .importzp       cptr, var_page
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_VAR_ADDR  ; AX = address of variable
-        jsr     get_op_var
-        jmp     next_instruction
+        get_var
+        sub_exit
 .endproc
 
         ; Reads variable number from opcode stream, returns
@@ -54,7 +54,6 @@
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "VAR_ADDR"
 
 ; vi:syntax=asm_ca65

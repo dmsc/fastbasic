@@ -27,9 +27,7 @@
 ; SGN, extract sign
 ; -----------------
 
-        .importzp       next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_SGN
         cpx     #0
@@ -42,10 +40,10 @@ pos:    lda     #1
         beq     xit
 neg:    lda     #$FF
         tax
-xit:    jmp     next_instruction
+xit:
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "SGN"
 
 ; vi:syntax=asm_ca65

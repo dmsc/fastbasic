@@ -28,9 +28,10 @@
 ; -------------------------------------
 
         .import         pushAX
-        .importzp       next_instruction, cptr, saddr
+        .importzp       saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
+        use_cptr
 
 .proc   EXE_PUSH_NUM    ; push AX, load NUM
         jsr     pushAX
@@ -48,7 +49,7 @@
         iny                     ; 2     1
         sty     cptr            ; 3     2
         bcs     inc_cptr_1      ; 2 =30 2 =18
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_PUSH_BYTE; push AX, load BYTE
@@ -60,7 +61,7 @@
         lda     (cptr, x)
 incc:   inc     cptr
         beq     inc_cptr_1
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_BYTE_SADDR  ; SADDR = read 1 byte from op   (+14 bytes)
@@ -84,10 +85,9 @@ incc:   inc     cptr
         bcc     xit
 ::inc_cptr_1:
         inc     cptr+1
-xit:    jmp     next_instruction
+xit:    sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "NUM"
         deftoken "BYTE"
         deftoken "PUSH_NUM"

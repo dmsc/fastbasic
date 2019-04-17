@@ -27,23 +27,20 @@
 ; Convert byte to one character string
 ; ------------------------------------
 
-        .importzp next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_CHR:        ; AX = CHR( AX )
         ; Return our own buffer
         sta     chr_string+1
         lda     #<chr_string
         ldx     #>chr_string
-        jmp     next_instruction
+        sub_exit
 
         ; Buffer for the return string, 2 bytes
 chr_string:
         .byte   1       ; The string length - 1 byte
         .byte   0       ; The string data - filled above
 
-        .include "../deftok.inc"
         deftoken "CHR"
 
 ; vi:syntax=asm_ca65

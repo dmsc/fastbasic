@@ -27,17 +27,16 @@
 ; Writes an 8-bit value to an address
 ; -----------------------------------
 
-        .importzp       next_instruction, saddr
+        .importzp       saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_POKE  ; POKE SADDR, A
         ldy     #0
         sta     (saddr), y
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "POKE"
 
 ; vi:syntax=asm_ca65

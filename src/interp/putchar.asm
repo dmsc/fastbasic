@@ -31,8 +31,7 @@
         .importzp       IOCHN, tabpos, IOERROR
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   putc_direct
         tay

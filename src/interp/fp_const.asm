@@ -30,11 +30,10 @@
         .export         check_fp_err
 
         .import         push_fr0, pop_fr1
-        .importzp       next_instruction, cptr, IOERROR
+        .importzp       cptr, IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FLOAT
         jsr     push_fr0
@@ -66,10 +65,9 @@ ldloop: lda     (cptr), y
         lda     #3
         sta     IOERROR
 ::xit:
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FLOAT"
         deftoken "FP_ADD"
 

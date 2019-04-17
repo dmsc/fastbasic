@@ -27,17 +27,16 @@
 ; GET from keyboard
 ; -----------------
 
-        .importzp       IOERROR, next_instruction
+        .importzp       IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_GETKEY
         jsr     getkey
         sty     IOERROR
         ldx     #0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   getkey
@@ -50,7 +49,6 @@
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "GETKEY"
 
 ; vi:syntax=asm_ca65

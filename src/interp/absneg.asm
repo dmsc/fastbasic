@@ -28,18 +28,16 @@
 ; ------------------
 
         .import         neg_AX
-        .importzp       next_instruction
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_ABS:        ; AX = ABS(AX)
         cpx     #0
         bpl     xit
 EXE_NEG:        ; AX = -AX
         jsr     neg_AX
-xit:    jmp     next_instruction
+xit:    sub_exit
 
-        .include "../deftok.inc"
         deftoken "ABS"
         deftoken "NEG"
 

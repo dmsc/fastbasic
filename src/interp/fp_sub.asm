@@ -30,8 +30,7 @@
         .import         check_fp_err, pop_fr1
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_FP_SUB
         jsr     pop_fr1
@@ -39,7 +38,6 @@
         jmp     check_fp_err
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_SUB"
 
 ; vi:syntax=asm_ca65

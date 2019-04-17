@@ -27,11 +27,8 @@
 ; Pause for a number of jiffies
 ; -----------------------------
 
-        .importzp       next_instruction
-
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PAUSE
         tay
@@ -44,10 +41,9 @@ wait:   lda     RTCLOK+2
         bne     wait
         dex
         bne     wait
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PAUSE"
 
 ; vi:syntax=asm_ca65

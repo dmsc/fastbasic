@@ -27,24 +27,21 @@
 ; Array dimensioning - assigns an address to given array variable
 ; ---------------------------------------------------------------
 
-        .import         get_op_var
-        .importzp       next_instruction
         .exportzp       saddr
 
         .zeropage
 saddr:  .res 2
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_VAR_SADDR:     ; SADDR = VAR address
-        jsr     get_op_var
+        get_var
 .proc   EXE_SADDR  ; SADDR = AX
         sta     saddr
         stx     saddr+1
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "SADDR"
         deftoken "VAR_SADDR"
 

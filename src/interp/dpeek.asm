@@ -27,19 +27,21 @@
 ; Reads a 16-bit value from an address
 ; ------------------------------------
 
-        .import         get_op_var, pushAX
-        .importzp       next_instruction, tmp1
+        .import         pushAX
+        .importzp       tmp1
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PUSH_VAR_LOAD; push AX, load variable
         jsr     pushAX
 .endproc        ; Fall through
 
-.proc   EXE_VAR_LOAD  ; AX = value of variable
-        jsr     get_op_var
-.endproc        ; Fall through:
 
+    .ifndef FASTBASIC_ASM
+.proc   EXE_VAR_LOAD  ; AX = value of variable
+        get_var
+.endproc        ; Fall through:
+    .endif
 .proc   EXE_DPEEK  ; AX = PEEK(AX) + 256 * PEEK(AX+1)
 .ifdef NO_SMCODE
         sta     tmp1
@@ -57,10 +59,9 @@
 loadH:  ldx     $FF01, y
 loadL:  lda     $FF00, y
 .endif
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "DPEEK"
         deftoken "VAR_LOAD"
         deftoken "PUSH_VAR_LOAD"

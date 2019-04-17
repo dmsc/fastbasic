@@ -28,11 +28,10 @@
 ; --------------------------------------
 
         .import         pop_fr0
-        .importzp       next_instruction, saddr
+        .importzp       saddr
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_STORE
         ldx     saddr
@@ -40,10 +39,9 @@
         jsr     FST0R
         ; Pop FP stack
         jsr     pop_fr0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_STORE"
 
 ; vi:syntax=asm_ca65

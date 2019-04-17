@@ -27,11 +27,8 @@
 ; Floating Point SGN
 ; ------------------
 
-        .importzp       next_instruction
-
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_SGN
         asl     FR0
@@ -46,10 +43,10 @@
         sty     FR0+3
         sty     FR0+4
         sty     FR0+5
-zero:   jmp     next_instruction
+zero:
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_SGN"
 
 ; vi:syntax=asm_ca65

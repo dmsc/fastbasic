@@ -28,9 +28,8 @@
 ; -------------------------
 
         .import         push_fr0, int_to_fp
-        .importzp       next_instruction
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_INT_FP      ; Convert AX to FP
         pha
@@ -40,10 +39,9 @@
         pla
         ; Convert to FP
         jsr     int_to_fp
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "INT_FP"
 
 ; vi:syntax=asm_ca65

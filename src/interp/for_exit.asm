@@ -28,10 +28,9 @@
 ; ------------------
 
         .export         next_ins_incsp_2
-        .importzp       next_ins_incsp, sptr
+        .importzp       sptr
 
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
         ; FOR_EXIT: Remove the FOR arguments from the stack!
 .proc   EXE_FOR_EXIT
@@ -40,10 +39,9 @@
 
 .proc   next_ins_incsp_2
         inc     sptr
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FOR_EXIT"
 
 ; vi:syntax=asm_ca65

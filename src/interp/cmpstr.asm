@@ -27,16 +27,17 @@
 ; String comparisons
 ; ------------------
 
-        .import         stack_l, stack_h, pushXX_set0
-        .importzp       tmp1, tmp2, tmp3, sptr
+        .import         pushXX_set0
+        .importzp       tmp1, tmp2, tmp3
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_CMP_STR     ; Compare string in (AX) with (SP), store 0, 1 or -1 in stack,
                         ; then load 0 to perform an integer comparison
         sta     tmp1
         stx     tmp1+1
 
+        use_stack
         lda     stack_l, y
         sta     tmp2
         ldx     stack_h, y
@@ -80,7 +81,6 @@ xit:
         jmp     pushXX_set0
 .endproc
 
-        .include "../deftok.inc"
         deftoken "CMP_STR"
 
 ; vi:syntax=asm_ca65

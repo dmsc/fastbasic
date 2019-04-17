@@ -27,26 +27,23 @@
 ; Floating Point Absolute and Negative
 ; ------------------------------------
 
-        .importzp       next_instruction
-
+        .include "toks.inc"
         .include "atari.inc"
 
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_ABS
         asl     FR0
         lsr     FR0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_FP_NEG
         lda     FR0
         eor     #$80
         sta     FR0
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_ABS"
         deftoken "FP_NEG"
 

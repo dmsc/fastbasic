@@ -29,11 +29,10 @@
 
         .export         PMGBASE, PMGMODE
         .import         err_nomem
-        .importzp       array_ptr, next_instruction
+        .importzp       array_ptr
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PMGRAPHICS
         tax             ; Disable if 0
@@ -79,7 +78,7 @@ skip_pmenable:
         dey
         bpl     :-
 
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 pmgbase:
@@ -96,7 +95,6 @@ pmgmode_tab:
 PMGBASE = pmgbase
 PMGMODE = pmgmode
 
-        .include "../deftok.inc"
         deftoken "PMGRAPHICS"
 
 ; vi:syntax=asm_ca65

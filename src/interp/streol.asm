@@ -30,8 +30,7 @@
         .export get_str_eol
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 ; Copy string to LBUFF storing an EOL at end, allows calling OS routines
 ; Returns LBUFF in INBUFF

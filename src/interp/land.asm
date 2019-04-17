@@ -28,16 +28,14 @@
 ; -----------
 
         .import         stack_l
-        .importzp       next_ins_incsp
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_L_AND  ; A = A & (SP+)
         and     stack_l, y
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "L_AND"
 
 ; vi:syntax=asm_ca65

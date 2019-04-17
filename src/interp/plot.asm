@@ -30,7 +30,7 @@
         .import         putc_direct, CIOV_IOERR
         .importzp       COLOR
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc EXE_PLOT
         lda     COLOR
@@ -39,7 +39,6 @@
         jmp     CIOV_IOERR
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PLOT"
 
 ; vi:syntax=asm_ca65

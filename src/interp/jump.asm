@@ -27,9 +27,9 @@
 ; Call and Jump to address
 ; ------------------------
 
-        .importzp       next_instruction, cptr
+        .importzp       cptr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_CALL
         lda     cptr
@@ -49,7 +49,7 @@
         lda     (cptr), y       ; 5     2
         stx     cptr+1          ; 3     2
 sto:    sta     cptr            ; 3     2
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 EXE_CNJUMP:
@@ -67,7 +67,6 @@ skip:   lda     cptr
         bcs     EXE_JUMP::sto
 .endproc
 
-        .include "../deftok.inc"
         deftoken "CALL"
         deftoken "JUMP"
         deftoken "CJUMP"

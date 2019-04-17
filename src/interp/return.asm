@@ -27,9 +27,9 @@
 ; Return from subroutine
 ; ----------------------
 
-        .importzp       next_instruction, cptr
+        .importzp       cptr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_CNRET
         eor     #1
@@ -46,10 +46,9 @@
         pla
         sta     cptr
 ::skip:
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "RET"
         deftoken "CRET"
         deftoken "CNRET"

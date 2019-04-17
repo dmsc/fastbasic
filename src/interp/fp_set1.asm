@@ -29,9 +29,8 @@
 
         .export FP_SET_1
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Load 1.0 to FR0
 .proc   FP_SET_1

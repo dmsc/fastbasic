@@ -27,15 +27,15 @@
 ; Add / Sub routines
 ; ------------------
 
-        .import         neg_AX, stack_l, stack_h
-        .importzp       next_ins_incsp
+        .import         neg_AX
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_SUB:
         jsr     neg_AX
         ; Fall through
 .proc   EXE_ADD ; AX = (SP+) + AX
+        use_stack
         clc
         adc     stack_l, y
         pha
@@ -43,10 +43,9 @@ EXE_SUB:
         adc     stack_h, y
         tax
         pla
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "ADD"
         deftoken "SUB"
 

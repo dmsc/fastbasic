@@ -30,11 +30,10 @@
 
         .export         CIOV_CMD_A, CIOV_CMD, CIOV_IOERR
         .import         IOCHN_16
-        .importzp       COLOR, IOCHN, IOERROR, next_instruction
+        .importzp       COLOR, IOCHN, IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_GRAPHICS    ; OPEN #6,12,MODE,"S:"
         ldx     #$60
@@ -68,7 +67,7 @@ CIOV_CMD:
         ldx     #0      ; Needed for TOK_GET
 CIOV_IOERR:
         sty     IOERROR
-        jmp     next_instruction
+        sub_exit
 
 device_s: .byte "S:", $9B
 
@@ -92,7 +91,6 @@ EXE_CLOSE:
         bne     CIOV_CMD_L
 .endproc
 
-        .include "../deftok.inc"
         deftoken "CLOSE"
         deftoken "DRAWTO"
         deftoken "GET"

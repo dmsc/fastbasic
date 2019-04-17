@@ -27,13 +27,12 @@
 ; Decrement a memory location
 ; ---------------------------
 
-        .import         get_op_var
-        .importzp       next_instruction, saddr
+        .importzp       saddr
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_DECVAR:     ; VAR = VAR - 1
-        jsr     get_op_var
+        get_var
 .ifdef NO_SMCODE
         sta     saddr
         stx     saddr+1
@@ -65,10 +64,9 @@ loadL1: lda     $FF00, x
 loadH:  dec     $FF01, x
 loadL2: dec     $FF00, x
 .endif
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "DEC"
         deftoken "DECVAR"
 

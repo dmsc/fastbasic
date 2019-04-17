@@ -27,16 +27,13 @@
 ; Logical NOT
 ; -----------
 
-        .importzp       next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_L_NOT  ; A = !A
         eor     #1
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "L_NOT"
 
 ; vi:syntax=asm_ca65

@@ -28,17 +28,15 @@
 ; -----------------------------------------------------
 
         .export         sound_off
-        .importzp       next_instruction
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_SOUND_OFF
         pha
         jsr     sound_off
         pla
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   sound_off
@@ -50,7 +48,6 @@
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "SOUND_OFF"
 
 ; vi:syntax=asm_ca65

@@ -31,9 +31,8 @@
         .import         fp_180pi, fp_pi1_2, FP_SET_1
         .importzp       DEGFLAG, tmp2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Compute arc-tangent of FR0
         ; Uses table of coefficients on ROM, shorter code,
@@ -81,7 +80,6 @@ exit:
 
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_ATN"
 
 ; vi:syntax=asm_ca65

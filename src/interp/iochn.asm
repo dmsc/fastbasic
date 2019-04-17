@@ -28,14 +28,14 @@
 ; --------------------
 
         .export         IOCHN_16
-        .importzp       IOCHN, next_instruction
+        .importzp       IOCHN
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_IOCHN
         jsr     IOCHN_16
         stx     IOCHN
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   IOCHN_16
@@ -47,7 +47,6 @@
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "IOCHN"
 
 ; vi:syntax=asm_ca65

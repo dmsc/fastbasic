@@ -27,9 +27,9 @@
 ; Reads an 8-bit value from an address
 ; ------------------------------------
 
-        .importzp       next_instruction, tmp1
+        .importzp       tmp1
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PEEK  ; AX = *(AX)
 .ifdef NO_SMCODE
@@ -44,10 +44,9 @@
 load:   lda     $FF00, x
         ldx     #0              ; 12 cycles, 9 bytes
 .endif
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PEEK"
 
 ; vi:syntax=asm_ca65

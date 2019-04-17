@@ -28,21 +28,18 @@
 ; ---------------------------------------
 
         .import         push_fr0
-        .importzp       next_instruction
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_FP_LOAD
         stx     FLPTR+1
         sta     FLPTR
         jsr     push_fr0
         jsr     FLD0P
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_LOAD"
 
 ; vi:syntax=asm_ca65

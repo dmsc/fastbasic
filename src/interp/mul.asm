@@ -28,9 +28,9 @@
 ; --------------
 
         .import         stack_l, stack_h
-        .importzp       tmp1, tmp2, tmp3, next_ins_incsp
+        .importzp       tmp1, tmp2, tmp3
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_MUL  ; AX = (SP+) * AX
         sta     tmp1
@@ -66,10 +66,9 @@
 
         lda     tmp1            ; Load the result
         ldx     tmp1+1
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
-        .include "../deftok.inc"
         deftoken "MUL"
 
 ; vi:syntax=asm_ca65

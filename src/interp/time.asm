@@ -27,19 +27,16 @@
 ; TIME function, returns current time in jiffies
 ; ----------------------------------------------
 
-        .importzp       next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_TIME
 retry:  ldx     19
         lda     20
         cpx     19
         bne     retry
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "TIME"
 
 ; vi:syntax=asm_ca65

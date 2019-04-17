@@ -29,10 +29,8 @@
 
         .export         eval_atn_poly, eval_poly_x2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        ; Rest of interpreter is in runtime segment
-        .segment        "RUNTIME"
 
         ; Evaluates ATAN polynomial
 .proc   eval_atn_poly

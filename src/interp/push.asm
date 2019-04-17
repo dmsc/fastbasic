@@ -28,16 +28,14 @@
 ; ----------
 
         .import         pushAX
-        .importzp       next_instruction
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PUSH  ; push AX into stack
         jsr     pushAX
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PUSH"
 
 ; vi:syntax=asm_ca65

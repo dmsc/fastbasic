@@ -28,9 +28,9 @@
 ; --------------------------------
 
         .import         stack_l, stack_h, pushAX
-        .importzp       next_ins_incsp, sptr, tmp3
+        .importzp       sptr, tmp3
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
         ; NOTE: FOR_START is defined with DPOKE.
 
@@ -119,7 +119,7 @@ positive:
 .proc   set0
         lda     #0
         tax
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
 .proc   EXE_GT  ; AX = (SP+) <= AX
@@ -134,7 +134,7 @@ positive:
 .proc   set1
         lda     #1
         ldx     #0
-        jmp     next_ins_incsp
+        sub_exit_incsp
 .endproc
 
 
@@ -156,7 +156,6 @@ positive:
         beq     set1
 .endproc
 
-        .include "../deftok.inc"
         deftoken "LT"
         deftoken "GT"
         deftoken "EQ"

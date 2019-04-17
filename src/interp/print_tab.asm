@@ -28,19 +28,18 @@
 ; ---------------------------------------------
 
         .import         putspc
-        .importzp       tabpos, next_instruction
+        .importzp       tabpos
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PRINT_TAB   ; PRINT TAB
         jsr     putspc
 :       jsr     putspc
         ldx     tabpos
         bne     :-
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PRINT_TAB"
 
 ; vi:syntax=asm_ca65

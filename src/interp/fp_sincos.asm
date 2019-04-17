@@ -31,9 +31,8 @@
         .import         eval_poly_x2, check_fp_err, FP_SET_1
         .importzp       DEGFLAG, tmp2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; SIN function, using a minimax 5 degree polynomial:
         ;    SIN(π/2 x) = ((((s[4] * x² + s[3]) * x² + s[2]) * x² + s[1]) * x² + s[0]) * x
@@ -140,7 +139,6 @@ exit:
 
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_SIN"
         deftoken "FP_COS"
 

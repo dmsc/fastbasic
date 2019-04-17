@@ -27,9 +27,7 @@
 ; Shift Left (multiplies by 2)
 ; ----------------------------
 
-        .importzp       next_instruction
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_USHL ; AX = AX * 2 (UNSIGNED)
         asl
@@ -38,10 +36,9 @@
         rol
         tax
         tya
-        jmp     next_instruction
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "USHL"
 
 ; vi:syntax=asm_ca65

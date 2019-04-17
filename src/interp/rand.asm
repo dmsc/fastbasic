@@ -27,11 +27,10 @@
 ; Random integer
 ; --------------
 
-        .importzp       tmp1, tmp2, next_instruction
+        .importzp       tmp1, tmp2
 
         .include "atari.inc"
-
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_RAND        ; AX= RANDOM from 0 to AX-1
 
@@ -60,10 +59,10 @@ scale:  lsr     tmp2
         dey
         bne     scale
         ldx     tmp2
-xit:    jmp     next_instruction
+xit:
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "RAND"
 
 ; vi:syntax=asm_ca65

@@ -27,11 +27,8 @@
 ; USR - call user assembly routine
 ; --------------------------------
 
-        .importzp       next_instruction
-
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_USR_PARAM   ; Stores AX as an usr parameter
         pha
@@ -49,7 +46,7 @@
         ; Store out return address into the CPU stack. This should be pushed to the
         ; stack *before* the arguments, so it needs to be a special token.
         jsr     next_instruction
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_USR_CALL
@@ -58,7 +55,6 @@
 .endproc
 usr_addr = EXE_USR_CALL + 1
 
-        .include "../deftok.inc"
         deftoken "USR_PARAM"
         deftoken "USR_ADDR"
         deftoken "USR_CALL"

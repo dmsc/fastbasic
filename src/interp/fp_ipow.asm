@@ -28,11 +28,10 @@
 ; ----------------------
 
         .import         check_fp_err, neg_AX, FP_SET_1
-        .importzp       tmp1, tmp2, IOERROR, next_instruction
+        .importzp       tmp1, tmp2, IOERROR
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
         ; Computes FR0 ^ (AX)
 .proc   EXE_FP_IPOW
@@ -95,10 +94,10 @@ error:  lda     #3
         sta     IOERROR
 
 xit_1:  jsr     FP_SET_1
-xit:    jmp     next_instruction
+xit:
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "FP_IPOW"
 
 ; vi:syntax=asm_ca65

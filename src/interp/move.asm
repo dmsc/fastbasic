@@ -27,7 +27,7 @@
 ; MOVE: copy memory upwards
 ; -------------------------
 
-        .import         stack_l, stack_h, next_ins_incsp_2
+        .import         stack_l, stack_h
 
         .include "atari.inc"
 
@@ -36,7 +36,7 @@
 src = tmp3-1
 dst = tmp4-1
 .endif
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_MOVE  ; move memory up
         pha
@@ -90,11 +90,10 @@ dst:    sta     $FF00,y         ; 5
 cpage:  dex
         bne     cloop
 
-xit:    jmp     next_ins_incsp_2
+xit:    sub_exit_incsp_2
 
 .endproc
 
-        .include "../deftok.inc"
         deftoken "MOVE"
 
 ; vi:syntax=asm_ca65

@@ -28,9 +28,9 @@
 ; ------------
 
         .import         putc
-        .importzp       tmp1, tmp2, next_instruction
+        .importzp       tmp1, tmp2
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 .proc   EXE_PRINT_STR   ; PRINT string
         sta     tmp1
@@ -44,10 +44,10 @@ loop:   iny
         jsr     putc
         cpy     tmp2
         bne     loop
-nil:    jmp     next_instruction
+nil:
+        sub_exit
 .endproc
 
-        .include "../deftok.inc"
         deftoken "PRINT_STR"
 
 ; vi:syntax=asm_ca65

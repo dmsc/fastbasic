@@ -29,11 +29,10 @@
 
         .export         read_word
         .import         neg_AX, get_str_eol
-        .importzp       IOERROR, tmp1, tmp2, next_instruction
+        .importzp       IOERROR, tmp1, tmp2
 
+        .include "toks.inc"
         .include "atari.inc"
-
-        .segment        "RUNTIME"
 
 .proc   EXE_VAL
         jsr     get_str_eol
@@ -41,7 +40,7 @@
         bcc     :+
         ldy     #18
         sty     IOERROR
-:       jmp     next_instruction
+:       sub_exit
 .endproc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -124,7 +123,6 @@ xit_n:  cpy     tmp2+1
         rts
 .endproc
 
-        .include "../deftok.inc"
         deftoken "VAL"
 
 ; vi:syntax=asm_ca65

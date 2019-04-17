@@ -28,9 +28,9 @@
 ; ------------------------
 
         .import         CIOV_IOERR, putc
-        .importzp       tabpos, next_instruction
+        .importzp       tabpos
 
-        .segment        "RUNTIME"
+        .include "toks.inc"
 
 EXE_PRINT_EOL:          ; PRINT EOL
         ; Reset tab position
@@ -39,9 +39,8 @@ EXE_PRINT_EOL:          ; PRINT EOL
         lda     #$9b
 EXE_PUT:                ; PUT character
         jsr     putc
-        jmp     next_instruction
+        sub_exit
 
-        .include "../deftok.inc"
         deftoken "PRINT_EOL"
         deftoken "PUT"
 
