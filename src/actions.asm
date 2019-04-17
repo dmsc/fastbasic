@@ -42,7 +42,6 @@
         .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
         ; From parser.asm
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
-        .importzp       TOK_CSTRING
         ; From error.asm
         .importzp       ERR_LOOP
         ; From menu.asm

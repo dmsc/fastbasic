@@ -30,7 +30,7 @@
         .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
 
         .import         putc
-        .importzp       mem_end, var_page, tmp1, tmp2, array_ptr
+        .importzp       var_page, tmp1, tmp2, array_ptr
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -129,7 +129,7 @@ loop:   lda     memory_error_msg, y
         rts
 .endproc
 
-        .include "deftok.inc"
+        .include "../deftok.inc"
         deftoken "END"
 
         .assert	TOK_END = 0, error, "TOK_END must be 0"

@@ -101,12 +101,14 @@ CMD_AS_SRC=$(COMPILER_AS_SRC)\
     src/cmdmenu.asm\
 
 # Common ASM files
+# NOTE: clearmem should be above other files because it defines
+#       TOK_END that should be the first token.
 COMMON_AS_SRC=\
     src/alloc.asm\
-    src/clearmem.asm\
     src/exehdr.asm\
     src/interpreter.asm\
     src/memptr.asm\
+    src/interp/clearmem.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
     src/interp/bgetput.asm\
