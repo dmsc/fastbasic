@@ -32,7 +32,7 @@
 
         .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
-        .exportzp       tabpos, IOCHN, IOERROR, COLOR, tmp1, tmp2, tmp3, divmod_sign
+        .exportzp       tabpos, IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
 
         ; From clearmem.asm
         .import         clear_data, saved_cpu_stack
@@ -57,7 +57,6 @@ divmod_sign:
         .res    1
 IOCHN:  .res    1
 IOERROR:.res    1
-COLOR:  .res    1
 tabpos: .res    1
 
 
