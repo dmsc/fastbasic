@@ -89,6 +89,7 @@ RT_AS_SRC=\
 COMPILER_AS_SRC=\
     src/actions.asm\
     src/errors.asm\
+    src/memptr.asm\
     src/parse.asm\
     src/vars.asm\
 
@@ -107,7 +108,6 @@ COMMON_AS_SRC=\
     src/alloc.asm\
     src/exehdr.asm\
     src/interpreter.asm\
-    src/memptr.asm\
     src/interp/clearmem.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
