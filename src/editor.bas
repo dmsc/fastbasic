@@ -107,18 +107,6 @@ PROC CompileFile
 ENDPROC
 
 '-------------------------------------
-' Insert a character over the cursor
-'
-PROC InsertChar
-  fileChanged = 1
-  edited = 1
-  inc linLen
-  ptr = EditBuf + column
-  -move ptr, ptr+1, linLen - column
-  poke ptr, key
-ENDPROC
-
-'-------------------------------------
 ' Deletes the character over the cursor
 '
 PROC DeleteChar
@@ -166,6 +154,18 @@ PROC DrawCurrentLine
 
   pos. scrColumn, scrLine
   put 29
+ENDPROC
+
+'-------------------------------------
+' Insert a character over the cursor
+'
+PROC InsertChar
+  fileChanged = 1
+  edited = 1
+  ptr = EditBuf + column
+  -move ptr, ptr+1, linLen - column
+  poke ptr, key
+  inc linLen
 ENDPROC
 
 '-------------------------------------
