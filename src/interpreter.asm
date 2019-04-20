@@ -27,45 +27,13 @@
 ; The opcode interpreter
 ; ----------------------
 
-        .export         interpreter_run, stack_l, stack_h
-        .export         pushAX, stack_end
-
         .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
-        .exportzp       tabpos, IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
-
-        ; From clearmem.asm
-        .import         clear_data, saved_cpu_stack
 
         ; From jumptab.asm
         .import         __JUMPTAB_RUN__
 
-        ; From soundoff.asm
-        .import         sound_off
-
         .include "atari.inc"
-
-        .zeropage
-tmp1:   .res    2
-tmp2:   .res    2
-tmp3:   .res    2
-.ifdef NO_SMCODE
-        .exportzp       tmp4
-tmp4:   .res    2
-.endif
-divmod_sign:
-        .res    1
-IOCHN:  .res    1
-IOERROR:.res    1
-tabpos: .res    1
-
-
-        ; Integer stack, 40 * 2 = 80 bytes
-.define STACK_SIZE      40
-        ; Our execution stack 64 words max, aligned for maximum speed
-stack_l =       $480
-stack_h =       $480 + STACK_SIZE
-stack_end =     stack_h + STACK_SIZE
 
 ;----------------------------------------------------------------------
 
@@ -103,81 +71,5 @@ cptr                    =       interpreter::cload+1
 next_instruction        =       interpreter::nxtins
 next_ins_incsp          =       interpreter::nxt_incsp
 interpreter_cptr        =       cptr
-
-        ; Rest of interpreter is in runtime segment
-        .segment        "RUNTIME"
-
-        ; Main interpreter call
-        ;  AX : address of code start
-        ;   Y : number of variables
-.proc   interpreter_run
-
-        ; Init code pointer
-        sta     cptr
-        stx     cptr+1
-
-        ; Get memory for all variables and clear the values
-        jsr     clear_data
-
-        ; Close al I/O channels
-        lda     #$70
-:       tax
-        lda     #CLOSE
-        sta     ICCOM, x
-        jsr     CIOV
-        txa
-        sec
-        sbc     #$10
-        bne     :-
-
-        ; Clear TAB position, IO channel and IO error
-        ; Also clears location 0 to allow a null-pointer representation
-        ; for an empty string (length = 0).
-        ;
-        ; lda     #0  ; A == 0 from above
-        sta     tabpos
-        sta     IOCHN
-        sta     IOERROR
-        sta     0
-.ifdef FASTBASIC_FP
-        .importzp       DEGFLAG
-        sta     DEGFLAG
-.endif ; FASTBASIC_FP
-
-        ; Sound off
-        jsr     sound_off
-
-        ; Store current stack position to rewind on error
-        tsx
-        stx     saved_cpu_stack
-
-        ; Init stack-pointer
-        lda     #STACK_SIZE
-        sta     sptr
-.ifdef FASTBASIC_FP
-        .importzp       fptr, FPSTK_SIZE
-        lda     #FPSTK_SIZE
-        sta     fptr
-.endif ; FASTBASIC_FP
-
-        ; Interpret opcodes
-        jmp     next_instruction
-.endproc
-
-        ; Stores AX into stack, at return Y is the stack pointer.
-.proc   pushAX
-        sta     stack_l-1, y
-        txa
-        sta     stack_h-1, y
-        dec     sptr            ; Note: PUSH_0 depends on return with Z flag not set!
-        rts
-.endproc
-
-;.proc   EXE_DUP
-;        jsr     pushAX
-;        lda     stack_l-1, y
-;        ldx     stack_h-1, y
-;        jmp     next_instruction
-;.endproc
 
 ; vi:syntax=asm_ca65

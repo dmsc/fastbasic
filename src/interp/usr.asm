@@ -34,10 +34,11 @@
         pha
         txa
         pha
-        jmp     next_instruction
+        sub_exit
 .endproc
 
 .proc   EXE_USR_ADDR
+        use_cptr
         ; Store USR address into jump instruction, this prevents calling
         ; USR routines recursively like " A = USR( r1, USR(r2) ) ", but is
         ; faster and smaller.

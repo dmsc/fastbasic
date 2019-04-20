@@ -46,6 +46,11 @@
 var_page:       .res    1       ; Page of variable data
 array_ptr:      .res    2       ; Top of array memory
 
+        .ifdef FASTBASIC_ASM
+        .exportzp       saddr, sptr
+saddr:  .res 2
+sptr:   .res 1
+        .endif
         ; Start of HEAP - aligned to 256 bytes
 heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
 

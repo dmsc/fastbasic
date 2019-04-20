@@ -27,8 +27,6 @@
 ; MOVE: copy memory upwards
 ; -------------------------
 
-        .import         stack_l, stack_h
-
         .include "atari.inc"
 
 .ifdef NO_SMCODE
@@ -39,6 +37,7 @@ dst = tmp4-1
         .include "toks.inc"
 
 .proc   EXE_MOVE  ; move memory up
+        use_stack
         pha
         lda     stack_l, y
         sta     dst+1

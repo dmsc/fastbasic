@@ -28,7 +28,6 @@
 ; ---------------
 
         .importzp       tmp1, tmp3
-        .import         stack_l, stack_h
 
         .include "atari.inc"
         .include "toks.inc"
@@ -49,6 +48,7 @@
 ok1:
         sta     tmp3+1
 
+        use_stack
         ldx     stack_h, y      ; Check Position < 256
         bne     zero            ; Overflow
 

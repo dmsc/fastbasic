@@ -71,6 +71,7 @@ y_pos:  sta     tmp1
         stx     tmp1+1
         sty     divmod_sign
 
+        ; Uses stack explicitly
         ldy     sptr
         lda     stack_l, y
         ldx     stack_h, y

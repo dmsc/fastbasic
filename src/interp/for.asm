@@ -27,8 +27,8 @@
 ; FOR/NEXT and integer comparisons
 ; --------------------------------
 
-        .import         stack_l, stack_h, pushAX
-        .importzp       sptr, tmp3
+        .import         pushAX
+        .importzp       tmp3
 
         .include "toks.inc"
 
@@ -52,6 +52,7 @@
         ;      sptr+1   y+1 = limit
         ;      sptr+2   y+2 = var_address
         ; Read variable address value
+        use_stack
         lda     stack_h+2, y
         sta     tmp3+1
         lda     stack_l+2, y
@@ -101,12 +102,17 @@ do_add:
 
         ; Check sign of STEP
         plp
-        bmi     EXE_GT
-positive:
+        bmi     GT_skipsp
+    .ifdef FASTBASIC_ASM
+        bpl     LT_skipsp
+    .else
         ; Fall through
+    .endif
 .endproc
 
 .proc   EXE_LT  ; AX = (SP+) >= AX
+        use_stack
+::LT_skipsp:
         clc
         sbc     stack_l, y
         txa
@@ -123,6 +129,8 @@ positive:
 .endproc
 
 .proc   EXE_GT  ; AX = (SP+) <= AX
+        use_stack
+::GT_skipsp:
         cmp     stack_l, y
         txa
         sbc     stack_h, y
@@ -139,6 +147,7 @@ positive:
 
 
 .proc   EXE_NEQ  ; AX = AX != (SP+)
+        use_stack
         cmp     stack_l, y
         bne     set1
         txa
@@ -148,6 +157,7 @@ positive:
 .endproc
 
 .proc   EXE_EQ  ; AX = AX == (SP+)
+        use_stack
         cmp     stack_l, y
         bne     set0
         txa

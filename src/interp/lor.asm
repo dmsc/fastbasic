@@ -32,6 +32,7 @@
         .include "toks.inc"
 
 .proc   EXE_L_OR  ; A = A | (SP+)
+        use_stack
         ora     stack_l, y
         sub_exit_incsp
 .endproc

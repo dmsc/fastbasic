@@ -14,9 +14,11 @@
         .word   __MAIN_START__
         .word   __DATA_LOAD__ + __DATA_SIZE__- 1
 
+        .ifndef FASTBASIC_ASM
 .segment        "IHEADER"
         .word   __INTERP_START__
         .word   __INTERP_START__ + __INTERP_SIZE__- 1
+        .endif
 
 .segment        "AUTOSTRT"
         .word   RUNAD

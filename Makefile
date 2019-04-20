@@ -27,6 +27,7 @@ SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
 FPASM=--asm-define FASTBASIC_FP --asm-include-dir gen/fp
 INTASM=--asm-include-dir gen/int
+ASMASM=--asm-define FASTBASIC_FP --asm-define FASTBASIC_ASM
 FPCXX=-DFASTBASIC_FP -Igen/fp
 INTCXX=-Igen/int
 
@@ -42,6 +43,7 @@ CROSS_INT=compiler/fastbasic-int$(EXT)
 CROSS_FP=compiler/fastbasic-fp$(EXT)
 LIB_INT=compiler/fastbasic-int.lib
 LIB_FP=compiler/fastbasic-fp.lib
+LIB_ASM=compiler/fastbasic-asm.lib
 
 NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 
@@ -81,7 +83,7 @@ DOS=\
     copy.com\
     pause.com\
 
-# ASM files used in the RUNTIME
+# ASM files used in the interpreter RUNTIME
 RT_AS_SRC=\
     src/standalone.asm\
 
@@ -101,13 +103,24 @@ IDE_AS_SRC=$(COMPILER_AS_SRC)\
 CMD_AS_SRC=$(COMPILER_AS_SRC)\
     src/cmdmenu.asm\
 
+# Interpreter ASM files
+INTERP_AS_SRC=\
+    src/interpreter.asm\
+    src/interp/cdata.asm\
+    src/interp/const.asm\
+    src/interp/jump.asm\
+    src/interp/return.asm\
+    src/interp/saddr.asm\
+    src/interp/usr.asm\
+    src/interp/varaddr.asm\
+    src/interp/varstore.asm\
+
 # Common ASM files
 # NOTE: clearmem should be above other files because it defines
 #       TOK_END that should be the first token.
-COMMON_AS_SRC=\
-    src/alloc.asm\
+LIB_INT_AS_SRC=\
     src/exehdr.asm\
-    src/interpreter.asm\
+    src/alloc.asm\
     src/interp/clearmem.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
@@ -115,12 +128,10 @@ COMMON_AS_SRC=\
     src/interp/bitand.asm\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
-    src/interp/cdata.asm\
     src/interp/chr.asm\
     src/interp/cmpstr.asm\
     src/interp/color.asm\
     src/interp/comp0.asm\
-    src/interp/const.asm\
     src/interp/copystr.asm\
     src/interp/dec.asm\
     src/interp/div.asm\
@@ -134,7 +145,6 @@ COMMON_AS_SRC=\
     src/interp/inc.asm\
     src/interp/input.asm\
     src/interp/iochn.asm\
-    src/interp/jump.asm\
     src/interp/land.asm\
     src/interp/lnot.asm\
     src/interp/lor.asm\
@@ -152,10 +162,10 @@ COMMON_AS_SRC=\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\
     src/interp/push.asm\
+    src/interp/pushax.asm\
     src/interp/putchar.asm\
     src/interp/rand.asm\
-    src/interp/return.asm\
-    src/interp/saddr.asm\
+    src/interp/run.asm\
     src/interp/sgn.asm\
     src/interp/shl8.asm\
     src/interp/soundoff.asm\
@@ -164,14 +174,11 @@ COMMON_AS_SRC=\
     src/interp/strindex.asm\
     src/interp/time.asm\
     src/interp/ushl.asm\
-    src/interp/usr.asm\
     src/interp/val.asm\
-    src/interp/varaddr.asm\
-    src/interp/varstore.asm\
     src/interp/xio.asm\
 
 # FP Interpreter ASM files
-FP_AS_SRC=\
+LIB_FP_AS_SRC=\
     src/interp/fp_abs.asm\
     src/interp/fp_atn.asm\
     src/interp/fp_cmp.asm\
@@ -213,15 +220,24 @@ CMD_BAS_SRC=\
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=obj/fp/%.o)
 IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=obj/fp/%.o)
 CMD_OBJS_FP=$(CMD_AS_SRC:src/%.asm=obj/fp/%.o)
-COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o) $(FP_AS_SRC:src/%.asm=obj/fp/%.o)
+LIB_OBJS_FP=\
+    $(LIB_INT_AS_SRC:src/%.asm=obj/fp/%.o) \
+    $(LIB_FP_AS_SRC:src/%.asm=obj/fp/%.o) \
+    $(INTERP_AS_SRC:src/%.asm=obj/fp/%.o)
 IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=obj/fp/%.o)
 CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:src/%.bas=obj/fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=obj/int/%.o)
-COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=obj/int/%.o)
+LIB_OBJS_INT=\
+    $(LIB_INT_AS_SRC:src/%.asm=obj/int/%.o) \
+    $(INTERP_AS_SRC:src/%.asm=obj/int/%.o)
 IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
+
+RT_OBJS_ASM=$(RT_AS_SRC:src/%.asm=obj/asm/%.o)
+LIB_OBJS_ASM=$(LIB_INT_AS_SRC:src/%.asm=obj/asm/%.o) \
+                $(LIB_FP_AS_SRC:src/%.asm=obj/asm/%.o)
 
 # Compiler library files
 COMPILER=\
@@ -229,9 +245,11 @@ COMPILER=\
 	 $(LIB_INT)\
 	 $(CROSS_FP)\
 	 $(LIB_FP)\
+	 $(LIB_ASM)\
 	 compiler/fastbasic.cfg\
 	 compiler/fb$(SHEXT)\
 	 compiler/fb-int$(SHEXT)\
+	 compiler/fb-asm$(SHEXT)\
 	 compiler/USAGE.md\
 	 compiler/LICENSE\
 	 compiler/MANUAL.md\
@@ -239,11 +257,13 @@ COMPILER=\
 # All Output files
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
-     $(COMMON_OBJS_FP) \
+     $(LIB_OBJS_FP) \
      $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
      $(RT_OBJS_INT) \
      $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
-     $(COMMON_OBJS_INT) \
+     $(LIB_OBJS_INT) \
+     $(LIB_OBJS_ASM) \
+     $(RT_OBJS_ASM) \
      $(SAMP_OBJS)
 LSTS=$(OBJS:%.o=%.lst)
 
@@ -257,7 +277,8 @@ all: $(ATR) $(NATIVES) $(COMPILER)
 dist: $(ATR) $(ZIPFILE)
 
 clean: test-clean
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) \
+	      $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP) $(LIB_ASM)
 	rm -f compiler/MANUAL.md
 
 distclean: clean test-distclean
@@ -350,13 +371,13 @@ gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
 	$(CSYNT) $(SYNTFLAGS) $< -o $@
 
 # Main program file
-bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | bin
+bin/fb.xex: $(IDE_OBJS_FP) $(LIB_OBJS_FP) $(IDE_BAS_OBJS_FP) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | bin
+bin/fbc.xex: $(CMD_OBJS_FP) $(LIB_OBJS_FP) $(CMD_BAS_OBJS_FP) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | bin
+bin/fbi.xex: $(IDE_OBJS_INT) $(LIB_OBJS_INT) $(IDE_BAS_OBJS_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
@@ -392,15 +413,22 @@ obj/int/%.o: src/%.asm | obj/int obj/int/interp
 obj/int/%.o: gen/int/%.asm | obj/int
 	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
 
-gen obj obj/fp obj/int obj/fp/interp obj/int/interp gen/fp gen/int bin build:
+obj/asm/%.o: src/%.asm | obj/asm obj/asm/interp
+	cl65 $(CL65OPTS) $(ASMASM) -c -l $(@:.o=.lst) -o $@ $<
+
+gen obj obj/fp obj/int obj/asm obj/fp/interp obj/int/interp obj/asm/interp gen/fp gen/int bin build:
 	mkdir -p $@
 
 # Library files
-$(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP)
+$(LIB_FP): $(RT_OBJS_FP) $(INTERP_OBJS_FP) $(LIB_OBJS_FP)
 	rm -f $@
 	ar65 a $@ $^
 
-$(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
+$(LIB_INT): $(RT_OBJS_INT) $(INTERP_OBJS_FP) $(LIB_OBJS_INT)
+	rm -f $@
+	ar65 a $@ $^
+
+$(LIB_ASM): $(RT_OBJS_ASM) $(LIB_OBJS_ASM)
 	rm -f $@
 	ar65 a $@ $^
 
@@ -422,8 +450,8 @@ compiler/MANUAL.md: manual.md
 	cp -f $< $@
 
 # Dependencies
-$(COMMON_OBJS_FP): src/deftok.inc
-$(COMMON_OBJS_INT): src/deftok.inc
+$(LIB_OBJS_FP): src/deftok.inc src/interp/toks.inc
+$(LIB_OBJS_INT): src/deftok.inc src/interp/toks.inc
 obj/fp/parse.o: src/parse.asm gen/fp/basic.asm
 obj/int/parse.o: src/parse.asm gen/int/basic.asm
 $(CSYNT): \

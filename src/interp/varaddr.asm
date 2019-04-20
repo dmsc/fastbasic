@@ -28,7 +28,7 @@
 ; ----------------------
 
         .export         get_op_var
-        .importzp       cptr, var_page
+        .importzp       var_page
 
         .include "toks.inc"
 
@@ -41,6 +41,7 @@
         ; variable address in AX
         ;   var_address = var_num * 2 + var_page * 256
 .proc   get_op_var
+        use_cptr
         ldy     #0
         lda     (cptr), y
         inc     cptr

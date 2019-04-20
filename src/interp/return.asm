@@ -27,8 +27,6 @@
 ; Return from subroutine
 ; ----------------------
 
-        .importzp       cptr
-
         .include "toks.inc"
 
 .proc   EXE_CNRET
@@ -41,6 +39,7 @@
 .endproc        ; Fall through
 
 .proc   EXE_RET
+        use_cptr
         pla
         sta     cptr+1
         pla

@@ -30,14 +30,16 @@
         .export         check_fp_err
 
         .import         push_fr0, pop_fr1
-        .importzp       cptr, IOERROR
+        .importzp       IOERROR
 
         .include "toks.inc"
         .include "atari.inc"
 
+    .ifndef     FASTBASIC_ASM
 .proc   EXE_FLOAT
         jsr     push_fr0
 
+        use_cptr
         ldy     #5
 ldloop: lda     (cptr), y
         sta     FR0,y
@@ -52,6 +54,7 @@ ldloop: lda     (cptr), y
         inc     cptr+1
         bcs     xit
 .endproc
+    .endif
 
 .proc   EXE_FP_ADD
         jsr     pop_fr1
@@ -68,7 +71,9 @@ ldloop: lda     (cptr), y
         sub_exit
 .endproc
 
+    .ifndef     FASTBASIC_ASM
         deftoken "FLOAT"
+    .endif
         deftoken "FP_ADD"
 
 ; vi:syntax=asm_ca65

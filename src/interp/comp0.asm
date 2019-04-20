@@ -34,7 +34,7 @@
 
         ; Pushes X as "comparison return" into stack.
 .proc   pushXX_set0
-        .importzp       sptr
+        .importzp sptr
         ldy     sptr
         txa
 .endproc        ; Fall through

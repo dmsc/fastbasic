@@ -38,6 +38,7 @@
 .endproc        ; Fall through
 
 .proc   EXE_NUM  ; AX = read from op (load byte first!)
+        use_cptr
         ldy     #1              ; 2     2
         lda     (cptr), y       ; 5     2
         tax                     ; 2     1
@@ -57,6 +58,7 @@
 .endproc        ; Fall through
 
 .proc   EXE_BYTE  ; AX = read 1 byte from op
+        use_cptr
         ldx     #0
         lda     (cptr, x)
 incc:   inc     cptr
@@ -65,6 +67,7 @@ incc:   inc     cptr
 .endproc
 
 .proc   EXE_BYTE_SADDR  ; SADDR = read 1 byte from op   (+14 bytes)
+        use_cptr
         ldy     #0
         lda     (cptr), y
         sta     saddr
@@ -74,6 +77,7 @@ incc:   inc     cptr
 
 
 .proc   EXE_CSTRING     ; AX = address of string
+        use_cptr
         ldy     #0      ; Get string length into A
         sec
         lda     cptr

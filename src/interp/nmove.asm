@@ -28,7 +28,6 @@
 ; ----------------------------
 
         .export         move_dwn
-        .import         stack_l, stack_h
         .importzp       divmod_sign
 
         .include "atari.inc"
@@ -48,6 +47,7 @@ move_dwn_dst= tmp4
 tmp5=divmod_sign
 
 .proc   EXE_NMOVE  ; move memory down
+        use_stack
         pha
         lda     stack_l, y
         sta     move_dwn_dst

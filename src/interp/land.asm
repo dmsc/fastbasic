@@ -27,11 +27,10 @@
 ; Logical AND
 ; -----------
 
-        .import         stack_l
-
         .include "toks.inc"
 
 .proc   EXE_L_AND  ; A = A & (SP+)
+        use_stack
         and     stack_l, y
         sub_exit_incsp
 .endproc

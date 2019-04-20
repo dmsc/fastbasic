@@ -24,53 +24,21 @@
 ; linked into a combine executable.)
 
 
-; Call and Jump to address
-; ------------------------
+; Push AX
+; -------
+
+        .export         pushAX
 
         .include "toks.inc"
 
-.proc   EXE_CALL
-        use_cptr
-        lda     cptr
-        clc
-        adc     #2
-        pha
-        lda     cptr+1
-        adc     #0
-        pha
-.endproc        ; Fall through
-
-.proc   EXE_JUMP
-        use_cptr
-        ldy     #1              ; 2     2
-        lda     (cptr), y       ; 5     2
-        tax                     ; 2     1
-        dey                     ; 2     1
-        lda     (cptr), y       ; 5     2
-        stx     cptr+1          ; 3     2
-sto:    sta     cptr            ; 3     2
-        sub_exit
+        ; Stores AX into stack.
+.proc   pushAX
+        use_stack
+        sta     stack_l-1, y
+        txa
+        sta     stack_h-1, y
+        dec     sptr            ; Note: PUSH_0 depends on return with Z flag not set!
+        rts
 .endproc
-
-EXE_CNJUMP:
-        eor     #1
-
-.proc   EXE_CJUMP
-        use_cptr
-        lsr
-        bcc     EXE_JUMP
-
-skip:   lda     cptr
-;       sec             ; C is always set from above comparison
-        adc     #1
-        bcc     EXE_JUMP::sto
-        inc     cptr+1
-        bcs     EXE_JUMP::sto
-.endproc
-
-        deftoken "CALL"
-        deftoken "JUMP"
-        deftoken "CJUMP"
-        deftoken "CNJUMP"
 
 ; vi:syntax=asm_ca65

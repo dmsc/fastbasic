@@ -32,12 +32,11 @@
 
         .include "toks.inc"
 
+    .ifndef FASTBASIC_ASM
 .proc   EXE_PUSH_VAR_LOAD; push AX, load variable
         jsr     pushAX
 .endproc        ; Fall through
 
-
-    .ifndef FASTBASIC_ASM
 .proc   EXE_VAR_LOAD  ; AX = value of variable
         get_var
 .endproc        ; Fall through:
@@ -63,7 +62,9 @@ loadL:  lda     $FF00, y
 .endproc
 
         deftoken "DPEEK"
+    .ifndef FASTBASIC_ASM
         deftoken "VAR_LOAD"
         deftoken "PUSH_VAR_LOAD"
+    .endif
 
 ; vi:syntax=asm_ca65

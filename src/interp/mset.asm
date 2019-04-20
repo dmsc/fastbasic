@@ -27,13 +27,14 @@
 ; MSET: sets a range of memory to a value
 ; ---------------------------------------
 
-        .import         stack_l, stack_h, mem_set
+        .import         mem_set
         .importzp       tmp1, tmp2
 
         .include "toks.inc"
         .include "atari.inc"
 
 .proc   EXE_MSET
+        use_stack
 
         ldx     stack_l+1, y
         stx     tmp2

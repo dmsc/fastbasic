@@ -75,6 +75,7 @@
         .macro use_stack
             .importzp   sptr
             .import     stack_l, stack_h
+            ldy         sptr
         .endmacro
 
         .macro  deftoken arg

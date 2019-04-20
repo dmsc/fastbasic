@@ -31,12 +31,14 @@
 
         .include "toks.inc"
 
+    .ifndef     FASTBASIC_ASM
 EXE_DECVAR:     ; VAR = VAR - 1
         get_var
 .ifdef NO_SMCODE
         sta     saddr
         stx     saddr+1
 .endif
+    .endif
         ; NOTE: Here, we have the address in SADDR and in the
         ;       AX register, but using Self-Modifying code it
         ;       is smaller and faster using AX.
@@ -68,6 +70,8 @@ loadL2: dec     $FF00, x
 .endproc
 
         deftoken "DEC"
+    .ifndef     FASTBASIC_ASM
         deftoken "DECVAR"
+    .endif
 
 ; vi:syntax=asm_ca65

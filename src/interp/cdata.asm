@@ -34,6 +34,7 @@
         use_cptr
 
 .proc   EXE_CDATA       ; *(SADDR) = address of data
+        use_cptr
 
         ; Store (cptr) + 2 to var address
 

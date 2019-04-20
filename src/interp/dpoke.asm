@@ -27,7 +27,7 @@
 ; Writes a 16-bit value to an address
 ; -----------------------------------
 
-        .importzp       next_instruction, saddr
+        .importzp       saddr
 
         .include "toks.inc"
 

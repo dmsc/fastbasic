@@ -29,13 +29,13 @@
 
         .export         CIOV_CMD_POP2
         .import         CIOV_CMD_A, IOCHN_16, stack_l, stack_h, get_str_eol
-        .importzp       sptr
 
         .include "atari.inc"
         .include "toks.inc"
 
 .proc   EXE_XIO
         jsr     get_str_eol
+        .importzp       sptr
         ldy     sptr
         lda     stack_l+2, y    ; I/O channel
         jsr     IOCHN_16
@@ -61,6 +61,7 @@
         ; Calls CIO with given command, stores I/O error, and pops stack twice
 CIOV_CMD_POP2:
 
+        .importzp       sptr
         inc     sptr
         inc     sptr
         jmp     CIOV_CMD_A

@@ -27,12 +27,12 @@
 ; Multiplication
 ; --------------
 
-        .import         stack_l, stack_h
         .importzp       tmp1, tmp2, tmp3
 
         .include "toks.inc"
 
 .proc   EXE_MUL  ; AX = (SP+) * AX
+        use_stack
         sta     tmp1
         stx     tmp1+1
         lda     stack_l, y

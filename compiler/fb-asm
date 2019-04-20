@@ -1,0 +1,57 @@
+#!/bin/sh
+LOC=$(dirname "$0")
+FB=fastbasic-fp
+usage() {
+    "$LOC/$FB" -h
+    exit 1
+}
+
+error() {
+    echo "$(basename "$0"): error, $*"
+    echo "Try '$(basename "$0") -h' for help."
+    exit 1
+}
+
+# Process options
+OPTS="-f"
+for i do
+    shift
+    case "$i" in
+        -h)
+            usage
+            ;;
+        -X:*)
+            set -- "$@" "${i#-X:}"
+            ;;
+        -S:*)
+            set -- "$@" "--start-addr" "${i#-S:}"
+            ;;
+        -[a-zA-Z0-9_]*)
+            OPTS="$OPTS $i"
+            ;;
+        -*)
+            error "invalid option '$i'"
+            ;;
+        *.asm|*.o)
+            set -- "$@" "$i"
+            ;;
+        *)
+            [ -n "$PROG" ] && error "specify only one basic file"
+            PROG="$i"
+            ;;
+    esac
+done
+
+ASM=${PROG%.*}.asm
+XEX=${PROG%.*}.xex
+LBL=${PROG%.*}.lbl
+[ -z "$PROG" ]         && error "no input file"
+[ ! -f "$PROG" ]       && error "input file '$PROG' does not exists"
+[ "$PROG" -ef "$ASM" ] && error "input file '$PROG' same as ASM file"
+[ "$PROG" -ef "$XEX" ] && error "input file '$PROG' same as XEX file"
+
+echo "Compiling '$PROG' to assembler '$ASM'."
+"$LOC/$FB" $OPTS "$PROG" "$ASM" || exit 1
+echo "Assembling '$ASM' to XEX file '$XEX'."
+cl65 -tatari -C "$LOC/fastbasic-asm.cfg" -g "$ASM" "$@" -o "$XEX" -Ln "$LBL" "$LOC/fastbasic-asm.lib" || exit 1
+
