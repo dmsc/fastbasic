@@ -123,7 +123,6 @@ COMMON_AS_SRC=\
     src/interp/const.asm\
     src/interp/copystr.asm\
     src/interp/dec.asm\
-    src/interp/dim.asm\
     src/interp/div.asm\
     src/interp/dpeek.asm\
     src/interp/dpoke.asm\
@@ -156,6 +155,7 @@ COMMON_AS_SRC=\
     src/interp/putchar.asm\
     src/interp/rand.asm\
     src/interp/return.asm\
+    src/interp/saddr.asm\
     src/interp/sgn.asm\
     src/interp/shl8.asm\
     src/interp/soundoff.asm\

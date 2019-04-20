@@ -27,19 +27,25 @@
 ; Array dimensioning - assigns an address to given array variable
 ; ---------------------------------------------------------------
 
-        .import         alloc_array, EXE_DPOKE
-        .importzp       tmp2
+        .import         get_op_var
+        .importzp       next_instruction
+        .exportzp       saddr
+
+        .zeropage
+saddr:  .res 2
 
         .segment        "RUNTIME"
 
-.proc   EXE_DIM         ; AX = array size, SADDR = variable address
-        jsr     alloc_array
-        lda     tmp2
-        ldx     tmp2+1
-        jmp     EXE_DPOKE
+EXE_VAR_SADDR:     ; SADDR = VAR address
+        jsr     get_op_var
+.proc   EXE_SADDR  ; SADDR = AX
+        sta     saddr
+        stx     saddr+1
+        jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"
-        deftoken "DIM"
+        deftoken "SADDR"
+        deftoken "VAR_SADDR"
 
 ; vi:syntax=asm_ca65
