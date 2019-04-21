@@ -31,6 +31,10 @@
 
         .segment        "RUNTIME"
 
+.proc   EXE_CNRET
+        eor     #1
+.endproc        ; Fall through
+
 .proc   EXE_CRET
         lsr
         bcs     skip
@@ -48,5 +52,6 @@
         .include "../deftok.inc"
         deftoken "RET"
         deftoken "CRET"
+        deftoken "CNRET"
 
 ; vi:syntax=asm_ca65

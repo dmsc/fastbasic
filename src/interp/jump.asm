@@ -52,6 +52,9 @@ sto:    sta     cptr            ; 3     2
         jmp     next_instruction
 .endproc
 
+EXE_CNJUMP:
+        eor     #1
+
 .proc   EXE_CJUMP
         lsr
         bcc     EXE_JUMP
@@ -68,5 +71,6 @@ skip:   lda     cptr
         deftoken "CALL"
         deftoken "JUMP"
         deftoken "CJUMP"
+        deftoken "CNJUMP"
 
 ; vi:syntax=asm_ca65

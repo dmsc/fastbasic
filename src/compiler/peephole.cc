@@ -394,7 +394,7 @@ class peephole
             {
                 for(current=0; current<code.size(); current++)
                 {
-                    if( (mtok(0, TOK_CJUMP) || mtok(0, TOK_JUMP)) && mlblw(1) && tgt.find(wlbl(1)) != tgt.end() )
+                    if( (mtok(0, TOK_CJUMP) || mtok(0, TOK_CNJUMP) || mtok(0, TOK_JUMP)) && mlblw(1) && tgt.find(wlbl(1)) != tgt.end() )
                     {
                         std::string t = tgt[wlbl(1)];
                         if( t == "__TOK_RET__" )
@@ -408,6 +408,11 @@ class peephole
                             else if( mtok(0, TOK_CJUMP) )
                             {
                                 set_tok(0, TOK_CRET);
+                                del(1);
+                            }
+                            else if( mtok(0, TOK_CNJUMP) )
+                            {
+                                set_tok(0, TOK_CNRET);
                                 del(1);
                             }
                         }
@@ -862,22 +867,54 @@ class peephole
                         set_tok(0, TOK_JUMP); del(2);
                         continue;
                     }
+                    //   TOK_L_NOT / TOK_CJUMP
+                    //     -> TOK_CNJUMP
+                    if( mtok(0,TOK_L_NOT) && mtok(1,TOK_CJUMP) )
+                    {
+                        set_tok(1, TOK_CNJUMP); del(0);
+                        continue;
+                    }
+                    //   TOK_L_NOT / TOK_CNJUMP
+                    //     -> TOK_CJUMP
+                    if( mtok(0,TOK_L_NOT) && mtok(1,TOK_CNJUMP) )
+                    {
+                        set_tok(1, TOK_CJUMP); del(0);
+                        continue;
+                    }
                     // Bypass CJUMP over another JUMP
                     //   TOK_CJUMP / x / TOK_JUMP / y / LABEL x
-                    //     -> TOK_L_NOT / TOK_CJUMP / y / LABEL x
+                    //     -> TOK_CNJUMP / y / LABEL x
                     if( mtok(0,TOK_CJUMP) && mtok(2,TOK_JUMP) && mlabel(4) &&
                         lbl(4) == wlbl(1) )
                     {
-                        set_tok(0, TOK_L_NOT); set_tok(2, TOK_CJUMP); del(1);
+                        set_tok(2, TOK_CNJUMP); del(1); del(0);
                         continue;
                     }
                     // Bypass CJUMP over a RET
                     //   TOK_CJUMP / x / TOK_RET / LABEL x
-                    //     -> TOK_L_NOT / TOK_CRET / LABEL x
+                    //     -> TOK_CNRET / LABEL x
                     if( mtok(0,TOK_CJUMP) && mtok(2,TOK_RET) && mlabel(3) &&
                         lbl(3) == wlbl(1) )
                     {
-                        set_tok(0, TOK_L_NOT); set_tok(2, TOK_CRET); del(1);
+                        set_tok(2, TOK_CNRET); del(1); del(0);
+                        continue;
+                    }
+                    // Bypass CNJUMP over another JUMP
+                    //   TOK_CNJUMP / x / TOK_JUMP / y / LABEL x
+                    //     -> TOK_CJUMP / y / LABEL x
+                    if( mtok(0,TOK_CNJUMP) && mtok(2,TOK_JUMP) && mlabel(4) &&
+                        lbl(4) == wlbl(1) )
+                    {
+                        set_tok(2, TOK_CJUMP); del(1); del(0);
+                        continue;
+                    }
+                    // Bypass CNJUMP over a RET
+                    //   TOK_CNJUMP / x / TOK_RET / LABEL x
+                    //     -> TOK_CRET / LABEL x
+                    if( mtok(0,TOK_CNJUMP) && mtok(2,TOK_RET) && mlabel(3) &&
+                        lbl(3) == wlbl(1) )
+                    {
+                        set_tok(2, TOK_CRET); del(1); del(0);
                         continue;
                     }
                     // Bypass JUMP to next instruction
