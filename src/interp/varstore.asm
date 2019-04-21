@@ -27,10 +27,16 @@
 ; Store value into variable
 ; -------------------------
 
-        .import         get_op_var
+        .import         get_op_var, alloc_array
         .importzp       next_instruction, tmp2
 
         .segment        "RUNTIME"
+
+.proc   EXE_DIM         ; AX = array size, SADDR = variable address
+        jsr     alloc_array
+        lda     tmp2
+        ldx     tmp2+1
+.endproc        ;  Fall through
 
 .proc   EXE_VAR_STORE  ; DPOKE (VAR), AX
         pha
@@ -58,6 +64,7 @@ save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
 .endproc
 
         .include "../deftok.inc"
+        deftoken "DIM"
         deftoken "VAR_STORE"
 
 ; vi:syntax=asm_ca65

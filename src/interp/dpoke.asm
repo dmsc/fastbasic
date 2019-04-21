@@ -27,16 +27,9 @@
 ; Writes a 16-bit value to an address
 ; -----------------------------------
 
-        .import         alloc_array
-        .importzp       next_instruction, tmp2, saddr
+        .importzp       next_instruction, saddr
 
         .segment        "RUNTIME"
-
-.proc   EXE_DIM         ; AX = array size, SADDR = variable address
-        jsr     alloc_array
-        lda     tmp2
-        ldx     tmp2+1
-.endproc        ;  Fall through
 
 .proc   EXE_DPOKE  ; DPOKE SADDR, AX
         ldy     #0
@@ -48,7 +41,6 @@
 .endproc
 
         .include "../deftok.inc"
-        deftoken "DIM"
         deftoken "DPOKE"
 
 ; vi:syntax=asm_ca65
