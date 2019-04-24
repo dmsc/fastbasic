@@ -1,0 +1,9 @@
+Name: Test statements "INC" and "DEC"
+Test: run
+Output:
+Start
+4         6
+3         7
+-1        0         1
+0         1         2
+-1        0         1
