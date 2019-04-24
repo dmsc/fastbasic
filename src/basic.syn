@@ -228,7 +228,7 @@ OR_AND_BOOL:
 # Test if an INT needs to be converted to BOOL
 TEST_BOOL_EXPR:
         emit TOK_COMP_0 OR_AND_BOOL
-        COMP_EXPR_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
+        emit TOK_PUSH COMP_EXPR_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
 #@if FASTBASIC_FP
         emit TOK_INT_FP COMP_FP_RIGHT  OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
 #@endif FASTBASIC_FP
@@ -269,22 +269,19 @@ NOT_EXPR:
         STR_EXPR COMP_STR_RIGHT
 
 COMP_OR_BOOL:
-        COMP_EXPR_RIGHT COMP_EXPR_MORE
+        emit TOK_PUSH COMP_EXPR_RIGHT COMP_EXPR_MORE
 #@if FASTBASIC_FP
         emit TOK_INT_FP COMP_FP_RIGHT COMP_EXPR_MORE
 #@endif FASTBASIC_FP
         emit TOK_COMP_0
 
-PUSH_INT_EXPR:
-        emit TOK_PUSH INT_EXPR
-
 COMP_EXPR_RIGHT: integer comparison operator
-        "<=" PUSH_INT_EXPR emit TOK_GT emit TOK_L_NOT
-        ">=" PUSH_INT_EXPR emit TOK_LT emit TOK_L_NOT
-        "<>" PUSH_INT_EXPR emit TOK_NEQ
-        "<"  PUSH_INT_EXPR emit TOK_LT
-        ">"  PUSH_INT_EXPR emit TOK_GT
-        "="  PUSH_INT_EXPR emit TOK_EQ
+        "<=" INT_EXPR emit TOK_GT emit TOK_L_NOT
+        ">=" INT_EXPR emit TOK_LT emit TOK_L_NOT
+        "<>" INT_EXPR emit TOK_NEQ
+        "<"  INT_EXPR emit TOK_LT
+        ">"  INT_EXPR emit TOK_GT
+        "="  INT_EXPR emit TOK_EQ
 
 #@if FASTBASIC_FP
 # FP Comparisons:
@@ -310,7 +307,7 @@ COMP_STR_RIGHT: comparison operator
         "<"  PCMP_STR_EXPR emit TOK_LT
 
 COMP_EXPR_MORE:
-        COMP_EXPR_RIGHT COMP_EXPR_MORE
+        emit TOK_PUSH COMP_EXPR_RIGHT COMP_EXPR_MORE
         pass
 
 # String expressions: base plus optional index
