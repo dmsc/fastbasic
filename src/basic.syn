@@ -116,7 +116,7 @@ FP_E_EXPR_MORE: '^'
         pass
 
 FP_T_EXPR: floating point constant, variable or function
-	emit TOK_FLOAT E_NUMBER_FP
+        emit TOK_FLOAT E_NUMBER_FP
         "-" FP_T_EXPR emit TOK_FP_NEG
         "+" FP_T_EXPR
         # FP Functions
@@ -133,7 +133,7 @@ FP_T_EXPR: floating point constant, variable or function
         "VAL"   STR_PAR_EXPR emit TOK_FP_VAL
         "RND()" emit TOK_FP_RND
         FP_PAR_EXPR
-	emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_FP_LOAD
+        emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_FP_LOAD
         INT_EXPR emit TOK_INT_FP
 
 FP_PAR_EXPR: left parenthesis
@@ -142,20 +142,20 @@ FP_PAR_EXPR: left parenthesis
 
 # Normal expressions
 INT_EXPR: integer expression
-	T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
+        T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
 
 PUSH_T_EXPR:
         emit TOK_PUSH T_EXPR
 
 INT_EXPR_MORE: '+', '-'
-	"+" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_ADD INT_EXPR_MORE
-	"-" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_SUB INT_EXPR_MORE
+        "+" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_ADD INT_EXPR_MORE
+        "-" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_SUB INT_EXPR_MORE
         pass
 
 M_EXPR_MORE: '*', '/', 'MOD'
-	"*"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MUL M_EXPR_MORE
-	"/"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_DIV M_EXPR_MORE
-	"MOD" PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
+        "*"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MUL M_EXPR_MORE
+        "/"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_DIV M_EXPR_MORE
+        "MOD" PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
         pass
 
 BIT_EXPR_MORE: '&', '!', 'EXOR'
@@ -175,8 +175,8 @@ USR_EXPR_MORE:
         pass
 
 T_EXPR: integer constant, variable or function
-	emit TOK_BYTE E_NUMBER_BYTE
-	emit TOK_NUM E_NUMBER_WORD
+        emit TOK_BYTE E_NUMBER_BYTE
+        emit TOK_NUM E_NUMBER_WORD
         "-" T_EXPR emit TOK_NEG
         "+" T_EXPR
         "NOT" NOT_EXPR emit TOK_L_NOT
@@ -185,7 +185,7 @@ T_EXPR: integer constant, variable or function
         # Variables as R-Values, push value into stack
         ARRAY_WORD_ADDR emit TOK_DPEEK
         VAR_BYTE_LVALUE emit TOK_PEEK
-	emit TOK_VAR_LOAD E_VAR_WORD
+        emit TOK_VAR_LOAD E_VAR_WORD
         # Functions
         "ABS"    PAR_EXPR emit TOK_ABS
         "SGN"    PAR_EXPR emit TOK_SGN
@@ -343,9 +343,9 @@ PRINT_SEP:
         E_EOL emit TOK_PRINT_EOL
 
 PRINT_ONE:
-	EXPR emit TOK_INT_STR emit TOK_PRINT_STR PRINT_SEP
+        EXPR emit TOK_INT_STR emit TOK_PRINT_STR PRINT_SEP
 #@if FASTBASIC_FP
-	FP_EXPR emit TOK_FP_STR emit TOK_PRINT_STR PRINT_SEP
+        FP_EXPR emit TOK_FP_STR emit TOK_PRINT_STR PRINT_SEP
 #@endif FASTBASIC_FP
         STR_EXPR emit TOK_PRINT_STR PRINT_SEP
         "," emit TOK_PRINT_TAB
@@ -426,15 +426,15 @@ SOUND_S1:
 
 # Word Arrays
 ARRAY_WORD_ADDR:
-	emit TOK_VAR_LOAD E_VAR_ARRAY_WORD emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
+        emit TOK_VAR_LOAD E_VAR_ARRAY_WORD emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
 
 # String Arrays
 ARRAY_STRING_ADDR:
-	emit TOK_VAR_LOAD E_VAR_ARRAY_STRING "$" emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
+        emit TOK_VAR_LOAD E_VAR_ARRAY_STRING "$" emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
 
 # This is the same as "ARRAY_BYTE_ADDR"
 VAR_BYTE_LVALUE:
-	emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE emit TOK_PUSH PAR_EXPR emit TOK_ADD
+        emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE emit TOK_PUSH PAR_EXPR emit TOK_ADD
 
 # DIM
 DIM_MORE: comma
@@ -549,9 +549,9 @@ DATA_VAR: new array name
 
 # Parse a line
 PARSE_LINE_COMMAND:
-	"." E_REM
-	"?" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
-	"PRint" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
+        "." E_REM
+        "?" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
+        "PRint" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
@@ -616,7 +616,7 @@ PARSE_LINE_ASSIGN:
 #@endif FASTBASIC_FP
 
 SKIP_COMMENT:
-	"'" E_REM
+        "'" E_REM
         E_EOL
         pass
 
