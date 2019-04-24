@@ -28,27 +28,32 @@
 ; ---------------------------
 
         .import         get_op_var
-        .importzp       next_instruction, tmp1
+        .importzp       next_instruction, saddr
 
         .segment        "RUNTIME"
 
 EXE_DECVAR:     ; VAR = VAR - 1
         jsr     get_op_var
+.ifdef NO_SMCODE
+        sta     saddr
+        stx     saddr+1
+.endif
+        ; NOTE: Here, we have the address in SADDR and in the
+        ;       AX register, but using Self-Modifying code it
+        ;       is smaller and faster using AX.
 .proc   EXE_DEC ; *(AX) = *(AX) - 1
 .ifdef NO_SMCODE
         ; This is too long, it misses DEC A
-        sta     tmp1
-        stx     tmp1+1
         ldy     #0
-        lda     (tmp1),y
+        lda     (saddr),y
         clc
         adc     #$FF
-        sta     (tmp1),y
+        sta     (saddr),y
         bcs     :+              ; Longer, but much faster
         iny
-        lda     (tmp1),y
+        lda     (saddr),y
         adc     #$FF
-        sta     (tmp1),y
+        sta     (saddr),y
 :
 .else
         stx     loadH+2
