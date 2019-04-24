@@ -164,11 +164,6 @@ BIT_EXPR_MORE: '&', '!', 'EXOR'
         "EXOR" PUSH_T_EXPR emit TOK_BIT_EXOR BIT_EXPR_MORE
         pass
 
-NEG_EXPR:
-	"-" T_EXPR
-	"+" NEG_EXPR
-	T_EXPR emit TOK_NEG
-
 ADR_EXPR: string or variable
         STR_EXPR
         emit TOK_VAR_LOAD E_VAR_ARRAY_WORD
@@ -182,7 +177,7 @@ USR_EXPR_MORE:
 T_EXPR: integer constant, variable or function
 	emit TOK_BYTE E_NUMBER_BYTE
 	emit TOK_NUM E_NUMBER_WORD
-        "-" NEG_EXPR
+        "-" T_EXPR emit TOK_NEG
         "+" T_EXPR
         "NOT" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
