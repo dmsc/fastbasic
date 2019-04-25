@@ -37,7 +37,9 @@ static const char *fb_lib_path       = "../compiler";
 #define FB_ASM      "cl65 -tatari"
 #define FB_LIB_FP   "fastbasic-fp.lib"
 #define FB_LIB_INT  "fastbasic-int.lib"
+#define FB_LIB_ASM  "fastbasic-asm.lib"
 #define FB_CFG_FILE "fastbasic.cfg"
+#define FB_CFG_ASM  "fastbasic-asm.cfg"
 
 // Functions to get/put characters to running XEX
 static size_t str_out_pos, str_out_len, str_in_pos, str_in_len;
@@ -239,17 +241,46 @@ static int run_prog(const char *prog, char *out, size_t *len)
     return pclose(f) ? 1 : 0;
 }
 
+enum compile_type {
+    cc_int,
+    cc_fp,
+    cc_asm_fp
+};
+
 static int compile_cross(const char *basname, const char *asmname,
-                         const char *xexname, int fp, int comp_ok)
+                         const char *xexname, enum compile_type comp_type, int comp_ok)
 {
-    const char *comp = fp ? fb_fp_compiler : fb_int_compiler;
-    const char *libs = fp ? FB_LIB_FP : FB_LIB_INT;
+    const char *comp, *libs, *opts, *lcfg;
     char *cmd = 0;
     char *out = calloc(8192, 1);
     int e = -1;
 
+    switch(comp_type)
+    {
+        case cc_int:
+            comp = fb_int_compiler;
+            libs = FB_LIB_INT;
+            lcfg = FB_CFG_FILE;
+            opts = "";
+            break;
+        case cc_fp:
+            comp = fb_fp_compiler;
+            libs = FB_LIB_FP;
+            lcfg = FB_CFG_FILE;
+            opts = "";
+            break;
+        case cc_asm_fp:
+            comp = fb_fp_compiler;
+            libs = FB_LIB_ASM;
+            lcfg = FB_CFG_ASM;
+            opts = "-f ";
+            break;
+        default:
+            goto xit;
+    }
+
     unlink(asmname);
-    if (asprintf(&cmd, "%s %s %s", comp, basname, asmname) < 0)
+    if (asprintf(&cmd, "%s %s%s %s", comp, opts, basname, asmname) < 0)
     {
         fprintf(stderr, "%s: memory error.\n", basname);
         goto xit;
@@ -275,7 +306,7 @@ static int compile_cross(const char *basname, const char *asmname,
         free(cmd);
         cmd = 0;
         if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", FB_ASM, fb_lib_path,
-                    FB_CFG_FILE, xexname, asmname, fb_lib_path, libs) < 0)
+                    lcfg, xexname, asmname, fb_lib_path, libs) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
             goto xit;
@@ -309,7 +340,8 @@ enum tests {
     test_fp = 2,
     test_int = 4,
     test_native = 8,
-    test_compile_error = 16
+    test_compile_error = 16,
+    test_asm_fp = 32
 };
 
 // Runs one test from the test-file
@@ -351,23 +383,23 @@ int fbtest(const char *fname)
         else if (!strcasecmp(key, "test"))
         {
             if (!strcasecmp(buf, "run"))
-                test = test_run | test_fp | test_int | test_native;
+                test = test_run | test_fp | test_int | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "run-fp"))
-                test = test_run | test_fp | test_native;
+                test = test_run | test_fp | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "run-int"))
                 test = test_run | test_int;
             else if (!strcasecmp(buf, "compile"))
-                test = test_fp | test_int | test_native;
+                test = test_fp | test_int | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "compile-fp"))
-                test = test_fp | test_native;
+                test = test_fp | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "compile-int"))
                 test = test_int;
             else if (!strcasecmp(buf, "compile-error"))
-                test = test_compile_error | test_fp | test_int | test_native;
+                test = test_compile_error | test_fp | test_int | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "compile-error-native"))
                 test = test_compile_error | test_native;
             else if (!strcasecmp(buf, "compile-error-fp"))
-                test = test_compile_error | test_fp | test_native;
+                test = test_compile_error | test_fp | test_native | test_asm_fp;
             else if (!strcasecmp(buf, "compile-error-int"))
                 test = test_compile_error | test_int;
             else
@@ -526,7 +558,7 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile fp cross\n", fname);
             // Floating Point: cross
-            if (compile_cross(basname, asmname, xexname, 1, !(test & test_compile_error)))
+            if (compile_cross(basname, asmname, xexname, cc_fp, !(test & test_compile_error)))
                 break;
 
             if (test & test_run)
@@ -538,12 +570,29 @@ int fbtest(const char *fname)
                     break;
             }
         }
+        if (0 != (test & test_asm_fp))
+        {
+            if (verbose)
+                fprintf(stderr, "%s: compile asm fp cross\n", fname);
+            // Floating Point: cross
+            if (compile_cross(basname, asmname, xexname, cc_asm_fp, !(test & test_compile_error)))
+                break;
+
+            if (test & test_run)
+            {
+                if (verbose)
+                    fprintf(stderr, "%s: run asm fp cross\n", fname);
+                // Now, runs and checks XEX
+                if (run_test_xex(xexname, input_buf, expected_out))
+                    break;
+            }
+        }
         if (0 != (test & test_int))
         {
             if (verbose)
                 fprintf(stderr, "%s: compile int cross\n", fname);
             // Integer: cross
-            if (compile_cross(basname, asmname, xexname, 0, !(test & test_compile_error)))
+            if (compile_cross(basname, asmname, xexname, cc_int, !(test & test_compile_error)))
                 break;
 
             if (test & test_run)
