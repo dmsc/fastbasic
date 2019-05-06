@@ -119,6 +119,7 @@ ploop:  iny
         php
         and     #$7F
         jsr     putc
+        ldx     #0
         plp
 skip:   bpl     ploop
         dex
