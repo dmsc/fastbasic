@@ -25,7 +25,7 @@
         .data
 error_msg_list:
 .macro  def_error name, msg
-        ::name    = * - error_msg_list
+        ::name    = <(* - error_msg_list)
         .exportzp name
         .repeat .strlen(msg)-1, I
                 .byte   .strat(msg, I)
