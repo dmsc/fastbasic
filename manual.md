@@ -56,7 +56,7 @@ prompt. This will load the IDE and
 present you with a little help text:
 
     --D:HELP.TXT-------------------0--
-    '  FastBasic v4.0 -  (c) 2019 dmsc
+    '  FastBasic 4.1 - (c) 2019 dmsc
     '
     ' Editor Help
     ' -----------

@@ -134,7 +134,7 @@ ENDPROC
 ' Main Program
 '
 
-? "FastBasic Compiler v4.0"
+? "FastBasic Compiler 4.1 beta"
 exec LoadFile
 
 exec CompileFile
