@@ -106,23 +106,17 @@ parser_inc_opos:
         inc     opos
         bne     rts1
 too_long:
-        ldx     #ERR_TOO_LONG
+        ldy     #ERR_TOO_LONG
         ; Fall through
 
 .proc parser_error
-        ; Prints error message in X
-        ldy     #$FF
-ploop:  iny
-        cpx     #1      ; C=1 if X != 0
-        lda     error_msg_list, y
-        bcs     skip    ; Skip if X != 0
+        ; Prints error message in Y
+ploop:  lda     error_msg_list, y
         php
+        iny
         and     #$7F
         jsr     putc
-        ldx     #0
         plp
-skip:   bpl     ploop
-        dex
         bpl     ploop
         sec
 ::parse_end:
@@ -131,14 +125,14 @@ skip:   bpl     ploop
 
 .proc parse_eof
         ; Check if parser stack is empty
-        ldx     #ERR_NO_ELOOP
+        ldy     #ERR_NO_ELOOP
         lda     loop_sp
         bne     parser_error
 
         .importzp       laddr_ptr, laddr_buf
 ; Check if all labels are defined
-        ldx     #ERR_LABEL
         ldy     #0
+        .assert ERR_LABEL = 0, error, "Parser depends on ERR_LABEL = 0"
 lbl_chk_start:
         lda     laddr_buf
         cmp     laddr_ptr
@@ -147,7 +141,7 @@ lbl_chk_start:
         beq     ok
 
         lda     (laddr_buf), y
-        beq     parser_error
+        beq     parser_error    ; Y = 0 == ERR_LABEL here!
 
         ; Note: C = 0 from above!
         lda     laddr_buf
@@ -438,7 +432,7 @@ go_ploop:
 :       jmp     ploop
 
 set_parse_error:
-        ldx     #ERR_PARSE
+        ldy     #ERR_PARSE
         jmp     parser_error
 
 ; vi:syntax=asm_ca65

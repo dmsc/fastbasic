@@ -24,21 +24,19 @@
         ; Keep in line with error definitions
         .data
 error_msg_list:
-        err_count .set -1
 .macro  def_error name, msg
-        err_count .set err_count + 1
-        ::name    = err_count
+        ::name    = * - error_msg_list
         .exportzp name
         .repeat .strlen(msg)-1, I
                 .byte   .strat(msg, I)
         .endrepeat
         .byte   .strat(msg, .strlen(msg)-1) ^ $80
 .endmacro
+        def_error ERR_LABEL,    "undef label"
         def_error ERR_TOO_LONG, "too long"
         def_error ERR_LOOP,     "bad loop"
         def_error ERR_PARSE,    "parse error"
         def_error ERR_NO_ELOOP, "no end loop/proc/if"
-        def_error ERR_LABEL,    "undef label"
 
 .if (* - error_msg_list) > 255
         .error  "Error, too many error messages"

@@ -614,7 +614,7 @@ xit:    clc
 .endproc
 
 .proc   loop_error
-        ldx     #ERR_LOOP
+        ldy     #ERR_LOOP
         jmp     parser_error
 .endproc
 
