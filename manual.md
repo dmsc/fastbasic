@@ -932,10 +932,11 @@ Control Statements
 
   A slightly modified usage of the
   FOR/NEXT loop allows for excluding
-  the variable name from NEXT.
+  the variable name from NEXT; this
+  is required if _var_ is an array.
 
-  This is an example of of NEXT
-  variable exclusion:
+  This is an example of NEXT without
+  variable:
 
       ' sample of FOR/NEXT loop without
       ' NEXT variable name

@@ -403,10 +403,9 @@ STEP_OPTIONAL:
         "Step" emit TOK_PUSH EXPR
         emit TOK_PUSH_1
 
-# Parse variable name in "NEXT"
+# Parse (optional) variable name in "NEXT"
 NEXT_VARNAME:
         E_VAR_WORD
-        emit VT_ARRAY_WORD E_VAR_SEARCH
         emit 0 pass
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
