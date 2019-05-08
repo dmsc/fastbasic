@@ -789,28 +789,11 @@ static bool SMB_E_VAR_WORD(parse &s)
     return var_check(s, VT_WORD);
 }
 
-static bool SMB_E_VAR_ARRAY_WORD(parse &s)
+static bool SMB_E_VAR_SEARCH(parse &s)
 {
-    s.debug("E_VAR_ARRAY_WORD");
-    return var_check(s, VT_ARRAY_WORD);
-}
-
-static bool SMB_E_VAR_ARRAY_BYTE(parse &s)
-{
-    s.debug("E_VAR_ARRAY_BYTE");
-    return var_check(s, VT_ARRAY_BYTE);
-}
-
-static bool SMB_E_VAR_ARRAY_STRING(parse &s)
-{
-    s.debug("E_VAR_ARRAY_STRING");
-    return var_check(s, VT_ARRAY_STRING);
-}
-
-static bool SMB_E_VAR_STRING(parse &s)
-{
-    s.debug("E_VAR_STRING");
-    return var_check(s, VT_STRING);
+    enum VarType type = get_vartype(s.remove_last().get_str());
+    s.debug("E_VAR_SEARCH: " + get_vt_name(type));
+    return var_check(s, type);
 }
 
 #ifdef FASTBASIC_FP
@@ -866,11 +849,6 @@ static bool SMB_E_NUMBER_FP(parse &s)
     return true;
 }
 
-static bool SMB_E_VAR_FP(parse &s)
-{
-    s.debug("E_VAR_FP");
-    return var_check(s, VT_FLOAT);
-}
 #endif
 
 static bool SMB_E_LABEL_DEF(parse &s)

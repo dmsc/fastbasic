@@ -86,12 +86,12 @@ EXTERN {
  E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
  E_CONST_STRING
  E_VAR_CREATE, E_VAR_SET_TYPE
- E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_STRING, E_VAR_ARRAY_STRING
+ E_VAR_WORD, E_VAR_SEARCH
  E_LABEL, E_LABEL_DEF
  E_PUSH_VAR, E_POP_VAR
 
 #@if FASTBASIC_FP
- E_VAR_FP, E_NUMBER_FP
+ E_NUMBER_FP
 #@endif FASTBASIC_FP
 }
 
@@ -133,7 +133,7 @@ FP_T_EXPR: floating point constant, variable or function
         "VAL"   STR_PAR_EXPR emit TOK_FP_VAL
         "RND()" emit TOK_FP_RND
         FP_PAR_EXPR
-        emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_FP_LOAD
+        emit TOK_VAR_ADDR emit VT_FLOAT E_VAR_SEARCH "%" emit TOK_FP_LOAD
         INT_EXPR emit TOK_INT_FP
 
 FP_PAR_EXPR: left parenthesis
@@ -170,9 +170,9 @@ BIT_EXPR_MORE: '&', '!', 'EXOR'
 
 ADR_EXPR: string or variable
         STR_EXPR
-        emit TOK_VAR_LOAD E_VAR_ARRAY_WORD
-        emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE
-        emit TOK_VAR_LOAD E_VAR_ARRAY_STRING
+        emit TOK_VAR_LOAD emit VT_ARRAY_WORD   E_VAR_SEARCH
+        emit TOK_VAR_LOAD emit VT_ARRAY_BYTE   E_VAR_SEARCH
+        emit TOK_VAR_LOAD emit VT_ARRAY_STRING E_VAR_SEARCH
 
 USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
@@ -333,7 +333,7 @@ STR_EXPR_BASE:
         "STR$" FP_PAR_EXPR emit TOK_FP_STR
 #@endif FASTBASIC_FP
         # Or a string variable
-        emit TOK_VAR_LOAD E_VAR_STRING "$"
+        emit TOK_VAR_LOAD emit VT_STRING E_VAR_SEARCH "$"
         # Or a string array
         ARRAY_STRING_ADDR emit TOK_DPEEK
 
@@ -382,7 +382,7 @@ VAR_WORD_LVALUE_SADDR: integer variable
         ARRAY_WORD_ADDR emit TOK_SADDR
 
 VAR_STR_LVALUE_SADDR:
-        emit TOK_VAR_SADDR E_VAR_STRING "$"
+        emit TOK_VAR_SADDR emit VT_STRING E_VAR_SEARCH "$"
         ARRAY_STRING_ADDR emit TOK_SADDR
 
 VAR_WORD_SAVE: integer variable
@@ -391,7 +391,7 @@ VAR_WORD_SAVE: integer variable
 
 #@if FASTBASIC_FP
 VAR_FP_LVALUE_SADDR:
-        emit TOK_VAR_ADDR E_VAR_FP "%" emit TOK_SADDR
+        emit TOK_VAR_ADDR emit VT_FLOAT E_VAR_SEARCH "%" emit TOK_SADDR
 #@endif FASTBASIC_FP
 
 # This is a standalone rule to skip spaces before the equal
@@ -406,7 +406,7 @@ STEP_OPTIONAL:
 # Parse variable name in "NEXT"
 NEXT_VARNAME:
         E_VAR_WORD
-        E_VAR_ARRAY_WORD
+        emit VT_ARRAY_WORD E_VAR_SEARCH
         emit 0 pass
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
@@ -427,15 +427,15 @@ SOUND_S1:
 
 # Word Arrays
 ARRAY_WORD_ADDR:
-        emit TOK_VAR_LOAD E_VAR_ARRAY_WORD emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
+        emit TOK_VAR_LOAD emit VT_ARRAY_WORD E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
 
 # String Arrays
 ARRAY_STRING_ADDR:
-        emit TOK_VAR_LOAD E_VAR_ARRAY_STRING "$" emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
+        emit TOK_VAR_LOAD emit VT_ARRAY_STRING E_VAR_SEARCH "$" emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
 
 # This is the same as "ARRAY_BYTE_ADDR"
 ARRAY_BYTE_ADDR:
-        emit TOK_VAR_LOAD E_VAR_ARRAY_BYTE emit TOK_PUSH PAR_EXPR emit TOK_ADD
+        emit TOK_VAR_LOAD emit VT_ARRAY_BYTE E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_ADD
 
 # DIM
 DIM_MORE: comma

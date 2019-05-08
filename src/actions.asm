@@ -24,8 +24,8 @@
         .export         E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
         .export         E_CONST_STRING
-        .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_ARRAY_BYTE, E_VAR_ARRAY_WORD, E_VAR_ARRAY_STRING
-        .export         E_VAR_SET_TYPE, E_VAR_STRING
+        .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
+        .export         E_VAR_SET_TYPE
         .export         E_LABEL, E_LABEL_DEF
         .export         E_PUSH_VAR, E_POP_VAR
         .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
@@ -49,7 +49,7 @@
 
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
-        .export         E_VAR_FP, E_NUMBER_FP
+        .export         E_NUMBER_FP
 
 read_fp = AFP
 .endif ; FASTBASIC_FP
@@ -322,30 +322,13 @@ xrts:   rts
         ldx     FR0+5
         jmp     emit_AX
 .endproc
-
-.proc   E_VAR_FP
-        lda     #VT_FLOAT
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
 .endif ; FASTBASIC_FP
 
 ; Variable matching.
 ; The parser calls the routine to check if there is a variable
 ; with the correct type
-.proc   E_VAR_ARRAY_STRING
-        lda     #VT_ARRAY_STRING
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_VAR_STRING
-        lda     #VT_STRING
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_VAR_ARRAY_BYTE
-        lda     #VT_ARRAY_BYTE
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_VAR_ARRAY_WORD
-        lda     #VT_ARRAY_WORD
+.proc   E_VAR_SEARCH
+        jsr     get_last_tok    ; Get variable TYPE from last token
         .byte   $2C   ; Skip 2 bytes over next "LDA"
 .endproc        ; Fall through
 .proc   E_VAR_WORD
