@@ -624,27 +624,15 @@ static bool SMB_E_POP_IF(parse &s)
     return true;
 }
 
-static bool SMB_E_ELSE(parse &s)
+static bool SMB_E_ELSEIF(parse &s)
 {
     // nothing to do!
-    s.debug("E_ELSE");
+    s.debug("E_ELSEIF");
     auto l1 = s.pop_loop(LT_IF);
     if( l1.empty() )
         return false;
-    auto l2 = s.push_loop(LT_ELSE);
-    s.emit_word(l2);
-    s.emit_label(l1);
-    return true;
-}
-
-static bool SMB_E_ELIF(parse &s)
-{
-    // nothing to do!
-    s.debug("E_ELIF");
-    auto l1 = s.pop_loop(LT_IF);
-    if( l1.empty() )
-        return false;
-    auto l2 = s.push_loop(LT_ELIF);
+    auto t = get_looptype(s.remove_last().get_str());
+    auto l2 = s.push_loop(t);
     s.emit_word(l2);
     s.emit_label(l1);
     return true;

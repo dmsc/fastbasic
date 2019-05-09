@@ -21,7 +21,7 @@
 
         .export         E_REM, E_EOL, E_NUMBER_WORD, E_NUMBER_BYTE
         .export         E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
-        .export         E_POP_IF, E_ELSE, E_ELIF, E_EXIT_LOOP
+        .export         E_POP_IF, E_ELSEIF, E_EXIT_LOOP
         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
@@ -775,9 +775,9 @@ comp_y: cpx     #$FC
 .proc   E_POP_IF
         ; Patch IF/ELSE with current position
         lda     #LT_ELSE
+check_elif:
         jsr     pop_patch_codep
-.endproc        ; Fall through
-.proc   check_elif
+        ; Check and remove all ELIF targets
         ldy     loop_sp
         dey
         dey
@@ -785,7 +785,7 @@ comp_y: cpx     #$FC
         bmi     no_elif
         lda     #LT_ELIF
         cmp     loop_stk, y
-        beq     pop_patch_codep ; ELIF, remove from stack and patch
+        beq     check_elif
 no_elif:
         clc
         rts
@@ -822,25 +822,14 @@ no_elif:
         rts     ; C is cleared on exit!
 .endproc
 
-.proc   E_ELIF
-        ldy     #LT_ELIF
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_ELSE
-        ldy     #LT_ELSE
-        sty     type+1
+.proc   E_ELSEIF
         ; Pop the old position to patch (from IF)
         lda     #LT_IF
         jsr     pop_codep
         sta     tmp1
         stx     tmp1+1
-        ; Test if there is an ELIF to pop here
-        dec     opos
-        jsr     check_elif
-        inc     opos
-        ; Emit a jump to a new position
-type:   lda     #LT_ELSE
-        jsr     push_codep
+        ; Emit a jump to a new position (loop type ELIF/ELSE from code)
+        jsr     E_PUSH_LT
         ; Parch current position + 2 (over jump)
         lda     tmp1
         ldx     tmp1+1
