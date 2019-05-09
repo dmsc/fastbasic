@@ -131,8 +131,8 @@ ploop:  lda     error_msg_list, y
 
         .importzp       laddr_ptr, laddr_buf
 ; Check if all labels are defined
-        ldy     #0
-        .assert ERR_LABEL = 0, error, "Parser depends on ERR_LABEL = 0"
+        ldy     #1
+        .assert ERR_LABEL = 1, error, "Parser depends on ERR_LABEL = 1"
 lbl_chk_start:
         lda     laddr_buf
         cmp     laddr_ptr
@@ -141,7 +141,7 @@ lbl_chk_start:
         beq     ok
 
         lda     (laddr_buf), y
-        beq     parser_error    ; Y = 0 == ERR_LABEL here!
+        beq     parser_error    ; unresolved label, return with Y=1 : ERR_LABEL
 
         ; Note: C = 0 from above!
         lda     laddr_buf

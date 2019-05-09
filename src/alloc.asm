@@ -43,7 +43,7 @@
 ;                  same functions.
 ;  label_ptr
 ;
-;  laddr_buf:   -> Label address table, stores address of PROC of address
+;  laddr_buf:   -> Label address table, stores address of PROC and address
 ;                  of EXEC arguments, to be patched when PROC address is known.
 ;  laddr_ptr
 ;

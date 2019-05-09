@@ -23,7 +23,7 @@
 
         ; Keep in line with error definitions
         .data
-error_msg_list:
+error_msg_list = * - 1
 .macro  def_error name, msg
         ::name    = <(* - error_msg_list)
         .exportzp name

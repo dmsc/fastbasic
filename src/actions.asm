@@ -404,6 +404,35 @@ no_float:
 xit:    rts
 .endproc
 
+; Support for labels (PROC/EXEC)
+; ------------------------------
+;
+; We keep two lists:
+;  - label_buf/ptr: a list of all the labels, sorted by the label number.
+;                   one byte for each character in the name, last byte with
+;                   bit 7 set.
+;  - laddr_buf/ptr: a list with each label reference:
+;                   byte 0: the label number,
+;                   byte 1: the type of reference,
+;                   byte 2: high byte of address of reference,
+;                   byte 3: low byte of address of reference.
+;
+;  The type of references are:
+;                   0 : A call (EXEC) of the label, to be patched with the
+;                       correct address when known.
+;                   1 : Same as above, but already patched (resolved).
+;                 128 : The address of a label (target).
+;
+; Each time a label is referenced (EXEC), the laddr list is searched for an
+; entry with the address (type = 128). If no entry is found, a new entry of
+; type 0 is created with the address to be patched.
+;
+; Each time a label is defined (PROC), the laddr list is searched for any
+; entry with type = 0 to patch the correct address and the type is set to 1.
+; Also, a new entry is created with the PROC address and type = 128.
+;
+; At end of parsing, we check that all entries in the laddr list are <> 0.
+;
 ; Label definition search/create
 .proc   E_LABEL_DEF
         jsr     label_create
@@ -420,8 +449,7 @@ cloop:  bmi     error
 
         ; Mark the label as "resolved", so we can show error if not all
         ; labels are defined after parsing ends.
-        ldy     #0
-        lda     #1
+        tya     ; Y = 1 from patch_codep
         sta     (tmp1), y
 
         ; Continue searching the address list
@@ -483,19 +511,20 @@ comp:
         lda     tmp1+1
         sbc     laddr_ptr+1
         bcs     xit             ; Exit if no more addresses found
+
         ldy     #0
-        lda     (tmp1), y       ; Read label address type
-        sta     tmp2
-        iny
         lda     (tmp1), y       ; Read label number and compare
 cpnum:  eor     #$00
         bne     loop            ; Not our label, retry
+        iny
+        lda     (tmp1), y       ; Read label address type
+        php                     ; and store flags in stack
         iny
         lda     (tmp1), y       ; Yes, read hi address in X
         tax
         iny
         lda     (tmp1), y       ; lo address in A
-        ldy     tmp2            ; And type in Y
+        plp                     ; And type in P
 xit:    rts
 ::laddr_search_num = cpnum + 1
 ::laddr_search_start = comp
@@ -513,13 +542,14 @@ xit:    rts
         lda     #4
         jsr     alloc_laddr
 
-        pla
-        bcs     xit
-
         ldy     #0
-        sta     (tmp2), y
-        iny
         lda     laddr_search_num
+        sta     (tmp2), y
+
+        pla
+        bcs     xit     ; Error from alloc above!
+
+        iny
         sta     (tmp2), y
         jsr     get_codep
         ldy     #3
@@ -537,7 +567,7 @@ xit:    rts
         ; Emits a label, searching the label address in the label list
         bcs     nfound
 
-        ; Check label number
+        ; Check label status
 cloop:  bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
 emit_end:
@@ -578,11 +608,11 @@ ret:    rts
         sta     loop_stk, y
         pha
         jsr     get_codep
-        iny
-        sta     loop_stk, y
-        iny
+        sta     loop_stk + 1, y
         txa
-        sta     loop_stk, y
+        sta     loop_stk + 2, y
+        iny
+        iny
         iny
         bmi     loop_error
         sty     loop_sp
@@ -776,6 +806,7 @@ no_elif:
 .endproc        ; Fall through
 .proc   patch_codep
         ; Patches saved position with current position
+        ; RETURNS  C cleared, Y = 1.
         sta     tmp2
         stx     tmp2+1
         jsr     get_codep
