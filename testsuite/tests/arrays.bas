@@ -1,7 +1,7 @@
 ' Test for array operations
 ? "Start"
 
-dim arr1( 20 ) , arr2(10) byte
+dim arr1( 19 ) , arr2(9) byte
 
 arr1(0) = 1
 for i = 1 to 19

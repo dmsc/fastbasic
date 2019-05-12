@@ -408,7 +408,10 @@ dimensioned before use (see `DIM`
 statement below). The index of the
 element is written between parentheses
 and goes from 0 to the number of
-elements less 1.
+elements. Note that FastBasic does not
+check for out of boundary accesses, so
+you must be careful with your code to
+not overrun the size of the arrays.
 
 You can use an array position (the
 variable name followed by the index) in

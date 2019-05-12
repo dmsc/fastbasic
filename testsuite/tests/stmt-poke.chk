@@ -2,5 +2,5 @@ Name: Test statement "POKE"/"DPOKE"
 Test: run
 Output:
 Start
-0 1 4 9 16 25 36 49 64 81 
+0 1 4 9 16 25 36 49 64 81 100 
 BCDEFGHIJKg

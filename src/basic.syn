@@ -473,9 +473,9 @@ TYPE_BYTE:
         "Byte" emit VT_ARRAY_BYTE
 
 DIM_VAR_TYPE:
-        "$" PAR_EXPR emit TOK_USHL emit VT_ARRAY_STRING
-        PAR_EXPR TYPE_BYTE
-        PAR_EXPR emit TOK_USHL TYPE_WORD
+        "$" PAR_EXPR emit TOK_PUSH_BYTE emit 1 emit TOK_ADD emit TOK_USHL emit VT_ARRAY_STRING
+        PAR_EXPR     emit TOK_PUSH_BYTE emit 1 emit TOK_ADD TYPE_BYTE
+        PAR_EXPR     emit TOK_PUSH_BYTE emit 1 emit TOK_ADD emit TOK_USHL TYPE_WORD
 
 DIM_VAR: new variable name
         E_VAR_CREATE E_PUSH_VAR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM E_POP_VAR

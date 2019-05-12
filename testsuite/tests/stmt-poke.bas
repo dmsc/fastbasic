@@ -1,16 +1,21 @@
 ' Test for "POKE" and "DPOKE" statements
 ? "Start"
-dim A(10)
+dim A(10), B(1)
 addr = Adr(A)
 
-for i=0 to 9
+B(0) = 12345
+for i=0 to 10
   dpoke addr+2*i, i*i
 next i
 
-for i=0 to 9
+for i=0 to 10
   ? A(i); " ";
 next i
 ?
+
+if B(0) <> 12345
+  ? "corrupted B"
+endif
 
 xstr$="Test String"
 addr = Adr(xstr$)

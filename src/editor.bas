@@ -30,7 +30,7 @@
 
 '-------------------------------------
 ' Array definitions
-dim ScrAdr(25)
+dim ScrAdr(24)
 ' And an array with the current line being edited
 ''NOTE: Use page 6 ($600 to $6FF) to free memory instead of a dynamic array
 'dim EditBuf(256) byte
@@ -40,7 +40,7 @@ EditBuf = $600
 FileName$ = "D:HELP.TXT"
 
 ' MemStart: the start of available memory, used as a buffer for the file data
-dim MemStart(0)
+dim MemStart(-1) byte
 ' MemEnd: the end of the current file, initialized to MemStart.
 MemEnd = Adr(MemStart)
 

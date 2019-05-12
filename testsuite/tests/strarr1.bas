@@ -1,4 +1,4 @@
- DIM ar$(100)
+ DIM ar$(99)
  ar$(10) = "Some Text"
  ar$(30) = "More Text"
  for i=0 to 99

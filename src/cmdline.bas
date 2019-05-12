@@ -30,7 +30,7 @@
 FileName$ = ""
 
 ' MemStart: the start of available memory, used as a buffer for the file data
-dim MemStart(0)
+dim MemStart(-1) byte
 ' MemEnd: the end of the current file, initialized to MemStart.
 MemEnd = Adr(MemStart)
 NewPtr = 0

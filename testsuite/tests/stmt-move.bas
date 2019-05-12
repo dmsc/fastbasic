@@ -19,7 +19,7 @@ s1$ = "initial string number 1, all lowercase"
 ? s1$
 
 ' Fill big areas
-dim a(520) byte
+dim a(519) byte
 
 exec sum_a
 
