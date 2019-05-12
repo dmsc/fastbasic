@@ -31,7 +31,7 @@
         .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         ; From alloc.asm
         .import         alloc_prog
-        .importzp       prog_ptr
+        .importzp       prog_ptr, BASIC_TOP
         ; From vars.asm
         .importzp       var_count, label_count
         ; From runtime.asm

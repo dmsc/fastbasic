@@ -128,7 +128,6 @@ COMMON_AS_SRC=\
     src/interp/dpoke.asm\
     src/interp/for.asm\
     src/interp/for_exit.asm\
-    src/interp/free.asm\
     src/interp/getkey.asm\
     src/interp/graphics.asm\
     src/interp/inc.asm\

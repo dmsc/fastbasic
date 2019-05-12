@@ -34,7 +34,7 @@ TOKENS {
  TOK_BIT_AND, TOK_BIT_OR, TOK_BIT_EXOR
  # Functions
  TOK_PEEK, TOK_DPEEK
- TOK_TIME, TOK_FRE, TOK_RAND
+ TOK_TIME, TOK_RAND
  # Boolean operators
  TOK_L_NOT, TOK_L_OR, TOK_L_AND
  # Comparisons
@@ -204,7 +204,7 @@ T_EXPR: integer constant, variable or function
 #@endif FASTBASIC_FP
         "RAND"   PAR_EXPR emit TOK_RAND
         "DPEEK"  PAR_EXPR emit TOK_DPEEK
-        "FRE()"  emit TOK_FRE
+        "FRE()"  emit TOK_NUM word MEMTOP emit TOK_DPEEK emit TOK_PUSH_BYTE emit BASIC_TOP emit TOK_DPEEK emit TOK_SUB
         "ERR()"  emit TOK_BYTE emit IOERROR emit TOK_PEEK
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"

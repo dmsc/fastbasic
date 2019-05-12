@@ -57,4 +57,8 @@ laddr_ptr=      mem_end
         ; End of used memory
 mem_end:        .res    2
 
+        ; Used from BASIC code
+        .exportzp       BASIC_TOP
+BASIC_TOP= array_ptr
+
 ; vi:syntax=asm_ca65
