@@ -413,7 +413,7 @@ STEP_OPTIONAL:
 # Parse (optional) variable name in "NEXT"
 NEXT_VARNAME:
         E_VAR_WORD
-        emit 0 pass
+        emit 0
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
@@ -634,7 +634,6 @@ PARSE_LINE_ASSIGN:
 SKIP_COMMENT:
         "'" E_REM
         E_EOL
-        pass
 
 PARSE_STATEMENT: statement or variable assignment
         PARSE_LINE_COMMAND E_EOL

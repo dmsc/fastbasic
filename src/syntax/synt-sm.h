@@ -144,6 +144,9 @@ class statemachine {
             skip_comments();
             if( complete || p.eof() || p.eol() || !p.blank() )
                 return false;
+
+            bool canFail = false; // True if the parsing rule can fail (== has actions)
+
             // Reads commands until EOL or comment
             while(1)
             {
@@ -152,6 +155,8 @@ class statemachine {
                 {
                     if( !emit_bytes(true, line) )
                         line += EM::emit_ret();
+                    // If line can't fail, rule is complete.
+                    complete = !canFail;
                     return true;
                 }
                 sentry s(p);
@@ -161,6 +166,7 @@ class statemachine {
                     emit_bytes(false, line);
                     if(!parse_str(line))
                         return p.error("parse: string \"" + s.str() + "\" invalid");
+                    canFail = true;
                     continue;
                 }
                 // Command ?
@@ -196,7 +202,10 @@ class statemachine {
                     return true;
                 }
                 else if( !cmd.empty() )
+                {
+                    canFail = true;
                     line += EM::emit_call(cmd);
+                }
                 else
                     p.error("invalid label \"" + cmd + "\"");
             }
