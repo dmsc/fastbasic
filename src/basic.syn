@@ -76,6 +76,8 @@ TOKENS {
  TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
  TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
  TOK_FP_STR
+ # Used for floating point array access
+ TOK_MUL6
 #@endif FASTBASIC_FP
 }
 
@@ -133,6 +135,7 @@ FP_T_EXPR: floating point constant, variable or function
         "VAL"   STR_PAR_EXPR emit TOK_FP_VAL
         "RND()" emit TOK_FP_RND
         FP_PAR_EXPR
+        ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
         emit TOK_VAR_ADDR emit VT_FLOAT E_VAR_SEARCH "%" emit TOK_FP_LOAD
         INT_EXPR emit TOK_INT_FP
 
@@ -173,6 +176,9 @@ ADR_EXPR: string or variable
         emit TOK_VAR_LOAD emit VT_ARRAY_WORD   E_VAR_SEARCH
         emit TOK_VAR_LOAD emit VT_ARRAY_BYTE   E_VAR_SEARCH
         emit TOK_VAR_LOAD emit VT_ARRAY_STRING E_VAR_SEARCH
+#@if FASTBASIC_FP
+        emit TOK_VAR_LOAD emit VT_ARRAY_FLOAT  E_VAR_SEARCH "%"
+#@endif FASTBASIC_FP
 
 USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
@@ -391,7 +397,8 @@ VAR_WORD_SAVE: integer variable
 
 #@if FASTBASIC_FP
 VAR_FP_LVALUE_SADDR:
-        emit TOK_VAR_ADDR emit VT_FLOAT E_VAR_SEARCH "%" emit TOK_SADDR
+        emit TOK_VAR_SADDR emit VT_FLOAT E_VAR_SEARCH "%"
+        ARRAY_FLOAT_ADDR emit TOK_SADDR
 #@endif FASTBASIC_FP
 
 # This is a standalone rule to skip spaces before the equal
@@ -432,9 +439,15 @@ ARRAY_WORD_ADDR:
 ARRAY_STRING_ADDR:
         emit TOK_VAR_LOAD emit VT_ARRAY_STRING E_VAR_SEARCH "$" emit TOK_PUSH PAR_EXPR emit TOK_USHL emit TOK_ADD
 
-# This is the same as "ARRAY_BYTE_ADDR"
+# Byte Arrays
 ARRAY_BYTE_ADDR:
         emit TOK_VAR_LOAD emit VT_ARRAY_BYTE E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_ADD
+
+#@if FASTBASIC_FP
+# Float Arrays
+ARRAY_FLOAT_ADDR:
+        emit TOK_VAR_LOAD emit VT_ARRAY_FLOAT E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit TOK_MUL6 emit TOK_ADD
+#@endif FASTBASIC_FP
 
 # DIM
 DIM_MORE: comma
@@ -474,6 +487,9 @@ TYPE_BYTE:
 
 DIM_VAR_TYPE:
         "$" PAR_EXPR emit TOK_PUSH_BYTE emit 1 emit TOK_ADD emit TOK_USHL emit VT_ARRAY_STRING
+#@if FASTBASIC_FP
+        "%" PAR_EXPR emit TOK_PUSH_BYTE emit 1 emit TOK_ADD emit TOK_MUL6 emit VT_ARRAY_FLOAT
+#@endif FASTBASIC_FP
         PAR_EXPR     emit TOK_PUSH_BYTE emit 1 emit TOK_ADD TYPE_BYTE
         PAR_EXPR     emit TOK_PUSH_BYTE emit 1 emit TOK_ADD emit TOK_USHL TYPE_WORD
 

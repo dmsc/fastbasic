@@ -38,7 +38,8 @@ Currently, FastBasic supports:
   Atari Basic and Turbo Basic.
 - Automatic string variables of up to
   255 characters.
-- Arrays of "word", "byte" and strings.
+- Arrays of "word", "byte", floating
+  point and strings.
 - User defined procedures.
 - Compilation to binary loadable files.
 - Available as a full version `FB.COM`,
@@ -418,7 +419,7 @@ variable name followed by the index) in
 any location where a standard numeric
 variable or value is expected.
 
-Arrays can be of three types:
+Arrays can be of four types:
 
 - `WORD` arrays (the default if no type
   is given) use two bytes of memory for
@@ -427,6 +428,9 @@ Arrays can be of three types:
 - `BYTE` arrays use only one byte for
   each element, but the numeric range
   is reduced from 0 to 255.
+- Floating point arrays, works like any
+  floating point variable, and use six
+  bytes of memory for each element.
 - String arrays store a string in each
   element. String arrays use two bytes
   of memory for each element that is
@@ -1373,14 +1377,17 @@ General Statements
   be left out) to define an array with
   integers from -32768 to 32767.
 
-  If the name _arr_ ends with a `$`
-  symbol, this defines a string array,
-  and you can't specify a type.
+  If the name _arr_ ends with a `$` or
+  a '%' symbol, this defines a string
+  array or floating point array
+  respectively, in this case you can't
+  specify a type.
 
   The size of the array is the number
-  of elements, the elements are
-  numerated from 0, so that an array of
-  size 10 holds values from 0 to 9.
+  of elements plus one, the elements
+  are numerated from 0, so that an
+  array dimensioned to 10 holds 11
+  values, from 0 to 10.
 
   You can `DIM` more than one array by
   separating the names with commas.

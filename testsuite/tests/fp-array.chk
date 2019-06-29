@@ -1,0 +1,7 @@
+Name: Test floating point arrays
+Test: run-fp
+Output:
+Start
+1         0.5
+3.59579298E+62
+36

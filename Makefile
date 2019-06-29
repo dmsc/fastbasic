@@ -199,6 +199,7 @@ FP_AS_SRC=\
     src/interp/fp_sub.asm\
     src/interp/fp_val.asm\
     src/interp/fpmain.asm\
+    src/interp/mul6.asm\
 
 # BAS editor source
 IDE_BAS_SRC=\

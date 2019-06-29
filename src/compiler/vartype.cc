@@ -26,6 +26,7 @@ enum VarType {
         VT_ARRAY_WORD,
         VT_ARRAY_BYTE,
         VT_ARRAY_STRING,
+        VT_ARRAY_FLOAT,
         VT_STRING,
         VT_FLOAT
 };
@@ -42,6 +43,8 @@ static VarType get_vartype(std::string t)
         return VT_ARRAY_BYTE;
     if( t == "VT_ARRAY_STRING" )
         return VT_ARRAY_STRING;
+    if( t == "VT_ARRAY_FLOAT" )
+        return VT_ARRAY_FLOAT;
     if( t == "VT_STRING" )
         return VT_STRING;
     if( t == "VT_FLOAT" )
@@ -58,6 +61,8 @@ static std::string get_vt_name(enum VarType t)
             return "Byte Array";
         case VT_ARRAY_STRING:
             return "String Array";
+        case VT_ARRAY_FLOAT:
+            return "Float Array";
         case VT_WORD:
             return "Word";
         case VT_STRING:
@@ -77,6 +82,7 @@ static bool var_type_is_array(enum VarType t)
         case VT_ARRAY_WORD:
         case VT_ARRAY_BYTE:
         case VT_ARRAY_STRING:
+        case VT_ARRAY_FLOAT:
             return true;
         case VT_UNDEF:
         case VT_WORD:

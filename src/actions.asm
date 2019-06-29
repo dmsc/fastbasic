@@ -28,7 +28,8 @@
         .export         E_VAR_SET_TYPE
         .export         E_LABEL, E_LABEL_DEF
         .export         E_PUSH_VAR, E_POP_VAR
-        .exportzp       VT_WORD, VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_STRING, VT_FLOAT, VT_ARRAY_STRING
+        .exportzp       VT_WORD, VT_STRING, VT_FLOAT
+        .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
         .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
@@ -66,6 +67,7 @@ read_fp = AFP
                 VT_ARRAY_BYTE = 4
                 VT_STRING     = 5
                 VT_ARRAY_STRING = 6
+                VT_ARRAY_FLOAT = 8
                 VT_FLOAT      = $FB ; Value > 128 to signal 6bytes per variable!
         .endenum
         ; Types of labels
