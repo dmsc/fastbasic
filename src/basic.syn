@@ -368,7 +368,7 @@ PRINT_MORE:
 
 # Parse multi-line IF
 THEN_OR_MULTILINE:
-        "Then" PARSE_STATEMENT E_POP_IF
+        "Then" PARSE_START E_POP_IF
         pass
 
 VAR_CREATE_TYPE:
@@ -635,13 +635,10 @@ SKIP_COMMENT:
         "'" E_REM
         E_EOL
 
-PARSE_STATEMENT: statement or variable assignment
-        PARSE_LINE_COMMAND E_EOL
-        PARSE_LINE_ASSIGN
-        pass
-
-PARSE_START:
+PARSE_START: statement or variable assignment
         ":" PARSE_START
-        PARSE_STATEMENT SKIP_COMMENT
+        PARSE_LINE_COMMAND SKIP_COMMENT
+        PARSE_LINE_ASSIGN SKIP_COMMENT
+        SKIP_COMMENT
 
 # vi:syntax=perl
