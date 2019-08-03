@@ -77,8 +77,7 @@ loop:
 
         ; Reads one character
         lda     (INBUFF), y
-        sec
-        sbc     #'0'
+        eor     #'0'
         cmp     #10
         sta     tmp2    ; save digit
         lda     tmp1    ; and restore A

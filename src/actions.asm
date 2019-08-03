@@ -215,12 +215,11 @@ nloop:
         ; Read next hex digit
         iny
         lda     (bptr),y
-        sec
-        sbc     #'0'
+        eor     #'0'
         cmp     #10
         bcc     digit
 
-        sbc     #'A'-'0'
+        sbc     #'A'^'0'
         cmp     #6
         bcs     xit ; Not an hex number
         adc     #10 ; set to range 10-15
