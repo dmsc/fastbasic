@@ -282,17 +282,17 @@ $(ZIPFILE): $(COMPILER) | build
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 disk/%.bas: samples/fp/%.bas
-	tr '\n' '\233' < $< > $@
+	LC_ALL=C tr '\n' '\233' < $< > $@
 
 disk/%.bas: samples/int/%.bas
-	tr '\n' '\233' < $< > $@
+	LC_ALL=C tr '\n' '\233' < $< > $@
 
 disk/%.bas: tests/%.bas
-	tr '\n' '\233' < $< > $@
+	LC_ALL=C tr '\n' '\233' < $< > $@
 
 # Transform a text file to ATASCII (replace $0A with $9B)
 disk/%: %
-	tr '\n' '\233' < $< > $@
+	LC_ALL=C tr '\n' '\233' < $< > $@
 
 disk/%.txt: %.md
 	LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' < $< > $@
