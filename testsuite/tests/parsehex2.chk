@@ -1,0 +1,3 @@
+Name: Check parsing of HEX numbers (2)
+Test: compile-error
+Error: parse error at line 3 column 3

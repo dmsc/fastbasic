@@ -184,11 +184,8 @@ xit:    sec
 .proc   E_NUMBER_WORD
         jsr     parser_skipws
 
-        ldx     #0
-        stx     tmp1+1
-
         lda     (bptr), y
-        cmp     #'$'
+        eor     #'$'
         beq     read_hex
 
         jsr     read_word
@@ -211,6 +208,10 @@ xit:    sec
 .endif ; FASTBASIC_FP
 
 read_hex:
+        ; We have A==0 here
+        tax             ; X = low-part of result
+        stx     tmp1+1  ; tmp1+1: hi-part of result
+
 nloop:
         ; Read next hex digit
         iny
@@ -227,16 +228,12 @@ nloop:
 digit:
         sta     tmp1    ; and save digit
 
-        ; Check if number is < $FFF
-        lda     tmp1+1
-        cmp     #$F0
-        bcs     ret     ; Exit with C = 1
-
         ; Multiply tmp by 16
         txa
         ldx     #4
 :       asl
         rol     tmp1+1
+        bcs     ret     ; Exit with C = 1 on overflow
         dex
         bne     :-
 
@@ -249,11 +246,11 @@ ret:
         rts
 
 xit:
-        ; TODO: This check does not work, because we always consumed at
-        ;       least the "$" at start. So, just define that "$" is the
-        ;       same as "0" and omit the check:
-;       cpy     bpos    ; Check that we consumed at least one character
-;       beq     ret     ; Exit with C = 1 (if Y == bpos, C = 1)
+        ; Check that we consumed at least one character after the "$"
+        dey
+        cpy     bpos
+        beq     ret     ; Exit with C = 1 (if Y-1 == bpos, C = 1)
+        iny
 
         txa
         ldx     tmp1+1
