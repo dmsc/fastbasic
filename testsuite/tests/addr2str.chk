@@ -1,0 +1,5 @@
+Name: Check parsing of HEX numbers
+Test: run
+Output:
+Hello     5
+World

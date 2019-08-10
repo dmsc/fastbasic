@@ -335,6 +335,8 @@ STR_EXPR_BASE:
         # Or a string function
         "CHR$" PAR_EXPR emit TOK_CHR
         "STR$" PAR_EXPR emit TOK_INT_STR
+        # Convert pointer to string!
+        "$" PAR_EXPR
 #@if FASTBASIC_FP
         "STR$" FP_PAR_EXPR emit TOK_FP_STR
 #@endif FASTBASIC_FP

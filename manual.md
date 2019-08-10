@@ -763,6 +763,24 @@ with the hardware. Use with care!
         ? i, USR(ADR(ml),i)
       NEXT i
 
+- $(_addr_): Returns the string at
+             memory address _addr_.
+
+  This is the inverse of `ADR()`, and
+  can be used to create arbitrary
+  strings in memory. For example, the
+  following code prints "AB":
+
+      DATA x() byte = 2, $41, $42
+      ? $( ADR(x) )
+
+  Also, you can store string addresses
+  to reuse later, using less memory
+  than copying the full string:
+
+      x = ADR("Hello")
+      ? $( x )
+
 
 List Of Statements
 ==================
