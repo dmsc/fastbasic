@@ -21,6 +21,7 @@
 #define _GNU_SOURCE // for asprintf
 #include "atari.h"
 #include "sim65.h"
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,6 +39,9 @@ static const char *fb_lib_path       = "../compiler";
 #define FB_LIB_FP   "fastbasic-fp.lib"
 #define FB_LIB_INT  "fastbasic-int.lib"
 #define FB_CFG_FILE "fastbasic.cfg"
+
+// Maximum number of cycles for the native compiler
+#define MAX_FPC_CYCLES 25000000
 
 // Functions to get/put characters to running XEX
 static size_t str_out_pos, str_out_len, str_in_pos, str_in_len;
@@ -63,7 +67,7 @@ static int str_get_char(void)
 
 // Runs atari XEX file capturing the output
 static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
-                         const char *input, size_t input_len)
+                         const char *input, size_t input_len, uint64_t max_cycles)
 {
     // Init input/output
     str_in = input;
@@ -79,6 +83,7 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
         return -1;
     // sim65_set_debug(s, sim65_debug_trace);
     atari_init(s, 0, str_get_char, str_put_char);
+    sim65_set_cycle_limit(s, max_cycles);
     enum sim65_error e = atari_xex_load(s, xexname);
     if (e == sim65_err_user)
     {
@@ -105,12 +110,13 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
 }
 
 // Run's an XEX file testing if the output matches the expected output
-int run_test_xex(const char *fname, const char *input, const char *expected_out)
+int run_test_xex(const char *fname, const char *input, const char *expected_out,
+                 uint64_t max_cycles)
 {
     size_t len = strlen(expected_out) + 128;
     char *out = calloc(len + 1, 1);
 
-    int e = run_atari_xex(fname, out, &len, input, strlen(input));
+    int e = run_atari_xex(fname, out, &len, input, strlen(input), max_cycles);
     if (!e)
     {
         // Check
@@ -180,7 +186,7 @@ static int compile_native(const char *atbname, const char *xexname, const char *
     size_t len = 2047;
     unlink(xexname);
     sprintf(cmd, "%s\x9b%s\x9b\x9b", atbname, xexname);
-    int e = run_atari_xex(fb_atari_compiler, out, &len, cmd, strlen(cmd));
+    int e = run_atari_xex(fb_atari_compiler, out, &len, cmd, strlen(cmd), MAX_FPC_CYCLES);
 
     if (e)
         fprintf(stderr, "%s: can't execute compiler.\n", fb_atari_compiler);
@@ -325,6 +331,9 @@ int fbtest(const char *fname)
     /* File format:
      *   NAME: The name of the test
      *   TEST: The test to do
+     *   ERROR: The expected error from compiler (optional)
+     *   MAX-CYCLES: The maximum number of cycles to wait for program termination.
+     *               (if not given, use 20_000_000.
      *   INPUT:
      *   Optional input, up to a line with only a '.'.
      *   OUTPUT:
@@ -332,6 +341,7 @@ int fbtest(const char *fname)
      */
     char *name = 0, *expected_out = 0, *input_buf = 0, *error_data = 0;
     int test = 0, n = 0, line = 0;
+    uint64_t max_cycles = 20000000;
     char lbuf[256];
     while ( 0 != fgets(lbuf, sizeof(lbuf)-1, f) )
     {
@@ -378,6 +388,18 @@ int fbtest(const char *fname)
         }
         else if (!strcasecmp(key, "error"))
             error_data = strdup(buf);
+        else if (!strcasecmp(key, "max-cycles"))
+        {
+            char *ep = 0;
+            errno = 0;
+            max_cycles = strtoul(buf, &ep, 0);
+            if( errno == ERANGE || (*ep != 0 && *ep != ' ' && *ep != '\t') )
+            {
+                fprintf(stderr, "%s:%d: error, invalid value for max-cycles '%s'\n",
+                        fname, line, buf);
+                return -1;
+            }
+        }
         else if (!strcasecmp(key, "input"))
         {
             size_t input_size = 0;
@@ -517,7 +539,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp native\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
                     break;
             }
         }
@@ -534,7 +556,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
                     break;
             }
         }
@@ -551,7 +573,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run int cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
                     break;
             }
         }

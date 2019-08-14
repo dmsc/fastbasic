@@ -1,5 +1,6 @@
 Name: Test floating-point calculations
 Test: run-fp
+Max-Cycles: 250000000
 Output:
 Accuracy: OK
 Accuracy: OK
