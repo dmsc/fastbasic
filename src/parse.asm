@@ -269,9 +269,9 @@ ploop:
 ploop_nofetch:
         bmi     pcall
         cmp     #SM_EMIT_N
-        bcs     match_char
 ploop_tax:
         tax
+        bcs     match_char
         .assert SM_EXIT = 0, error, "SM_EXIT must be 0"
         beq     pexit_err
         dex
@@ -294,7 +294,6 @@ match_char:
         bcc     match
         cmp     #'z'+1
         bcs     match
-        tax
         lda     #'.'
         cmp     (bptr),y
         beq     matched_dot
@@ -338,6 +337,7 @@ pexit_ok:
 
         ; Check if we are at end of line
         ldy     bpos
+        inc     bpos
         lda     (bptr), y
         cmp     #':'            ; Colon: continue parsing line
         beq     parse_start

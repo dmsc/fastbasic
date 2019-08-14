@@ -211,6 +211,7 @@ int main(int argc, char **argv)
                 std::cerr << "\n";
                 return 1;
             }
+            s.expect(':');
         }
     }
     if( do_debug )
