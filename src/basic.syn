@@ -638,7 +638,6 @@ SKIP_COMMENT:
         E_EOL
 
 PARSE_START: statement or variable assignment
-        ":" PARSE_START
         PARSE_LINE_COMMAND SKIP_COMMENT
         PARSE_LINE_ASSIGN SKIP_COMMENT
         SKIP_COMMENT
