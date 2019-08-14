@@ -67,7 +67,7 @@ class cc_emit
             ret += "\t\ts.debug(\"GOT '" + dbg + "'\");\n";
             return ret;
         }
-        static std::string emit_bytes(bool last, std::vector<std::string> &ebytes)
+        static std::string emit_bytes(bool last, std::vector<std::string> &ebytes, int lnum)
         {
             if( 0 == ebytes.size() )
                 return std::string();
@@ -89,14 +89,14 @@ class cc_emit
             os << "\n";
 
             if( last )
-                os << "\t\ts.debug(\"<-- OK!\");\n"
+                os << "\t\ts.debug(\"<-- OK (" + std::to_string(lnum-1) + ")\");\n"
                       "\t\ts.lvl--;\n"
                       "\t\treturn true;\n";
             return os.str();
         }
-        static std::string emit_ret()
+        static std::string emit_ret(int lnum)
         {
-            return "\t\ts.debug(\"<-- OK!\");\n"
+            return "\t\ts.debug(\"<-- OK (" + std::to_string(lnum-1) + ")\");\n"
                    "\t\ts.lvl--;\n"
                    "\t\treturn true;\n";
         }
@@ -112,10 +112,10 @@ class cc_emit
                    "\ts.restore(spos);\n";
         }
         static void print(std::ostream &os, std::string name, std::string desc,
-                          const std::string &code, bool ok)
+                          const std::string &code, bool ok, int lnum)
         {
             os << "static bool SMB_" << name << "(parse &s) {\n"
-                  "\ts.debug(\"" << name << "\");\n"
+                  "\ts.debug(\"" << name << " (" << lnum << ")\");\n"
                   "\ts.error(\"" << desc << "\");\n"
                   "\ts.lvl++;\n"
                   "\ts.skipws();\n"

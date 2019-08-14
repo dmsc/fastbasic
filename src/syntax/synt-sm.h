@@ -27,6 +27,7 @@ class statemachine {
     private:
         parseState &p;
         bool complete;
+        int lnum;          // Line number in input file
         std::string _name; // Table name
         std::string _code; // Parsing code
         std::string _desc; // Table description
@@ -131,11 +132,11 @@ class statemachine {
         {
             return p.space() && (p.eof() || p.eol() || p.comment());
         }
-        bool emit_bytes(bool last, std::string &line)
+        bool emit_bytes(bool last, std::string &line, int lnum)
         {
             if( 0 == ebytes.size() )
                 return false;
-            line += EM::emit_bytes(last, ebytes);
+            line += EM::emit_bytes(last, ebytes, lnum);
             ebytes.clear();
             return true;
         }
@@ -153,8 +154,8 @@ class statemachine {
                 std::string cmd;
                 if( end_line() )
                 {
-                    if( !emit_bytes(true, line) )
-                        line += EM::emit_ret();
+                    if( !emit_bytes(true, line, p.line) )
+                        line += EM::emit_ret(p.line);
                     // If line can't fail, rule is complete.
                     complete = !canFail;
                     return true;
@@ -163,7 +164,7 @@ class statemachine {
                 // String?
                 if( p.ch('"') )
                 {
-                    emit_bytes(false, line);
+                    emit_bytes(false, line, p.line);
                     if(!parse_str(line))
                         return p.error("parse: string \"" + s.str() + "\" invalid");
                     canFail = true;
@@ -190,14 +191,14 @@ class statemachine {
                     continue;
                 }
 
-                emit_bytes(false, line);
+                emit_bytes(false, line, p.line);
 
                 if( cmd == "pass" )
                 {
                     complete = true;
                     if( !end_line() )
                         return p.error("parse: 'pass' should be the only command in a line");
-                    line += EM::emit_ret();
+                    line += EM::emit_ret(p.line);
                     // End of command, and end of SM
                     return true;
                 }
@@ -212,7 +213,7 @@ class statemachine {
             return false;
         }
     public:
-        statemachine(parseState &p): p(p), complete(false) {}
+        statemachine(parseState &p): p(p), complete(false), lnum(-1) {}
         std::string name() const {
             return _name;
         }
@@ -221,6 +222,7 @@ class statemachine {
             skip_comments();
             if( p.eof() || p.eol() || p.blank() ) return false;
             if( !parse_name() ) return false;
+            lnum = p.line;
             if( !parse_description() ) return false;
             std::string line;
             while(parse_line(line))
@@ -231,6 +233,6 @@ class statemachine {
             return true;
         }
         void print(std::ostream &out) const {
-            EM::print(out, _name, _desc, _code, complete);
+            EM::print(out, _name, _desc, _code, complete, lnum);
         }
 };

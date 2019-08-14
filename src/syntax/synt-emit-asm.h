@@ -37,7 +37,7 @@ class asm_emit
                 ret += "\t.byte " + ch + "\n";
             return ret;
         }
-        static std::string emit_bytes(bool last, std::vector<std::string> &ebytes)
+        static std::string emit_bytes(bool last, std::vector<std::string> &ebytes, int)
         {
             auto n = ebytes.size();
             std::string lst;
@@ -61,7 +61,7 @@ class asm_emit
                 os << "\t.byte SM_ERET, " << lst << "\n";
             return os.str();
         }
-        static std::string emit_ret()
+        static std::string emit_ret(int)
         {
             return "\t.byte SM_RET\n";
         }
@@ -74,9 +74,9 @@ class asm_emit
             return line;
         }
         static void print(std::ostream &os, std::string name, std::string desc,
-                          const std::string &code, bool ok)
+                          const std::string &code, bool ok, int lnum)
         {
-            os << name << ":\n"
+            os << name << ":\t; " << lnum << "\n"
                << code;
             if( !ok )
                 os << "\t.byte SM_EXIT\n";

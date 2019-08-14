@@ -253,7 +253,10 @@ class parse {
         bool skipws()
         {
             while( pos < str.length() && (str[pos] == ' ' || str[pos] == '\t') )
+            {
                 pos++;
+                max_pos++;
+            }
             return true;
         }
         bool expect(char c)
