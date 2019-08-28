@@ -337,10 +337,10 @@ PROC ScrollDown
   ' Move screen pointers
   -move adr(ScrAdr), adr(ScrAdr)+2, 46
   ' Get first screen line by searching last '$9B'
-  for ptr = ScrAdr(0) - 2 to Adr(MemStart) step -1
-    if peek(ptr) = $9B then Exit
-  next ptr
-  inc ptr
+  ptr = ScrAdr(0) - 1
+  while ptr <> Adr(MemStart) and peek(ptr-1) <> $9B
+    dec ptr
+  wend
   ScrAdr(0) = ptr
 
   ' Adjust line
