@@ -255,7 +255,8 @@ class parse {
             while( pos < str.length() && (str[pos] == ' ' || str[pos] == '\t') )
             {
                 pos++;
-                max_pos++;
+                if( pos  > max_pos )
+                    max_pos = pos;
             }
             return true;
         }
