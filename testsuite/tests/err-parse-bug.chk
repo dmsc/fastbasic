@@ -1,3 +1,4 @@
 Name: Check infinite loop bug in parser
 Test: compile-error
 Error: parse error at line 1 column 13
+Error-pos: 1:13

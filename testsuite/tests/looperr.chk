@@ -1,3 +1,4 @@
 Name: Check detection of missing loop end
 Test: compile-error
 Error: no end loop/proc/if
+Error-pos: 4:0

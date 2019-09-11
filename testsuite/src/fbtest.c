@@ -246,7 +246,8 @@ static int run_prog(const char *prog, char *out, size_t *len)
 }
 
 static int compile_cross(const char *basname, const char *asmname,
-                         const char *xexname, int fp, int comp_ok)
+                         const char *xexname, int fp, int comp_ok,
+                         int error_pos_line, int error_pos_column)
 {
     const char *comp = fp ? fb_fp_compiler : fb_int_compiler;
     const char *libs = fp ? FB_LIB_FP : FB_LIB_INT;
@@ -272,7 +273,20 @@ static int compile_cross(const char *basname, const char *asmname,
         goto xit;
     }
     else if (e && !comp_ok)
+    {
+        // Extract error line and column, format is:
+        //   FILE_NAME:LINE:COLUMN: MESSAGE
+        int line = 0, column = 0;
+        // Ignore errors, assume 0 as line and column
+        sscanf(out, "%*[^:]:%d:%d:", &line, &column);
+        if (error_pos_line != line || error_pos_column != column)
+        {
+            fprintf(stderr, "%s: bad error line or column, actual %d:%d, expected %d:%d\n",
+                    basname, line, column, error_pos_line, error_pos_column);
+            goto xit;
+        }
         e = 0;
+    }
     else if (!e)
     {
         e = -1;
@@ -340,6 +354,7 @@ int fbtest(const char *fname)
      *   The expected output, up to the end of the file.
      */
     char *name = 0, *expected_out = 0, *input_buf = 0, *error_data = 0;
+    int error_pos_line = 0, error_pos_column = 0;
     int test = 0, n = 0, line = 0;
     uint64_t max_cycles = 20000000;
     char lbuf[256];
@@ -388,6 +403,15 @@ int fbtest(const char *fname)
         }
         else if (!strcasecmp(key, "error"))
             error_data = strdup(buf);
+        else if (!strcasecmp(key, "error-pos"))
+        {
+            if( 2 != sscanf(buf, "%i : %i", &error_pos_line, &error_pos_column) )
+            {
+                fprintf(stderr, "%s:%d: error, invalid value for error-pos '%s'\n",
+                        fname, line, buf);
+                return -1;
+            }
+        }
         else if (!strcasecmp(key, "max-cycles"))
         {
             char *ep = 0;
@@ -548,7 +572,8 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile fp cross\n", fname);
             // Floating Point: cross
-            if (compile_cross(basname, asmname, xexname, 1, !(test & test_compile_error)))
+            if (compile_cross(basname, asmname, xexname, 1, !(test & test_compile_error),
+                              error_pos_line, error_pos_column))
                 break;
 
             if (test & test_run)
@@ -565,7 +590,8 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile int cross\n", fname);
             // Integer: cross
-            if (compile_cross(basname, asmname, xexname, 0, !(test & test_compile_error)))
+            if (compile_cross(basname, asmname, xexname, 0, !(test & test_compile_error),
+                              error_pos_line, error_pos_column))
                 break;
 
             if (test & test_run)

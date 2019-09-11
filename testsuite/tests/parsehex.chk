@@ -1,3 +1,4 @@
 Name: Check parsing of HEX numbers
 Test: compile-error
 Error: parse error at line 5 column 3
+Error-pos: 5:3
