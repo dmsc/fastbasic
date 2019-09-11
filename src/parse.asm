@@ -156,7 +156,7 @@ ok:     ;lda     #TOK_END       ; Already A=0 from above
         .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
         jsr     emit_const
         jsr     alloc_prog
-        bcc     parse_end       ; exit
+        beq     parse_end       ; exit
 .endproc
 
 .proc parser_fetch

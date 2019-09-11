@@ -220,8 +220,6 @@ exit_2:
         clc
         adc     #1
         jsr     alloc_area_8
-        bcs     var_getlen::exit_2
-
 
         ; Set type to 0 initially
         ldy     len

@@ -545,7 +545,6 @@ xit:    rts
         sta     (tmp2), y
 
         pla
-        bcs     xit     ; Error from alloc above!
 
         iny
         sta     (tmp2), y
@@ -556,7 +555,7 @@ xit:    rts
         txa
         sta     (tmp2), y
       ; clc     ; get_codep clears carry
-xit:    rts
+        rts
 .endproc
 
 ; Label search / create (on use)

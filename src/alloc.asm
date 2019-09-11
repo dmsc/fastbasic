@@ -65,7 +65,7 @@
         .export         parser_alloc_init, alloc_area_8
 
         .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1
-        .import         move_dwn
+        .import         move_dwn, err_nomem
 
 .ifdef  NO_SMCODE
         .importzp       move_dwn_src, move_dwn_dst
@@ -102,8 +102,9 @@ alloc_size=     tmp1
 
         cpy     MEMTOP
         sbc     MEMTOP+1
-        bcs     rts_1
-
+        bcc     mem_ok
+        jmp     err_nomem
+mem_ok:
         ; Move memory up.
         ;  X          : index to pointer to move from
         ;  alloc_size : amount to move up
@@ -147,11 +148,8 @@ skip:
         inx
         cpx     #mem_end - mem_start + 2
         bne     loop
-        clc
-::rts_1:
         rts
 .endproc
-
 
 ;----------------------------------------------------------
 ; Parser initialization here:
