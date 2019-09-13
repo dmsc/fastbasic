@@ -24,7 +24,7 @@ TOKENS {
  TOK_END
  # Constant and variable loading
  TOK_NUM, TOK_BYTE, TOK_CSTRING, TOK_CDATA, TOK_VAR_ADDR, TOK_VAR_SADDR, TOK_VAR_LOAD
- TOK_BYTE_SADDR, TOK_SHL8, TOK_0, TOK_1
+ TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
  TOK_PUSH, TOK_PUSH_VAR_LOAD
  TOK_PUSH_NUM, TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
@@ -43,7 +43,7 @@ TOKENS {
  TOK_COMP_0
  # Low level statements
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
- TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR
+ TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR, TOK_BYTE_POKE
  # Graphic support statements
  TOK_POSITION, TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # P/M statements
@@ -594,7 +594,7 @@ PARSE_LINE_COMMAND:
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit TOK_0 emit TOK_PMGRAPHICS emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
-        "Color" emit TOK_BYTE_SADDR emit COLOR EXPR emit TOK_POKE
+        "Color" EXPR emit TOK_BYTE_POKE emit COLOR
         "FColor" emit TOK_NUM word FILDAT emit TOK_SADDR EXPR emit TOK_POKE
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
@@ -617,8 +617,8 @@ PARSE_LINE_COMMAND:
         "DAta" DATA_VAR DATA_TYPE DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
-        "DEG" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_1 emit TOK_POKE
-        "RAd" emit TOK_BYTE_SADDR emit DEGFLAG emit TOK_0 emit TOK_POKE
+        "DEG" emit TOK_1 emit TOK_BYTE_POKE emit DEGFLAG
+        "RAd" emit TOK_0 emit TOK_BYTE_POKE emit DEGFLAG
 #@endif FASTBASIC_FP
         "PMGraphics" EXPR emit TOK_PMGRAPHICS
         "PMHpos"  EXPR emit TOK_PUSH_NUM word HPOSP0 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_POKE

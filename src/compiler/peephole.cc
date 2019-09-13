@@ -247,10 +247,6 @@ class peephole
                 {
                     set_tok(0, TOK_VAR_ADDR); ins_tok(2, TOK_SADDR);
                 }
-                else if( mtok(0,TOK_BYTE_SADDR) )
-                {
-                    set_tok(0, TOK_BYTE); ins_tok(2, TOK_SADDR);
-                }
             }
         }
         // Folds PUSH followed by known sequences
@@ -296,11 +292,6 @@ class peephole
             for(size_t i=0; i<code.size(); i++)
             {
                 current = i;
-                //   TOK_BYTE
-                if( mtok(0,TOK_BYTE) && mtok(2,TOK_SADDR) )
-                {
-                    set_tok(0, TOK_BYTE_SADDR); del(2);
-                }
                 if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_SADDR) )
                 {
                     set_tok(0, TOK_VAR_SADDR); del(2);
@@ -544,6 +535,35 @@ class peephole
                     {
                         set_tok(0, TOK_GETKEY); set_b(2, val(1)); set_tok(1, TOK_VAR_STORE);
                         del(4); del(3); i--;
+                        continue;
+                    }
+                    // TODO: should support complex expressions on "y"
+                    //   TOK_NUM / x<256 / TOK_SADDR / TOK_NUM / y / TOK_POKE
+                    //      -> TOK_NUM / (y&255) / TOK_BYTE_POKE / x
+                    if( mtok(0, TOK_NUM) && mword(1) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_POKE) &&
+                        val(1) >= 0 && val(1) <= 255 )
+                    {
+                        int x = val(1);
+                        set_w(1, val(4) & 255);
+                        set_w(4, x);
+                        set_tok(3, TOK_BYTE_POKE);
+                        del(5); del(2);
+                        i--;
+                        continue;
+                    }
+                    // TODO: should support complex expressions on "y"
+                    //   TOK_BYTE / x / TOK_SADDR / TOK_NUM / y / TOK_POKE
+                    //      -> TOK_NUM / (y&255) / TOK_BYTE_POKE / x
+                    if( mtok(0, TOK_BYTE) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_POKE) )
+                    {
+                        copy(4, 1, 1);
+                        set_w(1, val(5) & 255);
+                        set_tok(0, TOK_NUM);
+                        set_tok(3, TOK_BYTE_POKE);
+                        del(6); del(5); del(2);
+                        i--;
                         continue;
                     }
 #if 0

@@ -63,11 +63,12 @@ incc:   inc     cptr
         jmp     next_instruction
 .endproc
 
-.proc   EXE_BYTE_SADDR  ; SADDR = read 1 byte from op   (+14 bytes)
+.proc   EXE_BYTE_POKE  ; write A into address (+14 bytes)
         ldy     #0
+        tax
         lda     (cptr), y
-        sta     saddr
-        sty     saddr+1
+        tay
+        stx     $00, y
         jmp     EXE_BYTE::incc
 .endproc
 
@@ -92,7 +93,7 @@ xit:    jmp     next_instruction
         deftoken "BYTE"
         deftoken "PUSH_NUM"
         deftoken "PUSH_BYTE"
-        deftoken "BYTE_SADDR"
+        deftoken "BYTE_POKE"
         deftoken "CSTRING"
 
 ; vi:syntax=asm_ca65
