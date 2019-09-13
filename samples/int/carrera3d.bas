@@ -73,7 +73,7 @@
       tmp = tmp - x/4
       ' Calculate each of the 6 frames (with shifted Z value)
       for z=zpos to zpos+100 step 17
-        dpoke d,77
+        poke d,77
         dpoke d+1, tmp + (z/50)&1 * 40
         d = d + dlsize
       next z
@@ -91,12 +91,15 @@
   d = dlist
   for curvature=0 to 10
     for z=0 to 5
+      ' First, 3 * 8 blank lines
       dpoke d, $7070
-      dpoke d+1, $70
+      poke d+2, $70
       d = d + dlsize
+      ' At end, 8 blank lines, one text window line
       dpoke d-9, $4270
       dpoke d-7, dpeek(660)
-      dpoke d-5, $41
+      ' Jump to start
+      poke d-5, $41
       dpoke d-4, d - dlsize
     next z
     d = d + 88
@@ -114,32 +117,29 @@
   move adr(pm0), pmadr+91, 19
 
   ' P/M over playfield and P0+P1 / P2+P3 blends
-  dpoke 623,33
+  poke 623,33
 
   ' Set color registers
-  dpoke 712, 8
+  poke 712, 8
   dpoke 704, $4482
 
-  dpoke 710, $D2
+  poke 710, $D2
   dpoke 708, $EE52
   dpoke 706, $8640
 
   ' Set P/M data address
   poke $D407, mem+104
 
-  ' "e" is the GTIA address, space optimization
-  gtia = $d000
-
   ' Enable P/M
-  dpoke gtia + $1d, 2
+  poke $d01d, 2
   ' P0 quad width, P1 double width
-  dpoke gtia + $08, 259
+  dpoke $d008, 259
 
   ' P2 shows distance traveled, set a basic shape
-  dpoke pmadr+631, 511
+  dpoke pmadr+635, 511
 
   ' Enable ANTIC P/M DMA
-  dpoke 559, 58
+  poke 559, 58
 
   ' Start of game loop
   pmadr = 3000
@@ -167,12 +167,12 @@
     for z=pmadr to 3000
       ' Waits for VBLANK, read collision register
       pause 0
-      tmp = peek(gtia + $04)
+      tmp = peek($d004)
 
       ' Clear collision register and sets player position
-      poke gtia + $1e, 0
+      poke $d01e, 0
       ' Set PM0 and PM1 x coordinates
-      dpoke gtia, (x/16) * 257 - 8
+      dpoke $d000, (x/16) * 257 - 8
 
       ' Sets DL (for next frame)
       dpoke 560, dlist + curvature * 1024 + dlsize * (trackPos mod 6)
@@ -204,7 +204,7 @@
       if trackPos > segend
         ' Yes, generate a new segment
         ' (first, set text position to 0)
-        dpoke 657, 0
+        poke 657, 0
 
         ' New random direction
         curvature = rand(11)
@@ -217,7 +217,7 @@
       endif
 
       ' Sets the Player 2 position to current track position
-      dpoke gtia + $02, 48 + trackPos / 32
+      poke $d002, 48 + trackPos / 32
     next z
 
     ' End of game, shows score, turns of sound and waits for keystroke
