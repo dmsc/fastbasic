@@ -78,9 +78,9 @@ EXE_CLOSE:
         bne     CIOV_CMD
 
 .proc   EXE_DRAWTO      ; CIO COMMAND in A
-        ldx     #$60    ; IOCB #6
         ldy     COLOR
         sty     ATACHR
+        ldx     #$60    ; IOCB #6
         bne     CIOV_CMD
 .endproc
 

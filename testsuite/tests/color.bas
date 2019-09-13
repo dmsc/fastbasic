@@ -18,3 +18,7 @@ dr. 5,23
 fcolor 7
 fillto 45,30
 
+color 0
+plot 10,10
+dr. 20,20
+

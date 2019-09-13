@@ -11,3 +11,5 @@ SCREEN: set graphics 9
 SCREEN: plot 3,7  color 3
 SCREEN: draw to 5,23  color 3
 SCREEN: fill to 45,30  color 3, fill color 7
+SCREEN: plot 10,10  color 0
+SCREEN: draw to 20,20  color 0
