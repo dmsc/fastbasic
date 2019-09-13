@@ -147,6 +147,7 @@ COMMON_AS_SRC=\
     src/interp/plot.asm\
     src/interp/pmgraphics.asm\
     src/interp/poke.asm\
+    src/interp/position.asm\
     src/interp/print_eol.asm\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\

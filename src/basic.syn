@@ -45,7 +45,7 @@ TOKENS {
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
  TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR
  # Graphic support statements
- TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
+ TOK_POSITION, TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # P/M statements
  TOK_PMGRAPHICS
  # Print statements
@@ -419,7 +419,7 @@ NEXT_VARNAME:
 
 # POSITION arguments, used also in PLOT, DRAWTO, LOCATE and FILLTO
 POSITION:
-        emit TOK_BYTE_SADDR emit COLCRS EXPR emit TOK_DPOKE emit TOK_BYTE_SADDR emit ROWCRS "," EXPR emit TOK_POKE
+        EXPR C_EXPR emit TOK_POSITION
 
 # SOUND arguments, three possibilities:
 #  SOUND voice, freq, distort, vol
