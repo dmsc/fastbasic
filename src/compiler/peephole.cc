@@ -566,6 +566,18 @@ class peephole
                         i--;
                         continue;
                     }
+                    //   TOK_NUM / x / TOK_SADDR / TOK_NUM / y / TOK_POKE
+                    //      -> TOK_NUM / (y&255) / TOK_NUM_POKE / x
+                    if( mtok(0, TOK_NUM) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_POKE) )
+                    {
+                        copy(4, 1, 1);
+                        set_w(1, val(5) & 255);
+                        set_tok(3, TOK_NUM_POKE);
+                        del(6); del(5); del(2);
+                        i--;
+                        continue;
+                    }
 #if 0
                     //   TOK_ADD / TOK_NUM / x / TOK_ADD
                     //      ->   TOK_NUM x / TOK_ADD / TOK_ADD

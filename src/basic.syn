@@ -44,6 +44,7 @@ TOKENS {
  # Low level statements
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
  TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR, TOK_BYTE_POKE
+ TOK_NUM_POKE
  # Graphic support statements
  TOK_POSITION, TOK_GRAPHICS, TOK_PLOT, TOK_DRAWTO
  # P/M statements
@@ -426,7 +427,7 @@ POSITION:
 #  SOUND voice
 #  SOUND
 SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_NUM word AUDCTL emit TOK_SADDR emit TOK_0 emit TOK_POKE emit TOK_NUM word SKCTL emit TOK_SADDR emit TOK_BYTE emit 3 emit TOK_POKE
+        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB emit TOK_SHL8 emit TOK_ADD emit TOK_DPOKE emit TOK_0 emit TOK_NUM_POKE word AUDCTL emit TOK_BYTE emit 3 emit TOK_NUM_POKE word SKCTL
         SOUND_S1 emit TOK_0 emit TOK_DPOKE
         emit TOK_SOUND_OFF
 
@@ -595,7 +596,7 @@ PARSE_LINE_COMMAND:
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit TOK_0 emit TOK_PMGRAPHICS emit TOK_BYTE emit 6 emit TOK_CLOSE EXPR emit TOK_GRAPHICS
         "Color" EXPR emit TOK_BYTE_POKE emit COLOR
-        "FColor" emit TOK_NUM word FILDAT emit TOK_SADDR EXPR emit TOK_POKE
+        "FColor" EXPR emit TOK_NUM_POKE word FILDAT
         "POSition" POSITION
         "PLot" POSITION emit TOK_PLOT
         "DRawto" POSITION emit TOK_BYTE emit DRAWLN emit TOK_DRAWTO

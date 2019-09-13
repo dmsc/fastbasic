@@ -52,6 +52,8 @@ class opstat
                         c3[{old,c.get_val()}] ++;
                     else if( c.is_sword() && old == TOK_NUM )
                         continue;
+                    else if( c.is_sword() && old == TOK_NUM_POKE )
+                        continue;
                     else if( c.is_byte() && old == TOK_VAR_LOAD )
                         continue;
                     else if( c.is_byte() && old == TOK_VAR_ADDR )

@@ -121,6 +121,7 @@ COMMON_AS_SRC=\
     src/interp/color.asm\
     src/interp/comp0.asm\
     src/interp/const.asm\
+    src/interp/const_poke.asm\
     src/interp/copystr.asm\
     src/interp/dec.asm\
     src/interp/div.asm\

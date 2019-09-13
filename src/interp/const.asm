@@ -28,7 +28,8 @@
 ; -------------------------------------
 
         .import         pushAX
-        .importzp       next_instruction, cptr, saddr
+        .importzp       next_instruction, cptr
+        .export         inc_cptr_1, inc_cptr_2
 
         .segment        "RUNTIME"
 
@@ -42,12 +43,13 @@
         tax                     ; 2     1
         dey                     ; 2     1
         lda     (cptr), y       ; 5     2
+::inc_cptr_2:
         ldy     cptr            ; 3     2
         cpy     #254            ; 2     2
         iny                     ; 2     1
         iny                     ; 2     1
         sty     cptr            ; 3     2
-        bcs     inc_cptr_1      ; 2 =30 2 =18
+        bcs     inc_cptr_hi     ; 2 =30 2 =18
         jmp     next_instruction
 .endproc
 
@@ -58,20 +60,11 @@
 .proc   EXE_BYTE  ; AX = read 1 byte from op
         ldx     #0
         lda     (cptr, x)
-incc:   inc     cptr
-        beq     inc_cptr_1
+::inc_cptr_1:
+        inc     cptr
+        beq     inc_cptr_hi
         jmp     next_instruction
 .endproc
-
-.proc   EXE_BYTE_POKE  ; write A into address (+14 bytes)
-        ldy     #0
-        tax
-        lda     (cptr), y
-        tay
-        stx     $00, y
-        jmp     EXE_BYTE::incc
-.endproc
-
 
 .proc   EXE_CSTRING     ; AX = address of string
         ldy     #0      ; Get string length into A
@@ -83,7 +76,7 @@ incc:   inc     cptr
         txa
         ldx     cptr+1
         bcc     xit
-::inc_cptr_1:
+::inc_cptr_hi:
         inc     cptr+1
 xit:    jmp     next_instruction
 .endproc
@@ -93,7 +86,6 @@ xit:    jmp     next_instruction
         deftoken "BYTE"
         deftoken "PUSH_NUM"
         deftoken "PUSH_BYTE"
-        deftoken "BYTE_POKE"
         deftoken "CSTRING"
 
 ; vi:syntax=asm_ca65
