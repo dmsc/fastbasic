@@ -123,10 +123,11 @@ the program by pressing `CONTROL` and
 `R`.
 
 If there are no errors with your
-program, the computer will ask you for
-a filename.  Type an 8 character
-filename, with or without a file
-extension, and press `RETURN`.
+program, it will be run now:  the
+computer screen will show `WHAT IS YOUR
+NAME?`, type anything and press
+`RETURN`, the computer will reply with
+a greeting and the program will end.
 
 After this, the IDE waits for any key
 press before returning to the editor,
