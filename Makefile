@@ -22,7 +22,8 @@ CROSS=
 EXT=
 SHEXT=
 CXX=g++
-CXXFLAGS=-O2 -Wall -DVERSION=\"$(VERSION)\"
+OPTFLAGS=-O2
+CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
 SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
 FPASM=--asm-define FASTBASIC_FP --asm-include-dir gen/fp
@@ -270,6 +271,7 @@ distclean: clean test-distclean
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
 	    gen/int/basic.inc  gen/fp/basic.inc  \
+	    gen/cmdline-vers.bas \
 	    $(NATIVES)
 	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
 	-rmdir bin gen obj
@@ -296,10 +298,10 @@ disk/%.bas: tests/%.bas
 	LC_ALL=C tr '\n' '\233' < $< > $@
 
 # Transform a text file to ATASCII (replace $0A with $9B)
-disk/%: %
+disk/%: % version.mk
 	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
 
-disk/%.txt: %.md
+disk/%.txt: %.md version.mk
 	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
 
 # Copy ".XEX" as ".COM"
@@ -355,7 +357,7 @@ gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
 	$(CSYNT) $(SYNTFLAGS) $< -o $@
 
 # Sets the version inside command line compiler source
-gen/cmdline-vers.bas: src/cmdline.bas
+gen/cmdline-vers.bas: src/cmdline.bas version.mk
 	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Main program file
@@ -456,5 +458,6 @@ $(NATIVES) $(CROSS_INT) $(CROSS_FP): \
  src/compiler/main.cc src/compiler/atarifp.cc \
  src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
  src/compiler/parser.cc src/compiler/peephole.cc \
- src/compiler/codestat.cc src/compiler/codew.h
+ src/compiler/codestat.cc src/compiler/codew.h \
+ version.mk
 
