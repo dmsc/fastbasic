@@ -22,13 +22,16 @@ CROSS=
 EXT=
 SHEXT=
 CXX=g++
-CXXFLAGS=-O2 -Wall
+CXXFLAGS=-O2 -Wall -DVERSION=\"$(VERSION)\"
 SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
 FPASM=--asm-define FASTBASIC_FP --asm-include-dir gen/fp
 INTASM=--asm-include-dir gen/int
 FPCXX=-DFASTBASIC_FP -Igen/fp
 INTCXX=-Igen/int
+
+# Get version string
+include version.mk
 
 # Cross
 CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
@@ -209,7 +212,7 @@ IDE_BAS_SRC=\
 
 # BAS command line source
 CMD_BAS_SRC=\
-    src/cmdline.bas\
+    gen/cmdline-vers.bas\
 
 # Object files
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=obj/fp/%.o)
@@ -217,7 +220,7 @@ IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=obj/fp/%.o)
 CMD_OBJS_FP=$(CMD_AS_SRC:src/%.asm=obj/fp/%.o)
 COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=obj/fp/%.o) $(FP_AS_SRC:src/%.asm=obj/fp/%.o)
 IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=obj/fp/%.o)
-CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:src/%.bas=obj/fp/%.o)
+CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:gen/%.bas=obj/fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=obj/int/%.o)
@@ -294,10 +297,10 @@ disk/%.bas: tests/%.bas
 
 # Transform a text file to ATASCII (replace $0A with $9B)
 disk/%: %
-	LC_ALL=C tr '\n' '\233' < $< > $@
+	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
 
 disk/%.txt: %.md
-	LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' < $< > $@
+	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
 
 # Copy ".XEX" as ".COM"
 disk/%.com: bin/%.xex
@@ -351,6 +354,10 @@ gen/fp/%.cc: src/%.syn $(CSYNT) | gen/fp
 gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
 	$(CSYNT) $(SYNTFLAGS) $< -o $@
 
+# Sets the version inside command line compiler source
+gen/cmdline-vers.bas: src/cmdline.bas
+	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+
 # Main program file
 bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
@@ -369,6 +376,9 @@ bin/%.xex: obj/int/%.o $(LIB_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
+gen/fp/%.asm: gen/%.bas $(NATIVE_FP) | gen/fp
+	$(NATIVE_FP) $< $@
+
 gen/fp/%.asm: src/%.bas $(NATIVE_FP) | gen/fp
 	$(NATIVE_FP) $< $@
 

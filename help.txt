@@ -1,5 +1,5 @@
 '
-'  FastBasic 4.1 beta - (c) 2019 dmsc
+'  FastBasic %VERSION% - (c) 2019 dmsc
 '
 ' Editor Help
 ' -----------
