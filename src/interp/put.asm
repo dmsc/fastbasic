@@ -27,22 +27,16 @@
 ; PUT character or PUT EOL
 ; ------------------------
 
-        .import         CIOV_IOERR, putc
-        .importzp       tabpos, next_instruction
+        .import         putc
+        .importzp       next_instruction
 
         .segment        "RUNTIME"
 
-EXE_PRINT_EOL:          ; PRINT EOL
-        ; Reset tab position
-        lda     #1
-        sta     tabpos
-        lda     #$9b
 EXE_PUT:                ; PUT character
         jsr     putc
         jmp     next_instruction
 
         .include "../deftok.inc"
-        deftoken "PRINT_EOL"
         deftoken "PUT"
 
 ; vi:syntax=asm_ca65
