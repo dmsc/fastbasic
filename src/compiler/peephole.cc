@@ -63,6 +63,15 @@ class peephole
             idx += current;
             return idx < code.size() && code[idx].is_byte();
         }
+        // Returns 256 if not a string
+        unsigned mstring(size_t idx)
+        {
+            idx += current;
+            if ( idx < code.size() && code[idx].is_string() )
+                return code[idx].get_str().size();
+            else
+                return 256;
+        }
         std::string lbl(size_t idx)
         {
             idx += current;
@@ -85,6 +94,14 @@ class peephole
                 return code[idx].get_val();
             else
                 return 0x8000;
+        }
+        std::string str(size_t idx)
+        {
+            idx += current;
+            if ( idx < code.size() )
+                return code[idx].get_str();
+            else
+                return std::string();
         }
         void del(size_t idx)
         {
@@ -148,6 +165,11 @@ class peephole
         {
             changed = true;
             code[idx+current] = codew::ctok(tok, code[idx+current].linenum());
+        }
+        void set_string(size_t idx, std::string str)
+        {
+            changed = true;
+            code[idx+current] = codew::cstring(str, code[idx+current].linenum());
         }
         // Transforms all "numeric" tokens to TOK_NUM, so that the next phases can
         // optimize
@@ -991,6 +1013,26 @@ class peephole
                     {
                         set_tok(0, TOK_PUT); del(1);
                         continue;
+                    }
+                    // Join print constant strings with print EOL
+                    // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_NUM / X / TOK_PUT
+                    //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
+                    if( mtok(0, TOK_CSTRING) && mstring(1) < 255 &&
+                        mtok(2, TOK_PRINT_STR) && mtok(3, TOK_NUM) && mword(4) &&
+                        mtok(5, TOK_PUT) )
+                    {
+                        set_string(1, str(1) + char(val(4)));
+                        del(5); del(4); del(3);
+                    }
+                    // Join two print constant strings
+                    // TOK_CSTRING / S1 / TOK_PRINT_STR / TOK_CSTRING / S2 / TOK_PRINT_STR
+                    //   -> TOK_CSTRING / S1+S2 / TOK_PRINT_STR
+                    if( mtok(0, TOK_CSTRING) &&  mtok(2, TOK_PRINT_STR) &&
+                        mtok(3, TOK_CSTRING) &&  mtok(5, TOK_PRINT_STR) &&
+                        mstring(1) + mstring(4) < 256 )
+                    {
+                        set_string(1, str(1) + str(4));
+                        del(5); del(4); del(3);
                     }
                 }
             } while(changed);
