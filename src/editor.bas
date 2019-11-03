@@ -260,7 +260,7 @@ ENDPROC
 '
 PROC FileError
   pos. 0,0
-  ? "ERROR: "; err(); ", press any keyý";
+  ? err(); " ERROR, press a keyý";
   close #1
   get key
   exec ShowInfo
