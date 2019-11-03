@@ -26,3 +26,13 @@ next i
 
 ? xstr$
 
+' Check POKE of constant numbers
+POKE 80, 1
+? PEEK(80)
+POKE 1536, 2
+? PEEK(1536)
+DPOKE 80, 1234
+? DPEEK(80)
+DPOKE 1536, 1234
+? DPEEK(1536)
+

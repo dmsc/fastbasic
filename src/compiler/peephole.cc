@@ -568,7 +568,7 @@ class peephole
                     {
                         int x = val(1);
                         set_w(1, val(4) & 255);
-                        set_w(4, x);
+                        set_b(4, x);
                         set_tok(3, TOK_BYTE_POKE);
                         del(5); del(2);
                         i--;
