@@ -1,0 +1,4 @@
+Name: Test variables starting with "DO" and "REPEAT"
+Test: run
+Output:
+12        3

@@ -581,9 +581,9 @@ PARSE_LINE_COMMAND:
         "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET
         "Move"  EXPR C_EXPR C_EXPR emit TOK_MOVE
         "-move" EXPR C_EXPR C_EXPR emit TOK_NMOVE
-        "DO" emit LT_DO_LOOP E_PUSH_LT
+        "DO" E_EOL emit LT_DO_LOOP E_PUSH_LT
         "Loop" emit TOK_JUMP E_POP_LOOP
-        "Repeat" emit LT_REPEAT E_PUSH_LT
+        "Repeat" E_EOL emit LT_REPEAT E_PUSH_LT
         "Until" FORCE_BOOL_EXPR emit TOK_CJUMP E_POP_REPEAT
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit TOK_CJUMP emit LT_WHILE_2 E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
