@@ -27,7 +27,8 @@
 ; POSITION: setup ROW and COLUMN for PLOT/PRINT
 ; ---------------------------------------------
 
-        .import         stack_l, stack_h, next_ins_incsp
+        .import         stack_l, stack_h
+        .importzp       next_ins_incsp
 
         .include "atari.inc"
 
