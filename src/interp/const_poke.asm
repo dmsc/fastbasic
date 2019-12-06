@@ -28,7 +28,7 @@
 ; -----------------------------------------------
 
         .import         inc_cptr_1, inc_cptr_2
-        .importzp       cptr
+        .importzp       cptr, saddr
 
         .segment        "RUNTIME"
 
@@ -42,15 +42,15 @@
 .endproc
 
 .proc   EXE_NUM_POKE  ; AX = read from op (load byte first!)
-        pha
+        tax
         ldy     #1
         lda     (cptr), y
-        sta     sto+2
+        sta     saddr+1
         dey
         lda     (cptr), y
-        tax
-        pla
-sto:    sta     $FF00, x
+        sta     saddr
+        txa
+        sta     (saddr), y
         jmp     inc_cptr_2
 .endproc
 
