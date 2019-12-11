@@ -132,6 +132,29 @@ class statemachine {
         {
             return p.space() && (p.eof() || p.eol() || p.comment());
         }
+        // Parses a emit line "{" byte/token, &word, ... "}"
+        bool read_emit_line()
+        {
+            while(true) {
+                p.space();
+                bool is_word = p.ch('&');
+                auto tok = read_ident();
+                if( tok.empty() )
+                    return p.error("Expected token to EMIT");
+                if( is_word )
+                {
+                    ebytes.push_back("<" + tok);
+                    ebytes.push_back(">" + tok);
+                }
+                else
+                    ebytes.push_back(tok);
+                if( p.ch('}') )
+                    break;
+                if( !p.ch(',') )
+                    return p.error("Expected ',' or '}'");
+            }
+            return true;
+        }
         bool emit_bytes(bool last, std::string &line, int lnum)
         {
             if( 0 == ebytes.size() )
@@ -175,10 +198,18 @@ class statemachine {
                 p.space();
                 if( cmd == "emit" )
                 {
-                    std::string tok = read_ident();
-                    if( tok.empty() )
-                        return p.error("EMIT expects a token");
-                    ebytes.push_back(tok);
+                    if( p.ch('{') )
+                    {
+                        if( !read_emit_line() )
+                            return false;
+                    }
+                    else
+                    {
+                        std::string tok = read_ident();
+                        if( tok.empty() )
+                            return p.error("EMIT expects a token");
+                        ebytes.push_back(tok);
+                    }
                     continue;
                 }
                 else if( cmd == "word" )
