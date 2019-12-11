@@ -69,9 +69,16 @@ struct parseState
     {
         return ch('_') || ch('a','z') || ch('A','Z') || ch('0','9');
     }
+    bool line_cont()
+    {
+        sentry s(*this);
+        if( ch('\\') && ch('\n') )
+            return true;
+        return s(false);
+    }
     bool blank()
     {
-        return ch(' ') || ch('\t');
+        return ch(' ') || ch('\t') || line_cont();
     }
     bool space()
     {

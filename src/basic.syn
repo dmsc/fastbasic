@@ -205,7 +205,9 @@ T_EXPR: integer constant, variable or function
         "PTRIG"  emit { TOK_NUM, &PTRIG0, TOK_PUSH_BYTE, 7 } RD_PORT
         "STICK"  emit { TOK_NUM, &STICK0, TOK_PUSH_BYTE, 3 } RD_PORT
         "STRIG"  emit { TOK_NUM, &STRIG0, TOK_PUSH_BYTE, 3 } RD_PORT
-        "PMADR"  PAR_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, TOK_PEEK, TOK_USHL, TOK_MUL, TOK_PUSH_NUM, &PMGBASE, TOK_PEEK, TOK_SHL8, TOK_ADD }
+        "PMADR"  PAR_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, \
+                                 TOK_PEEK, TOK_USHL, TOK_MUL, TOK_PUSH_NUM, &PMGBASE, \
+                                 TOK_PEEK, TOK_SHL8, TOK_ADD }
 #@if FASTBASIC_FP
         "INT"    FP_PAR_EXPR emit TOK_FP_INT
 #@endif FASTBASIC_FP
@@ -427,7 +429,9 @@ POSITION:
 #  SOUND voice
 #  SOUND
 SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
+        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB \
+              emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
+                     TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
         SOUND_S1 emit { TOK_0, TOK_DPOKE }
         emit TOK_SOUND_OFF
 
@@ -588,7 +592,9 @@ PARSE_LINE_COMMAND:
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_WHILE_2 } E_PUSH_LT
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT THEN_OR_MULTILINE
-        "For" VAR_WORD_LVALUE_SADDR EQUAL emit TOK_PUSH EXPR emit TOK_DPOKE "TO" EXPR STEP_OPTIONAL emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
+        "For" VAR_WORD_LVALUE_SADDR EQUAL emit TOK_PUSH EXPR emit TOK_DPOKE \
+              "TO" EXPR STEP_OPTIONAL \
+              emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "Else" emit TOK_JUMP emit LT_ELSE E_ELSEIF
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
