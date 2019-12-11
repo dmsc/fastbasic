@@ -623,6 +623,7 @@ PARSE_LINE_COMMAND:
 #@endif FASTBASIC_FP
         "PMGraphics" EXPR emit TOK_PMGRAPHICS
         "PMHpos"  EXPR emit TOK_PUSH_NUM word HPOSP0 emit TOK_ADD emit TOK_SADDR "," EXPR emit TOK_POKE
+        "Timer" emit TOK_0 emit TOK_BYTE_POKE emit 20 emit TOK_0 emit TOK_BYTE_POKE emit 19
 
 PARSE_LINE_ASSIGN:
         VAR_WORD_SAVE                  EQUAL EXPR emit TOK_VAR_STORE E_POP_VAR

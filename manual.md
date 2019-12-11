@@ -558,7 +558,8 @@ functions supported by FastBasic.
          "jiffies." This is about 60
          times per second in NTSC
          systems or 50 times per second
-         in PAL systems.
+         in PAL systems. Use `TIMER`
+         statemnet to reset to 0.
 
 - ABS(_num_) : Returns the absolute
                value of _num_. Can be
@@ -1447,6 +1448,11 @@ General Statements
   synchronization to the TV refresh and
   for fluid animation.
 
+**Resets internal timer**  
+**TIMER/ T.**
+
+  Resets value returned by `TIME`
+  function to 0.
 
 
 Floating Point Statements
