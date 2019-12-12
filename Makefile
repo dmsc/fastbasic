@@ -40,14 +40,15 @@ CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
 ATR=build/fastbasic.atr
 ZIPFILE=build/fastbasic.zip
 PROGS=bin/fb.xex bin/fbi.xex bin/fbc.xex
-NATIVE_INT=bin/fastbasic-int
-NATIVE_FP=bin/fastbasic-fp
-CROSS_INT=compiler/fastbasic-int$(EXT)
-CROSS_FP=compiler/fastbasic-fp$(EXT)
+
+# To allow cross-compilation (ie, from Linux to Windows), we build two versions
+# of the compiler, one for the host (build machine) and one for the target.
+COMPILER_HOST_INT=bin/fastbasic-int
+COMPILER_HOST_FP=bin/fastbasic-fp
+COMPILER_TARGET_INT=compiler/fastbasic-int$(EXT)
+COMPILER_TARGET_FP=compiler/fastbasic-fp$(EXT)
 LIB_INT=compiler/fastbasic-int.lib
 LIB_FP=compiler/fastbasic-fp.lib
-
-NATIVES=$(NATIVE_INT) $(NATIVE_FP)
 
 # Sample programs
 SAMPLE_FP_BAS=\
@@ -230,10 +231,8 @@ IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=obj/%.o)
 
 # Compiler library files
-COMPILER=\
-	 $(CROSS_INT)\
+COMPILER_COMMON=\
 	 $(LIB_INT)\
-	 $(CROSS_FP)\
 	 $(LIB_FP)\
 	 compiler/fastbasic.cfg\
 	 compiler/fb$(SHEXT)\
@@ -241,6 +240,16 @@ COMPILER=\
 	 compiler/USAGE.md\
 	 compiler/LICENSE\
 	 compiler/MANUAL.md\
+
+# Host compiler
+COMPILER_HOST=\
+	 $(COMPILER_HOST_INT)\
+	 $(COMPILER_HOST_FP)
+
+# Target compiler
+COMPILER_TARGET=\
+	 $(COMPILER_TARGET_INT)\
+	 $(COMPILER_TARGET_FP)
 
 # All Output files
 OBJS=$(RT_OBJS_FP) \
@@ -258,12 +267,12 @@ LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=bin/%.lbl)
 ASYNT=gen/asynt
 CSYNT=gen/csynt
 
-all: $(ATR) $(NATIVES) $(COMPILER)
+all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 
 dist: $(ATR) $(ZIPFILE)
 
 clean: test-clean
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(CROSS_INT) $(CROSS_FP) $(LIB_INT) $(LIB_FP)
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_TARGET) $(LIB_INT) $(LIB_FP)
 	rm -f compiler/MANUAL.md
 
 distclean: clean test-distclean
@@ -272,7 +281,7 @@ distclean: clean test-distclean
 	    gen/int/basic.h  gen/fp/basic.h  \
 	    gen/int/basic.inc  gen/fp/basic.inc  \
 	    gen/cmdline-vers.bas \
-	    $(NATIVES)
+	    $(COMPILER_HOST)
 	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
 	-rmdir bin gen obj
 	make -C testsuite distclean
@@ -282,10 +291,9 @@ $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
 	mkatr $@ $(DOSDIR) -b $^
 
 # Build compiler ZIP file.
-$(ZIPFILE): $(COMPILER) | build
-	$(CROSS)strip $(CROSS_INT)
-	$(CROSS)strip $(CROSS_FP)
-	zip -9vj $@ $(COMPILER)
+$(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) | build
+	$(CROSS)strip $(COMPILER_TARGET)
+	zip -9vj $@ $(COMPILER_COMMON) $(COMPILER_TARGET)
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 disk/%.bas: samples/fp/%.bas
@@ -316,27 +324,27 @@ $(ASYNT): src/syntax/asynt.cc | gen
 $(CSYNT): src/syntax/csynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-# Native compiler
-$(NATIVE_INT): src/compiler/main.cc gen/int/basic.cc | bin
+# Host compiler
+$(COMPILER_HOST_INT): src/compiler/main.cc gen/int/basic.cc | bin
 	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
 
-$(NATIVE_FP): src/compiler/main.cc gen/fp/basic.cc | bin
+$(COMPILER_HOST_FP): src/compiler/main.cc gen/fp/basic.cc | bin
 	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
 
-# Cross compiler
+# Target compiler
 ifeq ($(CROSS),)
-$(CROSS_INT): $(NATIVE_INT)
+$(COMPILER_TARGET_INT): $(COMPILER_HOST_INT)
 	cp -f $< $@
 else
-$(CROSS_INT): src/compiler/main.cc gen/int/basic.cc
+$(COMPILER_TARGET_INT): src/compiler/main.cc gen/int/basic.cc
 	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
 endif
 
 ifeq ($(CROSS),)
-$(CROSS_FP): $(NATIVE_FP)
+$(COMPILER_TARGET_FP): $(COMPILER_HOST_FP)
 	cp -f $< $@
 else
-$(CROSS_FP): src/compiler/main.cc gen/fp/basic.cc
+$(COMPILER_TARGET_FP): src/compiler/main.cc gen/fp/basic.cc
 	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
 endif
 
@@ -378,20 +386,20 @@ bin/%.xex: obj/int/%.o $(LIB_INT) | bin
 	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
-gen/fp/%.asm: gen/%.bas $(NATIVE_FP) | gen/fp
-	$(NATIVE_FP) $< $@
+gen/fp/%.asm: gen/%.bas $(COMPILER_HOST_FP) | gen/fp
+	$(COMPILER_HOST_FP) $< $@
 
-gen/fp/%.asm: src/%.bas $(NATIVE_FP) | gen/fp
-	$(NATIVE_FP) $< $@
+gen/fp/%.asm: src/%.bas $(COMPILER_HOST_FP) | gen/fp
+	$(COMPILER_HOST_FP) $< $@
 
-gen/int/%.asm: src/%.bas $(NATIVE_INT) | gen/int
-	$(NATIVE_INT) $< $@
+gen/int/%.asm: src/%.bas $(COMPILER_HOST_INT) | gen/int
+	$(COMPILER_HOST_INT) $< $@
 
-gen/fp/%.asm: samples/fp/%.bas $(NATIVE_FP) | gen/fp
-	$(NATIVE_FP) $< $@
+gen/fp/%.asm: samples/fp/%.bas $(COMPILER_HOST_FP) | gen/fp
+	$(COMPILER_HOST_FP) $< $@
 
-gen/int/%.asm: samples/int/%.bas $(NATIVE_INT) | gen/int
-	$(NATIVE_INT) $< $@
+gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | gen/int
+	$(COMPILER_HOST_INT) $< $@
 
 # Object file rules
 obj/fp/%.o: src/%.asm | obj/fp obj/fp/interp
@@ -422,7 +430,7 @@ $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT)
 .PHONY: test
 .PHONY: test-clean
 .PHONY: test-distclean
-test: $(COMPILER) bin/fbc.xex
+test: $(COMPILER_COMMON) $(COMPILER_HOST) bin/fbc.xex
 	make -C testsuite
 
 test-clean:
@@ -454,7 +462,7 @@ $(ASYNT): \
  src/syntax/synt-sm.h \
  src/syntax/synt-emit-asm.h \
  src/syntax/synt-read.h
-$(NATIVES) $(CROSS_INT) $(CROSS_FP): \
+$(COMPILER_HOST) $(COMPILER_TARGET): \
  src/compiler/main.cc src/compiler/atarifp.cc \
  src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
  src/compiler/parser.cc src/compiler/peephole.cc \
