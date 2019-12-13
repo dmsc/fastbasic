@@ -18,28 +18,8 @@
 
 // looptype.cc: Defines types of loops and variables
 
-#include <string>
+#include "looptype.h"
 #include <stdexcept>
-
-enum LoopType {
-    // First entries can't use "EXIT"
-    LT_PROC_1 = 0,
-    LT_DATA,
-    LT_EXIT,
-    // From here, loops don't push jump destinations
-    LT_LAST_JUMP = 32,
-    LT_PROC_2,
-    LT_DO_LOOP,
-    LT_REPEAT,
-    LT_WHILE_1,
-    LT_FOR_1,
-    // And from here, loops push destinations and are ignored by EXIT
-    LT_WHILE_2 = 128,
-    LT_FOR_2,
-    LT_IF,
-    LT_ELSE,
-    LT_ELIF
-};
 
 std::string get_loop_name(enum LoopType l)
 {
@@ -73,7 +53,7 @@ std::string get_loop_name(enum LoopType l)
     }
 }
 
-static LoopType get_looptype(std::string t)
+LoopType get_looptype(std::string t)
 {
     if( t == "LT_PROC_1" )
         return LT_PROC_1;

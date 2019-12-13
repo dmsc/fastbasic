@@ -18,6 +18,10 @@
 
 // codestat.cc: Generate code statistics
 
+#include "codestat.h"
+#include <iostream>
+#include <map>
+
 class opstat
 {
     private:
@@ -74,4 +78,9 @@ class opstat
                           << " " << c.first.second << "\n";
         }
 };
+
+void do_opstat(std::vector<codew> &code)
+{
+    opstat op(code);
+}
 

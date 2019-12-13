@@ -84,12 +84,17 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
     hdr << "    TOK_LAST_TOKEN\n"
            "};\n"
            "\n"
+           "class parse;\n"
+           "bool parse_start(parse &s);\n"
            "std::string token_name(enum tokens t);\n";
 
     // Output parser C++ file
     out << "// Syntax state machine\n"
            "// --------------------\n"
            "// This is a generated file - do not modify\n"
+           "\n"
+           "#include \"basic.h\"\n"
+           "#include \"parser.h\"\n"
            "\n"
            "static const char * token_names[" << 1 + tok.next() << "] {\n";
     // Token names
@@ -108,7 +113,7 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
     int n = 128;
     for(auto i: ext.map())
     {
-        out << "static bool SMB_" << i.first << "(parse &s);\t// " << n << "\n";
+        out << "bool SMB_" << i.first << "(parse &s);\t// " << n << "\n";
         i.second = n++;
     }
 
@@ -120,6 +125,13 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
     for(auto &sm: sm_list)
         sm.second->print(out);
 
+    out << "\n"
+           "// Parsing start function\n"
+           "bool parse_start(parse &s)\n"
+           "{\n"
+           "    return SMB_PARSE_START(s);\n"
+           "}\n"
+           "\n";
     return true;
 }
 

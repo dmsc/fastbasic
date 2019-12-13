@@ -18,6 +18,9 @@
 
 // peephole.cc: Peephole optimizer
 
+#include "peephole.h"
+#include <map>
+#include <set>
 
 // Implements a simple peephole optimizer
 class peephole
@@ -1041,4 +1044,9 @@ class peephole
             fold_saddr();
         }
 };
+
+void do_peephole(std::vector<codew> &code)
+{
+    peephole pp(code);
+}
 

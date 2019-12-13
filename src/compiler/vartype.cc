@@ -18,20 +18,9 @@
 
 // vartype.cc: Defines types of variables
 
-#include <string>
+#include "vartype.h"
 
-enum VarType {
-        VT_UNDEF = 0,
-        VT_WORD,
-        VT_ARRAY_WORD,
-        VT_ARRAY_BYTE,
-        VT_ARRAY_STRING,
-        VT_ARRAY_FLOAT,
-        VT_STRING,
-        VT_FLOAT
-};
-
-static VarType get_vartype(std::string t)
+VarType get_vartype(std::string t)
 {
     if( t == "VT_UNDEF" )
         return VT_UNDEF;
@@ -52,7 +41,7 @@ static VarType get_vartype(std::string t)
     return VT_UNDEF;
 }
 
-static std::string get_vt_name(enum VarType t)
+std::string get_vt_name(enum VarType t)
 {
     switch(t) {
         case VT_ARRAY_WORD:
@@ -76,7 +65,7 @@ static std::string get_vt_name(enum VarType t)
 }
 
 // Properties of variable types:
-static bool var_type_is_array(enum VarType t)
+bool var_type_is_array(enum VarType t)
 {
     switch(t) {
         case VT_ARRAY_WORD:

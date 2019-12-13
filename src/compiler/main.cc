@@ -18,27 +18,15 @@
 
 // main.cc: Main compiler file
 
-#include "atarifp.cc"
-#include "looptype.cc"
-#include "vartype.cc"
 #include <iostream>
 #include <fstream>
-#include <map>
-#include <set>
-#include <cmath>
-#include <vector>
 
-static bool do_debug = false;
+#include "parser.h"
+#include "vartype.h"
+#include "peephole.h"
+#include "codestat.h"
 
-#include "parser.cc"
-
-// Include generated parser
-#include "basic.cc"
-
-// Those modules depends on token types
-#include "peephole.cc"
-#include "codestat.cc"
-
+bool do_debug = false;
 
 static bool readLine(std::string &r, std::istream &is)
 {
@@ -184,7 +172,7 @@ int main(int argc, char **argv)
         s.new_line(line, ln);
         while( s.pos != line.length() )
         {
-            if( !SMB_PARSE_START(s) || ( s.pos != line.length() && !s.peek(':') )  )
+            if( !parse_start(s) || ( s.pos != line.length() && !s.peek(':') )  )
             {
                 std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
                 if( !s.saved_errors.empty() )
@@ -230,10 +218,10 @@ int main(int argc, char **argv)
     s.emit_tok(TOK_END);
     // Optimize
     if( optimize )
-        peephole pp(s.full_code());
+        do_peephole(s.full_code());
     // Statistics
     if( show_stats )
-        opstat op(s.full_code());
+        do_opstat(s.full_code());
 
     // Get global symbols
     std::set<std::string> globals, globals_zp;
@@ -267,10 +255,7 @@ int main(int argc, char **argv)
     // Write tokens
     ofile << "; TOKENS:\n";
     for(auto &i: s.used_tokens())
-    {
-        if( token_names[i] && *token_names[i] )
-            ofile << "\t.importzp\t" << token_names[i] << "\n";
-    }
+        ofile << "\t.importzp\t" << token_name(i) << "\n";
     ofile << ";-----------------------------\n"
              "; Variables\n"
              "NUM_VARS = " << s.vars.size() << "\n"

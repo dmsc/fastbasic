@@ -28,11 +28,14 @@ SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
 FPASM=--asm-define FASTBASIC_FP --asm-include-dir gen/fp
 INTASM=--asm-include-dir gen/int
-FPCXX=-DFASTBASIC_FP -Igen/fp
-INTCXX=-Igen/int
+FPCXX=-DFASTBASIC_FP -Igen/fp -Isrc/compiler
+INTCXX=-Igen/int -Isrc/compiler
 
 # Get version string
 include version.mk
+
+# Do not delete intermediate files
+.SECONDARY:
 
 # Cross
 CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
@@ -241,6 +244,17 @@ COMPILER_COMMON=\
 	 compiler/LICENSE\
 	 compiler/MANUAL.md\
 
+# Compiler source files (C++)
+COMPILER_SRC=\
+	atarifp.cc\
+	basic.cc\
+	codestat.cc\
+	looptype.cc\
+	main.cc\
+	parser.cc\
+	peephole.cc\
+	vartype.cc\
+
 # Host compiler
 COMPILER_HOST=\
 	 $(COMPILER_HOST_INT)\
@@ -251,7 +265,7 @@ COMPILER_TARGET=\
 	 $(COMPILER_TARGET_INT)\
 	 $(COMPILER_TARGET_FP)
 
-# All Output files
+# All ASM Output files
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
      $(COMMON_OBJS_FP) \
@@ -260,29 +274,55 @@ OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
      $(COMMON_OBJS_INT) \
      $(SAMP_OBJS)
+
+# Listing files
 LSTS=$(OBJS:%.o=%.lst)
 
+# Map and Label files for the XEX
 MAPS=$(PROGS:.xex=.map) $(SAMPLE_X_BAS:%.bas=bin/%.map)
 LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=bin/%.lbl)
+
+# The syntax parsers, to ASM (for the IDE) and C++ (for the compiler)
 ASYNT=gen/asynt
 CSYNT=gen/csynt
+
+# The compiler object files, for FP and INT versions, HOST and TARGET
+COMPILER_HST_FP_OBJ=$(COMPILER_SRC:%.cc=obj/cxx-fp/%.o)
+COMPILER_HST_INT_OBJ=$(COMPILER_SRC:%.cc=obj/cxx-int/%.o)
+COMPILER_TGT_FP_OBJ=$(COMPILER_SRC:%.cc=obj/cxx-tgt-fp/%.o)
+COMPILER_TGT_INT_OBJ=$(COMPILER_SRC:%.cc=obj/cxx-tgt-int/%.o)
+
+# The compiler dependencies - auto-generated
+COMPILER_HST_DEPS=$(COMPILER_HST_INT_OBJ:.o=.d) $(COMPILER_HST_FP_OBJ:.o=.d)
+COMPILER_TGT_DEPS=$(COMPILER_TGT_INT_OBJ:.o=.d) $(COMPILER_TGT_FP_OBJ:.o=.d)
+
+# All the HOST and TARGET obj
+HOST_OBJ=$(COMPILER_HST_FP_OBJ) $(COMPILER_HST_INT_OBJ)
+TARGET_OBJ=$(COMPILER_TGT_FP_OBJ) $(COMPILER_TGT_INT_OBJ)
 
 all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 
 dist: $(ATR) $(ZIPFILE)
 
 clean: test-clean
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_TARGET) $(LIB_INT) $(LIB_FP)
-	rm -f compiler/MANUAL.md
+	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(PROGS) $(MAPS) \
+	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_TARGET) $(TARGET_OBJ) \
+	      $(LIB_INT) $(LIB_FP) $(COMPILER_HST_DEPS) $(COMPILER_TGT_EPS) \
+	      $(SAMPLE_BAS:%.bas=gen/%.asm) \
+	      $(SAMP_OBJS) \
+	      compiler/MANUAL.md
 
 distclean: clean test-distclean
 	rm -f gen/int/basic.asm gen/fp/basic.asm \
 	    gen/int/basic.cc gen/fp/basic.cc \
 	    gen/int/basic.h  gen/fp/basic.h  \
 	    gen/int/basic.inc  gen/fp/basic.inc  \
-	    gen/cmdline-vers.bas \
-	    $(COMPILER_HOST)
+	    gen/int/editor.asm gen/fp/editor.asm \
+	    $(CMD_BAS_SRC) \
+	    $(CMD_BAS_SRC:gen/%.bas=gen/fp/%.asm) \
+	    $(COMPILER_HOST) $(HOST_OBJ)
 	-rmdir gen/fp gen/int obj/fp/interp obj/int/interp obj/fp obj/int
+	-rmdir obj/cxx-fp obj/cxx-int bj/cxx-tgt-fp obj/cxx-tgt-int
 	-rmdir bin gen obj
 	make -C testsuite distclean
 
@@ -324,28 +364,50 @@ $(ASYNT): src/syntax/asynt.cc | gen
 $(CSYNT): src/syntax/csynt.cc | gen
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-# Host compiler
-$(COMPILER_HOST_INT): src/compiler/main.cc gen/int/basic.cc | bin
-	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
+# Host compiler build
+obj/cxx-int/%.o: src/compiler/%.cc | obj/cxx-int
+	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
-$(COMPILER_HOST_FP): src/compiler/main.cc gen/fp/basic.cc | bin
-	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
+obj/cxx-int/%.o: gen/int/%.cc | obj/cxx-int
+	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
-# Target compiler
+$(COMPILER_HOST_INT): $(COMPILER_HST_INT_OBJ) | bin
+	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+
+obj/cxx-fp/%.o: src/compiler/%.cc | obj/cxx-fp
+	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+
+obj/cxx-fp/%.o: gen/fp/%.cc | obj/cxx-fp
+	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+
+$(COMPILER_HOST_FP): $(COMPILER_HST_FP_OBJ) | bin
+	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+
+# Target compiler build
 ifeq ($(CROSS),)
 $(COMPILER_TARGET_INT): $(COMPILER_HOST_INT)
 	cp -f $< $@
-else
-$(COMPILER_TARGET_INT): src/compiler/main.cc gen/int/basic.cc
-	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $<
-endif
 
-ifeq ($(CROSS),)
 $(COMPILER_TARGET_FP): $(COMPILER_HOST_FP)
 	cp -f $< $@
 else
-$(COMPILER_TARGET_FP): src/compiler/main.cc gen/fp/basic.cc
-	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $<
+obj/cxx-tgt-int/%.o: src/compiler/%.cc | obj/cxx-tgt-int
+	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+
+obj/cxx-tgt-int/%.o: gen/int/%.cc | obj/cxx-tgt-int
+	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+
+$(COMPILER_TARGET_INT): $(COMPILER_TGT_INT_OBJ)
+	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+
+obj/cxx-tgt-fp/%.o: src/compiler/%.cc | obj/cxx-tgt-fp
+	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+
+obj/cxx-tgt-fp/%.o: gen/int/%.cc | obj/cxx-tgt-fp
+	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+
+$(COMPILER_TARGET_FP): $(COMPILER_TGT_FP_OBJ)
+	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
@@ -357,12 +419,12 @@ gen/int/%.asm: src/%.syn $(ASYNT) | gen/int
 	$(ASYNT) $(SYNTFLAGS) $< -o $@
 
 # Generator for syntax file - C++ version - FLOAT
-gen/fp/%.cc: src/%.syn $(CSYNT) | gen/fp
-	$(CSYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
+gen/fp/%.cc gen/fp/%.h: src/%.syn $(CSYNT) | gen/fp
+	$(CSYNT) $(SYNTFLAGS) $(SYNTFP) $< -o gen/fp/$*.cc
 
 # Generator for syntax file - C++ version - INTEGER
-gen/int/%.cc: src/%.syn $(CSYNT) | gen/int
-	$(CSYNT) $(SYNTFLAGS) $< -o $@
+gen/int/%.cc gen/int/%.h: src/%.syn $(CSYNT) | gen/int
+	$(CSYNT) $(SYNTFLAGS) $< -o gen/int/$*.cc
 
 # Sets the version inside command line compiler source
 gen/cmdline-vers.bas: src/cmdline.bas version.mk
@@ -414,7 +476,8 @@ obj/int/%.o: src/%.asm | obj/int obj/int/interp
 obj/int/%.o: gen/int/%.asm | obj/int
 	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
 
-gen obj obj/fp obj/int obj/fp/interp obj/int/interp gen/fp gen/int bin build:
+gen obj obj/fp obj/int obj/fp/interp obj/int/interp gen/fp gen/int \
+obj/cxx-fp obj/cxx-int obj/cxx-tgt-fp obj/cxx-tgt-int bin build:
 	mkdir -p $@
 
 # Library files
@@ -462,10 +525,32 @@ $(ASYNT): \
  src/syntax/synt-sm.h \
  src/syntax/synt-emit-asm.h \
  src/syntax/synt-read.h
-$(COMPILER_HOST) $(COMPILER_TARGET): \
- src/compiler/main.cc src/compiler/atarifp.cc \
- src/compiler/looptype.cc src/compiler/vartype.cc gen/int/basic.cc \
- src/compiler/parser.cc src/compiler/peephole.cc \
- src/compiler/codestat.cc src/compiler/codew.h \
- version.mk
 
+$(HOST_OBJ) $(TARGET_OBJ): version.mk
+
+# Automatic generation of dependency information for C++ files
+obj/cxx-tgt-int/%.d: src/compiler/%.cc | obj/cxx-tgt-int
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+obj/cxx-tgt-int/%.d: gen/fp/%.cc | obj/cxx-tgt-int
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+obj/cxx-tgt-fp/%.d: src/compiler/%.cc | obj/cxx-tgt-fp
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+obj/cxx-tgt-fp/%.d: gen/fp/%.cc | obj/cxx-tgt-fp
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+obj/cxx-int/%.d: src/compiler/%.cc | gen/int/basic.h obj/cxx-int
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+obj/cxx-int/%.d: gen/int/%.cc | obj/cxx-int
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+obj/cxx-fp/%.d: src/compiler/%.cc | gen/fp/basic.h obj/cxx-fp
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+obj/cxx-fp/%.d: gen/fp/%.cc | obj/cxx-fp
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+
+ifneq "$(MAKECMDGOALS)" "clean"
+    ifneq "$(MAKECMDGOALS)" "distclean"
+        -include $(COMPILER_HST_DEPS)
+        ifneq ($(CROSS),)
+            -include $(COMPILER_TGT_DEPS)
+        endif
+    endif
+endif

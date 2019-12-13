@@ -20,6 +20,7 @@
 #pragma once
 
 #include "basic.h" // enum tokens
+#include "atarifp.h"
 
 class codew {
     private:
