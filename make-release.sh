@@ -56,20 +56,20 @@ compile_osx() {
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
     make -j4 CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m64 OPTFLAGS="$OSX64_FLAGS" \
-         compiler/fastbasic-int_m64 compiler/fastbasic-fp_m64
+         build/compiler/fastbasic-int_m64 build/compiler/fastbasic-fp_m64
     #  Clean and compile to 32bit:
     make clean
     make -j4 CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m32 OPTFLAGS="$OSX32_FLAGS" \
-         compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
+         build/compiler/fastbasic-int_m32 build/compiler/fastbasic-fp_m32
     #  Build the fat binary with "LIPO":
     x86_64-apple-darwin15-lipo -create \
-        compiler/fastbasic-int_m32 compiler/fastbasic-int_m64 \
-        -output compiler/fastbasic-int
+        build/compiler/fastbasic-int_m32 build/compiler/fastbasic-int_m64 \
+        -output build/compiler/fastbasic-int
     x86_64-apple-darwin15-lipo -create \
-        compiler/fastbasic-fp_m32 compiler/fastbasic-fp_m64 \
-        -output compiler/fastbasic-fp
-    rm -f compiler/fastbasic-int_m64 compiler/fastbasic-fp_m64 \
-          compiler/fastbasic-int_m32 compiler/fastbasic-fp_m32
+        build/compiler/fastbasic-fp_m32 build/compiler/fastbasic-fp_m64 \
+        -output build/compiler/fastbasic-fp
+    rm -f build/compiler/fastbasic-int_m64 build/compiler/fastbasic-fp_m64 \
+          build/compiler/fastbasic-int_m32 build/compiler/fastbasic-fp_m32
     #  Pack
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-macosx.zip"

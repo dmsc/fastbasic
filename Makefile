@@ -396,19 +396,19 @@ $(COMPILER_TARGET_FP): $(COMPILER_HOST_FP) | build/compiler
 	cp -f $< $@
 else
 build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
-	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 build/obj/cxx-tgt-int/%.o: build/gen/int/%.cc | build/obj/cxx-tgt-int
-	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 $(COMPILER_TARGET_INT): $(COMPILER_TGT_INT_OBJ) | build/compiler
 	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
 
 build/obj/cxx-tgt-fp/%.o: src/compiler/%.cc | build/obj/cxx-tgt-fp
-	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
-build/obj/cxx-tgt-fp/%.o: build/gen/int/%.cc | build/obj/cxx-tgt-fp
-	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+build/obj/cxx-tgt-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
+	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 $(COMPILER_TARGET_FP): $(COMPILER_TGT_FP_OBJ) | build/compiler
 	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
