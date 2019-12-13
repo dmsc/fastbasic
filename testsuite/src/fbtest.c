@@ -30,10 +30,11 @@
 
 // Flags
 static int verbose;
-static const char *fb_atari_compiler = "../bin/fbc.xex";
-static const char *fb_fp_compiler    = "../bin/fastbasic-fp";
-static const char *fb_int_compiler   = "../bin/fastbasic-int";
-static const char *fb_lib_path       = "../compiler";
+static const char *fb_atari_compiler = "../build/bin/fbc.xex";
+static const char *fb_fp_compiler    = "../build/bin/fastbasic-fp";
+static const char *fb_int_compiler   = "../build/bin/fastbasic-int";
+static const char *fb_cfg_path       = "../compiler";
+static const char *fb_lib_path       = "../build/compiler";
 
 #define FB_ASM      "cl65 -tatari"
 #define FB_LIB_FP   "fastbasic-fp.lib"
@@ -294,7 +295,7 @@ static int compile_cross(const char *basname, const char *asmname,
         unlink(xexname);
         free(cmd);
         cmd = 0;
-        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", FB_ASM, fb_lib_path,
+        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", FB_ASM, fb_cfg_path,
                     FB_CFG_FILE, xexname, asmname, fb_lib_path, libs) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
@@ -655,6 +656,7 @@ int main(int argc, char **argv)
                 break;
             case 'l': // cross libraries path
                 fb_lib_path = optarg;
+                fb_cfg_path = optarg;
                 break;
             default:
                 return EXIT_FAILURE;
