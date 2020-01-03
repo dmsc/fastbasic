@@ -42,39 +42,37 @@
         ldx     stack_h, y
         stx     tmp2+1
 
-        ; Get lengths
+        ; X is the return value
+        ldx     #1
+
+        ; Get smaller lengths
         ldy     #0
         lda     (tmp1), y
-        sta     tmp3
+        cmp     (tmp2), y
+        beq     l1_equal
+        bcc     l1_shorter
+        dex             ; S1 larger, return 1 if characters equal
         lda     (tmp2), y
-        sta     tmp3+1
-
-        ; X is the return value
-        ldx     #0
+l1_equal:
+        dex
+l1_shorter:
+        sta     tmp3
 
         ; Compare each byte
 next_char:
         cpy     tmp3
-        beq     end_str1
-        cpy     tmp3+1
-        beq     rtn_lt  ; Note that on branch, C = 1
+        beq     xit
 
         iny
         lda     (tmp1), y
         cmp     (tmp2), y
         beq     next_char
 
-        bcc     rtn_gt
-rtn_lt:
-        dex             ; Returns < 0
-        bcs     xit     ; Always taken
+        ldx     #$01
+        bcc     xit
 
-end_str1:
-        cpy     tmp3+1
-        beq     xit
+        ldx     #$FF    ; Returns < 0
 
-rtn_gt:
-        inx
 xit:
         inc     sptr
         jmp     pushXX_set0
