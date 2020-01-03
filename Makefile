@@ -238,11 +238,11 @@ SAMP_OBJS=$(SAMPLE_BAS:%.bas=build/obj/%.o)
 COMPILER_COMMON=\
 	 $(LIB_INT)\
 	 $(LIB_FP)\
-	 compiler/fastbasic.cfg\
-	 compiler/fb$(SHEXT)\
-	 compiler/fb-int$(SHEXT)\
-	 compiler/USAGE.md\
-	 compiler/LICENSE\
+	 build/compiler/fastbasic.cfg\
+	 build/compiler/fb$(SHEXT)\
+	 build/compiler/fb-int$(SHEXT)\
+	 build/compiler/USAGE.md\
+	 build/compiler/LICENSE\
 	 build/compiler/MANUAL.md\
 
 # Compiler source files (C++)
@@ -509,6 +509,10 @@ test-distclean:
 
 # Copy manual to compiler
 build/compiler/MANUAL.md: manual.md
+	cp -f $< $@
+
+# Copy other files to compiler folder
+build/compiler/%: compiler/%
 	cp -f $< $@
 
 # Dependencies
