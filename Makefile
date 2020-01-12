@@ -308,11 +308,10 @@ dist: $(ATR) $(ZIPFILE)
 
 clean: test-clean
 	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
-	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_TARGET) $(TARGET_OBJ) \
-	      $(LIB_INT) $(LIB_FP) $(COMPILER_HST_DEPS) $(COMPILER_TGT_EPS) \
+	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_HOST) $(TARGET_OBJ) \
+	      $(COMPILER_HST_DEPS) $(COMPILER_TGT_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
-	      $(SAMP_OBJS) \
-	      build/compiler/MANUAL.md
+	      $(SAMP_OBJS) $(HOST_OBJ)
 
 distclean: clean test-distclean
 	rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
@@ -322,7 +321,7 @@ distclean: clean test-distclean
 	    build/gen/int/editor.asm build/gen/fp/editor.asm \
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
-	    $(COMPILER_HOST) $(HOST_OBJ)
+	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
 	-rmdir build/gen/fp build/gen/int \
 	       build/obj/fp/interp build/obj/int/interp build/obj/fp build/obj/int \
 	       build/obj/cxx-fp build/obj/cxx-int \
@@ -538,11 +537,11 @@ $(ASYNT): \
 $(HOST_OBJ) $(TARGET_OBJ): version.mk
 
 # Automatic generation of dependency information for C++ files
-build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/obj/cxx-tgt-int
+build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-tgt-int
 	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
 build/obj/cxx-tgt-int/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-int
 	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/obj/cxx-tgt-fp
+build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-tgt-fp
 	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
 build/obj/cxx-tgt-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
 	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
