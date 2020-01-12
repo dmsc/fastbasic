@@ -19,8 +19,6 @@
 # Set "CROSS" to the compiler prefix, forces compilation of two compilers, one
 # native and one for the cross-target.
 CROSS=
-EXT=
-SHEXT=
 CXX=g++
 OPTFLAGS=-O2
 CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
@@ -30,6 +28,17 @@ FPASM=--asm-define FASTBASIC_FP --asm-include-dir build/gen/fp
 INTASM=--asm-include-dir build/gen/int
 FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
 INTCXX=-Ibuild/gen/int -Isrc/compiler
+
+# Detect Windows OS and set file extensions:
+ifeq ($(strip $(shell echo '_WIN32' | $(CROSS)$(CXX) -E - | grep  "_WIN32")),_WIN32)
+    # Linux / OS-X
+    EXT=
+    SHEXT=
+else
+    # Windows:
+    EXT=.exe
+    SHEXT=.bat
+endif
 
 # Get version string
 include version.mk
