@@ -162,7 +162,6 @@ COMMON_AS_SRC=\
     src/interp/nmove.asm\
     src/interp/pause.asm\
     src/interp/peek.asm\
-    src/interp/plot.asm\
     src/interp/pmgraphics.asm\
     src/interp/poke.asm\
     src/interp/position.asm\
