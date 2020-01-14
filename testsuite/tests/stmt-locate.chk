@@ -1,0 +1,12 @@
+Name: Test statement "LOCATE"
+Test: run
+Output:
+SCREEN: set graphics 7 with text window
+Start
+SCREEN: plot 10,10  color 1
+SCREEN: locate 0,0
+
+0
+SCREEN: locate 10,10
+
+1
