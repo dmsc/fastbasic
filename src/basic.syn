@@ -364,12 +364,12 @@ PRINT_ONE:
         ";"
 
 PRINT_EXPR:
-        PRINT_ONE PRINT_MORE
-        PRINT_SEP
+        IO_CHAN_OPT PRINT_SEP PRINT_MORE
+        IO_CHAN_OPT PRINT_MORE
 
 PRINT_MORE:
         PRINT_ONE PRINT_MORE
-        pass
+        IO_CHAN0
 
 # Parse multi-line IF
 THEN_OR_MULTILINE:
@@ -573,8 +573,8 @@ DATA_VAR: new array name
 # Parse a line
 PARSE_LINE_COMMAND:
         "." E_REM
-        "?" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
-        "PRint" IO_CHAN_OPT PRINT_EXPR IO_CHAN0
+        "?" PRINT_EXPR
+        "PRint" PRINT_EXPR
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
@@ -600,7 +600,7 @@ PARSE_LINE_COMMAND:
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
         "ENDif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
-        "Graphics" emit TOK_0 emit { TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
+        "Graphics" emit { TOK_0, TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
         "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
         "FColor" EXPR emit { TOK_NUM_POKE, &FILDAT }
         "POSition" POSITION
