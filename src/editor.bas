@@ -169,6 +169,15 @@ PROC InsertChar
 ENDPROC
 
 '-------------------------------------
+' Undo editing current line
+PROC UndoEditLine
+  edited = 0
+  put @@ATBEL
+  exec CopyToEdit
+  exec ForceDrawCurrentLine
+ENDPROC
+
+'-------------------------------------
 ' Save line being edited
 '
 PROC SaveLine
@@ -178,12 +187,20 @@ PROC SaveLine
     ptr = ScrAdr(lDraw+1) - 1
     newPtr = nptr - ptr
 
-    if newPtr < 0
-      move  ptr, nptr, MemEnd - ptr
-    elif newPtr > 0
-      -move ptr, nptr, MemEnd - ptr
+    ' Check if we have enough space in the buffer for the new file
+    ' TODO: This check will fail if the buffer is bigger than 32kB,
+    '       because the right side will be negative.
+    if newPtr > dpeek(@MEMTOP) - MemEnd
+      exec UndoEditLine
+      exit
     endif
+
     MemEnd = MemEnd + newPtr
+    if newPtr < 0
+      move  ptr, nptr, MemEnd - nptr
+    elif newPtr > 0
+      -move ptr, nptr, MemEnd - nptr
+    endif
 
     ' Copy new line
     ptr  = ScrAdr(lDraw)
@@ -303,8 +320,8 @@ ENDPROC
 '-------------------------------------
 ' Moves the cursor down 1 line
 PROC CursorDown
+  exec SaveLine
   if scrLine = 22
-    exec SaveLine
     exec ScrollUp
   else
     inc scrLine
@@ -315,11 +332,11 @@ ENDPROC
 '-------------------------------------
 ' Moves the cursor up 1 line
 PROC CursorUp
+  exec SaveLine
   if scrLine
     dec scrLine
     dec line
   else
-    exec SaveLine
     exec ScrollDown
   endif
 ENDPROC
@@ -827,13 +844,7 @@ PROC ProcessKeys
     '
     '--------- Control-Z (undo) -----
     elif key = $1A
-      if edited
-        edited = 0
-        exec CopyToEdit
-        exec ForceDrawCurrentLine
-      else
-        put @@ATBEL
-      endif
+      exec UndoEditLine
     '
     '--------- Escape ---------------
     elif key = $1B
