@@ -103,16 +103,16 @@ PROC LoadFile
 
   open #1, 4, 0, FileName$
   if err() < 128
-    bget #1, Adr(MemStart), fre()
-    if err() = 136
-      MemEnd = dpeek($358) + adr(MemStart)
-      close #1
-    endif
+    bget #1, Adr(MemStart), dpeek(@MEMTOP) - Adr(MemStart)
   endif
 
-  if err() > 127
+  ' Load ok only if error = 136 (EOF found)
+  if err() = 136
+    MemEnd = dpeek($358) + Adr(MemStart)
+  else
     exec FileError
   endif
+  close #1
 
 ENDPROC
 
