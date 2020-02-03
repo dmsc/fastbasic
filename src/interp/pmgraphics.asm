@@ -36,41 +36,43 @@
         .segment        "RUNTIME"
 
 .proc   EXE_PMGRAPHICS
+        and     #3      ; only two modes
         tax             ; Disable if 0
         beq     disable_pm
-        and     #1      ; only two modes
-        tax
-        ; TODO: copied from AtBasic - optimize
-        ldy     pmgmode_tab,x   ; Get mode
-        lda     mask_tab,x      ; Get address mask
+
+        ; Note: if A == 3, mask_tab will point to a 0,
+        ; so we will have a MEMORY ERROR.
+        ;
+        ldy     #3              ; Load valir for GRACTL
+        lda     mask_tab-1,x    ; Get address mask
         and     MEMTOP+1
         clc                     ; Subtract to get P/M base
-        adc     mask_tab,x
+        adc     mask_tab-1,x
         cmp     array_ptr+1
         bcs     mem_ok
         jmp     err_nomem
 
 disable_pm:
-        txa     ; Set A,X and Y to 0, used to write register values
-        tay
-        clc
+        tay     ; Store 0 in GRACTL
 mem_ok:
         sta     pmgbase
         sta     PMBASE
-        sty     pmgmode
 
         lda     SDMCTL
         and     #$e3
-        bcc     skip_pmenable
         ora     pmg_dmactl_tab,x
-        ldy     #3
-skip_pmenable:
         sta     SDMCTL
         sty     GRACTL
         tya             ; bit 1 already set
         ora     GPRIOR
         and     #$c1
         sta     GPRIOR
+
+        ; Note: when X = 0, mode is written an invalid
+        ; value, but it won't matter as MODE is not used
+        ; when P/M graphics are disabled.
+        ldy     pmgmode_tab-1,x
+        sty     pmgmode
 
         ; Reset GTIA registers (P/M position, sizes and hit)
         ldy     #17
@@ -87,11 +89,11 @@ pmgbase:
 pmgmode:
         .byte 0
 mask_tab:
-        .byte   $fc,$f8
+        .byte       $f8,$fc
 pmg_dmactl_tab:
-        .byte   $0c,$1c
+        .byte   $00,$1c,$0c
 pmgmode_tab:
-        .byte   $40,$80
+        .byte       $80,$40
 
 PMGBASE = pmgbase
 PMGMODE = pmgmode
