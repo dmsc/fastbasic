@@ -1,4 +1,4 @@
-% FastBasic - Fast BASIC interpreter for the Atari 8-bit computers
+% FastBasic %VERSION% - Fast BASIC interpreter for the Atari 8-bit computers
 
 Introduction
 ============

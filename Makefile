@@ -514,9 +514,9 @@ test-clean:
 test-distclean:
 	make -C testsuite distclean
 
-# Copy manual to compiler
-build/compiler/MANUAL.md: manual.md
-	cp -f $< $@
+# Copy manual to compiler changing the version string.
+build/compiler/MANUAL.md: manual.md version.mk
+	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Copy other files to compiler folder
 build/compiler/%: compiler/%

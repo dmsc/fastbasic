@@ -85,10 +85,12 @@ compile_win32
 compile_osx
 
 # Makes PDF using "pandoc"
-pandoc manual.md -o "${out}-manual.pdf" \
+make build/compiler/MANUAL.md
+pandoc build/compiler/MANUAL.md -o "${out}-manual.pdf" \
        --from markdown-raw_tex --template template.tex \
        --listings --toc --number-sections
 
-pandoc compiler/USAGE.md -o "${out}-cross-compiler.pdf" \
+make build/compiler/USAGE.md
+pandoc build/compiler/USAGE.md -o "${out}-cross-compiler.pdf" \
        --from markdown-raw_tex --template ~/eisvogel.tex --listings
 
