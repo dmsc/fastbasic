@@ -28,7 +28,7 @@
 ; --------------------------------
 
         .import         push_fr0, get_str_eol
-        .importzp       IOERROR, next_ins_incsp
+        .importzp       IOERROR, next_instruction
 
         .include "atari.inc"
 
@@ -41,7 +41,7 @@
         bcc     :+
         lda     #18
         sta     IOERROR
-:       jmp     next_ins_incsp
+:       jmp     next_instruction
 .endproc
 
         .include "../deftok.inc"

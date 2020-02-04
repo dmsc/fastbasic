@@ -1,0 +1,11 @@
+Name: Test statement "INPUT"
+Test: run-fp
+Input:
+1
+2
+.
+Output:
+Start
+?1        1
+1         2
+?18
