@@ -642,11 +642,22 @@ graphics.
           pressed, or a keycode. The
           returned value only goes to 0
           after reading the key in the
-          OS (via a `GET` or `POKE
-          764,0` statement).  _Hint:
-          The value returned is
+          OS (via a `GET` or `POKE 764,
+          255` statement).
+          _Hint: The value returned is
           actually the same as_
           `(PEEK(764) EXOR 255)`.
+          The following program will
+          show the `KEY()` codes for
+          pressed keys:
+
+      PRINT "Press keys, exit with ESC"
+      REPEAT
+        REPEAT : UNTIL KEY()
+        PRINT "Key code: "; KEY()
+        GET K
+        PRINT "ATASCI code: "; K
+      UNTIL K=27
 
 
 Floating Point Functions
