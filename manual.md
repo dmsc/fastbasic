@@ -841,10 +841,10 @@ Console Print and Input Statements
   the value 18 is stored in ERR().
 
 **Moves The Screen Cursor**  
-**POSITION _row_, _column_ / POS.**
+**POSITION _column_, _row_ / POS.**
 
   Moves the screen cursor position to
-  the given _row_ and _column_, so the
+  the given _column_ and _row_, so the
   next PRINT statement outputs at that
   position.
 
