@@ -293,8 +293,6 @@ match_char:
         ldy     bpos
         cmp     #'a'
         bcc     match
-        cmp     #'z'+1
-        bcs     match
         lda     #'.'
         cmp     (bptr),y
         beq     matched_dot
