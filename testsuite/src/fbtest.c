@@ -313,6 +313,7 @@ static int compile_cross(const char *basname, const char *asmname,
         {
             // Compilation succeeded (expected fail!)
             fprintf(stderr, "%s: compiled without error, unexpected\n", basname);
+            e = -1;
             goto xit;
         }
         else if (e)
