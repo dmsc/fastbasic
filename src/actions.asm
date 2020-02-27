@@ -369,14 +369,12 @@ exit:
         clc
         adc     var_namelen
         sta     bpos
-        jsr     parser_skipws
         clc
         rts
 .endproc
 
 ; Sets the type of a variable - variable number and new type must be in the stack:
 .proc   E_VAR_SET_TYPE
-        jsr     parser_skipws
         jsr     get_last_tok    ; Get variable TYPE from last token
 
 .ifdef FASTBASIC_FP
