@@ -132,7 +132,6 @@ COMMON_AS_SRC=\
     src/interp/bitand.asm\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
-    src/interp/cdata.asm\
     src/interp/chr.asm\
     src/interp/cmpstr.asm\
     src/interp/color.asm\
