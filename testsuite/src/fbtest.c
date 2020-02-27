@@ -42,7 +42,7 @@ static const char *fb_lib_path       = "../build/compiler";
 #define FB_CFG_FILE "fastbasic.cfg"
 
 // Maximum number of cycles for the native compiler
-#define MAX_FPC_CYCLES 25000000
+#define MAX_FPC_CYCLES 28000000
 
 // Functions to get/put characters to running XEX
 static size_t str_out_pos, str_out_len, str_in_pos, str_in_len;
