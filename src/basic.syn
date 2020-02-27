@@ -577,6 +577,31 @@ DATA_VAR: new data array name
         DATA_TYPE
         emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF "()" DATA_TYPE
 
+# DLI support - builds a machine code routine and store the address to
+# display list interrupt handler:
+DLI_COMMAND:
+        "Def" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT \
+              E_LABEL_DEF emit { VT_ARRAY_BYTE } E_LABEL_SET_TYPE \
+              emit { 72, 138, 72, 166, COLRSH } EQUAL \
+              DLI_LDA emit { 141, &WSYNC } DLI_STA DLI_CODES \
+              emit { 230, COLRSH, 104, 170, 104, 64 } \
+              E_POP_PROC_DATA
+        "Set" emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
+              emit { TOK_DPOKE, TOK_BYTE, 192, TOK_NUM_POKE, &NMIEN }
+        emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
+
+DLI_CODES:
+        "," DLI_LDA DLI_STA DLI_CODES
+        pass
+
+DLI_LDA: DLI source data
+        "@" emit { 189, VT_ARRAY_BYTE } E_LABEL
+        "@" emit 189 E_NUMBER_WORD
+        emit 169 E_NUMBER_BYTE
+
+DLI_STA: DLI destination
+        "TO" emit 141 E_NUMBER_WORD
+
 # Parse a line
 PARSE_LINE_COMMAND:
         "." E_REM
@@ -638,6 +663,7 @@ PARSE_LINE_COMMAND:
         "PMGraphics" EXPR emit TOK_PMGRAPHICS
         "PMHpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } "," EXPR emit TOK_POKE
         "Timer" emit { TOK_0, TOK_BYTE_POKE, 20, TOK_0, TOK_BYTE_POKE, 19 }
+        "DLi" DLI_COMMAND
 
 PARSE_LINE_ASSIGN:
         VAR_WORD_SAVE                  EQUAL EXPR emit TOK_VAR_STORE E_POP_VAR
