@@ -168,7 +168,7 @@ int main(int argc, char **argv)
             break;
         ln++;
         if( do_debug )
-            std::cerr << iname << ": parsing line " << ln << "\n";
+            std::cout << iname << ": parsing line " << ln << "\n";
         s.new_line(line, ln);
         while( s.pos != line.length() )
         {
@@ -204,8 +204,8 @@ int main(int argc, char **argv)
     }
     if( do_debug )
     {
-        std::cerr << "parse end:\n";
-        std::cerr << "MAX LEVEL: " << s.maxlvl << "\n";
+        std::cout << "parse end:\n";
+        std::cout << "MAX LEVEL: " << s.maxlvl << "\n";
     }
     // Check unclosed loops
     auto loop_error = s.check_loops();

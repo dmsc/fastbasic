@@ -22,25 +22,25 @@
         .export         E_REM, E_EOL, E_NUMBER_WORD, E_NUMBER_BYTE
         .export         E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
         .export         E_POP_IF, E_ELSEIF, E_EXIT_LOOP
-        .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
+        .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_DATA, E_POP_PROC_2
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
-        .export         E_VAR_SET_TYPE
+        .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
         .export         E_LABEL, E_LABEL_DEF
         .export         E_PUSH_VAR, E_POP_VAR
-        .exportzp       VT_WORD, VT_STRING, VT_FLOAT
+        .exportzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
         .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
-        .exportzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
+        .exportzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         ; From runtime.asm
         .import         read_word
         ; From vars.asm
         .import         var_search, name_new
-        .import         label_search
+        .import         list_search
         .importzp       var_namelen, label_count, var_count
         ; From alloc.asm
         .import         alloc_laddr
-        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
+        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr, label_buf
         ; From parser.asm
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
@@ -87,8 +87,7 @@ read_fp = AFP
                 ;                     ; EXIT?   PUSH?
                 ;                     ; bit-7   bit-6
                 LT_EXIT               ; error   yes
-                LT_PROC_1             ; error   yes
-                LT_DATA               ; error   yes
+                LT_PROC_DATA          ; error   yes
                 LT_FOR_2              ; yes     yes
                 LT_LAST_JUMP = 63
                 LT_PROC_2             ; yes     no
@@ -402,13 +401,16 @@ no_float:
 xit:    rts
 .endproc
 
-; Support for labels (PROC/EXEC)
+; Support for labels (DATA/PROC/EXEC)
 ; ------------------------------
 ;
 ; We keep two lists:
 ;  - label_buf/ptr: a list of all the labels, sorted by the label number.
 ;                   one byte for each character in the name, last byte with
 ;                   bit 7 set.
+;                   After the name there is one byte with the label type,
+;                   same as var-types.
+;
 ;  - laddr_buf/ptr: a list with each label reference:
 ;                   byte 0: the label number,
 ;                   byte 1: the type of reference,
@@ -433,6 +435,7 @@ xit:    rts
 ;
 ; Label definition search/create
 .proc   E_LABEL_DEF
+        lda     #0              ; Type of label: undefined
         jsr     label_create
 
         ; Fills all undefined labels with current position:
@@ -440,7 +443,7 @@ xit:    rts
 
         ; If we found a *definition* for the label, error out (label already
         ; defined).
-cloop:  bmi     error
+cloop:  bmi     xit_label_err
 
         ; Write current codep to AX
         jsr     patch_codep
@@ -460,9 +463,19 @@ nfound:
         jsr     add_laddr_list
         ; Ok, advance parsing pointer with the label length
         bcc     advance_varn
-
-error:  sec
         rts
+.endproc
+
+; Sets the type of the last label defined
+.proc   E_LABEL_SET_TYPE
+        jsr     get_last_tok    ; Get variable TYPE from last token
+
+        ldy     #$FF
+        dec     label_ptr+1
+        sta     (label_ptr), y  ; Store to (label_ptr - 1)
+        inc     label_ptr+1
+        clc
+xit:    rts
 .endproc
 
         ; Create a label if not exists and starts searching in the label
@@ -471,14 +484,31 @@ error:  sec
         ; This jumps to next_laddr, so it returns the same values.
 .proc   label_create
         ; Check if we have a valid name - this exits on error!
-        jsr     label_search
-        bcc     xit
+        sta     tmp3    ; Store label type
+        ldx     #label_buf - prog_ptr
+        ldy     label_count
+        jsr     list_search
+        bcs     do_create
+        ; Check if type is compatible
+        cmp     tmp3
+        beq     no_create       ; Yes, search address
+xit_pop_2:              ; Exit from caller with error
+        pla
+        pla
+::xit_label_err:
+        sec
+        rts
+
+do_create:
+        ; See if we need to create it
+        lda     tmp3
+        bne     xit_pop_2
         ; Create a new label
         ldx     #label_ptr - prog_ptr
         jsr     name_new
         ldx     label_count
         inc     label_count
-xit:
+no_create:
         lda     laddr_buf
         ldy     laddr_buf+1
         sty     tmp1+1
@@ -560,6 +590,7 @@ xit:    rts
 
 ; Label search / create (on use)
 .proc   E_LABEL
+        jsr     get_last_tok    ; Get label TYPE from last token
         jsr     label_create
         ; Emits a label, searching the label address in the label list
         bcs     nfound
@@ -691,7 +722,7 @@ retry:  dey
         bmi     loop_error
         lda     loop_stk, y
         bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
-        cmp     #LT_DATA+1      ; PROC(1)/DATA
+        cmp     #LT_PROC_DATA+1 ; PROC(1)/DATA
         bcc     loop_error
 ok:
         ; Store slot
@@ -788,14 +819,9 @@ no_elif:
         rts
 .endproc
 
-.proc   E_POP_DATA
-        ; Pop saved position, store
-        lda     #LT_DATA
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_POP_PROC_1
+.proc   E_POP_PROC_DATA
         ; Pop saved "jump to end" position
-        lda     #LT_PROC_1
+        lda     #LT_PROC_DATA
 .endproc        ; Fall through
 
 .proc   pop_patch_codep

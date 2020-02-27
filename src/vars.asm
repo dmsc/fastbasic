@@ -19,11 +19,11 @@
 ; Handles a list of names (variables or labels)
 ; --------------------------------------------
 
-        .export         var_search, label_search, name_new
+        .export         var_search, list_search, name_new
         .exportzp       var_namelen, label_count, var_count
 
         ; From alloc.asm
-        .importzp       var_buf, label_buf, prog_ptr
+        .importzp       var_buf, prog_ptr
         .import         alloc_area_8
         ; From parser.asm
         .import         parser_skipws
@@ -73,15 +73,6 @@ bad_char:
 char_ok:
         clc
         rts
-.endproc
-
-        ; Search the list of labels by name,
-        ; Inputs:
-        ;  (INBUFF + CIX) : Variable name, from parsing code, terminated in any invalid char
-.proc   label_search
-        ldx     #label_buf - prog_ptr
-        ldy     label_count
-        bne     list_search
 .endproc
 
         ; Search the list of variables by name,

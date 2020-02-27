@@ -86,9 +86,9 @@ EXTERN {
  E_REM, E_NUMBER_WORD, E_NUMBER_BYTE, E_EOL
  E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
  E_POP_IF, E_ELSEIF, E_EXIT_LOOP
- E_POP_WHILE, E_POP_FOR, E_POP_PROC_1, E_POP_PROC_2, E_POP_DATA
+ E_POP_WHILE, E_POP_FOR, E_POP_PROC_DATA, E_POP_PROC_2
  E_CONST_STRING
- E_VAR_CREATE, E_VAR_SET_TYPE
+ E_VAR_CREATE, E_VAR_SET_TYPE, E_LABEL_SET_TYPE
  E_VAR_WORD, E_VAR_SEARCH
  E_LABEL, E_LABEL_DEF
  E_PUSH_VAR, E_POP_VAR
@@ -176,6 +176,8 @@ ADR_EXPR: string or variable
         STR_EXPR
         emit { TOK_VAR_LOAD, VT_ARRAY_WORD   } E_VAR_SEARCH
         emit { TOK_VAR_LOAD, VT_ARRAY_BYTE   } E_VAR_SEARCH
+        emit { TOK_NUM, VT_ARRAY_WORD   } E_LABEL
+        emit { TOK_NUM, VT_ARRAY_BYTE   } E_LABEL
         emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH
 #@if FASTBASIC_FP
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
@@ -388,9 +390,9 @@ VAR_CREATE_TYPE:
 # NOTE: the creation rule (E_VAR_SET_TYPE) always fails, so the parser uses the next
 #       rules using the created variable.
 VAR_WORD_LVALUE_SADDR: integer variable
+        ARRAY_WORD_ADDR emit TOK_SADDR
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         emit TOK_VAR_SADDR E_VAR_WORD
-        ARRAY_WORD_ADDR emit TOK_SADDR
 
 VAR_STR_LVALUE_SADDR:
         emit { TOK_VAR_SADDR, VT_STRING } E_VAR_SEARCH "$"
@@ -441,6 +443,7 @@ SOUND_S1:
 # Word Arrays
 ARRAY_WORD_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_WORD } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
+        emit { TOK_NUM, VT_ARRAY_WORD } E_LABEL emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
 
 # String Arrays
 ARRAY_STRING_ADDR:
@@ -449,6 +452,7 @@ ARRAY_STRING_ADDR:
 # Byte Arrays
 ARRAY_BYTE_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_BYTE } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_ADD
+        emit { TOK_NUM, VT_ARRAY_BYTE } E_LABEL emit TOK_PUSH PAR_EXPR emit TOK_ADD
 
 #@if FASTBASIC_FP
 # Float Arrays
@@ -559,16 +563,16 @@ DATA_BYTES: data byte
 DATA_TYPE: data type
         # Note: E_VAR_SET_TYPE skips white space, this allows spaces between
         #       the data type and the "=".
-        TYPE_BYTE E_VAR_SET_TYPE "=" E_NUMBER_BYTE DATA_BYTES
-        TYPE_WORD E_VAR_SET_TYPE "=" E_NUMBER_WORD DATA_WORDS
+        TYPE_BYTE EQUAL E_LABEL_SET_TYPE E_NUMBER_BYTE DATA_BYTES
+        TYPE_WORD EQUAL E_LABEL_SET_TYPE E_NUMBER_WORD DATA_WORDS
 
 DATA_END:
         ","
-        E_POP_DATA
+        E_POP_PROC_DATA
 
-DATA_VAR: new array name
-        emit TOK_VAR_SADDR E_VAR_CREATE "()" emit { TOK_CDATA, LT_DATA } E_PUSH_LT
-        pass
+DATA_VAR: new data array name
+        DATA_TYPE
+        emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF "()" DATA_TYPE
 
 # Parse a line
 PARSE_LINE_COMMAND:
@@ -619,10 +623,10 @@ PARSE_LINE_COMMAND:
         "PAuse" EXPR emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
-        "PROc" emit { TOK_JUMP, LT_PROC_1 } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
-        "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_1
-        "EXEc" emit TOK_CALL E_LABEL
-        "DAta" DATA_VAR DATA_TYPE DATA_END
+        "PROc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
+        "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
+        "EXEc" emit { TOK_CALL, VT_UNDEF } E_LABEL
+        "DAta" DATA_VAR DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
         "DEG" emit { TOK_1, TOK_BYTE_POKE, DEGFLAG }

@@ -24,8 +24,7 @@
 
 enum LoopType {
     // First entries can't use "EXIT"
-    LT_PROC_1 = 0,
-    LT_DATA,
+    LT_PROC_DATA = 0,
     LT_EXIT,
     // From here, loops don't push jump destinations
     LT_LAST_JUMP = 32,

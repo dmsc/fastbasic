@@ -201,7 +201,6 @@ bool SMB_E_PUSH_LT(parse &s)
         case LT_WHILE_2:
         case LT_FOR_2:
         case LT_IF:
-        case LT_DATA:
             s.emit_word(l);
             break;
         case LT_EXIT:
@@ -210,7 +209,7 @@ bool SMB_E_PUSH_LT(parse &s)
         case LT_PROC_2:
         case LT_LAST_JUMP:
             break;
-        case LT_PROC_1:
+        case LT_PROC_DATA:
             // Optimize by switching codep
             s.remove_last();
             s.push_proc(l);
@@ -291,11 +290,11 @@ bool SMB_E_EXIT_LOOP(parse &s)
     return true;
 }
 
-bool SMB_E_POP_PROC_1(parse &s)
+bool SMB_E_POP_PROC_DATA(parse &s)
 {
     // nothing to do!
-    s.debug("E_POP_PROC_1");
-    auto l = s.pop_loop(LT_PROC_1);
+    s.debug("E_POP_PROC_DATA");
+    auto l = s.pop_loop(LT_PROC_DATA);
     if( l.empty() )
         return false;
     s.pop_proc(l);
@@ -310,17 +309,6 @@ bool SMB_E_POP_PROC_2(parse &s)
     if( l.empty() )
         return false;
     s.emit_label(l + "_x");
-    return true;
-}
-
-bool SMB_E_POP_DATA(parse &s)
-{
-    // nothing to do!
-    s.debug("E_POP_DATA");
-    auto l = s.pop_loop(LT_DATA);
-    if( l.empty() )
-        return false;
-    s.emit_label(l);
     return true;
 }
 
@@ -473,6 +461,7 @@ bool SMB_E_NUMBER_FP(parse &s)
 
 #endif
 
+static std::string last_label_name;
 bool SMB_E_LABEL_DEF(parse &s)
 {
     s.debug("E_LABEL_DEF");
@@ -480,21 +469,45 @@ bool SMB_E_LABEL_DEF(parse &s)
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    v[name] = 1;
-    s.emit_label("proc_lbl_" + name);
+    v[name] = VT_UNDEF;
+    last_label_name = name;
+    s.emit_label("fb_lbl_" + name);
     return true;
 }
 
 bool SMB_E_LABEL(parse &s)
 {
     s.debug("E_LABEL");
+    // Get type
+    enum VarType type = get_vartype(s.remove_last().get_str());
     auto &v = s.labels;
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    if( v.find(name) == v.end() )
-        v[name] = 0;
-    s.emit_word("proc_lbl_" + name);
+    if ( v.find(name) == v.end() )
+    {
+        if ( type != VT_UNDEF )
+            return false;
+        v[name] = VT_UNDEF;
+    }
+    // Check type
+    if( v[name] != type )
+        return false;
+    s.emit_word("fb_lbl_" + name);
+    return true;
+}
+
+bool SMB_E_LABEL_SET_TYPE(parse &s)
+{
+    s.debug("E_LABEL_SET_TYPE");
+
+    s.skipws();
+    // Get type
+    enum VarType type = get_vartype(s.remove_last().get_str());
+    auto &v = s.labels;
+    if( do_debug )
+        std::cout << "\tset label '" << last_label_name << "' to " << int(type) << "\n";
+    v[last_label_name] = (v[last_label_name] & ~0xFF) + type;
     return true;
 }
 

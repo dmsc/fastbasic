@@ -43,6 +43,7 @@ class parse {
             public:
                 LoopType type;
                 std::string label;
+                int linenum;
         };
         int sto_var;
         int lvl, maxlvl;
@@ -74,7 +75,7 @@ class parse {
         std::string push_loop(LoopType type)
         {
             auto lbl = new_label();
-            jumps.push_back({type, lbl});
+            jumps.push_back({type, lbl, linenum});
             return lbl;
         }
         bool peek_loop(LoopType type)
@@ -116,9 +117,10 @@ class parse {
                 return std::string();
             for( ; jumps.size(); jumps.pop_back() )
             {
-                auto type = jumps.back().type;
+                auto j = jumps.back();
+                auto type = j.type;
                 if( type != LT_EXIT )
-                    return "unclosed " + get_loop_name(type);
+                    return "unclosed " + get_loop_name(type) + " at line " + std::to_string(j.linenum);
             }
             return "EXIT without loop";
         }

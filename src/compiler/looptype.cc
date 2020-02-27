@@ -25,11 +25,10 @@ std::string get_loop_name(enum LoopType l)
 {
     switch( l )
     {
-        case LT_PROC_1:
         case LT_PROC_2:
             return "PROC";
-        case LT_DATA:
-            return "DATA";
+        case LT_PROC_DATA:
+            return "PROC/DATA";
         case LT_EXIT:
             return "EXIT";
         case LT_DO_LOOP:
@@ -55,12 +54,10 @@ std::string get_loop_name(enum LoopType l)
 
 LoopType get_looptype(std::string t)
 {
-    if( t == "LT_PROC_1" )
-        return LT_PROC_1;
+    if( t == "LT_PROC_DATA" )
+        return LT_PROC_DATA;
     if( t == "LT_PROC_2" )
         return LT_PROC_2;
-    if( t == "LT_DATA" )
-        return LT_DATA;
     if( t == "LT_DO_LOOP" )
         return LT_DO_LOOP;
     if( t == "LT_REPEAT" )

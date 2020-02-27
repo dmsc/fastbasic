@@ -26,9 +26,9 @@
         ; Output state
         .exportzp       opos
         ; From actions.asm
-        .importzp       VT_WORD, VT_STRING, VT_FLOAT
+        .importzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
         .importzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
-        .importzp       LT_PROC_1, LT_PROC_2, LT_DATA, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
+        .importzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
         .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         ; From alloc.asm
         .import         alloc_prog
