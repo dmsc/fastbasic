@@ -22,3 +22,8 @@ a = adr(arr2)
 ? : ? "2: "; dpeek(a);
 for i=1 to 8 : a = a + 2:  ? ", "; dpeek(a); : next
 ?
+
+data arr4() b. = "String", arr1, "Code"
+? $(ADR(arr4))
+? adr(arr1) - dpeek(ADR(arr4)+1+LEN($(ADR(arr4))))
+

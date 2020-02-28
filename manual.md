@@ -1387,6 +1387,29 @@ General Statements
   Note that the array can be modified
   afterwards like a normal array.
 
+  *Advanced Usage*
+
+  Byte DATA arrays can be used to
+  include assembler routines (to call
+  via `USR`, see the example above),
+  display lists and any other type of
+  binary data.
+
+  To facilitate this, you can include
+  constant strings and the address of
+  other byte DATA array by name.
+
+  All the bytes of the string, including
+  the initial length byte are included
+  into the DATA array.
+
+  Example:
+
+      DATA str() B. = "Hello", "World"
+      X = ADR(str)
+      ? $(X), $(X+6)
+      DATA ad() B. = $AD,str,$A2,0,$60
+      ? USR(ADR(ad)), str(0)
 
 **Decrements variable by 1**  
 **DEC _var_ / DE.**
