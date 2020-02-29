@@ -580,27 +580,30 @@ DATA_VAR: new data array name
 # DLI support - builds a machine code routine and store the address to
 # display list interrupt handler:
 DLI_COMMAND:
-        "Def" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT \
+        # Define a new DLI with given name
+        "Set" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT \
               E_LABEL_DEF emit { VT_ARRAY_BYTE } E_LABEL_SET_TYPE \
               emit { 72, 138, 72, 166, COLRSH } EQUAL \
-              DLI_LDA emit { 141, &WSYNC } DLI_STA DLI_CODES \
-              emit { 230, COLRSH, 104, 170, 104, 64 } \
-              E_POP_PROC_DATA
-        "Set" emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
+              DLI_LDA emit { 141, &WSYNC } DLI_STA DLI_CODES
+        # Continuation of a DLI line
+        EQUAL DLI_LDA DLI_STA DLI_CODES
+        # Activate DLI with given name
+        emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
               emit { TOK_DPOKE, TOK_BYTE, 192, TOK_NUM_POKE, &NMIEN }
+        # Clear the DLI
         emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
 
 DLI_CODES:
         "," DLI_LDA DLI_STA DLI_CODES
-        pass
+        ","
+        emit { 230, COLRSH, 104, 170, 104, 64 } E_POP_PROC_DATA
 
 DLI_LDA: DLI source data
-        "@" emit { 189, VT_ARRAY_BYTE } E_LABEL
-        "@" emit 189 E_NUMBER_WORD
+        emit { 189, VT_ARRAY_BYTE } E_LABEL
         emit 169 E_NUMBER_BYTE
 
 DLI_STA: DLI destination
-        "TO" emit 141 E_NUMBER_WORD
+        "Into" emit 141 E_NUMBER_WORD
 
 # Parse a line
 PARSE_LINE_COMMAND:
