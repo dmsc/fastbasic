@@ -12,6 +12,7 @@ The current features are:
 - Feels "alike" TurboBasicXL, with many of the extended statements.
 - Integrated editor and compiler.
 - A cross-compiler is available that directly compiles sources to Atari executables in any modern PC.
+- Statements for Player/Missile graphics and Display List Interrupts.
 
 For support, use the GitHub bug-tracker or see the AtariAge thread at:
 http://atariage.com/forums/topic/275698-fastbasic-summer-release/
