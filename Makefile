@@ -70,6 +70,7 @@ SAMPLE_FP_BAS=\
 
 SAMPLE_INT_BAS=\
     int/carrera3d.bas \
+    int/dli.bas \
     int/iospeed.bas \
     int/joyas.bas \
     int/pi.bas \
