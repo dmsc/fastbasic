@@ -1,0 +1,15 @@
+Name: Test statement "CLR"
+Test: run
+Output:
+Start
+---- DIM 10 ----
+Before: 0
+After: 22
+---- DIM 10 ----
+Before: 22
+After: 44
+---- CLR ----
+0         0         0
+---- DIM 100 ----
+Before: 0
+After: 202

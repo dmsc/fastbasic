@@ -28,7 +28,7 @@
 ; ------------
 
         .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
-        .export         compiled_num_vars
+        .export         compiled_num_vars, CLEAR_DATA
 
         .import         putc
         .importzp       var_page, tmp1, tmp2, array_ptr
@@ -38,6 +38,9 @@
 MEMTOP=         $2E5
         ; Allocation size
 alloc_size=     tmp1
+
+        ; Uppercase to export as FastBasic symbol
+CLEAR_DATA = clear_data
 
 ;----------------------------------------------------------
 ; Following routines are part of the runtime

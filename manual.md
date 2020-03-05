@@ -1369,6 +1369,19 @@ General Statements
   apostrophe will be ignored. This is
   analogous to REM in Atari BASIC.
 
+
+**Clears variables and free memory**  
+**CLR**
+
+  Clears all integer and floating-point
+  variables to 0, all strings to empty
+  strings and frees all memory
+  associated with arrays.
+
+  After `CLR` you can't access arrays
+  without allocating again with `DIM`.
+
+
 **Defines array with initial values**  
 **DATA _arr()_ [type] = n1,n2, / DA.**
 
