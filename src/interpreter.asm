@@ -41,7 +41,7 @@
         .import         __JUMPTAB_RUN__
 
         ; From soundoff.asm
-        .import         sound_off
+        .import         SOUND_OFF
 
         .include "atari.inc"
 
@@ -144,7 +144,7 @@ interpreter_cptr        =       cptr
 .endif ; FASTBASIC_FP
 
         ; Sound off
-        jsr     sound_off
+        jsr     SOUND_OFF
 
         ; Store current stack position to rewind on error
         tsx

@@ -27,21 +27,14 @@
 ; Silence all sound channels (SOUND without parameters)
 ; -----------------------------------------------------
 
-        .export         sound_off
+        .export         SOUND_OFF
         .importzp       next_instruction
 
         .include "atari.inc"
 
         .segment        "RUNTIME"
 
-.proc   EXE_SOUND_OFF
-        pha
-        jsr     sound_off
-        pla
-        jmp     next_instruction
-.endproc
-
-.proc   sound_off
+.proc   SOUND_OFF
         ldy     #7
         lda     #0
 :       sta     AUDF1, y
@@ -49,8 +42,5 @@
         bpl     :-
         rts
 .endproc
-
-        .include "../deftok.inc"
-        deftoken "SOUND_OFF"
 
 ; vi:syntax=asm_ca65

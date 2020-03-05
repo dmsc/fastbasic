@@ -64,8 +64,6 @@ TOKENS {
  TOK_DIM, TOK_USHL
  # Strings
  TOK_COPY_STR, TOK_VAL, TOK_CMP_STR, TOK_INT_STR, TOK_STR_IDX, TOK_CAT_STR, TOK_CHR
- # Sound off - could be implemented as simple POKE expressions, but it's shorter this way
- TOK_SOUND_OFF
  TOK_PAUSE
  # USR, calls ML routinr
  TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
@@ -435,7 +433,7 @@ SOUND:
               emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
                      TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
         SOUND_S1 emit { TOK_0, TOK_DPOKE }
-        emit TOK_SOUND_OFF
+        emit { TOK_NUM, &SOUND_OFF, TOK_USR_ADDR, TOK_USR_CALL }
 
 SOUND_S1:
         EXPR emit { TOK_USHL, TOK_PUSH_NUM, &AUDF1, TOK_ADD, TOK_SADDR }
