@@ -30,7 +30,7 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, saved_cpu_stack
+        .import interpreter_run, saved_cpu_stack, compiled_num_vars
         .importzp var_count
         ; From alloc.asm
         .importzp  prog_ptr, var_page
@@ -115,7 +115,7 @@ sto_loop:
         sta     compiled_var_page+1
 
         lda     var_count
-        sta     compiled_var_count+1
+        sta     compiled_num_vars
 
         ; Exit to editor returning X=0 (from loop above)
 
@@ -170,9 +170,6 @@ compiled_start:
 compiled_var_page:
         ldy     #>heap_start
         sty     var_page
-
-compiled_var_count:
-        ldy     #NUM_VARS
 
         jsr     interpreter_run
         jmp     (DOSVEC)

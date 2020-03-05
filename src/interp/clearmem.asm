@@ -28,9 +28,11 @@
 ; ------------
 
         .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
+        .export         compiled_num_vars
 
         .import         putc
         .importzp       var_page, tmp1, tmp2, array_ptr
+        .importzp       NUM_VARS
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -50,7 +52,10 @@ alloc_size=     tmp1
         stx     array_ptr+1
         ; Allocate and clear 2 bytes of memory for each variable
         ldx     #0
-        tya
+        ; This value will be patched with the number of variables in the program
+        ; in the IDE and native compilers
+        lda     #NUM_VARS
+::compiled_num_vars=*-1
         asl
         bcc     :+
         inx

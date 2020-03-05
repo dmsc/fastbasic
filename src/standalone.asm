@@ -34,7 +34,6 @@
         .import         interpreter_run
         ; From bytecode
         .import         bytecode_start
-        .importzp       NUM_VARS
         ; Linker vars
         .import         __BSS_RUN__, __BSS_SIZE__
 
@@ -57,8 +56,6 @@ start:
 
         lda     #<bytecode_start
         ldx     #>bytecode_start
-
-        ldy     #NUM_VARS
 
         jsr     interpreter_run
         jmp     (DOSVEC)

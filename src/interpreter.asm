@@ -109,7 +109,6 @@ interpreter_cptr        =       cptr
 
         ; Main interpreter call
         ;  AX : address of code start
-        ;   Y : number of variables
 .proc   interpreter_run
 
         ; Init code pointer

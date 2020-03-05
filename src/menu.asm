@@ -33,14 +33,13 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, saved_cpu_stack
+        .import interpreter_run, saved_cpu_stack, compiled_num_vars
         .importzp interpreter_cptr, var_count, sptr
         ; From alloc.asm
         .importzp  prog_ptr, var_page
         .import parser_alloc_init
         ; From bytecode
         .import bytecode_start
-        .importzp NUM_VARS
         ; Linker vars
         .import __BSS_RUN__, __BSS_SIZE__, __INTERP_START__, __INTERP_SIZE__
         .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
@@ -128,7 +127,7 @@ sto_loop:
         sta     var_page
 
         ldy     var_count
-        sty     compiled_var_count+1
+        sty     compiled_num_vars
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
@@ -248,9 +247,6 @@ compiled_start:
 compiled_var_page:
         ldy     #>heap_start
         sty     var_page
-
-compiled_var_count:
-        ldy     #NUM_VARS
 
         jsr     interpreter_run
         jmp     (DOSVEC)
