@@ -1140,6 +1140,14 @@ Graphic and Sound Statements
 |GR. 15 | 160x192    |        4     |
 
 
+**Get color of pixel**  
+**LOCATE _x_, _y_, _var_ / LOC.**
+
+  Reads the color of pixel in the
+  specified _x_ and _y_ coordinates and
+  store into variable _var_.
+
+
 **Plots A Single Point**  
 **PLOT _x_, _y_ / PL.**
 
@@ -1652,7 +1660,7 @@ statement:
   starting the next line with `DLI =`
 
 
-**Enable a DLI**
+**Enable a DLI**  
 **DLI _name_ / DL.**
 
   This statement enables the DLI with
@@ -1677,7 +1685,7 @@ statement:
   a _PHA_ and end with _PLA_ and _RTI_.
 
 
-**Disable a DLI**
+**Disable a DLI**  
 **DLI / DL.**
 
   This statement simply disables the
