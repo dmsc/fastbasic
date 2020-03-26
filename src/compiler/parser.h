@@ -53,6 +53,7 @@ class parse {
         std::vector<std::string> saved_errors;
         int linenum;
         std::map<std::string, std::vector<codew>> procs;
+        std::vector<std::string> proc_stack;
         std::map<std::string, int> vars;
         std::map<std::string, int> labels;
         std::vector<jump> jumps;
@@ -355,11 +356,20 @@ class parse {
         }
         void push_proc(std::string l)
         {
+            proc_stack.push_back(l);
             code = &procs[l];
         }
         void pop_proc(std::string l)
         {
-            code = &procs[std::string()];
+            if( !proc_stack.size() )
+                throw std::runtime_error("empty proc stack");
+            if( proc_stack.back() != l )
+                throw std::runtime_error("invalid proc stack");
+            proc_stack.pop_back();
+            if( !proc_stack.size() )
+                code = &procs[std::string()];
+            else
+                code = &procs[proc_stack.back()];
         }
         std::vector<codew> &full_code()
         {

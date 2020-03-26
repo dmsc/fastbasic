@@ -1,0 +1,7 @@
+Name: Test for DATA inside PROC
+Test: run
+Output:
+Start
+1
+2
+2
