@@ -276,14 +276,25 @@ int main(int argc, char **argv)
              "\t.segment \"" << segname << "\"\n"
              "bytecode_start:\n";
     ln = -1;;
+    // Map with all line labels already emitted, this is needed
+    // to avoid duplicate labels on reordered lines.
+    std::map<int, int> line_labels;
     for(auto c: s.full_code())
     {
         if( c.linenum() != ln )
         {
             ln = c.linenum();
+            std::string lbl = "@FastBasic_LINE_" + std::to_string(ln);
+            // If we already emitted this label, adds a numbered sufix
+            if( line_labels.find(ln) != line_labels.end() )
+            {
+                line_labels[ln] ++;
+                lbl = lbl + "_" + std::to_string(line_labels[ln]);
+            }
+            else
+                line_labels[ln] = 0;
             // Adds a label to facilitate debugging of resulting program
-            ofile << "@FastBasic_LINE_" << ln << ":  ";
-            ofile << "; LINE " << ln << "\n";
+            ofile << lbl << ":\t; LINE " << ln << "\n";
         }
         ofile << c.to_asm() << "\n";
     }

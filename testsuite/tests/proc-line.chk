@@ -1,0 +1,6 @@
+Name: Test PROC in same line as other statements
+Test: run
+Output:
+Start
+x
+y
