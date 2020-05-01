@@ -296,6 +296,9 @@ int main(int argc, char **argv)
             // Adds a label to facilitate debugging of resulting program
             ofile << lbl << ":\t; LINE " << ln << "\n";
         }
+        // Export labels
+        if( c.is_label() )
+            ofile << "\t.export\t" << c.get_str() << "\n";
         ofile << c.to_asm() << "\n";
     }
 
