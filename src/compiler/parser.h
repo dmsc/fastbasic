@@ -129,6 +129,7 @@ class parse {
         void new_line(std::string l, int ln)
         {
             pos = max_pos = 0;
+            sto_var = -1;
             str = l;
             saved_errors.clear();
             linenum = ln;

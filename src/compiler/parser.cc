@@ -162,11 +162,6 @@ bool SMB_E_PUSH_VAR(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_VAR");
-    if (s.sto_var >= 0)
-    {
-        s.debug("---------->ERROR: var already in stack!\n");
-        return false;
-    }
     s.sto_var = s.remove_last().get_val();
     return true;
 }
@@ -176,7 +171,7 @@ bool SMB_E_POP_VAR(parse &s)
     s.debug("E_POP_VAR");
     if (s.sto_var < 0)
     {
-        s.debug("---------->ERROR: var stack empty!\n");
+        s.debug("---------->ERROR: no variable stored!\n");
         return false;
     }
     s.emit_byte( s.sto_var );
