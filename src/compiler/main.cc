@@ -28,7 +28,7 @@
 
 bool do_debug = false;
 
-static bool readLine(std::string &r, std::istream &is)
+static int readLine(std::string &r, std::istream &is)
 {
     // Special handling of EOL: We allow Unix / DOS line endings - except inside
     // strings, because that would be incompatible with the Atari IDE.
@@ -37,6 +37,7 @@ static bool readLine(std::string &r, std::istream &is)
     bool in_string = false;
     bool in_comment = false;
     bool in_start = true;
+    int num_lines = 0;
     while( -1 != is.peek() )
     {
         char c = is.get();
@@ -44,7 +45,10 @@ static bool readLine(std::string &r, std::istream &is)
         if( in_string )
         {
             // Inside strings, consume any char except for the '"'
-            if( c == '\"' )
+            // but increase line-number for easier debugging.
+            if( c == '\x0A' )
+                num_lines ++;
+            else if( c == '\"' )
                 in_string = false;
             continue;
         }
@@ -57,7 +61,7 @@ static bool readLine(std::string &r, std::istream &is)
         }
         // Check for any end of line
         if( c == '\x0A' || c == '\x9B' )
-            return true;
+            return num_lines + 1;
         // Check we are not entering a string or a comment
         if( in_start )
         {
@@ -76,7 +80,7 @@ static bool readLine(std::string &r, std::istream &is)
                 in_string = true;
         }
     }
-    return false;
+    return 0;
 }
 
 static int show_version()
@@ -160,13 +164,13 @@ int main(int argc, char **argv)
         return show_error("missing output file name");
 
     parse s;
-    int ln = 0;
+    int ln = 1;
     while(1)
     {
         std::string line;
-        if( !readLine(line, ifile) && line.empty() )
+        int lines = readLine(line, ifile);
+        if( !lines && line.empty() )
             break;
-        ln++;
         if( do_debug )
             std::cout << iname << ": parsing line " << ln << "\n";
         s.new_line(line, ln);
@@ -201,6 +205,7 @@ int main(int argc, char **argv)
             }
             s.expect(':');
         }
+        ln += lines;
     }
     if( do_debug )
     {
