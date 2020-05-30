@@ -34,15 +34,11 @@
 
 EXE_DECVAR:     ; VAR = VAR - 1
         jsr     get_op_var
+
+.proc   EXE_DEC ; *(AX) = *(AX) - 1
 .ifdef NO_SMCODE
         sta     saddr
         stx     saddr+1
-.endif
-        ; NOTE: Here, we have the address in SADDR and in the
-        ;       AX register, but using Self-Modifying code it
-        ;       is smaller and faster using AX.
-.proc   EXE_DEC ; *(AX) = *(AX) - 1
-.ifdef NO_SMCODE
         ; This is too long, it misses DEC A
         ldy     #0
         lda     (saddr),y

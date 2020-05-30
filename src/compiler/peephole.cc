@@ -731,12 +731,11 @@ class peephole
                         del(2); i--;
                         continue;
                     }
-                    //  INC VAR  ==>  INC VAR (optimized)
-                    //   TOK_VAR_A / x / TOK_SADDR / TOK_INC -> TOK_INCVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_SADDR) && mtok(3,TOK_INC) )
+                    //  INC  ==>  INC (optimized)
+                    //   TOK_SADDR / TOK_INC -> TOK_INC
+                    if( mtok(0,TOK_SADDR) && mtok(1,TOK_INC) )
                     {
-                        set_tok(0, TOK_INCVAR);
-                        del(3); del(2); i--;
+                        del(0); i--;
                         continue;
                     }
                     //  VAR = VAR - 1   ==>  DEC VAR
@@ -772,12 +771,11 @@ class peephole
                         del(2); i--;
                         continue;
                     }
-                    //  DEC VAR  ==>  DEC VAR (optimized)
-                    //   TOK_VAR_A / x / TOK_SADDR / TOK_DEC -> TOK_DECVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_SADDR) && mtok(3,TOK_DEC) )
+                    //  DEC ==>  DEC (optimized)
+                    //   TOK_SADDR / TOK_DEC -> TOK_DEC
+                    if( mtok(0,TOK_SADDR) && mtok(1,TOK_DEC) )
                     {
-                        set_tok(0, TOK_DECVAR);
-                        del(3); del(2); i--;
+                        del(0); i--;
                         continue;
                     }
                     // NOT NOT A -> A
