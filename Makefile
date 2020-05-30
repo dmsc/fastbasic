@@ -103,6 +103,7 @@ DOS=\
 # ASM files used in the RUNTIME
 RT_AS_SRC=\
     src/standalone.asm\
+    src/cartridge.asm\
 
 # ASM files used in the IDE and Command Line compiler
 COMPILER_AS_SRC=\
@@ -248,6 +249,7 @@ COMPILER_COMMON=\
 	 $(LIB_INT)\
 	 $(LIB_FP)\
 	 build/compiler/fastbasic.cfg\
+	 build/compiler/fastbasic-cart.cfg\
 	 build/compiler/fb$(SHEXT)\
 	 build/compiler/fb-int$(SHEXT)\
 	 build/compiler/USAGE.md\
