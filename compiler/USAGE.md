@@ -110,6 +110,9 @@ allowed options are:
 - **-h**  
   Shows available compiler options.
 
+- **-C**:*linker-file.cfg*
+  Use a different linker configuration file than the default.
+
 - **-S**:*address*  
   Sets the start address of the compiled binary. The default value is `$2000`,
   set in the configuration file `fastbasic.cfg`. You can specify a different

@@ -6,6 +6,7 @@ set cc65=C:\cc65\bin\
 set fb=fastbasic-fp
 set fbpath=%~dp0
 set fbname=%~n0
+set cfgfile=%fbpath%fastbasic.cfg
 
 :: Loop over arguments
 set prog=
@@ -18,6 +19,7 @@ set extra=
  if "%opt%"=="-h" call :usage & exit /b
  if "%opt:~0,3%"=="-X:" set extra=%extra% %opt:~3% & goto :nextarg
  if "%opt:~0,3%"=="-S:" set extra=%extra% --start-addr %opt:~3% & goto :nextarg
+ if "%opt:~0,3%"=="-C:" set cfgfile=%opt:~3% & goto :nextarg
  if "%opt:~0,1%"=="-" set opts=%opts% %~1 & goto :nextarg
  if /i "%~x1"==".asm" set extra=%extra% %~1 & goto :nextarg
  if /i "%~x1"==".o"   set extra=%extra% %~1 & goto :nextarg
@@ -43,7 +45,7 @@ if "%basfile%"=="%lblfile%" call :error input file '%prog%' same as LBL file & e
 echo Compiling '%prog%' to assembler.
 %fbpath%%fb% %opts% %basfile% %asmfile% || exit /b %errorlevel%
 echo Assembling '%asmfile%%extra%' to XEX file.
-%cc65%cl65 -tatari -C %fbpath%fastbasic.cfg -g %asmfile% %extra% -o %xexfile% -Ln %lblfile% %fbpath%%fb%.lib || exit /b %errorlevel%
+%cc65%cl65 -tatari -C %cfgfile% -g %asmfile% %extra% -o %xexfile% -Ln %lblfile% %fbpath%%fb%.lib || exit /b %errorlevel%
 
 exit /b
 

@@ -13,6 +13,7 @@ error() {
 }
 
 # Process options
+CFGFILE=$LOC/fastbasic.cfg
 OPTS=""
 for i do
     shift
@@ -25,6 +26,9 @@ for i do
             ;;
         -S:*)
             set -- "$@" "--start-addr" "${i#-S:}"
+            ;;
+        -C:*)
+            CFGFILE="${i#-C:}"
             ;;
         -[a-zA-Z0-9_]*)
             OPTS="$OPTS $i"
@@ -53,5 +57,5 @@ LBL=${PROG%.*}.lbl
 echo "Compiling '$PROG' to assembler '$ASM'."
 "$LOC/$FB" $OPTS "$PROG" "$ASM" || exit 1
 echo "Assembling '$ASM' to XEX file '$XEX'."
-cl65 -tatari -C "$LOC/fastbasic.cfg" -g "$ASM" "$@" -o "$XEX" -Ln "$LBL" "$LOC/$FB.lib" || exit 1
+cl65 -tatari -C "$CFGFILE" -g "$ASM" "$@" -o "$XEX" -Ln "$LBL" "$LOC/$FB.lib" || exit 1
 
