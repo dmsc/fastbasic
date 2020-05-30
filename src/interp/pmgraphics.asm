@@ -84,16 +84,18 @@ mem_ok:
         jmp     next_instruction
 .endproc
 
-pmgbase:
-        .byte 0
-pmgmode:
-        .byte 0
 mask_tab:
         .byte       $f8,$fc
 pmg_dmactl_tab:
         .byte   $00,$1c,$0c
 pmgmode_tab:
         .byte       $80,$40
+
+        .segment        "RT_DATA"
+pmgbase:
+        .byte 0
+pmgmode:
+        .byte 0
 
 PMGBASE = pmgbase
 PMGMODE = pmgmode

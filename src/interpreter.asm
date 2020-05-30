@@ -105,6 +105,9 @@ next_instruction        =       interpreter::nxtins
 next_ins_incsp          =       interpreter::nxt_incsp
 interpreter_cptr        =       cptr
 
+        ; Define our runtime-data segment, so it is always present
+        .segment        "RT_DATA"
+
         ; Rest of interpreter is in runtime segment
         .segment        "RUNTIME"
 

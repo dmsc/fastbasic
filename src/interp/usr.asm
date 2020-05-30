@@ -54,9 +54,15 @@
 
 .proc   EXE_USR_CALL
         ; Calls the routine
+.ifdef NO_SMCODE
+        jmp     (usr_addr)
+::usr_addr = $100       ; Use bottom of stack to store USR call address
+.else
         jmp     $FF00
+::usr_addr = * - 2
+.endif
 .endproc
-usr_addr = EXE_USR_CALL + 1
+
 
         .include "../deftok.inc"
         deftoken "USR_PARAM"

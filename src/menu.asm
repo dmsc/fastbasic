@@ -43,13 +43,14 @@
         ; Linker vars
         .import __BSS_RUN__, __BSS_SIZE__, __INTERP_START__, __INTERP_SIZE__
         .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
+        .import __RT_DATA_SIZE__
 
         .include "atari.inc"
 
         ; Start of HEAP - aligned to 256 bytes
 heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
         ; Start of relocated bytecode
-BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__
+BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__
 
         .zeropage
         ; Relocation amount
@@ -233,7 +234,7 @@ COMP_TRAILER:
 
         ; Number of bytes to write in RUNTIME + JUMPTAB segments
         .export COMP_RT_SIZE
-COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ - __JUMPTAB_RUN__
+COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__ - __JUMPTAB_RUN__
 
         ; This is the runtime startup code, loads the editor.
         ; Note that this code is patched before writing to a file
