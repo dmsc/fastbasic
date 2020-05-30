@@ -35,7 +35,8 @@
         .exportzp       tabpos, IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
 
         ; From clearmem.asm
-        .import         clear_data, saved_cpu_stack
+        .import         clear_data
+        .importzp       saved_cpu_stack
 
         ; From jumptab.asm
         .import         __JUMPTAB_RUN__

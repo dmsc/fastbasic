@@ -27,8 +27,9 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, alloc_array, mem_set, err_nomem, saved_cpu_stack
+        .export         clear_data, alloc_array, mem_set, err_nomem
         .export         compiled_num_vars, CLEAR_DATA
+        .exportzp       saved_cpu_stack
 
         .import         putc
         .importzp       var_page, tmp1, tmp2, array_ptr
@@ -41,6 +42,11 @@ alloc_size=     tmp1
 
         ; Uppercase to export as FastBasic symbol
 CLEAR_DATA = clear_data
+
+        ; ZP location to save the old CPU stack
+        .zeropage
+saved_cpu_stack:
+        .res    1
 
 ;----------------------------------------------------------
 ; Following routines are part of the runtime
@@ -131,8 +137,7 @@ loop:   lda     memory_error_msg, y
         ; Fall through
 
 .proc   EXE_END ; EXIT from interpreter
-        ldx     #0
-::saved_cpu_stack = * - 1
+        ldx     saved_cpu_stack
         txs
         rts
 .endproc

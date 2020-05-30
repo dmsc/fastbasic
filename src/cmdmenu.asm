@@ -30,8 +30,8 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, saved_cpu_stack, compiled_num_vars
-        .importzp var_count
+        .import interpreter_run, compiled_num_vars
+        .importzp var_count, saved_cpu_stack
         ; From alloc.asm
         .importzp  prog_ptr, var_page
         .import parser_alloc_init

@@ -39,8 +39,8 @@
         .importzp       IOCHN, COLOR, IOERROR
         .import         putc
         ; From interpreter.asm
-        .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD
-        .import         EXE_END, saved_cpu_stack, PMGMODE, PMGBASE
+        .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD, saved_cpu_stack
+        .import         EXE_END, PMGMODE, PMGBASE
         ; Interpreted commands
         .import         CLEAR_DATA, SOUND_OFF
         ; From errors.asm
