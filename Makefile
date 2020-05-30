@@ -24,8 +24,9 @@ OPTFLAGS=-O2
 CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
 SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
-FPASM=--asm-define FASTBASIC_FP --asm-include-dir build/gen/fp
-INTASM=--asm-include-dir build/gen/int
+ASMFLAGS=
+FPASM=--asm-define FASTBASIC_FP --asm-include-dir build/gen/fp $(ASMFLAGS)
+INTASM=--asm-include-dir build/gen/int $(ASMFLAGS)
 FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
 INTCXX=-Ibuild/gen/int -Isrc/compiler
 
