@@ -20,13 +20,16 @@
 # native and one for the cross-target.
 CROSS=
 CXX=g++
+CC=gcc
 OPTFLAGS=-O2
 CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
+CFLAGS=-Wall $(OPTFLAGS)
+CFLAGS_CC65=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
 SYNTFLAGS=
 SYNTFP=-DFASTBASIC_FP
-ASMFLAGS=
-FPASM=--asm-define FASTBASIC_FP --asm-include-dir build/gen/fp $(ASMFLAGS)
-INTASM=--asm-include-dir build/gen/int $(ASMFLAGS)
+ASMFLAGS=-I cc65/asminc
+FPASM=-D FASTBASIC_FP -I build/gen/fp $(ASMFLAGS)
+INTASM=-I build/gen/int $(ASMFLAGS)
 FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
 INTCXX=-Ibuild/gen/int -Isrc/compiler
 
@@ -48,7 +51,8 @@ include version.mk
 .SECONDARY:
 
 # Cross
-CL65OPTS=-g -tatari -Ccompiler/fastbasic.cfg
+LD65OPTS=-Ccompiler/fastbasic.cfg
+CA65OPTS=-g -tatari
 
 ATR=build/fastbasic.atr
 ZIPFILE=build/fastbasic.zip
@@ -58,8 +62,16 @@ PROGS=build/bin/fb.xex build/bin/fbi.xex build/bin/fbc.xex
 # of the compiler, one for the host (build machine) and one for the target.
 COMPILER_HOST_INT=build/bin/fastbasic-int
 COMPILER_HOST_FP=build/bin/fastbasic-fp
+CA65_HOST=build/bin/ca65
+LD65_HOST=build/bin/ld65
+AR65_HOST=build/bin/ar65
+
 COMPILER_TARGET_INT=build/compiler/fastbasic-int$(EXT)
 COMPILER_TARGET_FP=build/compiler/fastbasic-fp$(EXT)
+CA65_TARGET=build/compiler/ca65$(EXT)
+LD65_TARGET=build/compiler/ld65$(EXT)
+AR65_TARGET=build/compiler/ar65$(EXT)
+
 LIB_INT=build/compiler/fastbasic-int.lib
 LIB_FP=build/compiler/fastbasic-fp.lib
 
@@ -267,13 +279,178 @@ COMPILER_SRC=\
 	peephole.cc\
 	vartype.cc\
 
+# CC65 sources
+CA65_SRC=\
+	cc65/ca65/anonname.c\
+	cc65/ca65/asserts.c\
+	cc65/ca65/condasm.c\
+	cc65/ca65/dbginfo.c\
+	cc65/ca65/ea65.c\
+	cc65/ca65/easw16.c\
+	cc65/ca65/enum.c\
+	cc65/ca65/error.c\
+	cc65/ca65/expr.c\
+	cc65/ca65/feature.c\
+	cc65/ca65/filetab.c\
+	cc65/ca65/fragment.c\
+	cc65/ca65/global.c\
+	cc65/ca65/incpath.c\
+	cc65/ca65/instr.c\
+	cc65/ca65/istack.c\
+	cc65/ca65/lineinfo.c\
+	cc65/ca65/listing.c\
+	cc65/ca65/macro.c\
+	cc65/ca65/main.c\
+	cc65/ca65/nexttok.c\
+	cc65/ca65/objcode.c\
+	cc65/ca65/objfile.c\
+	cc65/ca65/options.c\
+	cc65/ca65/pseudo.c\
+	cc65/ca65/repeat.c\
+	cc65/ca65/scanner.c\
+	cc65/ca65/segdef.c\
+	cc65/ca65/segment.c\
+	cc65/ca65/sizeof.c\
+	cc65/ca65/span.c\
+	cc65/ca65/spool.c\
+	cc65/ca65/struct.c\
+	cc65/ca65/studyexpr.c\
+	cc65/ca65/symbol.c\
+	cc65/ca65/symentry.c\
+	cc65/ca65/symtab.c\
+	cc65/ca65/token.c\
+	cc65/ca65/toklist.c\
+	cc65/ca65/ulabel.c\
+	cc65/common/abend.c\
+	cc65/common/addrsize.c\
+	cc65/common/alignment.c\
+	cc65/common/assertion.c\
+	cc65/common/bitops.c\
+	cc65/common/chartype.c\
+	cc65/common/check.c\
+	cc65/common/cmdline.c\
+	cc65/common/coll.c\
+	cc65/common/cpu.c\
+	cc65/common/debugflag.c\
+	cc65/common/exprdefs.c\
+	cc65/common/filestat.c\
+	cc65/common/fname.c\
+	cc65/common/gentype.c\
+	cc65/common/hashfunc.c\
+	cc65/common/hashtab.c\
+	cc65/common/intstack.c\
+	cc65/common/mmodel.c\
+	cc65/common/print.c\
+	cc65/common/searchpath.c\
+	cc65/common/segnames.c\
+	cc65/common/shift.c\
+	cc65/common/strbuf.c\
+	cc65/common/strpool.c\
+	cc65/common/strutil.c\
+	cc65/common/target.c\
+	cc65/common/tgttrans.c\
+	cc65/common/version.c\
+	cc65/common/xmalloc.c\
+	cc65/common/xsprintf.c\
+
+LD65_SRC=\
+	cc65/common/abend.c\
+	cc65/common/addrsize.c\
+	cc65/common/alignment.c\
+	cc65/common/assertion.c\
+	cc65/common/chartype.c\
+	cc65/common/check.c\
+	cc65/common/cmdline.c\
+	cc65/common/coll.c\
+	cc65/common/exprdefs.c\
+	cc65/common/fileid.c\
+	cc65/common/filetype.c\
+	cc65/common/fname.c\
+	cc65/common/gentype.c\
+	cc65/common/hashfunc.c\
+	cc65/common/hashtab.c\
+	cc65/common/print.c\
+	cc65/common/searchpath.c\
+	cc65/common/strbuf.c\
+	cc65/common/strpool.c\
+	cc65/common/strutil.c\
+	cc65/common/target.c\
+	cc65/common/version.c\
+	cc65/common/xmalloc.c\
+	cc65/common/xsprintf.c\
+	cc65/ld65/asserts.c\
+	cc65/ld65/bin.c\
+	cc65/ld65/binfmt.c\
+	cc65/ld65/cfgexpr.c\
+	cc65/ld65/condes.c\
+	cc65/ld65/config.c\
+	cc65/ld65/dbgfile.c\
+	cc65/ld65/dbgsyms.c\
+	cc65/ld65/error.c\
+	cc65/ld65/exports.c\
+	cc65/ld65/expr.c\
+	cc65/ld65/extsyms.c\
+	cc65/ld65/fileinfo.c\
+	cc65/ld65/fileio.c\
+	cc65/ld65/filepath.c\
+	cc65/ld65/fragment.c\
+	cc65/ld65/global.c\
+	cc65/ld65/library.c\
+	cc65/ld65/lineinfo.c\
+	cc65/ld65/main.c\
+	cc65/ld65/mapfile.c\
+	cc65/ld65/memarea.c\
+	cc65/ld65/o65.c\
+	cc65/ld65/objdata.c\
+	cc65/ld65/objfile.c\
+	cc65/ld65/scanner.c\
+	cc65/ld65/scopes.c\
+	cc65/ld65/segments.c\
+	cc65/ld65/span.c\
+	cc65/ld65/spool.c\
+	cc65/ld65/tpool.c\
+	cc65/ld65/xex.c\
+
+AR65_SRC=\
+	cc65/common/abend.c\
+	cc65/common/chartype.c\
+	cc65/common/check.c\
+	cc65/common/cmdline.c\
+	cc65/common/coll.c\
+	cc65/common/filestat.c\
+	cc65/common/filetime.c\
+	cc65/common/fname.c\
+	cc65/common/hashfunc.c\
+	cc65/common/print.c\
+	cc65/common/version.c\
+	cc65/common/xmalloc.c\
+	cc65/common/xsprintf.c\
+	cc65/ar65/add.c\
+	cc65/ar65/del.c\
+	cc65/ar65/error.c\
+	cc65/ar65/exports.c\
+	cc65/ar65/extract.c\
+	cc65/ar65/fileio.c\
+	cc65/ar65/global.c\
+	cc65/ar65/library.c\
+	cc65/ar65/list.c\
+	cc65/ar65/main.c\
+	cc65/ar65/objdata.c\
+	cc65/ar65/objfile.c\
+
 # Host compiler
 COMPILER_HOST=\
+	 $(CA65_HOST)\
+	 $(LD65_HOST)\
+	 $(AR65_HOST)\
 	 $(COMPILER_HOST_INT)\
 	 $(COMPILER_HOST_FP)
 
 # Target compiler
 COMPILER_TARGET=\
+	 $(CA65_TARGET)\
+	 $(LD65_TARGET)\
+	 $(AR65_TARGET)\
 	 $(COMPILER_TARGET_INT)\
 	 $(COMPILER_TARGET_FP)
 
@@ -397,12 +574,18 @@ build/obj/cxx-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-fp
 $(COMPILER_HOST_FP): $(COMPILER_HST_FP_OBJ) | build/bin
 	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
 
+$(CA65_HOST): $(CA65_SRC) | build/bin
+	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+
+$(LD65_HOST): $(LD65_SRC) | build/bin
+	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+
+$(AR65_HOST): $(AR65_SRC) | build/bin
+	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+
 # Target compiler build
 ifeq ($(CROSS),)
-$(COMPILER_TARGET_INT): $(COMPILER_HOST_INT) | build/compiler
-	cp -f $< $@
-
-$(COMPILER_TARGET_FP): $(COMPILER_HOST_FP) | build/compiler
+$(COMPILER_TARGET): build/compiler/%: build/bin/% | build/compiler
 	cp -f $< $@
 else
 build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
@@ -422,6 +605,15 @@ build/obj/cxx-tgt-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
 
 $(COMPILER_TARGET_FP): $(COMPILER_TGT_FP_OBJ) | build/compiler
 	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+
+$(CA65_TARGET): $(CA65_SRC) | build/compiler
+	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+
+$(LD65_TARGET): $(LD65_SRC) | build/compiler
+	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+
+$(AR65_TARGET): $(AR65_SRC) | build/compiler
+	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
@@ -445,21 +637,21 @@ build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
 	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Main program file
-build/bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | build/bin
-	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+build/bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
+	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-build/bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | build/bin
-	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+build/bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
+	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-build/bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | build/bin
-	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+build/bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
+	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
-build/bin/%.xex: build/obj/fp/%.o $(LIB_FP) | build/bin
-	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+build/bin/%.xex: build/obj/fp/%.o $(LIB_FP) | build/bin $(LD65_HOST)
+	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin
-	cl65 $(CL65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
+	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
 build/gen/fp/%.asm: build/gen/%.bas $(COMPILER_HOST_FP) | build/gen/fp
@@ -478,17 +670,17 @@ build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
 	$(COMPILER_HOST_INT) $< $@
 
 # Object file rules
-build/obj/fp/%.o: src/%.asm | build/obj/fp build/obj/fp/interp
-	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
+build/obj/fp/%.o: src/%.asm | build/obj/fp build/obj/fp/interp $(CA65_HOST)
+	$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp
-	cl65 $(CL65OPTS) $(FPASM) -c -l $(@:.o=.lst) -o $@ $<
+build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
+	$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp
-	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
+build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp $(CA65_HOST)
+	$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/int/%.o: build/gen/int/%.asm | build/obj/int
-	cl65 $(CL65OPTS) $(INTASM) -c -l $(@:.o=.lst) -o $@ $<
+build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
+	$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
 
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
@@ -496,13 +688,13 @@ build/obj/cxx-tgt-int build/bin build/disk build/compiler build:
 	mkdir -p $@
 
 # Library files
-$(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP) | build/compiler
+$(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP) | build/compiler $(AR65_HOST)
 	rm -f $@
-	ar65 a $@ $^
+	$(AR65_HOST) a $@ $^
 
-$(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler
+$(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
 	rm -f $@
-	ar65 a $@ $^
+	$(AR65_HOST) a $@ $^
 
 # Runs the test suite
 .PHONY: test
