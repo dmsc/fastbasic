@@ -13,6 +13,7 @@
 
 set -e
 
+ncpu=-j6
 ver="$(git describe --tags --dirty)"
 rdir="../releases"
 out="$rdir/fastbasic-$ver"
@@ -29,24 +30,24 @@ echo ""
 
 compile_lin64() {
     # Full compile for 64bit Linux (and ATR)
-    make -j4 CROSS= EXT= SHEXT= OPTFLAGS="$LIN64_FLAGS" dist
+    make $ncpu CROSS= EXT= SHEXT= OPTFLAGS="$LIN64_FLAGS" dist
     mv -f build/fastbasic.zip "${out}-linux64.zip"
     mv -f build/fastbasic.atr "${out}.atr"
-    make CROSS= EXT= SHEXT= clean
+    make CROSS= EXT= SHEXT= distclean
 }
 
 compile_lin32() {
     # Compile for 32bit Linux - not considered cross-compilation
-    make -j4 CROSS= EXT= SHEXT= OPTFLAGS="$LIN32_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS= EXT= SHEXT= OPTFLAGS="$LIN32_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-linux32.zip"
-    make CROSS= EXT= SHEXT= clean
+    make CROSS= EXT= SHEXT= distclean
 }
 
 compile_win32() {
     # Compile with mingw-w64 cross compiler to 32bit:
-    make -j4 CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat OPTFLAGS="$WIN_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat OPTFLAGS="$WIN_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-win32.zip"
-    make EXT=.exe SHEXT=.bat clean
+    make EXT=.exe SHEXT=.bat distclean
 }
 
 compile_osx() {
@@ -55,7 +56,7 @@ compile_osx() {
     # Compile FAT binary for OSX.
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
-    make -j4 CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m64 OPTFLAGS="$OSX64_FLAGS" \
+    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m64 OPTFLAGS="$OSX64_FLAGS" \
          build/compiler/fastbasic-int_m64 \
          build/compiler/fastbasic-fp_m64 \
          build/compiler/ca65_m64 \
@@ -63,7 +64,7 @@ compile_osx() {
          build/compiler/ar65_m64
     #  Clean and compile to 32bit:
     make clean
-    make -j4 CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m32 OPTFLAGS="$OSX32_FLAGS" \
+    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m32 OPTFLAGS="$OSX32_FLAGS" \
          build/compiler/fastbasic-int_m32 \
          build/compiler/fastbasic-fp_m32 \
          build/compiler/ca65_m32 \
@@ -75,12 +76,12 @@ compile_osx() {
             build/compiler/${bin}_m32 build/compiler/${bin}_m64 \
             -output build/compiler/${bin}
 
-        rm -f build/compiler/${bin}_m64 build/compiler/${bin}_m64
+        rm -f build/compiler/${bin}_m64 build/compiler/${bin}_m32
     done
     #  Pack
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-macosx.zip"
-    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" clean
+    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= CFLAGS="$OSX32_FLAGS" distclean
     PATH="$OPATH"
 }
 
