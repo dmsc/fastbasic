@@ -55,7 +55,6 @@ Compiling the sources
 ---------------------
 
 To compile the sources, you need:
-- CC65 suite, version 2.16 or later, from http://cc65.github.io/cc65/getting-started.html
 - Host build tools (make & gcc) to build the syntax generator
 - mkatr, from https://github.com/dmsc/mkatr to build the Atari disk image (ATR) file.
 

@@ -1,8 +1,12 @@
 #!/bin/sh
 LOC=$(dirname "$0")
-FB=fastbasic-int
+FB=$LOC/fastbasic-int
+CA65=$LOC/ca65
+LD65=$LOC/ld65
+INCS=$LOC/asminc
+
 usage() {
-    "$LOC/$FB" -h
+    "$FB" -h
     exit 1
 }
 
@@ -15,6 +19,7 @@ error() {
 # Process options
 CFGFILE=$LOC/fastbasic.cfg
 OPTS=""
+ASMOPTS="-tatari -g"
 for i do
     shift
     case "$i" in
@@ -22,7 +27,7 @@ for i do
             usage
             ;;
         -X:*)
-            set -- "$@" "${i#-X:}"
+            ASMOPTS="$ASMOPTS ${i#-X:}"
             ;;
         -S:*)
             set -- "$@" "--start-addr" "${i#-S:}"
@@ -36,7 +41,13 @@ for i do
         -*)
             error "invalid option '$i'"
             ;;
-        *.asm|*.o)
+        *.asm|*.s)
+            obj=${i%.*}.o
+            echo "Assembling '$i' to '$obj'."
+            "$CA65" -I "$INCS" $ASMOPTS -o "$obj" -l "${i%.*}.lst" "$i" || exit 1
+            set -- "$@" "$obj"
+            ;;
+        *.o)
             set -- "$@" "$i"
             ;;
         *)
@@ -47,15 +58,20 @@ for i do
 done
 
 ASM=${PROG%.*}.asm
+OBJ=${PROG%.*}.o
 XEX=${PROG%.*}.xex
 LBL=${PROG%.*}.lbl
+set -- "$@" "$OBJ"
+
 [ -z "$PROG" ]         && error "no input file"
 [ ! -f "$PROG" ]       && error "input file '$PROG' does not exists"
 [ "$PROG" -ef "$ASM" ] && error "input file '$PROG' same as ASM file"
 [ "$PROG" -ef "$XEX" ] && error "input file '$PROG' same as XEX file"
 
 echo "Compiling '$PROG' to assembler '$ASM'."
-"$LOC/$FB" $OPTS "$PROG" "$ASM" || exit 1
-echo "Assembling '$ASM' to XEX file '$XEX'."
-cl65 -tatari -C "$CFGFILE" -g "$ASM" "$@" -o "$XEX" -Ln "$LBL" "$LOC/$FB.lib" || exit 1
+"$FB" $OPTS "$PROG" "$ASM" || exit 1
+echo "Assembling '$ASM' to '$OBJ'."
+"$CA65" -I "$INCS" $ASMOPTS "$ASM" -o "$OBJ" || exit 1
+echo "Linking $@ to Atari executable file '$XEX'."
+"$LD65" -C "$CFGFILE" "$@" -o "$XEX" -Ln "$LBL" "$FB.lib" || exit 1
 

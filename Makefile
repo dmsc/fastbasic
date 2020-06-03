@@ -267,6 +267,10 @@ COMPILER_COMMON=\
 	 build/compiler/USAGE.md\
 	 build/compiler/LICENSE\
 	 build/compiler/MANUAL.md\
+	 build/compiler/asminc/atari_antic.inc\
+	 build/compiler/asminc/atari_gtia.inc\
+	 build/compiler/asminc/atari.inc\
+	 build/compiler/asminc/atari_pokey.inc\
 
 # Compiler source files (C++)
 COMPILER_SRC=\
@@ -514,6 +518,7 @@ distclean: clean test-distclean
 	       build/obj/fp/interp build/obj/int/interp build/obj/fp build/obj/int \
 	       build/obj/cxx-fp build/obj/cxx-int \
 	       build/obj/cxx-tgt-fp build/obj/cxx-tgt-int \
+	       build/compiler/asminc \
 	       build/bin build/gen build/obj build/disk build/compiler
 	make -C testsuite distclean
 
@@ -524,7 +529,10 @@ $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
 # Build compiler ZIP file.
 $(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) | build
 	$(CROSS)strip $(COMPILER_TARGET)
-	zip -9vj $@ $(COMPILER_COMMON) $(COMPILER_TARGET)
+	# This rule is complicated because we want to store only the paths
+	# relative to the compiler directory, not the full path of the build
+	# directory.
+	(cd build/compiler ; zip -9v ../../$@ $(COMPILER_COMMON:build/compiler/%=%) $(COMPILER_TARGET:build/compiler/%=%) )
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 build/disk/%.bas: samples/fp/%.bas | build/disk
@@ -585,7 +593,7 @@ $(AR65_HOST): $(AR65_SRC) | build/bin
 
 # Target compiler build
 ifeq ($(CROSS),)
-$(COMPILER_TARGET): build/compiler/%: build/bin/% | build/compiler
+$(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/% | build/compiler
 	cp -f $< $@
 else
 build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
@@ -684,7 +692,7 @@ build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
-build/obj/cxx-tgt-int build/bin build/disk build/compiler build:
+build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
 	mkdir -p $@
 
 # Library files
@@ -715,6 +723,10 @@ build/compiler/MANUAL.md: manual.md version.mk | build/compiler
 
 # Copy other files to compiler folder
 build/compiler/%: compiler/% | build/compiler
+	cp -f $< $@
+
+# Copy assembly include files from CC65
+build/compiler/asminc/%: cc65/asminc/% | build/compiler/asminc
 	cp -f $< $@
 
 # Dependencies
