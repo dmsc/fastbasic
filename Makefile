@@ -138,7 +138,6 @@ CMD_AS_SRC=$(COMPILER_AS_SRC)\
 #       TOK_END that should be the first token.
 COMMON_AS_SRC=\
     src/alloc.asm\
-    src/exehdr.asm\
     src/interpreter.asm\
     src/interp/clearmem.asm\
     src/interp/absneg.asm\
