@@ -33,10 +33,12 @@ static int verbose;
 static const char *fb_atari_compiler = "../build/bin/fbc.xex";
 static const char *fb_fp_compiler    = "../build/bin/fastbasic-fp";
 static const char *fb_int_compiler   = "../build/bin/fastbasic-int";
+static const char *ca65_path         = "../build/bin/ca65";
+static const char *ld65_path         = "../build/bin/ld65";
 static const char *fb_cfg_path       = "../compiler";
 static const char *fb_lib_path       = "../build/compiler";
 
-#define FB_ASM      "cl65 -tatari"
+#define CA65_OPTS   "-t atari -g"
 #define FB_LIB_FP   "fastbasic-fp.lib"
 #define FB_LIB_INT  "fastbasic-int.lib"
 #define FB_CFG_FILE "fastbasic.cfg"
@@ -247,8 +249,8 @@ static int run_prog(const char *prog, char *out, size_t *len)
 }
 
 static int compile_cross(const char *basname, const char *asmname,
-                         const char *xexname, int fp, int comp_ok,
-                         int error_pos_line, int error_pos_column)
+                         const char *objname, const char *xexname, int fp,
+                         int comp_ok, int error_pos_line, int error_pos_column)
 {
     const char *comp = fp ? fb_fp_compiler : fb_int_compiler;
     const char *libs = fp ? FB_LIB_FP : FB_LIB_INT;
@@ -256,7 +258,11 @@ static int compile_cross(const char *basname, const char *asmname,
     char *out = calloc(8192, 1);
     int e = -1;
 
+    // Erase all files
     unlink(asmname);
+    unlink(objname);
+    unlink(xexname);
+
     if (asprintf(&cmd, "%s %s %s", comp, basname, asmname) < 0)
     {
         fprintf(stderr, "%s: memory error.\n", basname);
@@ -291,12 +297,26 @@ static int compile_cross(const char *basname, const char *asmname,
     else if (!e)
     {
         e = -1;
-        // Now, link to XEX
-        unlink(xexname);
+        // Assemble to object file
         free(cmd);
-        cmd = 0;
-        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", FB_ASM, fb_cfg_path,
-                    FB_CFG_FILE, xexname, asmname, fb_lib_path, libs) < 0)
+        if (asprintf(&cmd, "%s %s -o %s -I %s/asminc %s", ca65_path,
+                     CA65_OPTS, objname, fb_lib_path, asmname) < 0)
+        {
+            fprintf(stderr, "%s: memory error.\n", asmname);
+            goto xit;
+        }
+        len = 8191;
+        e = run_prog(cmd, out, &len);
+        if (e && comp_ok)
+        {
+            fprintf(stderr, "%s: assembly error: '%s'\n", asmname, out);
+            goto xit;
+        }
+
+        // Now, link to XEX
+        free(cmd);
+        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", ld65_path, fb_cfg_path,
+                    FB_CFG_FILE, xexname, objname, fb_lib_path, libs) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
             goto xit;
@@ -306,7 +326,7 @@ static int compile_cross(const char *basname, const char *asmname,
         e = run_prog(cmd, out, &len);
         if (e && comp_ok)
         {
-            fprintf(stderr, "%s: link error: '%s'\n", asmname, out);
+            fprintf(stderr, "%s: link error: '%s'\n", objname, out);
             goto xit;
         }
         else if (!e && !comp_ok)
@@ -526,22 +546,25 @@ int fbtest(const char *fname)
     const char *ext = rindex(fname, '.');
     if (!ext)
         ext = fname + strlen(fname);
+
+    // base_name: file name without extension
+    char *base_name = strndup(fname, ext - fname);
+
     // basname: input basic file name
-    char *basname = calloc(strlen(fname) + 5, 1);
-    strcpy(basname, fname);
-    strcpy(basname + (ext - fname), ".bas");
+    char *basname;
+    asprintf(&basname, "%s.bas", base_name);
     // atbname: BASIC file converted to ATASCII
-    char *atbname = calloc(strlen(fname) + 5, 1);
-    strcpy(atbname, fname);
-    strcpy(atbname + (ext - fname), ".atb");
+    char *atbname;
+    asprintf(&atbname, "%s.atb", base_name);
     // xexname: XEX file name
-    char *xexname = calloc(strlen(fname) + 5, 1);
-    strcpy(xexname, fname);
-    strcpy(xexname + (ext - fname), ".xex");
-    // asmname: Assembly output name
-    char *asmname = calloc(strlen(fname) + 5, 1);
-    strcpy(asmname, fname);
-    strcpy(asmname + (ext - fname), ".asm");
+    char *xexname;
+    asprintf(&xexname, "%s.xex", base_name);
+    // asmname: Assembler file name
+    char *asmname;
+    asprintf(&asmname, "%s.asm", base_name);
+    // objname: Object file name
+    char *objname;
+    asprintf(&objname, "%s.o", base_name);
 
     // Generate ATASCII file
     atascii_convert(basname, atbname);
@@ -574,7 +597,8 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile fp cross\n", fname);
             // Floating Point: cross
-            if (compile_cross(basname, asmname, xexname, 1, !(test & test_compile_error),
+            if (compile_cross(basname, asmname, objname, xexname, 1,
+                              !(test & test_compile_error),
                               error_pos_line, error_pos_column))
                 break;
 
@@ -592,7 +616,8 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile int cross\n", fname);
             // Integer: cross
-            if (compile_cross(basname, asmname, xexname, 0, !(test & test_compile_error),
+            if (compile_cross(basname, asmname, objname, xexname, 0,
+                              !(test & test_compile_error),
                               error_pos_line, error_pos_column))
                 break;
 
@@ -620,6 +645,8 @@ int fbtest(const char *fname)
     free(atbname);
     free(xexname);
     free(asmname);
+    free(objname);
+    free(base_name);
     return !test_ok;
 }
 
