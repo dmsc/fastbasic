@@ -635,7 +635,8 @@ int fbtest(const char *fname)
     }
     while(0);
 
-    printf("TEST '%s': %s\n", name, test_ok ? "passed" : "not passed");
+    printf("TEST '%s': %s\n", name,
+           test_ok ? "\e[42m passed \e[0m" : "\e[41m not passed \e[0m");
     free(cmd_out);
     free(error_data);
     free(input_buf);
@@ -697,11 +698,15 @@ int main(int argc, char **argv)
             pass ++;
         else
             fail ++;
-    printf("SUMMARY: ");
-    if (fail)
-        printf("%d tests passed, %d tests failed.\n", pass, fail);
-    else
-        printf("all %d tests passed.\n", pass);
+
+    if( pass + fail > 1 )
+    {
+        printf("SUMMARY: ");
+        if (fail)
+            printf("%d tests passed, %d tests failed.\n", pass, fail);
+        else
+            printf("all %d tests passed.\n", pass);
+    }
     return fail ? EXIT_FAILURE : 0;
 }
 

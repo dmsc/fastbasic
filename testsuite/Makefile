@@ -30,24 +30,41 @@ MINI65_SRC=\
   mathpack.c\
   sim65.c\
 
+# All the tests
 TESTS := $(sort $(wildcard tests/*.chk))
+
+# The tests need to be rerun if any of this files change:
+TESTS_DEPS=\
+	../build/bin/fbc.xex\
+	../build/bin/fastbasic-fp\
+	../build/bin/fastbasic-int\
+	../build/bin/ca65\
+	../build/bin/ld65\
+	../build/compiler/fastbasic-fp.lib\
+	../build/compiler/fastbasic-int.lib\
+	../build/compiler/fastbasic.cfg\
+
 
 TESTS_XEX=$(TESTS:.chk=.xex)
 TESTS_ASM=$(TESTS:.chk=.asm)
 TESTS_OBJ=$(TESTS:.chk=.o)
 TESTS_ATB=$(TESTS:.chk=.atb)
 TESTS_LBL=$(TESTS:.chk=.lbl)
+TESTS_STAMP=$(TESTS:.chk=.stamp)
 
 OBJS=obj/fbtest.o $(MINI65_SRC:%.c=obj/%.o)
 
 all: runtests
 
 .PHONY: runtests clean distclean
-runtests: $(TESTS) fbtest
-	./fbtest $(TESTS)
+runtests: $(TESTS_STAMP) fbtest
+
+%.stamp: %.chk %.bas fbtest $(TESTS_DEPS)
+	@./fbtest $<
+	@touch $@
 
 clean:
-	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST)
+	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST) $(TEST_STAMP)
 
 distclean: clean
 	-rmdir obj

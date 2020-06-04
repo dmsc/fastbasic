@@ -10,6 +10,7 @@ src/basic.asm
 fastbasic.atr
 testsuite/tests/*.atb
 testsuite/tests/*.asm
+testsuite/tests/*.stamp
 testsuite/fbtest
 *.lib
 .hg/
