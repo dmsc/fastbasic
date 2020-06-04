@@ -16,9 +16,9 @@
 #  with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
-MINI65=mini65/src
+MINI65=mini65
 CC=gcc
-CFLAGS=-g -O2 -Wall -I$(MINI65) -I$(MINI65)/../ccan/
+CFLAGS=-g -O2 -Wall -I$(MINI65)/src/ -I$(MINI65)/ccan/
 LDLIBS=-lm
 
 RUNTEST=fbtest
@@ -55,11 +55,25 @@ distclean: clean
 $(RUNTEST): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-obj/%.o: $(MINI65)/%.c | obj
+obj/%.o: $(MINI65)/src/%.c | obj mini65/src
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-obj/%.o: src/%.c | obj
+obj/%.o: src/%.c | obj mini65/src
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 obj:
 	mkdir -p $@
+
+# Update mini65 submodule if not found
+mini65/src:
+	git submodule update --init $(MINI65)
+
+# Automatic generation of dependency information for C files
+obj/%.d: src/%.c | obj mini65/src
+	$(CC) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(CFLAGS) $<
+
+ifneq "$(MAKECMDGOALS)" "clean"
+    ifneq "$(MAKECMDGOALS)" "distclean"
+        -include $(OBJS:%.o=%.d)
+    endif
+endif

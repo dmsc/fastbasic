@@ -519,7 +519,7 @@ distclean: clean test-distclean
 	       build/obj/cxx-tgt-fp build/obj/cxx-tgt-int \
 	       build/compiler/asminc \
 	       build/bin build/gen build/obj build/disk build/compiler
-	make -C testsuite distclean
+	$(MAKE) -C testsuite distclean
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
@@ -708,13 +708,13 @@ $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
 .PHONY: test-clean
 .PHONY: test-distclean
 test: $(COMPILER_COMMON) $(COMPILER_HOST) build/bin/fbc.xex
-	make -C testsuite
+	$(MAKE) -C testsuite
 
 test-clean:
-	make -C testsuite clean
+	$(MAKE) -C testsuite clean
 
 test-distclean:
-	make -C testsuite distclean
+	$(MAKE) -C testsuite distclean
 
 # Copy manual to compiler changing the version string.
 build/compiler/MANUAL.md: manual.md version.mk | build/compiler
