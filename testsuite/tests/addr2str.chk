@@ -1,4 +1,4 @@
-Name: Check parsing of HEX numbers
+Name: String at address "$()"
 Test: run
 Output:
 Hello     5
