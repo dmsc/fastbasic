@@ -35,7 +35,6 @@ static const char *fb_fp_compiler    = "../build/bin/fastbasic-fp";
 static const char *fb_int_compiler   = "../build/bin/fastbasic-int";
 static const char *ca65_path         = "../build/bin/ca65";
 static const char *ld65_path         = "../build/bin/ld65";
-static const char *fb_cfg_path       = "../compiler";
 static const char *fb_lib_path       = "../build/compiler";
 
 #define CA65_OPTS   "-t atari -g"
@@ -315,7 +314,7 @@ static int compile_cross(const char *basname, const char *asmname,
 
         // Now, link to XEX
         free(cmd);
-        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", ld65_path, fb_cfg_path,
+        if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", ld65_path, fb_lib_path,
                     FB_CFG_FILE, xexname, objname, fb_lib_path, libs) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
@@ -655,7 +654,7 @@ int fbtest(const char *fname)
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "hvc:i:f:l:")) != -1)
+    while ((opt = getopt(argc, argv, "hvc:i:f:l:a:k:")) != -1)
     {
         switch (opt)
         {
@@ -667,12 +666,20 @@ int main(int argc, char **argv)
                         " -c <compiler.xex>: Sets path of Atari compiler [%s]\n"
                         " -i <int-compiler>: Sets path of integer cross-compiler [%s]\n"
                         " -f <fp-compiler>: Sets path of floating-point cross-compiler [%s]\n"
-                        " -l <lib-path>: Sets path for the libraries [%s]\n",
+                        " -l <lib-path>: Sets path for the libraries and includes [%s]\n"
+                        " -a <ca65-path>: Sets path for the CA65 assembler [%s]\n"
+                        " -k <ld65-path>: Sets path for the LD65 linker [%s]\n",
                         argv[0], fb_atari_compiler, fb_int_compiler, fb_fp_compiler,
-                        fb_lib_path);
+                        fb_lib_path, ca65_path, ld65_path);
                 return 0;
             case 'v': // verbose
                 verbose = 1;
+                break;
+            case 'a': // CA65 assembler path
+                ca65_path = optarg;
+                break;
+            case 'k': // LD65 linker path
+                ld65_path = optarg;
                 break;
             case 'c': // atari compiler path
                 fb_atari_compiler = optarg;
@@ -685,7 +692,6 @@ int main(int argc, char **argv)
                 break;
             case 'l': // cross libraries path
                 fb_lib_path = optarg;
-                fb_cfg_path = optarg;
                 break;
             default:
                 return EXIT_FAILURE;
