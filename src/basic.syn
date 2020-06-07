@@ -30,6 +30,8 @@ TOKENS {
  TOK_PUSH_NUM, TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
+ # Operators on VAR
+ TOK_ADD_VAR,
  # Bitwise operators
  TOK_BIT_AND, TOK_BIT_OR, TOK_BIT_EXOR
  # Functions

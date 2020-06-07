@@ -122,6 +122,14 @@ class peephole
                 lnum = code[idx+current].linenum();
             code.insert(code.begin() + idx + current, codew::cword(x, lnum));
         }
+        void ins_b(size_t idx, int16_t x)
+        {
+            int lnum = 0;
+            changed = true;
+            if( code.size() > idx + current )
+                lnum = code[idx+current].linenum();
+            code.insert(code.begin() + idx + current, codew::cbyte(x&0xFF, lnum));
+        }
         void ins_tok(size_t idx, enum tokens tok)
         {
             int lnum = 0;
@@ -688,6 +696,55 @@ class peephole
                     {
                         set_tok(0, TOK_NUM); set_w(1, val(1) ^ val(4));
                         del(5); del(4); del(3); del(2); i--;
+                        continue;
+                    }
+                    //   TOK_PUSH / TOK_VAR / x / TOK_ADD   -> TOK_ADD_VAR / x
+                    if( mtok(0, TOK_PUSH) && mtok(1, TOK_VAR_LOAD) && mbyte(2) && mtok(3,TOK_ADD) )
+                    {
+                        set_tok(1, TOK_ADD_VAR); del(3); del(0); i--;
+                        continue;
+                    }
+                    //   TOK_VAR / x / TOK_PUSH / TOK_NUM / y / TOK_ADD   -> TOK_NUM / y / TOK_ADD_VAR / x
+                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_ADD) )
+                    {
+                        set_tok(0, TOK_NUM);
+                        set_tok(2, TOK_ADD_VAR);
+                        set_b(3, val(1));
+                        set_w(1, val(4));
+                        del(5); del(4); i--;
+                        continue;
+                    }
+                    //   TOK_VAR / x / TOK_PUSH / TOK_VAR / y / TOK_USHL / TOK_ADD   ->
+                    //        TOK_VAR / y / TOK_USHL / TOK_ADD_VAR / x
+                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
+                        mtok(3, TOK_VAR_LOAD) && mbyte(4) && mtok(5, TOK_USHL) &&
+                        mtok(6, TOK_ADD) )
+                    {
+                        int vx = val(1);
+                        set_b(1, val(4));
+                        set_b(4, vx);
+                        set_tok(2, TOK_USHL);
+                        set_tok(3, TOK_ADD_VAR);
+                        del(6); del(5); i--;
+                        continue;
+                    }
+                    //////////////////////////////////7
+                    // This pattern is generated on array access: ARR(VAR + X)
+                    //   TOK_VAR / x / TOK_PUSH /
+                    //                 TOK_NUM / n / TOK_ADD_VAR / y /
+                    //                 TOK_USHL / TOK_ADD ->
+                    //
+                    //      TOK_NUM / n / TOK_ADD_VAR / y / TOK_USHL / TOK_ADD:VAR / x
+                    //
+                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_ADD_VAR) && mbyte(6) &&
+                        mtok(7, TOK_USHL) && mtok(8, TOK_ADD) )
+                    {
+                        ins_w(9, 1);
+                        set_b(9, val(1));
+                        set_tok(8, TOK_ADD_VAR);
+                        del(2); del(1); del(0); i--;
                         continue;
                     }
                     //  VAR + VAR    ==>   2 * VAR

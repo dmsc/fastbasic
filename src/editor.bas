@@ -474,7 +474,7 @@ PROC LoadFile
 
   ' Load ok only if error = 136 (EOF found)
   if err() = 136
-    MemEnd = adr(MemStart) + dpeek($358)
+    MemEnd = dpeek($358) + adr(MemStart)
   else
     exec FileError
   endif
