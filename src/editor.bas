@@ -861,7 +861,7 @@ ENDPROC
 PROC SaveCompiledFile
   ' Save original filename
   move Adr(FileName$), EditBuf, 128
-  poke Adr(FileName$) + Len(FileName$), $58
+  poke Len(FileName$) + Adr(FileName$), $58
 
   pos. 0, 0
   ? "úùName?";
