@@ -35,7 +35,7 @@ TOKENS {
  # Bitwise operators
  TOK_BIT_AND, TOK_BIT_OR, TOK_BIT_EXOR
  # Functions
- TOK_PEEK, TOK_DPEEK
+ TOK_PEEK, TOK_DPEEK, TOK_BYTE_PEEK
  TOK_TIME, TOK_RAND
  # Boolean operators
  TOK_L_NOT, TOK_L_OR, TOK_L_AND
@@ -216,7 +216,7 @@ T_EXPR: integer constant, variable or function
         "RAND"   PAR_EXPR emit TOK_RAND
         "DPEEK"  PAR_EXPR emit TOK_DPEEK
         "FRE()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
-        "ERR()"  emit { TOK_BYTE, IOERROR, TOK_PEEK }
+        "ERR()"  emit { TOK_BYTE_PEEK, IOERROR }
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
         "LEN"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
@@ -640,7 +640,7 @@ PARSE_LINE_COMMAND:
         "FColor" EXPR emit { TOK_NUM_POKE, &FILDAT }
         "POSition" POSITION
         "LOCate" POSITION emit { TOK_BYTE, 6, TOK_IOCHN } GET_EXPR
-        "PLot" POSITION emit { TOK_BYTE, 6, TOK_IOCHN, TOK_BYTE, COLOR, TOK_PEEK, TOK_PUT } IO_CHAN0
+        "PLot" POSITION emit { TOK_BYTE, 6, TOK_IOCHN, TOK_BYTE_PEEK, COLOR, TOK_PUT } IO_CHAN0
         "DRawto" POSITION emit { TOK_BYTE, DRAWLN, TOK_DRAWTO }
         "FIllto" POSITION emit { TOK_BYTE, FILLIN, TOK_DRAWTO }
         "SEtcolor" EXPR emit { TOK_PUSH_NUM, &COLOR0, TOK_ADD, TOK_SADDR } EXPR_AB emit TOK_POKE

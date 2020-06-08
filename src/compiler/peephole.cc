@@ -570,6 +570,24 @@ class peephole
                         del(4); del(3); i--;
                         continue;
                     }
+                    //   TOK_NUM / x<256 / TOK_PEEK
+                    //      -> TOK_BYTE_PEEK / x
+                    if( mtok(0, TOK_NUM) && mword(1) && val(1) < 256 && val(1) >= 0 &&
+                        mtok(2, TOK_PEEK) )
+                    {
+                        set_tok(0, TOK_BYTE_PEEK);
+                        set_b(1, val(1));
+                        del(2); i--;
+                        continue;
+                    }
+                    //   TOK_BYTE / x / TOK_PEEK
+                    //      -> TOK_BYTE_PEEK / x
+                    if( mtok(0, TOK_BYTE) && mtok(2, TOK_PEEK) )
+                    {
+                        set_tok(0, TOK_BYTE_PEEK);
+                        del(2); i--;
+                        continue;
+                    }
                     // TODO: should support complex expressions on "y"
                     //   TOK_NUM / x<256 / TOK_SADDR / TOK_NUM / y / TOK_POKE
                     //      -> TOK_NUM / (y&255) / TOK_BYTE_POKE / x
