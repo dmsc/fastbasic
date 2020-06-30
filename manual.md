@@ -814,6 +814,7 @@ Console Print and Input Statements
   variable name or an array position
   (like "array(123)")
 
+
 **Input Variable Or String**  
 **INPUT _var_ / I.**  
 **INPUT "prompt"; _var_**  
@@ -840,6 +841,11 @@ Console Print and Input Statements
   value can't be converted to a number,
   the value 18 is stored in ERR().
 
+  See the _Device Input and Output
+  Statements_ section for the `INPUT #`
+  usage.
+
+
 **Moves The Screen Cursor**  
 **POSITION _column_, _row_ / POS.**
 
@@ -850,6 +856,7 @@ Console Print and Input Statements
 
   Rows and columns are numerated from
   0.
+
 
 **Print Strings And Numbers**  
 **PRINT _expr_, ... / ?**
@@ -872,6 +879,10 @@ Console Print and Input Statements
   expression, the column is advanced to
   the next multiple of 10, so that
   tabulated data can be printed.
+
+  See the _Device Input and Output
+  Statements_ section for the `PRINT #`
+  usage.
 
 
 **Writes A Character To Screen**  
