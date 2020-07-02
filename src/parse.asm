@@ -99,33 +99,6 @@ SM_EMIT=        SM_EMIT_1
 ; Now, the rest of the code
         .code
 
-emit_sub:
-        jsr     parser_fetch
-emit_const:
-parser_emit_byte:
-        ldy     opos
-        sta     (prog_ptr),y
-parser_inc_opos:
-        inc     opos
-        bne     rts1
-too_long:
-        ldy     #ERR_TOO_LONG
-        ; Fall through
-
-.proc parser_error
-        ; Prints error message in Y
-ploop:  lda     error_msg_list, y
-        php
-        iny
-        and     #$7F
-        jsr     putc
-        plp
-        bpl     ploop
-        sec
-::parse_end:
-        jmp     EXE_END
-.endproc
-
 .proc parse_eof
         ; Check if parser stack is empty
         ldy     #ERR_NO_ELOOP
@@ -136,8 +109,8 @@ ploop:  lda     error_msg_list, y
 ; Check if all labels are defined
         ldy     #1
         .assert ERR_LABEL = 1, error, "Parser depends on ERR_LABEL = 1"
-lbl_chk_start:
         lda     laddr_buf
+lbl_chk_start:
         cmp     laddr_ptr
         lda     laddr_buf+1
         sbc     laddr_ptr+1
@@ -169,6 +142,33 @@ ok:     ;lda     #TOK_END       ; Already A=0 from above
 :       ldy     #0
         lda     (pptr),y
 ::rts1: rts
+.endproc
+
+emit_sub:
+        jsr     parser_fetch
+emit_const:
+parser_emit_byte:
+        ldy     opos
+        sta     (prog_ptr),y
+parser_inc_opos:
+        inc     opos
+        bne     rts1
+too_long:
+        ldy     #ERR_TOO_LONG
+        ; Fall through
+
+.proc parser_error
+        ; Prints error message in Y
+ploop:  lda     error_msg_list, y
+        php
+        iny
+        and     #$7F
+        jsr     putc
+        plp
+        bpl     ploop
+        sec
+::parse_end:
+        jmp     EXE_END
 .endproc
 
 
@@ -255,7 +255,7 @@ parser_sub:
         sty     pptr+1
         tsx
         cpx     #16
-        bcc     err_too_long
+        bcc     too_long
         ; Always skip WS at start of new token
         jsr     parser_skipws
 
@@ -348,9 +348,6 @@ pexit_ok:
         ; End parsing of current line
         jmp     parse_line
 
-err_too_long:
-        jmp     too_long
-
         ; Calls a machine-language subroutine
 pcall_ml:
         jsr     call_ax1
@@ -426,7 +423,7 @@ skip_ret:
         iny                     ; Skip token and RET
 go_ploop:
         tya
-        clc
+        ; clc                   ; C is 0 from above
         adc     pptr
         sta     pptr
         bcc     :+
