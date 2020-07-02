@@ -27,7 +27,9 @@
 ; Call and Jump to address
 ; ------------------------
 
+        .export         interpreter_jump_fixup
         .importzp       next_instruction, cptr
+        .import         EXE_END
 
         .segment        "RUNTIME"
 
@@ -49,8 +51,10 @@
         lda     (cptr), y       ; 5     2
         stx     cptr+1          ; 3     2
 sto:    sta     cptr            ; 3     2
+::interpreter_jump_fixup:       ; This instruction is changed to a NOP on break key
         jmp     next_instruction
-.endproc
+.endproc        ; NOTE: this will fall-through to END on break key pressed!
+        jmp     EXE_END
 
 EXE_CNJUMP:
         eor     #1

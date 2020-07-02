@@ -29,6 +29,8 @@
         ; From runtime.asm
         .import putc
         .importzp tmp1, tmp2
+        ; From JUMP
+        .import interpreter_jump_fixup
         ; From parser.asm
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
@@ -65,6 +67,18 @@ BMAX=bmax
 LINENUM=linenum
 
         .code
+
+        ; Our BREAK key handler
+break_irq:
+        ; Force exit from interpreter - stop at next JUMP
+        lda     #$2C    ; BIT abs (skips)
+        sta     interpreter_jump_fixup
+        ; Jump to original handler
+brkky_save = *+1
+        jmp     $FFFF
+
+new_brkky:
+        .word   break_irq
 
         ; Called from editor
 COMPILE_BUFFER:
@@ -113,10 +127,19 @@ no_save:
         ; C = clear and X = $FE on enter
 sto_loop:
         tay
+        ; Copy program pointer to the "NEWPTR" editor variable
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
         sta     fb_var_NEWPTR - $FE,x
+        ; And store relocated into the new header
         adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
         sta     COMP_HEAD_2+2 - $FE,x
+
+        ; Also save BRKKY vector and instal our own vector
+        lda     BRKKY - $FE, x
+        sta     brkky_save - $FE, x
+        lda     new_brkky - $FE, x
+        sta     BRKKY - $FE, x
+
         inx
         bne     sto_loop
 
@@ -132,7 +155,7 @@ sto_loop:
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
-        bne     load_editor_stack ; Exit returning X = 0 (from loop above)
+        bne     restore_break ; Exit returning X = 0 (from loop above)
 
         ; Runs current parsed program
 run_program:
@@ -160,8 +183,18 @@ run_program:
         pla
         sta     sptr
 
-        ; Exit to editor returning 0
-        ldx     #0
+restore_break:
+        ; Restore original BREAK key handler and sets X = 0
+        ldx     #2
+rbreak_loop:
+        lda     brkky_save-1, x
+        sta     BRKKY-1, x
+        dex
+        bne     rbreak_loop
+
+        ; Restore JUMP on interpreter
+        lda     #$4C    ; JMP abs
+        sta     interpreter_jump_fixup
 
         ; Restore saved CPU stack
 load_editor_stack:

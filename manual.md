@@ -134,6 +134,11 @@ press before returning to the editor,
 so you have a chance to see your
 program's output.
 
+If you press the  BREAK` key when the
+program is running, it will terminate,
+wait for a key press and return to the
+IDE.
+
 If you made a mistake typing in the
 program code, instead of the program
 running, the cursor will move to the
