@@ -126,19 +126,21 @@ no_save:
         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
         ; C = clear and X = $FE on enter
 sto_loop:
+        ; Save low ending address into Y register, needed after the loop
         tay
-        ; Copy program pointer to the "NEWPTR" editor variable
-        lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
-        sta     fb_var_NEWPTR - $FE,x
-        ; And store relocated into the new header
-        adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
-        sta     COMP_HEAD_2+2 - $FE,x
 
         ; Also save BRKKY vector and instal our own vector
         lda     BRKKY - $FE, x
         sta     brkky_save - $FE, x
         lda     new_brkky - $FE, x
         sta     BRKKY - $FE, x
+
+        ; Copy program pointer to the "NEWPTR" editor variable
+        lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
+        sta     fb_var_NEWPTR - $FE,x
+        ; And store relocated into the new header
+        adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
+        sta     COMP_HEAD_2+2 - $FE,x
 
         inx
         bne     sto_loop
