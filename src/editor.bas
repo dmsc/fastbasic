@@ -61,7 +61,7 @@ MemEnd = Adr(MemStart)
 '
 PROC InputFilename
   ' Show current filename:
-  pos. 6, 0: ? FileName$;
+  ? "? "; FileName$;
   do
     get key
     if key <= 27
@@ -113,8 +113,7 @@ PROC DeleteChar
   fileChanged = 1
   edited = 1
   linLen = linLen - 1
-  ptr = EditBuf + column
-  move ptr+1, ptr, linLen - column
+  move EditBuf + column + 1, EditBuf + column, linLen - column
   exec ForceDrawCurrentLine
 ENDPROC
 
@@ -248,7 +247,7 @@ ENDPROC
 PROC AskSaveFile
   exec SaveLine
   pos. 0, 0
-  ? "œSave?";
+  ? "œSave";
   exec InputFileName
   if key
     ' Don't save
@@ -288,7 +287,7 @@ ENDPROC
 '
 PROC ShowInfo
   ' Print two "-", then filename, then complete with '-' until right margin
-  pos. 0, 0 : put $12 : put $12
+  pos. 0, 0 : ? "";
   ? FileName$;
   repeat : put $12 : until peek(@@RMARGN) = peek(@@COLCRS)
   ' Fill last character
@@ -835,7 +834,7 @@ PROC ProcessKeys
       exec AskSaveFileChanged
       if not key
         pos. 0, 0
-        ? "œLoad?";
+        ? "œLoad";
         exec InputFileName
         if not key
           exec LoadFile
@@ -864,7 +863,7 @@ PROC SaveCompiledFile
   poke Len(FileName$) + Adr(FileName$), $58
 
   pos. 0, 0
-  ? "œName?";
+  ? "œName";
   exec InputFileName
   if key
     ' Don't save
