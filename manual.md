@@ -66,6 +66,8 @@ present you with a little help text:
     '  Ctrl-U : Page up
     '  Ctrl-V : Page down
     '  Ctrl-Z : Undo (only curr line)
+    '  Ctrl-M : Set Mark to curr line
+    '  Ctrl-C : Copy from Mark to here
     '  Ctrl-Q : Exit to DOS
     '  Ctrl-S : Save file
     '  Ctrl-L : Load file

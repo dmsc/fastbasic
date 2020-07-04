@@ -845,6 +845,60 @@ PROC ProcessKeys
     elif key = $1A
       exec UndoEditLine
     '
+    '--------- Control-M (set mark) -----
+    elif key = $0D
+      markPos = line
+    '--------- Control-C (copy from mark) -----
+    elif key = $03
+      exec SaveLine
+      ' Search mark line address
+      nptr = Adr(MemStart)
+      for y=0 to markPos
+        ptr = nptr
+        exec CountLines
+        if nptr = MemEnd
+          '  Line is outside of current file, get last line
+          exit
+        endif
+      next y
+
+      ' The source line is from PTR to NPTR, insert this
+      ' after current line, so get the length to copy
+      newPtr = nptr - ptr
+
+      ' Get address of current line
+      nptr = ScrAdr(lDraw)
+
+      ' Increment the mark position by one
+      inc markPos
+
+      ' But if we are copying to a position before the mark
+      if markPos > line
+        ' we need to increment again,
+        inc markPos
+        ' and adjust the source pointer
+        ptr = ptr + newPtr
+      endif
+
+      ' Check if we have enough space in the buffer for the new file
+      ' TODO: This check will fail if the buffer is bigger than 32kB,
+      '       because the right side will be negative.
+      if newPtr <= dpeek(@MEMTOP) - MemEnd
+
+        ' Make space for the new line
+        -move nptr, nptr + newPtr, MemEnd - nptr
+
+        ' Copy new line to here
+        move ptr, nptr, newPtr
+
+        ' Update the new memory ending
+        MemEnd = MemEnd + newPtr
+
+        ' Increment the cursor line, to point after the just added one
+        inc line
+        exec RedrawScreen
+      endif
+    '
     '--------- Escape ---------------
     elif key = $1B
       escape = 1
