@@ -185,6 +185,25 @@ prompts for a executable output
 filename to write the compiled program.
 
 
+Making the Editor Faster
+========================
+
+The FastBasic IDE uses the Atari screen
+handler for writing text, so it is
+compatible with all 80 column and other
+expansions available.
+
+As the original screen handler in the
+Atari OS is slow, there is a screen
+accelerator included in the FastBasic
+disk.
+
+To use the accelerator, just type
+`EFAST` in the DOS prompt, before
+loading the IDE, and enjoy editting
+programs faster.
+
+
 About The Syntax
 ================
 

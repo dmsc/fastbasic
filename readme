@@ -4,11 +4,12 @@
 
 Version: %VERSION%
 
-Type:
- FB  for the standard IDE,
- FBI for the integer IDE,
- FBC for the command line compiler.
+Type to run:
+ FB     the standard IDE,
+ FBI    the integer-only IDE,
+ FBC    the command line compiler,
+ EFAST  the screen accelerator.
 
-See MANUAL.TXT for the full manual.
+Load MANUAL.TXT to read the manual.
 
 Μιστ οζ σανπμε πςοηςανσΊ 

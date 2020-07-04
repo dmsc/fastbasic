@@ -110,6 +110,7 @@ DOSDIR=disk/dos/
 DOS=\
     xbw130.dos\
     copy.com\
+    efast.com\
     pause.com\
 
 # ASM files used in the RUNTIME

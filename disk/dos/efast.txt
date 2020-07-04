@@ -1,0 +1,6 @@
+Fast E: accelerator
+-------------------
+
+Written by DMSC, loosely based on HYP.COM by Doug Wokoun and John Harris.
+
+Last version available over https://github.com/dmsc/e-accelerator
