@@ -873,14 +873,12 @@ PROC SaveCompiledFile
   open #1, 8, 0, FileName$
   if err() < 128
     ' Open ok, write header
-    bput #1, @COMP_HEAD_1, 6
+    bput #1, @COMP_HEAD_1, 12
     bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
-    bput #1, @COMP_HEAD_2, 4
-    bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
+    bput #1, @__PREHEAD_RUN__, @COMP_RT_SIZE
     ' Note, the compiler writes to "NewPtr" the end of program code
     bput #1, MemEnd + 1, NewPtr - MemEnd
     if err() < 128
-      bput #1, @COMP_TRAILER, 6
       ' Save ok, close
       close #1
     endif

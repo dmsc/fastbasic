@@ -252,24 +252,27 @@ end:    tya
         ; here to allow saving the resulting file.
         .export COMP_HEAD_1
 COMP_HEAD_1:
+        ; Atari binary header
         .byte   255, 255
+        ; Chunk 1: Run address at "compiled_start"
+        .word   RUNAD
+        .word   RUNAD+1
+        .word   compiled_start
+        ; Chunk 2: interpreter at page 0
         .word   __INTERP_START__
         .word   __INTERP_START__ + __INTERP_SIZE__- 1
 
+        .segment "PREHEAD"
         .export COMP_HEAD_2
 COMP_HEAD_2:
         .word   __JUMPTAB_RUN__
         .word   0
 
-        .export COMP_TRAILER
-COMP_TRAILER:
-        .word   RUNAD
-        .word   RUNAD+1
-        .word   compiled_start
+        .code
 
         ; Number of bytes to write in RUNTIME + JUMPTAB segments
         .export COMP_RT_SIZE
-COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__ - __JUMPTAB_RUN__
+COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__ - __JUMPTAB_RUN__ + 4
 
         ; This is the runtime startup code, loads the editor.
         ; Note that this code is patched before writing to a file
