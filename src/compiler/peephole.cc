@@ -552,6 +552,14 @@ class peephole
                         del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
+                    //   TOK_NUM / 0 / TOK_VAR_STORE / x  ->  TOK_VAR_STORE_0
+                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 &&
+                        mtok(2, TOK_VAR_STORE) )
+                    {
+                        set_tok(2, TOK_VAR_STORE_0);
+                        del(1); del(0); i--;
+                        continue;
+                    }
                     //   TOK_VAR_ADDR / x / TOK_SADDR / TOK_GET / TOK_DPOKE
                     //      -> TOK_GET / TOK_VAR_STORE / x
                     if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2, TOK_SADDR) &&

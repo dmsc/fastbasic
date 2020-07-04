@@ -32,6 +32,12 @@
 
         .segment        "RUNTIME"
 
+.proc   EXE_VAR_STORE_0
+        lda     #0
+        tax
+        beq     EXE_VAR_STORE
+.endproc
+
 .proc   EXE_DIM         ; AX = array size, SADDR = variable address
         jsr     alloc_array
         lda     tmp2
@@ -66,5 +72,6 @@ save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
         .include "../deftok.inc"
         deftoken "DIM"
         deftoken "VAR_STORE"
+        deftoken "VAR_STORE_0"
 
 ; vi:syntax=asm_ca65
