@@ -136,7 +136,7 @@ press before returning to the editor,
 so you have a chance to see your
 program's output.
 
-If you press the  BREAK` key when the
+If you press the `BREAK` key when the
 program is running, it will terminate,
 wait for a key press and return to the
 IDE.
@@ -185,6 +185,57 @@ prompts for the input file name, loads
 the BASIC source, compiles it, and
 prompts for a executable output
 filename to write the compiled program.
+
+
+Advanced Editor Usage
+=====================
+
+The editor includes a few commands,
+most of those are already explainded
+above.
+
+- `CONTROL-A` and `CONTROL-E`
+  Moves the cursor ro the beggining or
+  the end of the line respectively.
+
+- `CONTROL-U` and `CONTROL-V`
+  Moves the cursor 19 lines up or down
+  respectively.
+
+- `CONTROL-Z`
+  Reverts all editing of the current
+  line. Note that changing the line
+  clears the undo buffer, so you can't
+  undo more than one line.
+
+- `CONTROL-M`
+  Sets the current line as the source
+  for the copy operations.
+
+- `CONTROL-C`
+  Copy one line from the source marked
+  with the `CONTROL-M` to the current
+  cursor position.
+  After the copy, the source line is
+  advanced, so by pressing `CONTROL-C`
+  multiple times you can copy many
+  lines.
+
+- `CONTROL-L` and `CONTROL-S`
+  Loads or Saves the file being edited,
+  respectively.
+
+- `CONTROL-Q`
+  Returns to DOS, abandoning the
+  changes in the current file.
+
+- `CONTROL-R`
+  Parses the current program and runs
+  it.
+
+- `CONTROL-W`
+  Compiles the current program and
+  saves it to a binary file.
 
 
 Making the Editor Faster
