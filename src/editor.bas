@@ -103,7 +103,7 @@ PROC CompileFile
     sound
     exec InitScreen
   endif
-  exec RedrawScreen
+  exec CalcRedrawScreen
 ENDPROC
 
 '-------------------------------------
@@ -490,13 +490,13 @@ PROC RedrawNewFile
   column = 0
   line = 0
   scrLine = 0
-  exec RedrawScreen
+  exec CalcRedrawScreen
 ENDPROC
 
 '-------------------------------------
-' Redraws entire screen
+' Calculate screen start and redraws entire screen
 '
-PROC RedrawScreen
+PROC CalcRedrawScreen
 
   ' Top line is current minus screen line
   line = line - scrLine
@@ -517,12 +517,20 @@ PROC RedrawScreen
    inc y
   wend
 
+  ScrAdr(0) = ptr
+  exec RedrawScreen
+ENDPROC
+
+'-------------------------------------
+' Redraws entire screen
+'
+PROC RedrawScreen
   ' Draw all screen lines
   cls
   exec ShowInfo
   hdraw = 0
   y = 0
-  ScrAdr(0) = ptr
+  ptr = ScrAdr(0)
   while y < 23
     exec CountLines
     lLen = nptr - ptr - 1
