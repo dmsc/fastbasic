@@ -505,15 +505,17 @@ PROC RedrawScreen
 
   ' Search given line
   ptr = Adr(MemStart)
-  for y=1 to line
+  y = 0
+  while y < line
    exec CountLines
    if nptr = MemEnd
      '  Line is outside of current file, go to last line
-     line = y - 1
+     line = y
      exit
    endif
    ptr = nptr
-  next y
+   inc y
+  wend
 
   ' Draw all screen lines
   cls
@@ -648,9 +650,10 @@ PROC ProcessKeys
     pos. 0, scrLine+1
     put 157
     ' Move screen pointers
-    -move Adr(ScrAdr) + scrLine * 2, Adr(ScrAdr) + (scrLine+1) * 2, (23 - scrLine) * 2
+    y = adr(ScrAdr) + scrLine * 2
+    -move y, y + 2, (23 - scrLine) * 2
     ' Save new line position
-    ScrAdr(scrLine) = newPtr
+    dpoke y, newPtr
     lDraw = scrLine
     hDraw = -1
     exec ChgLine
@@ -757,9 +760,9 @@ PROC ProcessKeys
     '--------- Right ----------------
     elif key = $1E
       if column > 0
-        column = column - 1
+        dec column
         if scrColumn > 1
-          scrColumn = scrColumn - 1
+          dec scrColumn
           put key
         else
           exec DrawCurrentLine
@@ -850,24 +853,23 @@ PROC ProcessKeys
       markPos = line
     '--------- Control-C (copy from mark) -----
     elif key = $03
-      exec SaveLine
-      ' Search mark line address
+      ' Simulate a cursor-down, so that the line is pasted
+      ' after the current one.
+      exec CursorDown
+
+      ' Search mark line address. We can't store the address of
+      ' the line, as any edit could invalidate that.
       nptr = Adr(MemStart)
-      for y=0 to markPos
+      y = 0
+      while y <= markPos and nptr <> MemEnd
         ptr = nptr
         exec CountLines
-        if nptr = MemEnd
-          '  Line is outside of current file, get last line
-          exit
-        endif
-      next y
+        inc y
+      wend
 
       ' The source line is from PTR to NPTR, insert this
       ' after current line, so get the length to copy
       newPtr = nptr - ptr
-
-      ' Get address of current line
-      nptr = ScrAdr(lDraw)
 
       ' Increment the mark position by one
       inc markPos
@@ -877,8 +879,11 @@ PROC ProcessKeys
         ' we need to increment again,
         inc markPos
         ' and adjust the source pointer
-        ptr = ptr + newPtr
+        ptr = nptr
       endif
+
+      ' Get address of current line
+      nptr = ScrAdr(scrLine)
 
       ' Check if we have enough space in the buffer for the new file
       ' TODO: This check will fail if the buffer is bigger than 32kB,
@@ -894,8 +899,6 @@ PROC ProcessKeys
         ' Update the new memory ending
         MemEnd = MemEnd + newPtr
 
-        ' Increment the cursor line, to point after the just added one
-        inc line
         exec RedrawScreen
       endif
     '
