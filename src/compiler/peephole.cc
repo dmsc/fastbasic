@@ -724,6 +724,19 @@ class peephole
                         del(5); del(4); del(3); del(2); i--;
                         continue;
                     }
+                    // Transform multiple subtractions to addition
+                    //   TOK_PUSH / TOK_VAR / x / TOK_SUB / TOK_PUSH / TOK_VAR / y / TOK_SUB
+                    //       ->
+                    //   TOK_PUSH / TOK_VAR / x / TOK_PUSH / TOK_VAR / y / TOK_ADD / TOK_SUB
+                    if( mtok(0, TOK_PUSH) &&
+                        ( mtok(1, TOK_VAR_LOAD) || mtok(1, TOK_NUM) ) &&
+                        mtok(3, TOK_SUB) && mtok(4, TOK_PUSH) &&
+                        ( mtok(5, TOK_VAR_LOAD) || mtok(5, TOK_NUM) ) &&
+                        mtok(7, TOK_SUB) )
+                    {
+                        ins_tok(7, TOK_ADD);
+                        del(3);
+                    }
                     //   TOK_PUSH / TOK_VAR / x / TOK_ADD   -> TOK_ADD_VAR / x
                     if( mtok(0, TOK_PUSH) && mtok(1, TOK_VAR_LOAD) && mbyte(2) && mtok(3,TOK_ADD) )
                     {
