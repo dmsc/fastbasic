@@ -45,10 +45,10 @@ dim MemStart(-1) byte
 MemEnd = Adr(MemStart)
 
 ' NOTE: variables already are initialized to '0' in the runtime.
-' line:
+' topLine:      Line at the top of the screen
 ' column:       Logical cursor position (in the file)
-' scrLine:
-' scrColumn:    Cursor position in the screen
+' scrLine:      Cursor line in the acreen
+' scrColumn:    Cursor column in the screen
 ' hDraw:        Column at left of screen, and last "updated" column
 ' lDraw:        Number of the line last drawn, and being edited.
 ' linLen:       Current line length.
@@ -89,11 +89,12 @@ PROC CompileFile
   ? "œParsing: ";
   if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
     ' Parse error, go to error line
-    line = dpeek(@@linenum) - 1
+    topLine = dpeek(@@linenum) - 11
     column = peek( @@bmax )
-    scrLine = line
-    if line > 10
-      scrLine = 10
+    scrLine = 10
+    if topLine < 0
+      scrLine = scrLine + topLine
+      topLine = 0
     endif
     get key
   elif key
@@ -325,7 +326,6 @@ PROC CursorDown
   else
     inc scrLine
   endif
-  inc line
 ENDPROC
 
 '-------------------------------------
@@ -334,7 +334,6 @@ PROC CursorUp
   exec SaveLine
   if scrLine
     dec scrLine
-    dec line
   else
     exec ScrollDown
   endif
@@ -344,7 +343,7 @@ ENDPROC
 ' Scrolls screen Down (like page-up)
 PROC ScrollDown
   ' Don't scroll if already at beginning of file
-  if Adr(MemStart) = ScrAdr(0) then Exit
+  if not topLine then Exit
 
   ' Scroll screen image inserting a line
   poke @CRSINH, 1
@@ -359,8 +358,8 @@ PROC ScrollDown
   wend
   ScrAdr(0) = ptr
 
-  ' Adjust line
-  dec line
+  ' Adjust top line
+  dec topLine
 
   ' Draw first line
   y = 0
@@ -450,6 +449,9 @@ PROC ScrollUp
   ' Move screen pointers
   move adr(ScrAdr)+2, adr(ScrAdr), 46
 
+  ' Increment top-line
+  inc topLine
+
   ' Get last screen line length by searching next EOL
   ptr = ScrAdr(23)
   exec CountLines
@@ -488,7 +490,7 @@ ENDPROC
 PROC RedrawNewFile
   fileChanged = 0
   column = 0
-  line = 0
+  topLine = 0
   scrLine = 0
   exec CalcRedrawScreen
 ENDPROC
@@ -498,19 +500,16 @@ ENDPROC
 '
 PROC CalcRedrawScreen
 
-  ' Top line is current minus screen line
-  line = line - scrLine
-
   exec CheckEmptyBuf
 
   ' Search given line
   ptr = Adr(MemStart)
   y = 0
-  while y < line
+  while y < topLine
    exec CountLines
    if nptr = MemEnd
      '  Line is outside of current file, go to last line
-     line = y
+     topLine = y
      exit
    endif
    ptr = nptr
@@ -540,8 +539,6 @@ PROC RedrawScreen
     ScrAdr(y) = ptr
   wend
 
-  line = line + scrLine
-
   exec ChgLine
 ENDPROC
 
@@ -560,14 +557,13 @@ PROC ChgLine
 
   ' Keep new line in range
   while scrLine and ScrAdr(scrLine) = MemEnd
-    line = line - 1
     scrLine = scrLine - 1
   wend
 
   exec CopyToEdit
 
   ' Print status
-  pos. 32, 0 : ? line+1;
+  pos. 32, 0 : ? 1 + topLine + scrLine;
   put $12
 
   ' Redraw line
@@ -651,7 +647,6 @@ PROC ProcessKeys
       dec scrLine
     endif
     ' Go to next line
-    inc line
     inc scrLine
     ' Move screen down!
     poke @CRSINH, 1
@@ -858,7 +853,7 @@ PROC ProcessKeys
     '
     '--------- Control-M (set mark) -----
     elif key = $0D
-      markPos = line
+      markPos = topLine + scrLine
     '--------- Control-C (copy from mark) -----
     elif key = $03
       ' Simulate a cursor-down, so that the line is pasted
@@ -883,7 +878,7 @@ PROC ProcessKeys
       inc markPos
 
       ' But if we are copying to a position before the mark
-      if markPos > line
+      if markPos > topLine + scrLine
         ' we need to increment again,
         inc markPos
         ' and adjust the source pointer
