@@ -111,10 +111,10 @@ ENDPROC
 ' Deletes the character over the cursor
 '
 PROC DeleteChar
-  fileChanged = 1
+  fileSaved = 0
   edited = 1
   linLen = linLen - 1
-  move EditBuf + column + 1, EditBuf + column, linLen - column
+  move 1 + EditBuf + column, EditBuf + column, linLen - column
   exec ForceDrawCurrentLine
 ENDPROC
 
@@ -123,7 +123,7 @@ ENDPROC
 ' and move cursor to current position
 '
 PROC ForceDrawCurrentLine
-  hDraw = -1
+  hDraw = 1
   exec DrawCurrentLine
 ENDPROC
 
@@ -138,7 +138,7 @@ PROC DrawCurrentLine
 
   while scrColumn >= peek(@@RMARGN)
     hColumn = hColumn + 8
-    scrColumn = column - hColumn + 1
+    scrColumn = 1 + column - hColumn
   wend
 
   if hDraw <> hColumn
@@ -160,7 +160,7 @@ ENDPROC
 ' Insert a character over the cursor
 '
 PROC InsertChar
-  fileChanged = 1
+  fileSaved = 0
   edited = 1
   ptr = EditBuf + column
   -move ptr, ptr+1, linLen - column
@@ -203,8 +203,7 @@ PROC SaveLine
     endif
 
     ' Copy new line
-    ptr  = ScrAdr(lDraw)
-    move EditBuf, ptr, linLen
+    move EditBuf, ScrAdr(lDraw), linLen
     ' Adjust all pointers
     y = lDraw
     repeat
@@ -263,7 +262,7 @@ PROC AskSaveFile
       ' Save ok, close
       close #1
       if err() < 128
-        fileChanged = 0
+        fileSaved = 1
         Exit
       endif
     endif
@@ -303,7 +302,7 @@ ENDPROC
 ' from last save.
 PROC AskSaveFileChanged
   key = 0
-  while fileChanged
+  while not fileSaved
    exec AskSaveFile
    ' ESC means "don't save, cancel operation"
    if key = 27
@@ -488,7 +487,7 @@ ENDPROC
 ' Redraw screen after new file
 '
 PROC RedrawNewFile
-  fileChanged = 0
+  fileSaved = 1
   column = 0
   topLine = 0
   scrLine = 0
@@ -658,7 +657,7 @@ PROC ProcessKeys
     ' Save new line position
     dpoke y, newPtr
     lDraw = scrLine
-    hDraw = -1
+    hDraw = 1
     exec ChgLine
   elif (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
     ' Process normal keys
@@ -685,7 +684,7 @@ PROC ProcessKeys
     '--------- Delete Line ----------
     if key = 156
       ' Mark file as changed
-      fileChanged = 1
+      fileSaved = 0
       ' Go to beginning of line
       column = 0
       ' Delete line from screen
@@ -712,7 +711,7 @@ PROC ProcessKeys
       exec DrawLineOrig
       edited = 0
       lDraw = 22
-      hDraw = -1
+      hDraw = 1
       exec ChgLine
     '
     '--------- Backspace ------------
@@ -728,7 +727,7 @@ PROC ProcessKeys
         exec DeleteChar
       else
         ' Mark file as changed
-        fileChanged = 1
+        fileSaved = 0
         exec SaveLine
         ' Manually delete the EOL
         ptr = ScrAdr(scrLine+1)
@@ -901,6 +900,9 @@ PROC ProcessKeys
 
         ' Update the new memory ending
         MemEnd = MemEnd + newPtr
+
+        ' Mark file as changed
+        fileSaved = 0
 
         exec RedrawScreen
       endif
