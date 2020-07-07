@@ -1,6 +1,6 @@
 '
 ' FastBasic - Fast basic interpreter for the Atari 8-bit computers
-' Copyright (C) 2017-2019 Daniel Serpell
+' Copyright (C) 2017-2020 Daniel Serpell
 '
 ' This program is free software; you can redistribute it and/or modify
 ' it under the terms of the GNU General Public License as published by
@@ -676,243 +676,241 @@ PROC ProcessKeys
         exec ForceDrawCurrentLine
       endif
     endif
-  else
-    '--------------------------------
-    ' Command keys handling
-    '
-    '
-    '--------- Delete Line ----------
-    if key = 156
+  '--------------------------------
+  ' Command keys handling
+  '
+  '
+  '--------- Delete Line ----------
+  elif key = 156
+    ' Mark file as changed
+    fileSaved = 0
+    ' Go to beginning of line
+    column = 0
+    ' Delete line from screen
+    poke @CRSINH, 1
+    pos. 0, scrLine+1
+    put 156
+    ' Delete from entire file!
+    ptr = ScrAdr(scrLine)
+    nptr = ScrAdr(scrLine+1)
+    move nptr, ptr, MemEnd - nptr
+    MemEnd = MemEnd - nptr + ptr
+    exec CheckEmptyBuf
+    ' Scroll screen if we are in the first line
+    if scrLine = 0 and ptr = MemEnd
+      exec ScrollDown
+    endif
+    nptr = ScrAdr(scrLine)
+    for y = scrLine to 22
+      ptr = nptr
+      exec CountLines
+      ScrAdr(y+1) = nptr
+    next y
+    y = scrLine
+    exec DrawLineOrig
+    edited = 0
+    lDraw = 22
+    hDraw = 1
+    exec ChgLine
+  '
+  '--------- Backspace ------------
+  elif key = 126
+    if column > 0
+      column = column - 1
+      exec DeleteChar
+    endif
+  '
+  '--------- Del Char -------------
+  elif key = 254
+    if column < linLen
+      exec DeleteChar
+    else
       ' Mark file as changed
       fileSaved = 0
-      ' Go to beginning of line
-      column = 0
-      ' Delete line from screen
-      poke @CRSINH, 1
-      pos. 0, scrLine+1
-      put 156
-      ' Delete from entire file!
-      ptr = ScrAdr(scrLine)
-      nptr = ScrAdr(scrLine+1)
-      move nptr, ptr, MemEnd - nptr
-      MemEnd = MemEnd - nptr + ptr
-      exec CheckEmptyBuf
-      ' Scroll screen if we are in the first line
-      if scrLine = 0 and ptr = MemEnd
-        exec ScrollDown
-      endif
-      nptr = ScrAdr(scrLine)
-      for y = scrLine to 22
-        ptr = nptr
-        exec CountLines
-        ScrAdr(y+1) = nptr
-      next y
-      y = scrLine
-      exec DrawLineOrig
-      edited = 0
-      lDraw = 22
-      hDraw = 1
-      exec ChgLine
-    '
-    '--------- Backspace ------------
-    elif key = 126
-      if column > 0
-        column = column - 1
-        exec DeleteChar
-      endif
-    '
-    '--------- Del Char -------------
-    elif key = 254
-      if column < linLen
-        exec DeleteChar
-      else
-        ' Mark file as changed
-        fileSaved = 0
-        exec SaveLine
-        ' Manually delete the EOL
-        ptr = ScrAdr(scrLine+1)
-        move ptr, ptr - 1, MemEnd - ptr
-        MemEnd = MemEnd - 1
-        ' Redraw
-        exec RedrawScreen
-      endif
-    '
-    '--------- Control-E (END) ------
-    elif key = $05
-      column = linLen
-      exec DrawCurrentLine
-    '
-    '--------- Control-A (HOME) -----
-    elif key = $01
-      column = 0
-      exec DrawCurrentLine
-    '
-    '--------- Left -----------------
-    elif key = $1F
-      if column < linLen
-        inc column
-        if scrColumn < peek(@@RMARGN)-1
-          inc scrColumn
-          put key
-        else
-          exec DrawCurrentLine
-        endif
-      endif
-    '
-    '--------- Right ----------------
-    elif key = $1E
-      if column > 0
-        dec column
-        if scrColumn > 1
-          dec scrColumn
-          put key
-        else
-          exec DrawCurrentLine
-        endif
-      endif
-    '
-    '--------- Control-U (page up)---
-    elif key = $15
-      ' To use less code, reuse "key" variable
-      ' as loop counter, so instead of looping
-      ' from 0 to 18, loops from key=$15 to $15+18=$27
-      repeat
-        exec CursorUp
-        inc key
-      until key>$27
-      exec ChgLine
-    '
-    '--------- Control-V (page down)-
-    elif key = $16
-      ' To use less code, reuse "key" variable
-      ' as loop counter, so instead of looping
-      ' from 0 to 18, loops from key=$16 to $16+18=$28
-      repeat
-        exec CursorDown
-        inc key
-      until key>$28
-      exec ChgLine
-    '
-    '--------- Down -----------------
-    elif key = $1D
-      exec CursorDown
-      exec ChgLine
-    '
-    '--------- Up -------------------
-    elif key = $1C
-      exec CursorUp
-      exec ChgLine
-    '
-    '--------- Control-Q (exit) -----
-    elif key = $11
-      exec AskSaveFileChanged
-      if not key
-        cls
-        end
-      endif
-    '
-    '--------- Control-S (save) -----
-    elif key = $13
-      exec AskSaveFile
-    '
-    '--------- Control-R (run) -----
-    elif key = $12
-      key = 0 ' key = 0 -> run
-      exec CompileFile
-    '
-    '--------- Control-W (write compiled file) -----
-    elif key = $17
-      ' key <> 0 -> save
-      exec CompileFile
-    '
-    '--------- Control-N (new) -----
-    elif key = $0E
-      exec AskSaveFileChanged
-      if not key
-        FileName$="D:"
-        MemEnd = Adr(MemStart)
-        exec RedrawNewFile
-      endif
-    '
-    '--------- Control-L (load) -----
-    elif key = $0C
-      exec AskSaveFileChanged
-      if not key
-        pos. 0, 0
-        ? "úùLoad";
-        exec InputFileName
-        if not key
-          exec LoadFile
-        endif
-      endif
-    '
-    '--------- Control-Z (undo) -----
-    elif key = $1A
-      exec UndoEditLine
-    '
-    '--------- Control-M (set mark) -----
-    elif key = $0D
-      markPos = topLine + scrLine
-    '--------- Control-C (copy from mark) -----
-    elif key = $03
-      ' Simulate a cursor-down, so that the line is pasted
-      ' after the current one.
-      exec CursorDown
-
-      ' Search mark line address. We can't store the address of
-      ' the line, as any edit could invalidate that.
-      nptr = Adr(MemStart)
-      y = 0
-      while y <= markPos and nptr <> MemEnd
-        ptr = nptr
-        exec CountLines
-        inc y
-      wend
-
-      ' The source line is from PTR to NPTR, insert this
-      ' after current line, so get the length to copy
-      newPtr = nptr - ptr
-
-      ' Increment the mark position by one
-      inc markPos
-
-      ' But if we are copying to a position before the mark
-      if markPos > topLine + scrLine
-        ' we need to increment again,
-        inc markPos
-        ' and adjust the source pointer
-        ptr = nptr
-      endif
-
-      ' Get address of current line
-      nptr = ScrAdr(scrLine)
-
-      ' Check if we have enough space in the buffer for the new file
-      ' TODO: This check will fail if the buffer is bigger than 32kB,
-      '       because the right side will be negative.
-      if newPtr <= dpeek(@MEMTOP) - MemEnd
-
-        ' Make space for the new line
-        -move nptr, nptr + newPtr, MemEnd - nptr
-
-        ' Copy new line to here
-        move ptr, nptr, newPtr
-
-        ' Update the new memory ending
-        MemEnd = MemEnd + newPtr
-
-        ' Mark file as changed
-        fileSaved = 0
-
-        exec RedrawScreen
-      endif
-    '
-    '--------- Escape ---------------
-    elif key = $1B
-      escape = 1
-   'else
-      ' Unknown Control Key
+      exec SaveLine
+      ' Manually delete the EOL
+      ptr = ScrAdr(scrLine+1)
+      move ptr, ptr - 1, MemEnd - ptr
+      MemEnd = MemEnd - 1
+      ' Redraw
+      exec RedrawScreen
     endif
+  '
+  '--------- Control-E (END) ------
+  elif key = $05
+    column = linLen
+    exec DrawCurrentLine
+  '
+  '--------- Control-A (HOME) -----
+  elif key = $01
+    column = 0
+    exec DrawCurrentLine
+  '
+  '--------- Left -----------------
+  elif key = $1F
+    if column < linLen
+      inc column
+      if scrColumn < peek(@@RMARGN)-1
+        inc scrColumn
+        put key
+      else
+        exec DrawCurrentLine
+      endif
+    endif
+  '
+  '--------- Right ----------------
+  elif key = $1E
+    if column > 0
+      dec column
+      if scrColumn > 1
+        dec scrColumn
+        put key
+      else
+        exec DrawCurrentLine
+      endif
+    endif
+  '
+  '--------- Control-U (page up)---
+  elif key = $15
+    ' To use less code, reuse "key" variable
+    ' as loop counter, so instead of looping
+    ' from 0 to 18, loops from key=$15 to $15+18=$27
+    repeat
+      exec CursorUp
+      inc key
+    until key>$27
+    exec ChgLine
+  '
+  '--------- Control-V (page down)-
+  elif key = $16
+    ' To use less code, reuse "key" variable
+    ' as loop counter, so instead of looping
+    ' from 0 to 18, loops from key=$16 to $16+18=$28
+    repeat
+      exec CursorDown
+      inc key
+    until key>$28
+    exec ChgLine
+  '
+  '--------- Down -----------------
+  elif key = $1D
+    exec CursorDown
+    exec ChgLine
+  '
+  '--------- Up -------------------
+  elif key = $1C
+    exec CursorUp
+    exec ChgLine
+  '
+  '--------- Control-Q (exit) -----
+  elif key = $11
+    exec AskSaveFileChanged
+    if not key
+      cls
+      end
+    endif
+  '
+  '--------- Control-S (save) -----
+  elif key = $13
+    exec AskSaveFile
+  '
+  '--------- Control-R (run) -----
+  elif key = $12
+    key = 0 ' key = 0 -> run
+    exec CompileFile
+  '
+  '--------- Control-W (write compiled file) -----
+  elif key = $17
+    ' key <> 0 -> save
+    exec CompileFile
+  '
+  '--------- Control-N (new) -----
+  elif key = $0E
+    exec AskSaveFileChanged
+    if not key
+      FileName$="D:"
+      MemEnd = Adr(MemStart)
+      exec RedrawNewFile
+    endif
+  '
+  '--------- Control-L (load) -----
+  elif key = $0C
+    exec AskSaveFileChanged
+    if not key
+      pos. 0, 0
+      ? "úùLoad";
+      exec InputFileName
+      if not key
+        exec LoadFile
+      endif
+    endif
+  '
+  '--------- Control-Z (undo) -----
+  elif key = $1A
+    exec UndoEditLine
+  '
+  '--------- Control-M (set mark) -----
+  elif key = $0D
+    markPos = topLine + scrLine
+  '--------- Control-C (copy from mark) -----
+  elif key = $03
+    ' Simulate a cursor-down, so that the line is pasted
+    ' after the current one.
+    exec CursorDown
+
+    ' Search mark line address. We can't store the address of
+    ' the line, as any edit could invalidate that.
+    nptr = Adr(MemStart)
+    y = 0
+    while y <= markPos and nptr <> MemEnd
+      ptr = nptr
+      exec CountLines
+      inc y
+    wend
+
+    ' The source line is from PTR to NPTR, insert this
+    ' after current line, so get the length to copy
+    newPtr = nptr - ptr
+
+    ' Increment the mark position by one
+    inc markPos
+
+    ' But if we are copying to a position before the mark
+    if markPos > topLine + scrLine
+      ' we need to increment again,
+      inc markPos
+      ' and adjust the source pointer
+      ptr = nptr
+    endif
+
+    ' Get address of current line
+    nptr = ScrAdr(scrLine)
+
+    ' Check if we have enough space in the buffer for the new file
+    ' TODO: This check will fail if the buffer is bigger than 32kB,
+    '       because the right side will be negative.
+    if newPtr <= dpeek(@MEMTOP) - MemEnd
+
+      ' Make space for the new line
+      -move nptr, nptr + newPtr, MemEnd - nptr
+
+      ' Copy new line to here
+      move ptr, nptr, newPtr
+
+      ' Update the new memory ending
+      MemEnd = MemEnd + newPtr
+
+      ' Mark file as changed
+      fileSaved = 0
+
+      exec RedrawScreen
+    endif
+  '
+  '--------- Escape ---------------
+  elif key = $1B
+    escape = 1
+ 'else
+    ' Unknown Control Key
   endif
 ENDPROC
 
@@ -954,4 +952,4 @@ PROC SaveCompiledFile
   move EditBuf, Adr(FileName$), 128
 ENDPROC
 
-' vi:syntax=tbxl
+' vi:syntax=fastbasic
