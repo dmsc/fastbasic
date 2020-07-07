@@ -214,7 +214,7 @@ PROC SaveLine
     MemEnd = MemEnd + newPtr
     if newPtr < 0
       move  ptr, nptr, MemEnd - nptr
-    elif newPtr > 0
+    elif newPtr <> 0
       -move ptr, nptr, MemEnd - nptr
     endif
 
@@ -241,16 +241,13 @@ PROC CopyToEdit
   ' Get column in range
   if column > linLen
     column = linLen
-    if linLen < 0
-      column = 0
-    endif
   endif
 
   ' Copy line to 'Edit' buffer, if not too long
   if linLen > 255
     linLen = 255
   endif
-  if linLen > 0
+  if linLen <> 0
     move ptr, EditBuf, linLen
   else
     poke EditBuf, $9b
@@ -420,7 +417,7 @@ PROC DrawLinePtr
       bput #0, ptr, max
       poke @@OLDCHR, $DF
     else
-      if lLen > 0
+      if lLen <> 0
         bput #0, ptr, lLen
       endif
       max = max - lLen
@@ -711,7 +708,7 @@ ENDPROC
 ' Deletes char to the left of current
 '
 PROC DoBackspace
-    if column > 0
+    if column <> 0
       column = column - 1
       exec DoDeleteKey
     endif
@@ -869,7 +866,7 @@ PROC ProcessKeys
   '
   '--------- Right ----------------
   elif key = $1E
-    if column > 0
+    if column <> 0
       dec column
       if scrColumn > 1
         dec scrColumn
