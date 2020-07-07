@@ -713,7 +713,7 @@ ENDPROC
 PROC DoBackspace
     if column > 0
       column = column - 1
-      exec DeleteChar
+      exec DoDeleteKey
     endif
 ENDPROC
 
