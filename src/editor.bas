@@ -732,7 +732,7 @@ PROC DoDeleteKey
     move ptr, ptr - 1, MemEnd - ptr
     MemEnd = MemEnd - 1
     ' Redraw
-    exec RedrawScreen
+    exec CalcRedrawScreen
   endif
 ENDPROC
 
