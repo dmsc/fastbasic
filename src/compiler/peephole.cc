@@ -1084,6 +1084,18 @@ class peephole
                         set_tok(2, TOK_CRET); del(1); del(0);
                         continue;
                     }
+                    //   TOK_L_NOT / TOK_CRET  ->  TOK_CNRET
+                    if( mtok(0,TOK_L_NOT) && mtok(1,TOK_CRET) )
+                    {
+                        set_tok(1, TOK_CNRET); del(0);
+                        continue;
+                    }
+                    //   TOK_L_NOT / TOK_CNRET  ->  TOK_CRET
+                    if( mtok(0,TOK_L_NOT) && mtok(1,TOK_CNRET) )
+                    {
+                        set_tok(1, TOK_CRET); del(0);
+                        continue;
+                    }
                     // Bypass JUMP to next instruction
                     //   TOK_JUMP / x / LABEL x
                     //     -> LABEL x
