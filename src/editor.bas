@@ -55,6 +55,22 @@ MemEnd = Adr(MemStart)
 ' edited:       0 if not currently editing a line
 ' ScrAdr():     Address in the file of screen line
 
+'-------------------------------------
+' Main Program
+'
+
+' Loads initial file, and change the filename
+exec InitScreen
+exec LoadFile
+FileName$ ="D:"
+
+' escape = 0  ' already initialized to 0
+do
+  ' Key reading loop
+  exec ProcessKeys
+loop
+
+
 
 '-------------------------------------
 ' Gets a filename with minimal line editing
@@ -589,19 +605,201 @@ PROC InitScreen
 ENDPROC
 
 '-------------------------------------
-' Main Program
+' RETURN key, splits line at position
 '
+PROC ReturnKey
+  ' Ads an CR char and terminate current line editing.
+  exec InsertChar
+  exec SaveLine
+  ' Scroll screen if we are in the last line
+  if scrLine > 21
+    exec ScrollUp
+    dec scrLine
+  endif
+  ' Split current line at this point
+  newPtr = ScrAdr(scrLine) + column + 1
 
-' Loads initial file, and change the filename
-exec InitScreen
-exec LoadFile
-FileName$ ="D:"
+  ' Save current screen line
+  y = scrLine
 
-escape = 0
-do
-  ' Key reading loop
-  exec ProcessKeys
-loop
+  ' Go to next line
+  inc scrLine
+
+  ' Move screen pointers
+  ptr = adr(ScrAdr) + scrLine * 2
+  -move ptr, ptr + 2, (23 - scrLine) * 2
+  ' Save new line position
+  dpoke ptr, newPtr
+
+  ' Go to column 0
+  column = 0
+
+  ' Redraw old line up to the new EOL
+  hDraw = 0
+  exec DrawLineOrig
+
+  ' Move screen down!
+  poke @CRSINH, 1
+  pos. 0, scrLine + 1
+  put 157
+
+  ' And redraw new line to be edited
+  lDraw = scrLine
+  hDraw = 1
+  exec ChgLine
+ENDPROC
+
+'-------------------------------------
+' Inserts a normal key to the file
+'
+PROC InsertNormalKey
+    ' Process normal keys
+    escape = 0
+    if linLen > 254
+      put @@ATBEL : ' ERROR, line too long
+    else
+      exec InsertChar
+      inc column
+      if linLen = column and scrColumn < peek(@@RMARGN)-1
+        inc scrColumn
+        poke @DSPFLG, 1
+        put key
+        poke @DSPFLG, 0
+      else
+        exec ForceDrawCurrentLine
+      endif
+    endif
+ENDPROC
+
+'-------------------------------------
+' Deletes current line
+'
+PROC DeleteLine
+  ' Mark file as changed
+  fileSaved = 0
+  ' Go to beginning of line
+  column = 0
+  ' Delete line from screen
+  poke @CRSINH, 1
+  pos. 0, scrLine+1
+  put 156
+  ' Delete from entire file!
+  ptr = ScrAdr(scrLine)
+  nptr = ScrAdr(scrLine+1)
+  move nptr, ptr, MemEnd - nptr
+  MemEnd = MemEnd - nptr + ptr
+  exec CheckEmptyBuf
+  ' Scroll screen if we are in the first line
+  if scrLine = 0 and ptr = MemEnd
+    exec ScrollDown
+  endif
+  nptr = ScrAdr(scrLine)
+  for y = scrLine to 22
+    ptr = nptr
+    exec CountLines
+    ScrAdr(y+1) = nptr
+  next y
+  y = scrLine
+  exec DrawLineOrig
+  edited = 0
+  lDraw = 22
+  hDraw = 1
+  exec ChgLine
+ENDPROC
+
+'-------------------------------------
+' Deletes char to the left of current
+'
+PROC DoBackspace
+    if column > 0
+      column = column - 1
+      exec DeleteChar
+    endif
+ENDPROC
+
+'-------------------------------------
+' Process DELETE key
+'
+PROC DoDeleteKey
+  if column < linLen
+    exec DeleteChar
+  else
+    ' Mark file as changed
+    fileSaved = 0
+    exec SaveLine
+    ' Manually delete the EOL
+    ptr = ScrAdr(scrLine+1)
+    move ptr, ptr - 1, MemEnd - ptr
+    MemEnd = MemEnd - 1
+    ' Redraw
+    exec RedrawScreen
+  endif
+ENDPROC
+
+'-------------------------------------
+' Sets mark position to current line
+'
+PROC SetMarkPosition
+  markPos = topLine + scrLine
+ENDPROC
+
+'-------------------------------------
+' Copies a line from the mark position
+'
+PROC CopyFromMArk
+    ' Simulate a cursor-down, so that the line is pasted
+    ' after the current one.
+    exec CursorDown
+
+    ' Search mark line address. We can't store the address of
+    ' the line, as any edit could invalidate that.
+    nptr = Adr(MemStart)
+    y = 0
+    while y <= markPos and nptr <> MemEnd
+      ptr = nptr
+      exec CountLines
+      inc y
+    wend
+
+    ' The source line is from PTR to NPTR, insert this
+    ' after current line, so get the length to copy
+    newPtr = nptr - ptr
+
+    ' Increment the mark position by one
+    inc markPos
+
+    ' But if we are copying to a position before the mark
+    if markPos > topLine + scrLine
+      ' we need to increment again,
+      inc markPos
+      ' and adjust the source pointer
+      ptr = nptr
+    endif
+
+    ' Get address of current line
+    nptr = ScrAdr(scrLine)
+
+    ' Check if we have enough space in the buffer for the new file
+    ' TODO: This check will fail if the buffer is bigger than 32kB,
+    '       because the right side will be negative.
+    if newPtr <= dpeek(@MEMTOP) - MemEnd
+
+      ' Make space for the new line
+      -move nptr, nptr + newPtr, MemEnd - nptr
+
+      ' Copy new line to here
+      move ptr, nptr, newPtr
+
+      ' Update the new memory ending
+      MemEnd = MemEnd + newPtr
+
+      ' Mark file as changed
+      fileSaved = 0
+
+      exec RedrawScreen
+    endif
+
+ENDPROC
 
 '-------------------------------------
 ' Reads a key and process
@@ -627,121 +825,25 @@ PROC ProcessKeys
 
   '--------- Return Key - can't be escaped
   if key = $9B
-    ' Ads an CR char and terminate current line editing.
-    exec InsertChar
-    exec SaveLine
-    ' Scroll screen if we are in the last line
-    if scrLine > 21
-      exec ScrollUp
-      dec scrLine
-    endif
-    ' Split current line at this point
-    newPtr = ScrAdr(scrLine) + column + 1
+    exec ReturnKey
 
-    ' Save current screen line
-    y = scrLine
-
-    ' Go to next line
-    inc scrLine
-
-    ' Move screen pointers
-    ptr = adr(ScrAdr) + scrLine * 2
-    -move ptr, ptr + 2, (23 - scrLine) * 2
-    ' Save new line position
-    dpoke ptr, newPtr
-
-    ' Go to column 0
-    column = 0
-
-    ' Redraw old line up to the new EOL
-    hDraw = 0
-    exec DrawLineOrig
-
-    ' Move screen down!
-    poke @CRSINH, 1
-    pos. 0, scrLine + 1
-    put 157
-
-    ' And redraw new line to be edited
-    lDraw = scrLine
-    hDraw = 1
-    exec ChgLine
   elif (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
-    ' Process normal keys
-    escape = 0
-    if linLen > 254
-      put @@ATBEL : ' ERROR, line too long
-    else
-      exec InsertChar
-      inc column
-      if linLen = column and scrColumn < peek(@@RMARGN)-1
-        inc scrColumn
-        poke @DSPFLG, 1
-        put key
-        poke @DSPFLG, 0
-      else
-        exec ForceDrawCurrentLine
-      endif
-    endif
+    exec InsertNormalKey
   '--------------------------------
   ' Command keys handling
   '
   '
   '--------- Delete Line ----------
   elif key = 156
-    ' Mark file as changed
-    fileSaved = 0
-    ' Go to beginning of line
-    column = 0
-    ' Delete line from screen
-    poke @CRSINH, 1
-    pos. 0, scrLine+1
-    put 156
-    ' Delete from entire file!
-    ptr = ScrAdr(scrLine)
-    nptr = ScrAdr(scrLine+1)
-    move nptr, ptr, MemEnd - nptr
-    MemEnd = MemEnd - nptr + ptr
-    exec CheckEmptyBuf
-    ' Scroll screen if we are in the first line
-    if scrLine = 0 and ptr = MemEnd
-      exec ScrollDown
-    endif
-    nptr = ScrAdr(scrLine)
-    for y = scrLine to 22
-      ptr = nptr
-      exec CountLines
-      ScrAdr(y+1) = nptr
-    next y
-    y = scrLine
-    exec DrawLineOrig
-    edited = 0
-    lDraw = 22
-    hDraw = 1
-    exec ChgLine
+    exec DeleteLine
   '
   '--------- Backspace ------------
   elif key = 126
-    if column > 0
-      column = column - 1
-      exec DeleteChar
-    endif
+    exec DoBackspace
   '
   '--------- Del Char -------------
   elif key = 254
-    if column < linLen
-      exec DeleteChar
-    else
-      ' Mark file as changed
-      fileSaved = 0
-      exec SaveLine
-      ' Manually delete the EOL
-      ptr = ScrAdr(scrLine+1)
-      move ptr, ptr - 1, MemEnd - ptr
-      MemEnd = MemEnd - 1
-      ' Redraw
-      exec RedrawScreen
-    endif
+    exec DoDeleteKey
   '
   '--------- Control-E (END) ------
   elif key = $05
@@ -858,60 +960,10 @@ PROC ProcessKeys
   '
   '--------- Control-M (set mark) -----
   elif key = $0D
-    markPos = topLine + scrLine
+    exec SetMarkPosition
   '--------- Control-C (copy from mark) -----
   elif key = $03
-    ' Simulate a cursor-down, so that the line is pasted
-    ' after the current one.
-    exec CursorDown
-
-    ' Search mark line address. We can't store the address of
-    ' the line, as any edit could invalidate that.
-    nptr = Adr(MemStart)
-    y = 0
-    while y <= markPos and nptr <> MemEnd
-      ptr = nptr
-      exec CountLines
-      inc y
-    wend
-
-    ' The source line is from PTR to NPTR, insert this
-    ' after current line, so get the length to copy
-    newPtr = nptr - ptr
-
-    ' Increment the mark position by one
-    inc markPos
-
-    ' But if we are copying to a position before the mark
-    if markPos > topLine + scrLine
-      ' we need to increment again,
-      inc markPos
-      ' and adjust the source pointer
-      ptr = nptr
-    endif
-
-    ' Get address of current line
-    nptr = ScrAdr(scrLine)
-
-    ' Check if we have enough space in the buffer for the new file
-    ' TODO: This check will fail if the buffer is bigger than 32kB,
-    '       because the right side will be negative.
-    if newPtr <= dpeek(@MEMTOP) - MemEnd
-
-      ' Make space for the new line
-      -move nptr, nptr + newPtr, MemEnd - nptr
-
-      ' Copy new line to here
-      move ptr, nptr, newPtr
-
-      ' Update the new memory ending
-      MemEnd = MemEnd + newPtr
-
-      ' Mark file as changed
-      fileSaved = 0
-
-      exec RedrawScreen
-    endif
+    exec CopyFromMark
   '
   '--------- Escape ---------------
   elif key = $1B
