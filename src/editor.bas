@@ -630,32 +630,39 @@ PROC ProcessKeys
     ' Ads an CR char and terminate current line editing.
     exec InsertChar
     exec SaveLine
-    ' Redraw old line up to the new EOL
-    hDraw = 0
-    y = scrLine
-    ptr = ScrAdr(scrLine)
-    lLen = column
-    exec DrawLinePtr
-    ' Split current line at this point
-    newPtr = ScrAdr(scrLine) + column + 1
-    ' Go to column 0
-    column = 0
     ' Scroll screen if we are in the last line
     if scrLine > 21
       exec ScrollUp
       dec scrLine
     endif
+    ' Split current line at this point
+    newPtr = ScrAdr(scrLine) + column + 1
+
+    ' Save current screen line
+    y = scrLine
+
     ' Go to next line
     inc scrLine
+
+    ' Move screen pointers
+    ptr = adr(ScrAdr) + scrLine * 2
+    -move ptr, ptr + 2, (23 - scrLine) * 2
+    ' Save new line position
+    dpoke ptr, newPtr
+
+    ' Go to column 0
+    column = 0
+
+    ' Redraw old line up to the new EOL
+    hDraw = 0
+    exec DrawLineOrig
+
     ' Move screen down!
     poke @CRSINH, 1
-    pos. 0, scrLine+1
+    pos. 0, scrLine + 1
     put 157
-    ' Move screen pointers
-    y = adr(ScrAdr) + scrLine * 2
-    -move y, y + 2, (23 - scrLine) * 2
-    ' Save new line position
-    dpoke y, newPtr
+
+    ' And redraw new line to be edited
     lDraw = scrLine
     hDraw = 1
     exec ChgLine
