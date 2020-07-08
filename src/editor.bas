@@ -287,13 +287,13 @@ PROC AskSaveFile
   endif
 
   open #1, 8, 0, FileName$
-  if err() < 128
+  if err() = 1
     ' Open ok, write dile
     bput #1, Adr(MemStart), MemEnd - Adr(MemStart)
-    if err() < 128
+    if err() = 1
       ' Save ok, close
       close #1
-      if err() < 128
+      if err() = 1
         fileSaved = 1
         Exit
       endif
@@ -500,7 +500,7 @@ PROC LoadFile
 
   MemEnd = adr(MemStart)
   open #1, 4, 0, FileName$
-  if err() < 128
+  if err() = 1
     bget #1, Adr(MemStart), dpeek(@MEMTOP) - Adr(MemStart)
   endif
 
@@ -1019,25 +1019,26 @@ PROC SaveCompiledFile
   endif
 
   open #1, 8, 0, FileName$
-  if err() < 128
+  if err() = 1
     ' Open ok, write header
     bput #1, @COMP_HEAD_1, 12
     bput #1, @@__INTERP_START__, @@__INTERP_SIZE__
     bput #1, @__PREHEAD_RUN__, @COMP_RT_SIZE
     ' Note, the compiler writes to "NewPtr" the end of program code
     bput #1, MemEnd + 1, NewPtr - MemEnd
-    if err() < 128
+    if err() = 1
       ' Save ok, close
       close #1
     endif
   endif
 
-  if err() > 127
+  ' Restore original filename
+  move EditBuf, Adr(FileName$), 128
+
+  if err() <> 1
     exec FileError
   endif
 
-  ' Restore original filename
-  move EditBuf, Adr(FileName$), 128
 ENDPROC
 
 ' vi:syntax=fastbasic
