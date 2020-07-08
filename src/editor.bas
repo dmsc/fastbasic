@@ -688,6 +688,30 @@ PROC InsertNormalKey
 ENDPROC
 
 '-------------------------------------
+' Moves the cursor one page up
+'
+proc CursorPageUp
+    key = 20
+    repeat
+      exec CursorUp
+      dec key
+    until key
+    exec ChgLine
+endproc
+
+'-------------------------------------
+' Moves the cursor one page down
+'
+proc CursorPageDown
+    key = 20
+    repeat
+      exec CursorDown
+      dec key
+    until key
+    exec ChgLine
+endproc
+
+'-------------------------------------
 ' Deletes current line
 '
 PROC DeleteLine
@@ -897,35 +921,31 @@ PROC ProcessKeys
   '
   '--------- Control-U (page up)---
   elif key = $15
-    ' To use less code, reuse "key" variable
-    ' as loop counter, so instead of looping
-    ' from 0 to 18, loops from key=$15 to $15+18=$27
-    repeat
-      exec CursorUp
-      inc key
-    until key>$27
-    exec ChgLine
+    exec CursorPageUp
   '
   '--------- Control-V (page down)-
   elif key = $16
-    ' To use less code, reuse "key" variable
-    ' as loop counter, so instead of looping
-    ' from 0 to 18, loops from key=$16 to $16+18=$28
-    repeat
-      exec CursorDown
-      inc key
-    until key>$28
-    exec ChgLine
+    exec CursorPageDown
   '
   '--------- Down -----------------
+  '--------- Page Down ------------
   elif key = $1D
-    exec CursorDown
-    exec ChgLine
+    if peek(@SUPERF)
+      exec CursorPageDown
+    else
+      exec CursorDown
+      exec ChgLine
+    endif
   '
   '--------- Up -------------------
+  '--------- Page Up --------------
   elif key = $1C
-    exec CursorUp
-    exec ChgLine
+    if peek(@SUPERF)
+      exec CursorPageUp
+    else
+      exec CursorUp
+      exec ChgLine
+    endif
   '
   '--------- Control-Q (exit) -----
   elif key = $11
