@@ -482,6 +482,13 @@ class peephole
                         del(2); set_w(1, 256 * val(1)); i--;
                         continue;
                     }
+                    //   TOK_PUSH / TOK_NUM / 256 / TOK_MUL   -> TOK_SHL8
+                    if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) &&
+                        mword(2) && val(2) == 256 && mtok(3,TOK_MUL) )
+                    {
+                        del(3); del(2); del(1); set_tok(0, TOK_SHL8); i--;
+                        continue;
+                    }
                     //   TOK_PUSH / TOK_NUM / 4 / TOK_MUL   -> TOK_USHL TOK_USHL
                     if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) &&
                         mword(2) && val(2) == 4 && mtok(3,TOK_MUL) )
