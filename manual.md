@@ -61,12 +61,11 @@ present you with a little help text:
     '
     ' Editor Help
     ' -----------
-    '  Ctrl-A : Move to beg of line
+    '  Ctrl-A : Move to begining of line
     '  Ctrl-E : Move to end of line
-    '  Ctrl-U : Page up
-    '  Ctrl-V : Page down
-    '  Ctrl-Z : Undo (only curr line)
-    '  Ctrl-M : Set Mark to curr line
+    '  Ctrl-U / Ctrl-V : Page up / down
+    '  Ctrl-Z : Undo (only current line)
+    '  Ctrl-M : Set Mark to current line
     '  Ctrl-C : Copy from Mark to here
     '  Ctrl-Q : Exit to DOS
     '  Ctrl-S : Save file
@@ -74,6 +73,7 @@ present you with a little help text:
     '  Ctrl-N : New file
     '  Ctrl-R : Parse and run program
     '  Ctrl-W : Compile to binary file
+    '  Ctrl-G : Go to line number
     '
     '- Press CONTROL-N to begin -
 
@@ -201,6 +201,9 @@ above.
 - `CONTROL-U` and `CONTROL-V`
   Moves the cursor 19 lines up or down
   respectively.
+
+- `CONTROL-G`
+  Moves the cursor to a specific line.
 
 - `CONTROL-Z`
   Reverts all editing of the current

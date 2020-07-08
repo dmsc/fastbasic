@@ -5,8 +5,7 @@
 ' -----------
 '   Ctrl-A : Move to begining of line
 '   Ctrl-E : Move to end of line
-'   Ctrl-U : Page up
-'   Ctrl-V : Page down
+'   Ctrl-U / Ctrl-V : Page up / down
 '   Ctrl-Z : Undo (only current line)
 '   Ctrl-M : Set Mark to current line
 '   Ctrl-C : Copy from Mark to here
@@ -16,6 +15,7 @@
 '   Ctrl-N : New file
 '   Ctrl-R : Parse and run program
 '   Ctrl-W : Compile to binary file
+'   Ctrl-G : Go to line number
 '
 '    Ğòåóó ÃÏÎÔÒÏÌ­Î ôï âåçéî      
 

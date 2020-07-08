@@ -71,6 +71,37 @@ do
 loop
 
 
+'-------------------------------------
+' Clears top line to show a message
+'
+PROC ClrTopLine
+  exec SaveLine
+  pos. 0,0
+  ? "œ";
+ENDPROC
+
+'-------------------------------------
+' Edit top line for input
+'
+PROC InputLine
+  do
+    get key
+    ' Accept left/right arrows, backspace and standard characters
+    if key >= 30 and key <= 124 or key = 126
+      put key
+    ' Process ENTER
+    elif key = 155
+      pos. 6, 0
+      poke @CH, 12: ' Force ENTER
+      key = 0
+      exit
+    else
+    ' Otherwise simply exit
+      exec ShowInfo
+      exit
+    endif
+  loop
+ENDPROC
 
 '-------------------------------------
 ' Gets a filename with minimal line editing
@@ -78,31 +109,20 @@ loop
 PROC InputFilename
   ' Show current filename:
   ? "? "; FileName$;
-  do
-    get key
-    if key <= 27
-      exit
-    elif key = 155
-      pos. 6, 0
-      poke @CH, 12: ' Force ENTER
-      input ; FileName$
-      key = 0
-      exit
-    elif key >= 30 and key <= 124 or key = 126
-      put key
-    endif
-  loop
-  exec ShowInfo
+  exec InputLine
+  if not key
+    input ; FileName$
+    exec ShowInfo
+  endif
 ENDPROC
 
 '-------------------------------------
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
-  exec SaveLine
+  exec ClrTopLine
+  ? "Parsing: ";
   poke MemEnd, $9B
-  pos. 1,0
-  ? "œParsing: ";
   if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
     ' Parse error, go to error line
     topLine = dpeek(@@linenum) - 11
@@ -258,9 +278,8 @@ ENDPROC
 ' Save edited file
 '
 PROC AskSaveFile
-  exec SaveLine
-  pos. 0, 0
-  ? "œSave";
+  exec ClrTopLine
+  ? "Save";
   exec InputFileName
   if key
     ' Don't save
@@ -943,12 +962,24 @@ PROC ProcessKeys
   elif key = $0C
     exec AskSaveFileChanged
     if not key
-      pos. 0, 0
-      ? "œLoad";
+      exec ClrTopLine
+      ? "Load";
       exec InputFileName
       if not key
         exec LoadFile
       endif
+    endif
+  '
+  '--------- Control-G (go to line) -----
+  elif key = $07
+    exec ClrTopLine
+    ? "Line? ";
+    exec InputLine
+    if not key
+      input ; topLine
+      topLine = abs(topLine - 1)
+      scrLine = 0
+      exec CalcRedrawScreen
     endif
   '
   '--------- Control-Z (undo) -----
@@ -974,12 +1005,13 @@ ENDPROC
 ' Save compiled file
 '
 PROC SaveCompiledFile
+  exec ClrTopLine
+
   ' Save original filename
   move Adr(FileName$), EditBuf, 128
   poke Len(FileName$) + Adr(FileName$), $58
 
-  pos. 0, 0
-  ? "œName";
+  ? "Name";
   exec InputFileName
   if key
     ' Don't save
