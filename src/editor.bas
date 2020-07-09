@@ -676,8 +676,8 @@ PROC InsertNormalKey
     else
       exec InsertChar
       inc column
-      if linLen = column and scrColumn < peek(@@RMARGN)-1
-        inc scrColumn
+      inc scrColumn
+      if linLen = column and scrColumn < peek(@@RMARGN)
         poke @DSPFLG, 1
         put key
         poke @DSPFLG, 0
@@ -899,8 +899,8 @@ PROC ProcessKeys
   elif key = $1F
     if column < linLen
       inc column
-      if scrColumn < peek(@@RMARGN)-1
-        inc scrColumn
+      inc scrColumn
+      if scrColumn < peek(@@RMARGN)
         put key
       else
         exec DrawCurrentLine
@@ -911,8 +911,8 @@ PROC ProcessKeys
   elif key = $1E
     if column <> 0
       dec column
-      if scrColumn > 1
-        dec scrColumn
+      dec scrColumn
+      if scrColumn <> 0
         put key
       else
         exec DrawCurrentLine
