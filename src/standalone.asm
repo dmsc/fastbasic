@@ -29,7 +29,7 @@
 
         ; Main symbol
         .export         start, heap_start
-        .exportzp       var_page, array_ptr, BASIC_TOP
+        .exportzp       array_ptr, BASIC_TOP
         ; From intrepreter.asm
         .import         interpreter_run
         ; From bytecode
@@ -42,7 +42,6 @@
         .zeropage
 
         ; Zero page variables:
-var_page:       .res    1       ; Page of variable data
 array_ptr:      .res    2       ; Top of array memory
 BASIC_TOP=      array_ptr
 
@@ -51,9 +50,6 @@ heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
 
         .code
 start:
-        lda     #>heap_start
-        sta     var_page
-
         lda     #<bytecode_start
         ldx     #>bytecode_start
 

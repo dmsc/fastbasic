@@ -27,8 +27,9 @@
 ; Get's variable address
 ; ----------------------
 
-        .export         get_op_var
-        .importzp       next_instruction, cptr, var_page
+        .export         get_op_var, var_page
+        .importzp       next_instruction, cptr
+        .import         heap_start
 
         .segment        "RUNTIME"
 
@@ -46,7 +47,8 @@
         inc     cptr
         bne     :+
         inc     cptr+1
-:       ldx     var_page
+:       ldx     #>heap_start
+::var_page = * - 1
         asl
         bcc     :+
         inx

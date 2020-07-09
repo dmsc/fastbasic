@@ -35,10 +35,10 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, compiled_num_vars
+        .import interpreter_run, compiled_num_vars, compiled_var_page, var_page
         .importzp interpreter_cptr, var_count, sptr, saved_cpu_stack
         ; From alloc.asm
-        .importzp  prog_ptr, var_page
+        .importzp  prog_ptr
         .import parser_alloc_init
         ; From bytecode
         .import bytecode_start
@@ -149,8 +149,7 @@ sto_loop:
         ; Align up to 256 bytes
         cpy     #1
         adc     #0
-        sta     compiled_var_page+1
-        sta     var_page
+        sta     compiled_var_page
 
         ldy     var_count
         sty     compiled_num_vars
@@ -173,7 +172,6 @@ run_program:
         lda     #125
         jsr     putc
 
-        ; Note: Y keeps var_count from above
         lda     end_ptr
         ldx     end_ptr+1
         jsr     interpreter_run
@@ -184,6 +182,10 @@ run_program:
         sta     interpreter_cptr
         pla
         sta     sptr
+
+        ; Reload var_page, as it was overwritten by interpreter_run
+        lda     #>heap_start
+        sta     var_page
 
 restore_break:
         ; Restore original BREAK key handler and sets X = 0
@@ -209,8 +211,6 @@ load_editor_stack:
         ; Load all pointer to execute the editor
         ; Does not modify A/X
 load_editor:
-        ldy     #>heap_start
-        sty     var_page
         rts
 
 
@@ -282,10 +282,6 @@ start:
 compiled_start:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
-
-compiled_var_page:
-        ldy     #>heap_start
-        sty     var_page
 
         jsr     interpreter_run
         jmp     (DOSVEC)

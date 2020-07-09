@@ -30,10 +30,10 @@
         .import parser_start
         .importzp buf_ptr, linenum, end_ptr, bmax
         ; From intrepreter.asm
-        .import interpreter_run, compiled_num_vars
+        .import interpreter_run, compiled_num_vars, compiled_var_page
         .importzp var_count, saved_cpu_stack
         ; From alloc.asm
-        .importzp  prog_ptr, var_page
+        .importzp  prog_ptr
         .import parser_alloc_init
         ; From bytecode
         .import bytecode_start
@@ -101,11 +101,15 @@ COMPILE_BUFFER:
         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
         ; C = clear and X = $FE on enter
 sto_loop:
+        ; Save low ending address into Y register, needed after the loop
         tay
+        ; Copy program pointer to the "NEWPTR" editor variable
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
         sta     fb_var_NEWPTR - $FE,x
+        ; And store relocated into the new header
         adc     <(reloc_addr - $FE),x   ; reloc_addr is ZP
         sta     COMP_HEAD_2+2 - $FE,x
+
         inx
         bne     sto_loop
 
@@ -113,7 +117,7 @@ sto_loop:
         ; Align up to 256 bytes
         cpy     #1
         adc     #0
-        sta     compiled_var_page+1
+        sta     compiled_var_page
 
         lda     var_count
         sta     compiled_num_vars
@@ -131,8 +135,6 @@ load_program_stack:
         ; Load all pointer to execute the basic program
         ; Does not modify A/X
 load_program:
-        ldy     #>heap_start
-        sty     var_page
         rts
 
 
@@ -170,10 +172,6 @@ start:
 compiled_start:
         lda     #<BYTECODE_ADDR
         ldx     #>BYTECODE_ADDR
-
-compiled_var_page:
-        ldy     #>heap_start
-        sty     var_page
 
         jsr     interpreter_run
         jmp     (DOSVEC)

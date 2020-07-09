@@ -28,11 +28,11 @@
 ; ------------
 
         .export         clear_data, alloc_array, mem_set, err_nomem
-        .export         compiled_num_vars, CLEAR_DATA
+        .export         compiled_num_vars, compiled_var_page, CLEAR_DATA
         .exportzp       saved_cpu_stack
 
-        .import         putc
-        .importzp       var_page, tmp1, tmp2, array_ptr
+        .import         putc, var_page, heap_start
+        .importzp       tmp1, tmp2, array_ptr
         .importzp       NUM_VARS
 
         ; Top of available memory
@@ -55,12 +55,14 @@ saved_cpu_stack:
         ; Clears data pointers before starting the interpreter
 .proc   clear_data
         ; Init all pointers to end of program data
-        lda     #0
-        ldx     var_page
-        sta     array_ptr
-        stx     array_ptr+1
-        ; Allocate and clear 2 bytes of memory for each variable
         ldx     #0
+        lda     #>heap_start
+::compiled_var_page=*-1
+        sta     var_page
+        stx     array_ptr
+        sta     array_ptr+1
+        ; Allocate and clear 2 bytes of memory for each variable
+        ; ldx #0        ;  X already 0
         ; This value will be patched with the number of variables in the program
         ; in the IDE and native compilers
         lda     #NUM_VARS
