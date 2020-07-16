@@ -695,7 +695,7 @@ proc CursorPageUp
     repeat
       exec CursorUp
       dec key
-    until key
+    until not key
     exec ChgLine
 endproc
 
@@ -707,7 +707,7 @@ proc CursorPageDown
     repeat
       exec CursorDown
       dec key
-    until key
+    until not key
     exec ChgLine
 endproc
 
