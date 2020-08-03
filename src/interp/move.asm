@@ -28,26 +28,26 @@
 ; -------------------------
 
         .import         stack_l, stack_h, next_ins_incsp_2
+        .importzp       tmp3, saddr
 
         .include "atari.inc"
 
 .ifdef NO_SMCODE
-        .importzp       tmp3, tmp4
-src = tmp3-1
-dst = tmp4-1
+src = tmp3
+dst = saddr
 .endif
         .segment        "RUNTIME"
 
 .proc   EXE_MOVE  ; move memory up
         pha
         lda     stack_l, y
-        sta     dst+1
+        sta     saddr
         lda     stack_h, y
-        sta     dst+2
+        sta     dst+1
         lda     stack_l+1, y
-        sta     src+1
+        sta     tmp3
         lda     stack_h+1, y
-        sta     src+2
+        sta     src+1
         pla
 
         ; copy first bytes by adjusting the pointer *down* just the correct
@@ -55,39 +55,42 @@ dst = tmp4-1
         ;
         inx
         tay
-        beq     cpage
-        dey
         clc
-        adc     src+1
-        sta     src+1
+        adc     tmp3
+        sta     src
         bcs     :+
-        dec     src+2
+        dec     src+1
 :       tya
-        sec
-        adc     dst+1
-        sta     dst+1
+        clc
+        adc     saddr
+        sta     dst
         bcs     :+
-        dec     dst+2
+        dec     dst+1
 :
         tya
+        beq     cpage
         eor     #$ff
         tay
+        iny
 cloop:
 .ifdef NO_SMCODE
         ; 16/17 cycles / iteration
-        lda     (src+1),y       ; 5/6
-        sta     (dst+1),y       ; 6
+        lda     (src),y       ; 5/6
+        sta     (dst),y       ; 6
 .else
         ; 14/15 cycles / iteration, plus 10 cycles more at preparation
-src:    lda     $FF00,y         ; 5/4
-dst:    sta     $FF00,y         ; 5
+src = * + 1
+        lda     $FF00,y         ; 5/4
+dst = * + 1
+        sta     $FF00,y         ; 5
 .endif
         iny
         bne     cloop
+cpage:
         ; From now-on we copy full pages!
-        inc     src+2
-        inc     dst+2
-cpage:  dex
+        inc     src+1
+        inc     dst+1
+        dex
         bne     cloop
 
 xit:    jmp     next_ins_incsp_2
