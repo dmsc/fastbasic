@@ -602,6 +602,7 @@ DLI_LDA: DLI source data
 
 DLI_STA: DLI destination
         "Into" emit 141 E_NUMBER_WORD
+        "Next" emit { 141, &WSYNC } DLI_STA
 
 # Parse a line
 PARSE_LINE_COMMAND:

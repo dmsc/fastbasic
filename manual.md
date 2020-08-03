@@ -1756,8 +1756,8 @@ statement:
   and performing the _op_ operations.
 
   Each operation is of the form:
-  _data_ `INTO` _address_. `INTO` can be
-  abbreviated to `I.`.
+  _data_ `INTO` _address_ or
+  _data_ `NEXT` `INTO` _address_.
 
   _data_ is one constant byte or the
   name of a `DATA BYTE` array, and
@@ -1769,6 +1769,19 @@ statement:
   the first line with DLI active in the
   screen, the second element at the
   second active line, etc.
+
+  The `NEXT` word advances one line in
+  the display area (this is done by
+  writing to the `WSYNC` ANTIC
+  register), so the value is set in the
+  next screen line. You can put the
+  `NEXT` word multiple times to advance
+  more than one line. This allows one
+  DLI to modify multiple lines at the
+  screen.
+
+  `INTO` can be abbreviated to `I.` and
+  `NEXT` to `N.`.
 
   You can specify any number of
   operations, but as each one takes some
@@ -1847,8 +1860,12 @@ statement:
       DATA Colors() BYTE = $24,$46,$68
       ' Define the DLI: set background
       ' color from the Color() array
-      ' and text color with value $80
-      DLI SET d2 = Colors INTO $D01A, $80 INTO $D018
+      ' and text back color with value
+      ' $8A in the same line and then
+      ' the black in to the next line.
+      DLI SET d2 = Colors INTO $D01A,
+      DLI        = $8A INTO $D018,
+      DLI        = $00 NEXT INTO $D018
       ' Setups screen
       GRAPHICS 0
       ' Adds DLI at three lines:
