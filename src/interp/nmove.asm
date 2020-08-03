@@ -33,14 +33,10 @@
 
         .include "atari.inc"
 
-.ifdef NO_SMCODE
         .exportzp       move_dwn_src, move_dwn_dst
-        .importzp       tmp3, tmp4
-move_dwn_src= tmp3
-move_dwn_dst= tmp4
-.else
-        .export         move_dwn_src, move_dwn_dst
-.endif
+        .importzp       tmp3, saddr
+move_dwn_src= saddr
+move_dwn_dst= tmp3
 
         ; Used as a temporary value
 tmp5=divmod_sign
@@ -64,6 +60,12 @@ tmp5=divmod_sign
 
         ; Note: this is used from alloc.asm, so can't be inlined above
 .proc   move_dwn
+
+.ifdef NO_SMCODE
+src     = move_dwn_src
+dst     = move_dwn_dst
+.endif
+
         ; On input:
         ;    Length:            AX
         ;    Source Pointer:    move_dwn_src
@@ -107,18 +109,18 @@ tmp5=divmod_sign
         clc
         lda     move_dwn_src
         sbc     tmp5
-        sta     move_dwn_src
+        sta     src
         txa
         adc     move_dwn_src+1
-        sta     move_dwn_src+1
+        sta     src+1
 
         clc
         lda     move_dwn_dst
         sbc     tmp5
-        sta     move_dwn_dst
+        sta     dst
         txa
         adc     move_dwn_dst+1
-        sta     move_dwn_dst+1
+        sta     dst+1
 
         inx     ; Restore X
         inx     ; Add 1, now value is from 1 to 255
@@ -127,24 +129,26 @@ tmp5=divmod_sign
 cloop:
 .ifdef NO_SMCODE
         ; 17 cycles / iteration
-        lda     (move_dwn_src),y
-        sta     (move_dwn_dst),y
+        lda     (src),y
+        sta     (dst),y
 .else
         ; 15 cycles / iteration, plus 14 cycles more at preparation
-src:    lda     $FF00,y
-dst:    sta     $FF00,y
+src = * + 1
+        lda     $FF00,y
+dst = * + 1
+        sta     $FF00,y
 .endif
         dey
         bne     cloop
 
         ; We need to decrease the pointers by 255
 next_page:
-        inc     move_dwn_src
+        inc     src
         beq     :+
-        dec     move_dwn_src+1
-:       inc     move_dwn_dst
+        dec     src+1
+:       inc     dst
         beq     :+
-        dec     move_dwn_dst+1
+        dec     dst+1
 :
         ; And copy 255 bytes more!
         dey
@@ -153,11 +157,6 @@ next_page:
 
 xit:    rts
 .endproc
-
-.ifndef NO_SMCODE
-move_dwn_src     = move_dwn::src+1
-move_dwn_dst     = move_dwn::dst+1
-.endif
 
 
         .include "../deftok.inc"

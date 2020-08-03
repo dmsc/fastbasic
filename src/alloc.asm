@@ -66,12 +66,7 @@
 
         .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1
         .import         move_dwn, err_nomem
-
-.ifdef  NO_SMCODE
         .importzp       move_dwn_src, move_dwn_dst
-.else
-        .import         move_dwn_src, move_dwn_dst
-.endif
 
 mem_start = prog_ptr
 prog_end  = var_buf
