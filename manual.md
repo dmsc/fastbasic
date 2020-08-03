@@ -626,60 +626,81 @@ Will print:
     Hello World
 
 
+Functions
+---------
+
+Functions take parameters (normally
+between parentheses) and produce a
+result. Functions can be abbreviated by
+using a shorter name ended in a dot,
+for example you can write `R.(10)`
+instead of `RAND(10)`.
+
+You can also omit parentheses on
+functions that take one numerical value
+as argument, for example, `RAND 10`.
+This is not possible when the argument
+is a string or in `ADR` and `USR`.
+
+Some functions don't take parameters,
+and you must provide a set of
+parentheses, like `KEY()`, in this case
+when abbreviated, you can omit the
+parenthesis, like `K.`.
+
+
 Standard Functions
 ------------------
 
-Functions take parameters between
-parentheses and produce a result.
-Following is a list of all the
-functions supported by FastBasic.
+Following is a list of all the general
+purpose functions supported by
+FastBasic. Shown are the full syntax
+and the abbreviated syntax.
 
-- TIME : Returns the current time in
-         "jiffies." This is about 60
-         times per second in NTSC
-         systems or 50 times per second
-         in PAL systems. Use `TIMER`
-         statemnet to reset to 0.
+- TIME / T. :
+  Returns the current time in
+  "jiffies." This is about 60 times per
+  second in NTSC systems or 50 times
+  per second in PAL systems. Use
+  `TIMER` statement to reset to 0.
 
-- ABS(_num_) : Returns the absolute
-               value of _num_. Can be
-               used with integers and
-               floating point.
+- ABS(_num_) / AB.(_num_) :
+  Returns the absolute value of _num_.
+  Can be used with integers and
+  floating point.
 
-- SGN(_num_) ; Returns the sign of
-               _num_, this is 1 if
-               positive, -1 if negative
-               or 0 if _num_ is 0. Can
-               be used with integers
-               and floating point.
+- SGN(_num_) / SGn(_num_) ;
+  Returns the sign of _num_, this is 1
+  if positive, -1 if negative or 0 if
+  _num_ is 0. Can be used with integers
+  and floating point.
 
-- RAND(_num_) : Returns a random, non
-                negative number, a
-                maximum of 1 less than
-                _num_.
+- RAND(_num_) / R.(_num_) :
+  Returns a random, non negative
+  number, a maximum of 1 less than
+  _num_.
 
-- FRE() : Returns the free memory
-          available in bytes.
+- FRE() / F. :
+  Returns the free memory available in
+  bytes.
 
-- ERR() : Returns the last Input/Output
-          error value, or 1 if no error
-          was registered.
+- ERR() / E. :
+  Returns the last Input/Output error
+  value, or 1 if no error was
+  registered.
 
-- LEN(*string*) : Returns the length of
-                  the *string*.
+- LEN(*string*) / L.(*string*) :
+  Returns the length of the *string*.
 
-- VAL(*string*) : Converts *string* to
-                  a number. If no
-                  conversion is
-                  possible, ERR() is
-                  set to 18. Can be
-                  used with integers
-                  and floating point.
+- VAL(*string*) / V.(*string*) :
+  Converts *string* to a number. If no
+  conversion is possible, `ERR()` is
+  set to 18. Can be used with integers
+  and floating point.
 
-- ASC(*string*) : Returns the ATASCII
-                  code of the first
-                  character of the
-                  *string*.
+- ASC(*string*) / AS.(*string*) :
+  Returns the ATASCII code of the first
+  character of the *string*.
 
 
 Atari Specific Functions
@@ -692,44 +713,44 @@ to program with Player/Missile
 graphics.
 
 
-- PADDLE(_n_): Returns the value of the
-               PADDLE controller _n_.
+- PADDLE(_n_) / PA.(_n_) :
+  Returns the value of the PADDLE
+  controller _n_.
 
-- PMADR(_n_):  Returns the address of
-               the data for Player _n_
-               or the address of the
-               Missiles with _n_ = -1.
+- PMADR(_n_) / PM.(_n_) :
+  Returns the address of the data for
+  Player _n_ or the address of the
+  Missiles with _n_ = -1.
 
-- PTRIG(_n_) : Returns 0 if the PADDLE
-               controller _n_ button is
-               pressed, 1 otherwise.
+- PTRIG(_n_) / PT.(_n_) :
+  Returns 0 if the PADDLE controller
+  _n_ button is pressed, 1 otherwise.
 
-- STICK(_n_) : Returns the JOYSTICK
-               controller _n_ position.
-               STICK(_n_) values are:
-               
-               `10`  `14`  ` 6`
-               
-               `11`  `15`  ` 7`
-               
-               ` 9`  `13`  ` 5`
+- STICK(_n_) / S.(_n_) :
+  Returns the JOYSTICK controller _n_
+  position. `STICK(_n_)` values are:
 
-- STRIG(_n_) : Returns 0 if JOYSTICK
-               controller _n_ button is
-               pressed, 1 otherwise.
+      `10`  `14`  ` 6`
 
-- KEY() : Returns 0 if no key was
-          pressed, or a keycode. The
-          returned value only goes to 0
-          after reading the key in the
-          OS (via a `GET` or `POKE 764,
-          255` statement).
-          _Hint: The value returned is
-          actually the same as_
-          `(PEEK(764) EXOR 255)`.
-          The following program will
-          show the `KEY()` codes for
-          pressed keys:
+      `11`  `15`  ` 7`
+
+      ` 9`  `13`  ` 5`
+
+- STRIG(_n_) / STR.(_n_) :
+  Returns 0 if JOYSTICK controller _n_
+  button is pressed, 1 otherwise.
+
+- KEY() / K. :
+  Returns 0 if no key was pressed, or a
+  keycode. The returned value only goes
+  to 0 after reading the key in the OS
+  (via a `GET` or `POKE 764, 255`
+  statement).
+
+  _Hint: The value returned is actually
+  the same as_ `(PEEK(764) EXOR 255)`.
+  The following program will show the
+  `KEY()` codes for pressed keys:
 
       PRINT "Press keys, exit with ESC"
       REPEAT
@@ -751,53 +772,54 @@ In case of errors (such as logarithm or
 square root of negative numbers and
 overflow in the results), the functions
 will return an invalid value, and the
-ERR() function returns 3.
+`ERR()` function returns 3.
 
 
-- ATN(_n_): Arc-Tangent of _n_.
+- ATN(_n_) / AT.(_n_) :
+  Arc-Tangent of _n_.
 
-- COS(_n_): Cosine of _n_.
+- COS(_n_) / CO.(_n_) : Cosine of _n_.
 
 - EXP(_n_) : Natural exponentiation.
 
-- EXP10(_n_) : Returns ten raised to
-               _n_.
+- EXP10(_n_) / EX.(_n_) :
+  Returns ten raised to _n_.
 
-- INT(_num_) : Converts the floating
-               point number _num_ to
-               the nearest integer from
-               -32768 to 32767.
+- INT(_num_) / I.(_num_) :
+  Converts the floating point number
+  _num_ to the nearest integer from
+  -32768 to 32767.
 
 - LOG(_n_) : Natural logarithm of _n_.
 
-- LOG10(_n_): Decimal logarithm of _n_.
+- LOG10(_n_) / LO.(_n_) :
+  Decimal logarithm of _n_.
 
-- RND(): Returns a random positive
-         number strictly less than 1.
+- RND() / RN. :
+  Returns a random positive number
+  strictly less than 1.
 
-- SIN(_n_): Sine of _n_.
+- SIN(_n_) / SI.(_n_) : Sine of _n_.
 
-- SQR(_n_): Square root of _n_.
+- SQR(_n_) / SQ.(_n_) :
+  Square root of _n_.
 
 
 String Functions
 ----------------
 
-- STR$(_num_): Returns a string with a
-               printable value for
-               _num_. Can be used with
-               integers and floating
-               point. Note that this
-               function can't be used
-               at both sides of a
-               comparison, as the
-               resulting string is
-               overwritten each time it
-               is called.
+- STR$(_num_) :
+  Returns a string with a printable
+  value for _num_. Can be used with
+  integers and floating point. Note
+  that this function can't be used at
+  both sides of a comparison, as the
+  resulting string is overwritten each
+  time it is called.
 
-- CHR$(_num_): Converts _num_ to a one
-               character string with
-               the ATASCII value.
+- CHR$(_num_) :
+  Converts _num_ to a one character
+  string with the ATASCII value.
 
 
 Low level Functions
@@ -808,34 +830,32 @@ level" because they interact directly
 with the hardware. Use with care!
 
 
-- ADR(_arr_): Returns the address of
-              the first element of
-              _arr_ in memory.
-              Following elements of the
-              array occupy adjacent
-              memory locations.
+- ADR(_arr_) :
+  Returns the address of the first
+  element of _arr_ in memory.
+  Following elements of the array
+  occupy adjacent memory locations.
 
-- ADR(_str_): Returns the address of
-              the _string_ in memory.
-              The first memory location
-              contains the length of
-              the string, and following
-              locations contain the
-              string characters.
+- ADR(_str_) :
+  Returns the address of the _string_
+  in memory.  The first memory location
+  contains the length of the string,
+  and following locations contain the
+  string characters.
 
-- DPEEK(_addr_): Returns the value of
-                 memory location _addr_
-                 and _addr_+1 as a 16
-                 bit integer.
+- DPEEK(_addr_) / D.(_addr_) :
+  Returns the value of memory location
+  _addr_ and _addr_+1 as a 16 bit
+  integer.
 
-- PEEK(_address_): Returns the value of
-                   memory location at
-                   _address_.
+- PEEK(_address_) / P.(_address_) :
+  Returns the value of memory location
+  at _address_.
 
 - USR(_address_[,_num1_ ...]):
-    Low level function that calls the
-    user supplied machine code
-    subroutine at _address_.
+  Low level function that calls the
+  user supplied machine code subroutine
+  at _address_.
 
   Parameters are pushed to the CPU
   stack, with the LOW part pushed
@@ -856,8 +876,9 @@ with the hardware. Use with care!
         ? i, USR(ADR(ml),i)
       NEXT i
 
-- $(_addr_): Returns the string at
-             memory address _addr_.
+- $(_addr_) :
+  Returns the string at memory address
+  _addr_.
 
   This is the inverse of `ADR()`, and
   can be used to create arbitrary

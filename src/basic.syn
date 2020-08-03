@@ -123,25 +123,23 @@ FP_T_EXPR: floating point constant, variable or function
         "-" FP_T_EXPR emit TOK_FP_NEG
         "+" FP_T_EXPR
         # FP Functions
-        "ABS"   FP_PAR_EXPR emit TOK_FP_ABS
-        "ATN"   FP_PAR_EXPR emit TOK_FP_ATN
-        "SGN"   FP_PAR_EXPR emit TOK_FP_SGN
-        "EXP10" FP_PAR_EXPR emit TOK_FP_EXP10
-        "EXP"   FP_PAR_EXPR emit TOK_FP_EXP
-        "LOG10" FP_PAR_EXPR emit TOK_FP_LOG10
-        "LOG"   FP_PAR_EXPR emit TOK_FP_LOG
-        "SQR"   FP_PAR_EXPR emit TOK_FP_SQRT
-        "SIN"   FP_PAR_EXPR emit TOK_FP_SIN
-        "COS"   FP_PAR_EXPR emit TOK_FP_COS
-        "VAL"   STR_PAR_EXPR emit TOK_FP_VAL
-        "RND()" emit TOK_FP_RND
-        FP_PAR_EXPR
+        "ABs"   FP_T_EXPR emit TOK_FP_ABS
+        "ATn"   FP_T_EXPR emit TOK_FP_ATN
+        "SGn"   FP_T_EXPR emit TOK_FP_SGN
+        "EXp10" FP_T_EXPR emit TOK_FP_EXP10
+        "EXP"   FP_T_EXPR emit TOK_FP_EXP
+        "LOg10" FP_T_EXPR emit TOK_FP_LOG10
+        "LOG"   FP_T_EXPR emit TOK_FP_LOG
+        "SQr"   FP_T_EXPR emit TOK_FP_SQRT
+        "SIn"   FP_T_EXPR emit TOK_FP_SIN
+        "COs"   FP_T_EXPR emit TOK_FP_COS
+        "Val"   STR_PAR_EXPR emit TOK_FP_VAL
+        "RNd()" emit TOK_FP_RND
+        "(" FP_EXPR ")"
         ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%" emit TOK_FP_LOAD
         INT_EXPR emit TOK_INT_FP
 
-FP_PAR_EXPR: left parenthesis
-        "(" FP_EXPR ")"
 #@endif FASTBASIC_FP
 
 # Normal expressions
@@ -194,40 +192,40 @@ T_EXPR: integer constant, variable or function
         "+" T_EXPR
         "NOT" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
-        "TIME"   emit TOK_TIME
+        "Time"   emit TOK_TIME
         # Variables as R-Values, push value into stack
         ARRAY_WORD_ADDR emit TOK_DPEEK
         ARRAY_BYTE_ADDR emit TOK_PEEK
-        emit TOK_VAR_LOAD E_VAR_WORD
         # Functions
-        "ABS"    PAR_EXPR emit TOK_ABS
-        "SGN"    PAR_EXPR emit TOK_SGN
-        "PEEK"   PAR_EXPR emit TOK_PEEK
-        "PADDLE" emit { TOK_NUM, &PADDL0, TOK_PUSH_BYTE, 7 } RD_PORT
-        "PTRIG"  emit { TOK_NUM, &PTRIG0, TOK_PUSH_BYTE, 7 } RD_PORT
-        "STICK"  emit { TOK_NUM, &STICK0, TOK_PUSH_BYTE, 3 } RD_PORT
-        "STRIG"  emit { TOK_NUM, &STRIG0, TOK_PUSH_BYTE, 3 } RD_PORT
-        "PMADR"  PAR_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, \
+        "ABs"    T_EXPR emit TOK_ABS
+        "SGn"    T_EXPR emit TOK_SGN
+        "Peek"   T_EXPR emit TOK_PEEK
+        "PAddle" emit { TOK_NUM, &PADDL0, TOK_PUSH_BYTE, 7 } RD_PORT
+        "PTrig"  emit { TOK_NUM, &PTRIG0, TOK_PUSH_BYTE, 7 } RD_PORT
+        "Stick"  emit { TOK_NUM, &STICK0, TOK_PUSH_BYTE, 3 } RD_PORT
+        "STRig"  emit { TOK_NUM, &STRIG0, TOK_PUSH_BYTE, 3 } RD_PORT
+        "PMadr"  T_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, \
                                  TOK_PEEK, TOK_USHL, TOK_MUL, TOK_PUSH_NUM, &PMGBASE, \
                                  TOK_PEEK, TOK_SHL8, TOK_ADD }
 #@if FASTBASIC_FP
-        "INT"    FP_PAR_EXPR emit TOK_FP_INT
+        "Int"    FP_T_EXPR emit TOK_FP_INT
 #@endif FASTBASIC_FP
-        "RAND"   PAR_EXPR emit TOK_RAND
-        "DPEEK"  PAR_EXPR emit TOK_DPEEK
-        "FRE()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
-        "ERR()"  emit { TOK_BYTE_PEEK, IOERROR }
+        "Rand"   T_EXPR emit TOK_RAND
+        "Dpeek"  T_EXPR emit TOK_DPEEK
+        "Fre()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
+        "Err()"  emit { TOK_BYTE_PEEK, IOERROR }
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
-        "LEN"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
-        "VAL"    STR_PAR_EXPR emit TOK_VAL
-        "ASC"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
-        "KEY()"  emit { TOK_NUM, &CH, TOK_PEEK, TOK_PUSH_BYTE, 255, TOK_BIT_EXOR }
+        "Len"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
+        "Val"    STR_PAR_EXPR emit TOK_VAL
+        "ASc"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
+        "Key()"  emit { TOK_NUM, &CH, TOK_PEEK, TOK_PUSH_BYTE, 255, TOK_BIT_EXOR }
+        emit TOK_VAR_LOAD E_VAR_WORD
         PAR_EXPR
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
 RD_PORT:
-        emit TOK_PUSH PAR_EXPR emit { TOK_BIT_AND, TOK_ADD, TOK_PEEK }
+        emit TOK_PUSH T_EXPR emit { TOK_BIT_AND, TOK_ADD, TOK_PEEK }
 
 PAR_EXPR: left parenthesis
         "(" EXPR ")"
@@ -338,12 +336,12 @@ STR_EXPR_BASE:
         # Either, a constant string
         "\"" emit TOK_CSTRING E_CONST_STRING
         # Or a string function
-        "CHR$" PAR_EXPR emit TOK_CHR
-        "STR$" PAR_EXPR emit TOK_INT_STR
+        "CHR$" T_EXPR emit TOK_CHR
+        "STR$" T_EXPR emit TOK_INT_STR
         # Convert pointer to string!
         "$" PAR_EXPR
 #@if FASTBASIC_FP
-        "STR$" FP_PAR_EXPR emit TOK_FP_STR
+        "STR$" FP_T_EXPR emit TOK_FP_STR
 #@endif FASTBASIC_FP
         # Or a string variable
         emit { TOK_VAR_LOAD, VT_STRING } E_VAR_SEARCH "$"
