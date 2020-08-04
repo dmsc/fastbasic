@@ -196,7 +196,13 @@ T_EXPR: integer constant, variable or function
         # Variables as R-Values, push value into stack
         ARRAY_WORD_ADDR emit TOK_DPEEK
         ARRAY_BYTE_ADDR emit TOK_PEEK
-        # Functions
+        # Functions without parameters
+        "Fre()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
+        "Err()"  emit { TOK_BYTE_PEEK, IOERROR }
+        "Key()"  emit { TOK_NUM, &CH, TOK_PEEK, TOK_PUSH_BYTE, 255, TOK_BIT_EXOR }
+        # Variables
+        emit TOK_VAR_LOAD E_VAR_WORD
+        # Functions with parameters
         "ABs"    T_EXPR emit TOK_ABS
         "SGn"    T_EXPR emit TOK_SGN
         "Peek"   T_EXPR emit TOK_PEEK
@@ -212,15 +218,11 @@ T_EXPR: integer constant, variable or function
 #@endif FASTBASIC_FP
         "Rand"   T_EXPR emit TOK_RAND
         "Dpeek"  T_EXPR emit TOK_DPEEK
-        "Fre()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
-        "Err()"  emit { TOK_BYTE_PEEK, IOERROR }
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
         "Len"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
         "Val"    STR_PAR_EXPR emit TOK_VAL
         "ASc"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
-        "Key()"  emit { TOK_NUM, &CH, TOK_PEEK, TOK_PUSH_BYTE, 255, TOK_BIT_EXOR }
-        emit TOK_VAR_LOAD E_VAR_WORD
         PAR_EXPR
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
