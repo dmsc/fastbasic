@@ -669,7 +669,7 @@ and the abbreviated syntax.
   Can be used with integers and
   floating point.
 
-- SGN(_num_) / SGn(_num_) ;
+- SGN(_num_) / SG.(_num_) ;
   Returns the sign of _num_, this is 1
   if positive, -1 if negative or 0 if
   _num_ is 0. Can be used with integers
