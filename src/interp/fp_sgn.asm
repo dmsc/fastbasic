@@ -39,7 +39,7 @@
         ldy     #$80
         sty     FR0
         ror     FR0
-        ldy     #$10
+        ldy     #$01
         sty     FR0+1
         ldy     #0
         sty     FR0+2

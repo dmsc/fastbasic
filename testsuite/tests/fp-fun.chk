@@ -1,0 +1,36 @@
+Name: Test floating-point functions
+Test: run-fp
+Output:
+Start
+1
+-1
+0
+1
+0
+1
+10
+1.1
+1.1
+0
+0
+10
+4
+9
+VAL
+1.1
+1E+10
+-1E-10
+RAD
+0
+0
+0
+0
+0
+0
+0
+0
+1
+DEG
+0
+0
+0
