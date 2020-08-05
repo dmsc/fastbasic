@@ -56,22 +56,15 @@ var_namelen=    len
         ; Checks if a character is valid for a variable name
 .proc   check_char
         cmp     #'0'
-        bcc     bad_char
+        bcc     ret_sec
         cmp     #'9'+1
         bcc     exit
 first:
         cmp     #'_'
-        beq     char_ok
-        cmp     #'A'
-        bcc     bad_char
-        cmp     #'Z'+1
+        beq     ret_clc
+        sbc     #'A'-1
+        cmp     #26
 exit:
-        rts
-bad_char:
-        sec
-        rts
-char_ok:
-        clc
         rts
 .endproc
 
@@ -117,6 +110,7 @@ cmp_loop:
 
 found:
         lda     (var), y
+::ret_clc:
         clc
         rts
 
@@ -153,7 +147,8 @@ search_start:
         cpx     #0
         bne     search_loop
 
-not_found:
+        ; Variable name not found, exit with C=1
+::ret_sec:
         sec
         rts
 .endproc
