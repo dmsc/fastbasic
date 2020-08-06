@@ -183,6 +183,10 @@ next:
         jsr     check_char
         bcc     next
 
+        ; Check if there is a dot after the name, and reject
+        cmp     #'.'
+        beq     exit_2
+
         .byte   $2C     ; Skips two PLA
 exit_2:
         pla

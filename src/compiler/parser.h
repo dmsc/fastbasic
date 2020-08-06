@@ -238,6 +238,8 @@ class parse {
                         ret += c;
                         pos ++;
                     }
+                    else if( c == '.' )
+                        return false;
                     else
                         break;
                 }
