@@ -680,13 +680,9 @@ PARSE_LINE_ASSIGN:
         VAR_FP_LVALUE_SADDR EQUAL FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
-SKIP_COMMENT:
-        "'" E_REM
-        E_EOL
-
 PARSE_START: statement or variable assignment
-        PARSE_LINE_COMMAND SKIP_COMMENT
-        SKIP_COMMENT
-        PARSE_LINE_ASSIGN SKIP_COMMENT
+        E_EOL
+        PARSE_LINE_COMMAND E_EOL
+        PARSE_LINE_ASSIGN E_EOL
 
 # vi:syntax=perl

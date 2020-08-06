@@ -125,13 +125,6 @@ bool SMB_E_NUMBER_BYTE(parse &s)
     return true;
 }
 
-bool SMB_E_EOL(parse &s)
-{
-    s.debug("E_EOL");
-    s.skipws();
-    return( s.eos() || s.peek('\'') || s.peek(':') || s.eol() );
-}
-
 bool SMB_E_CONST_STRING(parse &s)
 {
     s.debug("E_CONST_STRING");
@@ -156,6 +149,15 @@ bool SMB_E_REM(parse &s)
     while( !s.eos() && !s.expect('\n') && !s.expect('\x9b') )
         s.pos++;
     return true;
+}
+
+bool SMB_E_EOL(parse &s)
+{
+    s.debug("E_EOL");
+    s.skipws();
+    if( s.expect('\'') )
+        return SMB_E_REM(s);
+    return( s.eos() || s.peek(':') || s.eol() );
 }
 
 bool SMB_E_PUSH_VAR(parse &s)

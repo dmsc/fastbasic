@@ -173,7 +173,7 @@ ok:     clc
         cmp     #$9b ; Atari EOL
         beq     E_REM::ok
         cmp     #$27 ; "'" starts a comment
-        beq     E_REM::ok
+        beq     E_REM::loop
         cmp     #':' ; ':' separates commands
         beq     E_REM::ok
 xit:    sec
