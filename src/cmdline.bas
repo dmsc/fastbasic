@@ -39,7 +39,8 @@ NewPtr = 0
 ' Shows file error
 '
 PROC FileError
-  ? "FILE ERROR: "; err()
+  i = err()
+  ? "FILE ERROR: "; i
   put $FD
   ? "Press any key to exit."
   close #1
