@@ -664,7 +664,7 @@ and the abbreviated syntax.
   per second in PAL systems. Use
   `TIMER` statement to reset to 0.
 
-- ABS(_num_) / AB.(_num_) :
+- ABS(_num_) / A.(_num_) :
   Returns the absolute value of _num_.
   Can be used with integers and
   floating point.

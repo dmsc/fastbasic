@@ -123,7 +123,7 @@ FP_T_EXPR: floating point constant, variable or function
         "-" FP_T_EXPR emit TOK_FP_NEG
         "+" FP_T_EXPR
         # FP Functions
-        "ABs"   FP_T_EXPR emit TOK_FP_ABS
+        "Abs"   FP_T_EXPR emit TOK_FP_ABS
         "ATn"   FP_T_EXPR emit TOK_FP_ATN
         "SGn"   FP_T_EXPR emit TOK_FP_SGN
         "EXp10" FP_T_EXPR emit TOK_FP_EXP10
@@ -203,7 +203,7 @@ T_EXPR: integer constant, variable or function
         # Variables
         emit TOK_VAR_LOAD E_VAR_WORD
         # Functions with parameters
-        "ABs"    T_EXPR emit TOK_ABS
+        "Abs"    T_EXPR emit TOK_ABS
         "SGn"    T_EXPR emit TOK_SGN
         "Peek"   T_EXPR emit TOK_PEEK
         "PAddle" emit { TOK_NUM, &PADDL0, TOK_PUSH_BYTE, 7 } RD_PORT

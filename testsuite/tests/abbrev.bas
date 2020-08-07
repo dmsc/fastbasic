@@ -9,7 +9,7 @@ E = 10
 ? E.
 D = 3
 ? D.(1536) + D. 1536
-A = 1
-? ABSA
+A = -1
+? ABSA, A.A
 ABSA = 10
 ? ABSA
