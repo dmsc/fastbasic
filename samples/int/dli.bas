@@ -24,7 +24,7 @@ DATA Colors() BYTE = $24,$46,$68
 ' black in the next line
 DLI SET d2 = Colors INTO $D01A,
 DLI        = $8A INTO $D018,
-DLI        = $00 NEXT INTO $D018
+DLI        = $00 WSYNC INTO $D018
 ' Setups screen
 GRAPHICS 0
 ' Adds DLI at three lines:

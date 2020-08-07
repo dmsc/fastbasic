@@ -1757,7 +1757,7 @@ statement:
 
   Each operation is of the form:
   _data_ `INTO` _address_ or
-  _data_ `NEXT` `INTO` _address_.
+  _data_ `WSYNC` `INTO` _address_.
 
   _data_ is one constant byte or the
   name of a `DATA BYTE` array, and
@@ -1770,18 +1770,18 @@ statement:
   screen, the second element at the
   second active line, etc.
 
-  The `NEXT` word advances one line in
+  The `WSYNC` word advances one line in
   the display area (this is done by
   writing to the `WSYNC` ANTIC
   register), so the value is set in the
   next screen line. You can put the
-  `NEXT` word multiple times to advance
-  more than one line. This allows one
-  DLI to modify multiple lines at the
-  screen.
+  `WSYNC` word multiple times to
+  advance more than one line. This
+  allows one DLI to modify multiple
+  lines at the screen.
 
   `INTO` can be abbreviated to `I.` and
-  `NEXT` to `N.`.
+  `WSYNC` to `W.`.
 
   You can specify any number of
   operations, but as each one takes some
@@ -1865,7 +1865,7 @@ statement:
       ' the black in to the next line.
       DLI SET d2 = Colors INTO $D01A,
       DLI        = $8A INTO $D018,
-      DLI        = $00 NEXT INTO $D018
+      DLI        = $00 WSYNC INTO $D018
       ' Setups screen
       GRAPHICS 0
       ' Adds DLI at three lines:
