@@ -280,17 +280,13 @@ nloop:
         cmp     #'"'
         beq     eos
         cmp     #$9b
-        beq     err
+        beq     xrts   ; Exit with error, C = 1 on EQ.
         ; Store
 store:  inx
         inc     bpos
         jsr     parser_emit_byte
-        bne     nloop
-err:    ; Restore opos and exit
-        lda     tmp1
-        sta     opos
-        sec
-        rts
+        bne     nloop  ; Jump always
+
 eos:    iny
         lda     (bptr), y
         inc     bpos
