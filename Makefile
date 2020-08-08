@@ -25,7 +25,8 @@ OPTFLAGS=-O2
 CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
 CFLAGS=-Wall $(OPTFLAGS)
 CFLAGS_CC65=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
-SYNTFLAGS=
+SYNTFLAGS_CPP=-DEXTENDED
+SYNTFLAGS_ASM=
 SYNTFP=-DFASTBASIC_FP
 ASMFLAGS=-I cc65/asminc
 FPASM=-D FASTBASIC_FP -I build/gen/fp $(ASMFLAGS)
@@ -628,19 +629,19 @@ endif
 
 # Generator for syntax file - 6502 version - FLOAT
 build/gen/fp/%.asm: src/%.syn $(ASYNT) | build/gen/fp
-	$(ASYNT) $(SYNTFLAGS) $(SYNTFP) $< -o $@
+	$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $< -o $@
 
 # Generator for syntax file - 6502 version - INTEGER
 build/gen/int/%.asm: src/%.syn $(ASYNT) | build/gen/int
-	$(ASYNT) $(SYNTFLAGS) $< -o $@
+	$(ASYNT) $(SYNTFLAGS_ASM) $< -o $@
 
 # Generator for syntax file - C++ version - FLOAT
 build/gen/fp/%.cc build/gen/fp/%.h: src/%.syn $(CSYNT) | build/gen/fp
-	$(CSYNT) $(SYNTFLAGS) $(SYNTFP) $< -o build/gen/fp/$*.cc
+	$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $< -o build/gen/fp/$*.cc
 
 # Generator for syntax file - C++ version - INTEGER
 build/gen/int/%.cc build/gen/int/%.h: src/%.syn $(CSYNT) | build/gen/int
-	$(CSYNT) $(SYNTFLAGS) $< -o build/gen/int/$*.cc
+	$(CSYNT) $(SYNTFLAGS_CPP) $< -o build/gen/int/$*.cc
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
