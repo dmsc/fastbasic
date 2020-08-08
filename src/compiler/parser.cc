@@ -19,6 +19,7 @@
 // parser.cc: C++ parser
 
 #include "parser.h"
+#include "ifile.h"
 #include "vartype.h"
 
 #include <algorithm>
@@ -125,21 +126,27 @@ bool SMB_E_NUMBER_BYTE(parse &s)
     return true;
 }
 
-bool SMB_E_CONST_STRING(parse &s)
+static bool get_const_string(parse &s, std::string &str)
 {
-    s.debug("E_CONST_STRING");
-    std::string str;
     while( !s.eos() )
     {
         if( s.expect('"') && !s.peek('"') )
         {
-            s.emit_str(str);
             return true;
         }
         char c = s.str[s.pos];
         str += c;
         s.pos++;
     }
+    return false;
+}
+
+bool SMB_E_CONST_STRING(parse &s)
+{
+    s.debug("E_CONST_STRING");
+    std::string str;
+    if( get_const_string(s, str) )
+        return s.emit_str(str);
     return false;
 }
 
@@ -508,3 +515,31 @@ bool SMB_E_LABEL_SET_TYPE(parse &s)
     return true;
 }
 
+// Reads a DATA array from a file
+bool SMB_E_DATA_FILE(parse &s)
+{
+    s.debug("E_DATA_FILE");
+    s.skipws();
+    // Get file name until the '"'
+    std::string fname;
+    if( !get_const_string(s, fname) )
+        return false;
+
+    auto f = open_include_file(s.in_fname, fname);
+    if( !f )
+    {
+        std::cerr << s.in_fname << ":" << s.linenum << ":" << s.pos
+                  << ": can't open data file '" << fname << "'";
+        return false;
+    }
+
+    // Read the file to a buffer of max 64k
+    for(unsigned i=0; i<65536; i++)
+    {
+        int c = f->get();
+        if( c < 0 || c > 255 )
+            break;
+        s.emit_byte( c );
+    }
+    return true;
+}

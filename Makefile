@@ -280,6 +280,7 @@ COMPILER_SRC=\
 	atarifp.cc\
 	basic.cc\
 	codestat.cc\
+	ifile.cc\
 	looptype.cc\
 	main.cc\
 	parser.cc\

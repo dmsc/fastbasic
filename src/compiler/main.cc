@@ -164,6 +164,7 @@ int main(int argc, char **argv)
         return show_error("missing output file name");
 
     parse s;
+    s.set_input_file(iname);
     int ln = 1;
     while(1)
     {

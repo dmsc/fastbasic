@@ -1520,6 +1520,7 @@ General Statements
   Note that the array can be modified
   afterwards like a normal array.
 
+
   *Advanced Usage*
 
   Byte DATA arrays can be used to
@@ -1543,6 +1544,27 @@ General Statements
       ? $(X), $(X+6)
       DATA ad() B. = $AD,str,$A2,0,$60
       ? USR(ADR(ad)), str(0)
+
+
+  *Loading data from a file*
+
+  The cross-compiler also supports
+  loading data from a file directly into
+  the program, using the `BYTEFILE`
+  (abbreviated `BYTEF.`) and `WORDFILE`
+  (abbreviated `WORDF.` or simply `F.`)
+  types and a file name enclosed in
+  double quotes.
+
+  Example:
+
+      DATA img() bytefile "img.raw"
+      DATA pos() wordfile "pos.bin"
+
+  The compiler will search the file in
+  the same folder than the current
+  basic source.
+
 
 **Decrements variable by 1**  
 **DEC _var_ / DE.**

@@ -45,6 +45,7 @@ class parse {
                 std::string label;
                 int linenum;
         };
+        std::string in_fname;
         int sto_var;
         int lvl, maxlvl;
         std::string str;
@@ -124,6 +125,11 @@ class parse {
                     return "unclosed " + get_loop_name(type) + " at line " + std::to_string(j.linenum);
             }
             return "EXIT without loop";
+        }
+
+        void set_input_file(std::string fn)
+        {
+            in_fname = fn;
         }
 
         void new_line(std::string l, int ln)
