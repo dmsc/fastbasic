@@ -63,10 +63,10 @@ present you with a little help text:
     ' -----------
     '  Ctrl-A : Move to begining of line
     '  Ctrl-E : Move to end of line
-    '  Ctrl-U / Ctrl-V : Page up / down
+    '  Ctrl-U / Ctrl-I : Page up / down
     '  Ctrl-Z : Undo (only current line)
-    '  Ctrl-M : Set Mark to current line
-    '  Ctrl-C : Copy from Mark to here
+    '  Ctrl-C : Set Mark to current line
+    '  Ctrl-V : Paste from Mark to here
     '  Ctrl-Q : Exit to DOS
     '  Ctrl-S : Save file
     '  Ctrl-L : Load file
@@ -198,7 +198,7 @@ above.
   Moves the cursor ro the beggining or
   the end of the line respectively.
 
-- `CONTROL-U` and `CONTROL-V`
+- `CONTROL-U` and `CONTROL-I`
   Moves the cursor 19 lines up or down
   respectively.
 
@@ -211,18 +211,18 @@ above.
   clears the undo buffer, so you can't
   undo more than one line.
 
-- `CONTROL-M`
+- `CONTROL-C`
   Sets the current line as the source
   for the copy operations.
 
-- `CONTROL-C`
+- `CONTROL-V`
   Copy one line from the source marked
-  with the `CONTROL-M` to the current
+  with the `CONTROL-C` to the current
   cursor position.
   After the copy, the source line is
-  advanced, so by pressing `CONTROL-C`
-  multiple times you can copy many
-  lines.
+  advanced, so by pressing `CONTROL-V`
+  multiple times you can copy multiple
+  consecutive lines.
 
 - `CONTROL-L` and `CONTROL-S`
   Loads or Saves the file being edited,

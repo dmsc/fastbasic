@@ -923,8 +923,8 @@ PROC ProcessKeys
   elif key = $15
     exec CursorPageUp
   '
-  '--------- Control-V (page down)-
-  elif key = $16
+  '--------- Control-I (page down)-
+  elif key = $09
     exec CursorPageDown
   '
   '--------- Down -----------------
@@ -1006,11 +1006,11 @@ PROC ProcessKeys
   elif key = $1A
     exec UndoEditLine
   '
-  '--------- Control-M (set mark) -----
-  elif key = $0D
-    exec SetMarkPosition
-  '--------- Control-C (copy from mark) -----
+  '--------- Control-C (set mark) -----
   elif key = $03
+    exec SetMarkPosition
+  '--------- Control-V (copy from mark) -----
+  elif key = $16
     exec CopyFromMark
   '
   '--------- Escape ---------------

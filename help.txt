@@ -5,10 +5,10 @@
 ' -----------
 '   Ctrl-A : Move to begining of line
 '   Ctrl-E : Move to end of line
-'   Ctrl-U / Ctrl-V : Page up / down
+'   Ctrl-U / Ctrl-I : Page up / down
 '   Ctrl-Z : Undo (only current line)
-'   Ctrl-M : Set Mark to current line
-'   Ctrl-C : Copy from Mark to here
+'   Ctrl-C : Set Mark to current line
+'   Ctrl-V : Paste from Mark to here
 '   Ctrl-Q : Exit to DOS
 '   Ctrl-S : Save file
 '   Ctrl-L : Load file
