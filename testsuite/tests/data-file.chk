@@ -1,0 +1,6 @@
+Name: Test DATA FILE inclusion
+Test: run-int
+Output:
+Start
+39        32
+8231
