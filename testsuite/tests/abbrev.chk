@@ -1,5 +1,9 @@
 Name: Test for function abbreviations
-Test: run
+Test: run-fp
+Input:
+HELLO
+NEXT LINE
+.
 Output:
 Start
 2468
@@ -10,3 +14,68 @@ Start
 2468
 1         1
 10
+3
+12547
+ABLLO
+SCREEN: set graphics 0
+SCREEN: plot 4,5  color 6
+SCREEN: draw to 7,8  color 6
+SCREEN: fill to 10,20  color 6, fill color 8
+SCREEN: draw to 15,30  color 6
+SCREEN: set graphics 0 with text window
+SCREEN: locate 1,2
+
+-2
+2
+1
+X
+2
+4
+P1
+N
+?EXT LINE
+BBBBB
+1
+R
+W2
+W1
+A0
+FP-FUN
+2
+1
+98
+1.1
+0
+1
+10
+1
+2
+1
+0.1
+1
+INT-FUN
+0
+1
+1
+128
+10
+1
+123
+5
+15
+3
+96
+0
+22
+22
+3
+123
+49
+OPER
+100
+110
+100
+110
+010
+2653
+0
