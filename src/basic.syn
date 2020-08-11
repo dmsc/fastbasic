@@ -224,6 +224,7 @@ T_EXPR: integer constant, variable or function
         "Dpeek"  T_EXPR emit TOK_DPEEK
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
+        "&"      ADR_EXPR
         "Len"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
         "Val"    STR_PAR_EXPR emit TOK_VAL
         "ASc"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.

@@ -830,13 +830,15 @@ level" because they interact directly
 with the hardware. Use with care!
 
 
-- ADR(_arr_) :
+- ADR(_arr_) / &_arr_ :
   Returns the address of the first
   element of _arr_ in memory.
   Following elements of the array
   occupy adjacent memory locations.
+  Instead of `ADR(X)` you can simply
+  type `&X`.
 
-- ADR(_str_) :
+- ADR(_str_) / &_str_ :
   Returns the address of the _string_
   in memory.  The first memory location
   contains the length of the string,
