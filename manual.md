@@ -405,6 +405,9 @@ If there is a need to alter the
 precedence, you can put the expression
 between parenthesis.
 
+Note that `MOD` and `EXOR` can be
+abbreviated `M.` and `E.` respectively.
+
 When using floating point expressions,
 the operators are:
 
@@ -476,6 +479,9 @@ order of precedence, are:
   is valid as the second operand is
   converted to floating point before
   comparison.
+
+The words `OR`, `AND` and `NOT` can be
+abbreviated `O.`, `A.` and `N.`
 
 
 Arrays
@@ -1042,7 +1048,7 @@ Control Statements
 
 
 **Loop Over Values Of A Variable**  
-**FOR _var_=_value_ TO _end_ [STEP _step_] / F. TO S.**  
+**FOR _var_=_value_ TO _end_ [STEP _step_] / F. T. S.**  
 **NEXT _var_ / N.**
 
   FOR loop allows performing a loop a

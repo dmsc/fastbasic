@@ -165,13 +165,13 @@ INT_EXPR_MORE: '+', '-'
 M_EXPR_MORE: '*', '/', 'MOD'
         "*"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MUL M_EXPR_MORE
         "/"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_DIV M_EXPR_MORE
-        "MOD" PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
+        "Mod" PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
         pass
 
 BIT_EXPR_MORE: '&', '!', 'EXOR'
         "&"    PUSH_T_EXPR emit TOK_BIT_AND  BIT_EXPR_MORE
         "!"    PUSH_T_EXPR emit TOK_BIT_OR   BIT_EXPR_MORE
-        "EXOR" PUSH_T_EXPR emit TOK_BIT_EXOR BIT_EXPR_MORE
+        "Exor" PUSH_T_EXPR emit TOK_BIT_EXOR BIT_EXPR_MORE
         pass
 
 ADR_EXPR: string or variable
@@ -194,7 +194,7 @@ T_EXPR: integer constant, variable or function
         emit TOK_NUM E_NUMBER_WORD
         "-" T_EXPR emit TOK_NEG
         "+" T_EXPR
-        "NOT" NOT_EXPR emit TOK_L_NOT
+        "Not" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
         "Time"   emit TOK_TIME
         # Variables as R-Values, push value into stack
@@ -267,21 +267,21 @@ FORCE_BOOL_EXPR:
         NOT_EXPR AND_EXPR_MORE OR_EXPR_MORE
 
 OR_EXPR_RIGHT: 'OR'
-        "OR" emit TOK_PUSH NOT_EXPR AND_EXPR_MORE emit TOK_L_OR OR_EXPR_MORE
+        "Or" emit TOK_PUSH NOT_EXPR AND_EXPR_MORE emit TOK_L_OR OR_EXPR_MORE
 
 OR_EXPR_MORE:
         OR_EXPR_RIGHT
         pass
 
 AND_EXPR_RIGHT: 'AND'
-        "AND" emit TOK_PUSH NOT_EXPR emit TOK_L_AND AND_EXPR_MORE
+        "And" emit TOK_PUSH NOT_EXPR emit TOK_L_AND AND_EXPR_MORE
 
 AND_EXPR_MORE:
         AND_EXPR_RIGHT
         pass
 
 NOT_EXPR:
-        "NOT" NOT_EXPR emit TOK_L_NOT
+        "Not" NOT_EXPR emit TOK_L_NOT
         INT_EXPR COMP_OR_BOOL
 #@if FASTBASIC_FP
         FP_EXPR COMP_FP_RIGHT
@@ -638,7 +638,7 @@ PARSE_LINE_COMMAND:
         "WEnd" emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT THEN_OR_MULTILINE
         "For" VAR_WORD_LVALUE_SADDR EQUAL emit TOK_PUSH EXPR emit TOK_DPOKE \
-              "TO" EXPR STEP_OPTIONAL \
+              "To" EXPR STEP_OPTIONAL \
               emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
         "Else" emit TOK_JUMP emit LT_ELSE E_ELSEIF
