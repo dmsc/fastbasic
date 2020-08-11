@@ -641,9 +641,9 @@ PARSE_LINE_COMMAND:
               "To" EXPR STEP_OPTIONAL \
               emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
-        "Else" emit TOK_JUMP emit LT_ELSE E_ELSEIF
+        "ELse" emit TOK_JUMP emit LT_ELSE E_ELSEIF
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
-        "ENDif" E_POP_IF
+        "Endif" E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
         "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
@@ -673,8 +673,8 @@ PARSE_LINE_COMMAND:
         "DEG" emit { TOK_1, TOK_BYTE_POKE, DEGFLAG }
         "RAd" emit { TOK_0, TOK_BYTE_POKE, DEGFLAG }
 #@endif FASTBASIC_FP
-        "PMgraphics" EXPR emit TOK_PMGRAPHICS
-        "PMHpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } "," EXPR emit TOK_POKE
+        "PMGraphics" EXPR emit TOK_PMGRAPHICS
+        "PMhpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } "," EXPR emit TOK_POKE
         "Timer" emit { TOK_0, TOK_BYTE_POKE, 20, TOK_0, TOK_BYTE_POKE, 19 }
         "DLi" DLI_COMMAND
         "CLR" emit { TOK_NUM, &CLEAR_DATA, TOK_USR_ADDR, TOK_USR_CALL }

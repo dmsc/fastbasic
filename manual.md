@@ -1107,8 +1107,8 @@ Control Statements
 **IF _condition_ THEN _statement_ / I. T.**  
 **IF _condition_**  
 **ELIF _condition_ / ELI.**  
-**ELSE / E.**  
-**ENDIF / END.**
+**ELSE / EL.**  
+**ENDIF / E.**
 
   The first form (with THEN) executes
   one _statement_ if the condition is
@@ -1276,7 +1276,7 @@ Graphic and Sound Statements
   `COLOR` number.
 
 **Player/Missile Graphics Mode**  
-**PMGRAPHICS _num_ / PM.**
+**PMGRAPHICS _num_ / PMG.**
 
   Set up Atari Player / Missile
   graphics.  A value of 0 disables all
@@ -1294,7 +1294,7 @@ Graphic and Sound Statements
   `PMADR()` function.
 
 **Player/Missile Horizontal Move**  
-**PMHPOS _num_,_pos_ / PMH.**
+**PMHPOS _num_,_pos_ / PM.**
 
   Set the horizontal position register
   for the player or missile _num_ to
