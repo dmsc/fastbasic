@@ -33,29 +33,31 @@
         .segment        "RUNTIME"
 
 .proc   EXE_MUL  ; AX = (SP+) * AX
-        sta     tmp1
-        stx     tmp1+1
-        lda     stack_l, y
+        ; Store A
         sta     tmp3
-        ldx     stack_h, y
-        stx     tmp3+1
 
-        ; Multiply  "tmp1 * tmp3"
+        ; Get first bit into carry
+        lda     stack_h, y
+        lsr
+        sta     tmp1+1
+        lda     stack_l, y
+        ror
+        sta     tmp1
+
         lda     #0
         sta     tmp2+1
         ldy     #16             ; Number of bits
 
-        lsr     tmp1+1
-        ror     tmp1            ; Get first bit into carry
 @L0:    bcc     @L1
 
         clc
         adc     tmp3
-        tax
-        lda     tmp3+1
+        sta     tmp2
+
+        txa
         adc     tmp2+1
         sta     tmp2+1
-        txa
+        lda     tmp2
 
 @L1:    ror     tmp2+1
         ror
