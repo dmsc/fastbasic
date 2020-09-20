@@ -25,13 +25,11 @@
 class opstat
 {
     private:
-        std::vector<codew> &code;
         std::map<enum tokens, int> c1;
         std::map<std::pair<enum tokens, enum tokens>, int> c2;
         std::map<std::pair<enum tokens, int>, int> c3;
     public:
-        opstat(std::vector<codew> &code):
-            code(code)
+        opstat(const std::vector<codew> &code)
         {
             enum tokens old = TOK_LAST_TOKEN;
             for(auto &c: code)
