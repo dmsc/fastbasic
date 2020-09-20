@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string>
 
-class parseState;
+struct parseState;
 class sentry
 {
     private:
