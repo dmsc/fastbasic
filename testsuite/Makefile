@@ -64,7 +64,7 @@ runtests: $(TESTS_STAMP) fbtest
 	@touch $@
 
 clean:
-	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST) $(TEST_STAMP)
+	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST) $(TESTS_STAMP)
 
 distclean: clean
 	-rmdir obj
