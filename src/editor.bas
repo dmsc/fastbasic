@@ -418,40 +418,51 @@ PROC DrawLinePtr
   poke @CRSINH, 1
 
   pos. 0, y+1
-  ptr = ptr + hdraw
-  max = peek(@@RMARGN) - 1
+  max = peek(@@RMARGN)
   if lLen < 0
+    dec max
     put $FD
     exec PutBlanks
-    poke @@OLDCHR, $00
   else
     if hDraw
+      ptr = ptr + hDraw
       lLen = lLen - hDraw
       put $9E
-    else
-      inc max
+      dec max
     endif
 
     if lLen > max
       bput #0, ptr, max
       poke @@OLDCHR, $DF
+      exec RestoreCursorFlags
     else
       if lLen <> 0
         bput #0, ptr, lLen
       endif
       max = max - lLen
       exec PutBlanks
-      poke @@OLDCHR, $00
     endif
   endif
 
-  poke @DSPFLG, 0
-  poke @CRSINH, 0
-
 ENDPROC
 
+'-------------------------------------
+' Draws the extra blanks at the right
+' of the current line.
+'
 proc PutBlanks
   while max : put 32 : dec max : wend
+  poke @@OLDCHR, $00
+  exec RestoreCursorFlags
+endproc
+
+'-------------------------------------
+' Draws the extra blanks at the right
+' of the current line.
+'
+proc RestoreCursorFlags
+  poke @DSPFLG, 0
+  poke @CRSINH, 0
 endproc
 
 
