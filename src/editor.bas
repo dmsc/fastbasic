@@ -726,24 +726,32 @@ endproc
 ' Deletes current line
 '
 PROC DeleteLine
-  ' Mark file as changed
-  fileSaved = 0
   ' Go to beginning of line
   column = 0
-  ' Delete line from screen
-  ' poke @CRSINH, 1 ' Not needed, as cursor is already in this line
-  pos. 0, scrLine+1
-  put 156
   ' Delete from entire file!
   ptr = ScrAdr(scrLine)
   nptr = ScrAdr(scrLine+1)
   move nptr, ptr, MemEnd - nptr
   MemEnd = MemEnd - nptr + ptr
-  exec CheckEmptyBuf
   ' Scroll screen if we are in the first line
   if scrLine = 0 and ptr = MemEnd
     exec ScrollDown
   endif
+  exec MoveLineUp
+ENDPROC
+
+'-------------------------------------
+' Move screen up after deleting current
+' or joining two lines together
+'
+PROC MoveLineUp
+  exec CheckEmptyBuf
+  ' Mark file as changed
+  fileSaved = 0
+  ' Delete line from screen
+  ' poke @CRSINH, 1 ' Not needed, as cursor is already in this line
+  pos. 0, scrLine+1
+  put 156
   nptr = ScrAdr(scrLine)
   for y = scrLine to 22
     ptr = nptr
@@ -775,15 +783,13 @@ PROC DoDeleteKey
   if column < linLen
     exec DeleteChar
   else
-    ' Mark file as changed
-    fileSaved = 0
     exec SaveLine
     ' Manually delete the EOL
     ptr = ScrAdr(scrLine+1)
     move ptr, ptr - 1, MemEnd - ptr
     MemEnd = MemEnd - 1
     ' Redraw
-    exec CalcRedrawScreen
+    exec MoveLineUp
   endif
 ENDPROC
 
