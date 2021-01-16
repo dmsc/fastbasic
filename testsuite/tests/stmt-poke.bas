@@ -36,3 +36,10 @@ DPOKE 80, 1234
 DPOKE 1536, 1234
 ? DPEEK(1536)
 
+' And also with variables
+I = $1234
+POKE 80, I : ? PEEK(80) : INC I
+DPOKE 80, I : ? DPEEK(80) : INC I
+POKE 1536, I : ? PEEK(1536) : INC I
+DPOKE 1536, I : ? DPEEK(1536) : INC I
+

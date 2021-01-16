@@ -618,6 +618,21 @@ class peephole
                         i--;
                         continue;
                     }
+                    //   TOK_NUM / x<256 / TOK_SADDR / TOK_VAR_LOAD / y / TOK_POKE
+                    //      -> TOK_VAR_LOAD / y / TOK_BYTE_POKE / x
+                    if( mtok(0, TOK_NUM) && mword(1) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_VAR_LOAD) && mtok(5, TOK_POKE) &&
+                        val(1) >= 0 && val(1) <= 255 )
+                    {
+                        int x = val(1);
+                        set_tok(0, TOK_VAR_LOAD);
+                        set_b(1, val(4));
+                        set_b(4, x);
+                        set_tok(3, TOK_BYTE_POKE);
+                        del(5); del(2);
+                        i--;
+                        continue;
+                    }
                     // TODO: should support complex expressions on "y"
                     //   TOK_BYTE / x / TOK_SADDR / TOK_NUM / y / TOK_POKE
                     //      -> TOK_NUM / (y&255) / TOK_BYTE_POKE / x
@@ -632,6 +647,19 @@ class peephole
                         i--;
                         continue;
                     }
+                    //   TOK_BYTE / x / TOK_SADDR / TOK_VAR_LOAD / y / TOK_POKE
+                    //      -> TOK_VAR_LOAD / y / TOK_BYTE_POKE / x
+                    if( mtok(0, TOK_BYTE) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_VAR_LOAD) && mtok(5, TOK_POKE) )
+                    {
+                        copy(4, 1, 1);
+                        set_b(1, val(5));
+                        set_tok(0, TOK_VAR_LOAD);
+                        set_tok(3, TOK_BYTE_POKE);
+                        del(6); del(5); del(2);
+                        i--;
+                        continue;
+                    }
                     //   TOK_NUM / x / TOK_SADDR / TOK_NUM / y / TOK_POKE
                     //      -> TOK_NUM / (y&255) / TOK_NUM_POKE / x
                     if( mtok(0, TOK_NUM) && mtok(2, TOK_SADDR) &&
@@ -641,6 +669,20 @@ class peephole
                         set_w(1, val(5) & 255);
                         set_tok(3, TOK_NUM_POKE);
                         del(6); del(5); del(2);
+                        i--;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_SADDR / TOK_VAR_LOAD / y / TOK_POKE
+                    //      -> TOK_VAR_LOAD / y / TOK_NUM_POKE / x
+                    if( mtok(0, TOK_NUM) && mword(1) && mtok(2, TOK_SADDR) &&
+                        mtok(3, TOK_VAR_LOAD) && mtok(5, TOK_POKE) )
+                    {
+                        int x = val(1);
+                        set_tok(0, TOK_VAR_LOAD);
+                        set_b(1, val(4));
+                        set_w(4, x);
+                        set_tok(3, TOK_NUM_POKE);
+                        del(5); del(2);
                         i--;
                         continue;
                     }
