@@ -803,10 +803,18 @@ ENDPROC
 '-------------------------------------
 ' Copies a line from the mark position
 '
-PROC CopyFromMArk
-    ' Simulate a cursor-down, so that the line is pasted
-    ' after the current one.
-    exec CursorDown
+PROC CopyFromMark
+
+    ' If we are copying to a position before the mark
+    if markPos > topLine + scrLine
+      ' we need to increment the mark position
+      inc markPos
+    endif
+
+    ' Insert a line after current one, to paste there:
+    key = 155
+    column = linLen
+    exec ReturnKey
 
     ' Search mark line address. We can't store the address of
     ' the line, as any edit could invalidate that.
@@ -818,43 +826,18 @@ PROC CopyFromMArk
       inc y
     wend
 
-    ' The source line is from PTR to NPTR, insert this
-    ' after current line, so get the length to copy
-    newPtr = nptr - ptr
-
     ' Increment the mark position by one
     inc markPos
 
-    ' But if we are copying to a position before the mark
-    if markPos > topLine + scrLine
-      ' we need to increment again,
-      inc markPos
-      ' and adjust the source pointer
-      ptr = nptr
+    ' Copy our source line to the edit buffer, simulating an edit
+    linLen = nptr - ptr - 1
+    if linLen > 255
+      linLen = 255
     endif
-
-    ' Get address of current line
-    nptr = ScrAdr(scrLine)
-
-    ' Check if we have enough space in the buffer for the new file
-    ' TODO: This check will fail if the buffer is bigger than 32kB,
-    '       because the right side will be negative.
-    if newPtr <= dpeek(@MEMTOP) - MemEnd
-
-      ' Make space for the new line
-      -move nptr, nptr + newPtr, MemEnd - nptr
-
-      ' Copy new line to here
-      move ptr, nptr, newPtr
-
-      ' Update the new memory ending
-      MemEnd = MemEnd + newPtr
-
-      ' Mark file as changed
-      fileSaved = 0
-
-      exec RedrawScreen
-    endif
+    move ptr, EditBuf, linLen
+    edit = 1
+    exec SaveLine
+    exec ForceDrawCurrentLine
 
 ENDPROC
 
