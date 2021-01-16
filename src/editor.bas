@@ -36,6 +36,9 @@ dim ScrAdr(24)
 'dim EditBuf(256) byte
 EditBuf = $600
 
+' Store original margin value
+OldMargin = PEEK(@@LMARGN)
+
 ' We start with the help file.
 FileName$ = "D:HELP.TXT"
 
@@ -952,6 +955,7 @@ PROC ProcessKeys
     exec AskSaveFileChanged
     if not key
       cls
+      poke @@LMARGN, OldMargin
       end
     endif
   '
