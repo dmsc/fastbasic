@@ -377,7 +377,7 @@ PROC ScrollDown
   if not topLine then Exit
 
   ' Scroll screen image inserting a line
-  poke @CRSINH, 1
+  ' poke @CRSINH, 1   ' Not needed, as the cursor is already in this position
   pos. 0, 1
   put 157
   ' Move screen pointers
@@ -666,7 +666,7 @@ PROC ReturnKey
   exec DrawLineOrig
 
   ' Move screen down!
-  poke @CRSINH, 1
+  ' poke @CRSINH, 1  ' Not needed, as cursor is already in this line
   pos. 0, scrLine + 1
   put 157
 
@@ -731,7 +731,7 @@ PROC DeleteLine
   ' Go to beginning of line
   column = 0
   ' Delete line from screen
-  poke @CRSINH, 1
+  ' poke @CRSINH, 1 ' Not needed, as cursor is already in this line
   pos. 0, scrLine+1
   put 156
   ' Delete from entire file!
