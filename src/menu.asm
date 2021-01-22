@@ -214,40 +214,6 @@ load_editor:
         rts
 
 
-        ; Called from EDITOR.BAS
-        .export COUNT_LINES
-.proc   COUNT_LINES
-sizeH   = tmp1
-ptr     = tmp2
-        pla
-        sta     sizeH
-        pla
-        tax
-        pla
-        sta     ptr+1
-        pla
-        tay
-        inx
-        inc     sizeH
-
-        lda     #0
-        sta     ptr
-
-loop:   lda     (ptr), y
-        dex
-        bne     :+
-        dec     sizeH
-        beq     end
-:       iny
-        bne     :+
-        inc     ptr+1
-:       cmp     #$9B
-        bne     loop
-end:    tya
-        ldx     ptr+1
-        rts
-.endproc
-
         ; This is the header for the compiled binaries, included
         ; here to allow saving the resulting file.
         .export COMP_HEAD_1
