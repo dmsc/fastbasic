@@ -19,16 +19,16 @@
 ; Main menu system
 ; ----------------
 
-        .export start
-
         ; Export and imports from editor.bas
-        .export COMPILE_BUFFER, BMAX, LINENUM, heap_start
+        .export COMPILE_BUFFER, BMAX, LINENUM
         .exportzp reloc_addr
         .import fb_var_NEWPTR
 
+        ; From header
+        .import COMP_HEAD_2, heap_start
+
         ; From runtime.asm
         .import putc
-        .importzp tmp1, tmp2
         ; From JUMP
         .import interpreter_jump_fixup
         ; From parser.asm
@@ -42,25 +42,12 @@
         .import parser_alloc_init
         ; From bytecode
         .import bytecode_start
-        ; Linker vars
-        .import __BSS_RUN__, __BSS_SIZE__, __INTERP_START__, __INTERP_SIZE__
-        .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
-        .import __RT_DATA_SIZE__
 
         .include "atari.inc"
-
-        ; Start of HEAP - aligned to 256 bytes
-heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
-        ; Start of relocated bytecode
-BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__
 
         .zeropage
         ; Relocation amount
 reloc_addr:     .res    2
-
-        ; Ensure that the EDITOR bytecode starts at same address that
-        ; compiled bytecode, so we have only one initialization
-        .assert	BYTECODE_ADDR = bytecode_start, error, "Bytecode location differ in menu!"
 
         ; Exported to EDITOR.BAS
 BMAX=bmax
@@ -103,11 +90,11 @@ COMPILE_BUFFER:
         beq     no_save
 
         ; We need to relocate the bytecode, calculate the offset:
-        lda     #<BYTECODE_ADDR
+        lda     #<bytecode_start
         sec
         sbc     end_ptr
         tax
-        lda     #>BYTECODE_ADDR
+        lda     #>bytecode_start
         sbc     end_ptr+1
 no_save:
         stx     reloc_addr
@@ -151,8 +138,8 @@ sto_loop:
         adc     #0
         sta     compiled_var_page
 
-        ldy     var_count
-        sty     compiled_num_vars
+        lda     var_count
+        sta     compiled_num_vars
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
@@ -213,43 +200,5 @@ load_editor_stack:
 load_editor:
         rts
 
-
-        ; This is the header for the compiled binaries, included
-        ; here to allow saving the resulting file.
-        .export COMP_HEAD_1
-COMP_HEAD_1:
-        ; Atari binary header
-        .byte   255, 255
-        ; Chunk 1: Run address at "compiled_start"
-        .word   RUNAD
-        .word   RUNAD+1
-        .word   compiled_start
-        ; Chunk 2: interpreter at page 0
-        .word   __INTERP_START__
-        .word   __INTERP_START__ + __INTERP_SIZE__- 1
-
-        .segment "PREHEAD"
-        .export COMP_HEAD_2
-COMP_HEAD_2:
-        .word   __JUMPTAB_RUN__
-        .word   0
-
-        .code
-
-        ; Number of bytes to write in RUNTIME + JUMPTAB segments
-        .export COMP_RT_SIZE
-COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__ - __JUMPTAB_RUN__ + 4
-
-        ; This is the runtime startup code, loads the editor.
-        ; Note that this code is patched before writing to a file
-        ; and copied into the resulting executables.
-        .segment        "RUNTIME"
-start:
-compiled_start:
-        lda     #<BYTECODE_ADDR
-        ldx     #>BYTECODE_ADDR
-
-        jsr     interpreter_run
-        jmp     (DOSVEC)
 
 ; vi:syntax=asm_ca65

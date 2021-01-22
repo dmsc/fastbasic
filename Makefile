@@ -131,10 +131,12 @@ COMPILER_AS_SRC=\
 IDE_AS_SRC=$(COMPILER_AS_SRC)\
     src/menu.asm\
     src/countlines.asm\
+    src/comp_header.asm\
 
 # ASM files used in the Command Line compiler
 CMD_AS_SRC=$(COMPILER_AS_SRC)\
     src/cmdmenu.asm\
+    src/comp_header.asm\
 
 # Common ASM files
 # NOTE: clearmem should be above other files because it defines
