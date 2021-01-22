@@ -32,6 +32,7 @@
         .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
         .exportzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
+        .exportzp       reloc_addr
         ; From runtime.asm
         .import         read_word
         ; From vars.asm
@@ -45,8 +46,6 @@
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
         .importzp       ERR_LOOP
-        ; From menu.asm
-        .importzp       reloc_addr
 
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
@@ -108,7 +107,12 @@ read_fp = AFP
 ; Note that at $480 we store the interpreter stack.
 loop_stk        =       $400
 
+
 ;----------------------------------------------------------
+        .zeropage
+        ; Relocation amount
+reloc_addr:     .res    2
+
         .code
 
 ; Removes one token from output, returns it

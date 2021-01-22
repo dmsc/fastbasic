@@ -21,6 +21,7 @@
 
         .export start
         .export heap_start
+        .export BYTECODE_ADDR
 
         .include "atari.inc"
 

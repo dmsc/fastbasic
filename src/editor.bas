@@ -120,13 +120,32 @@ PROC InputFilename
 ENDPROC
 
 '-------------------------------------
+' Compile and run
+PROC CompileAndRun
+  ' Pass the relocation offset, 0 means no
+  ' relocation (compile and run at same address)
+  dpoke @@RELOC_OFFSET, 0
+  exec CompileFile
+ENDPROC
+
+'-------------------------------------
+' Compile to a file
+PROC CompileAndSave
+  ' Pass the relocation offset, the compiled code
+  ' is run at "BYTECODE_ADDR" instead of "MemEnd + 1",
+  ' the output buffer.
+  dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd - 1
+  exec CompileFile
+ENDPROC
+
+'-------------------------------------
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
   exec ClrTopLine
   ? "Parsing: ";
   poke MemEnd, $9B
-  if USR( @compile_buffer, key, Adr(MemStart), MemEnd+1)
+  if USR( @compile_buffer, Adr(MemStart), MemEnd+1)
     ' Parse error, go to error line
     topLine = dpeek(@@linenum) - 11
     column = peek( @@bmax )
@@ -136,7 +155,7 @@ PROC CompileFile
       topLine = 0
     endif
     get key
-  elif key
+  elif dpeek(@@RELOC_OFFSET)
     exec SaveCompiledFile
   else
     get key
@@ -965,13 +984,11 @@ PROC ProcessKeys
   '
   '--------- Control-R (run) -----
   elif key = $12
-    key = 0 ' key = 0 -> run
-    exec CompileFile
+    exec CompileAndRun
   '
   '--------- Control-W (write compiled file) -----
   elif key = $17
-    ' key <> 0 -> save
-    exec CompileFile
+    exec CompileAndSave
   '
   '--------- Control-N (new) -----
   elif key = $0E

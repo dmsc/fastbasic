@@ -21,7 +21,6 @@
 
         ; Export and imports from editor.bas
         .export COMPILE_BUFFER, BMAX, LINENUM
-        .exportzp reloc_addr
         .import fb_var_NEWPTR
 
         ; From header
@@ -33,7 +32,7 @@
         .import interpreter_jump_fixup
         ; From parser.asm
         .import parser_start
-        .importzp buf_ptr, linenum, end_ptr, bmax
+        .importzp buf_ptr, linenum, end_ptr, bmax, reloc_addr
         ; From intrepreter.asm
         .import interpreter_run, compiled_num_vars, compiled_var_page, var_page
         .importzp interpreter_cptr, var_count, sptr, saved_cpu_stack
@@ -45,13 +44,11 @@
 
         .include "atari.inc"
 
-        .zeropage
-        ; Relocation amount
-reloc_addr:     .res    2
-
         ; Exported to EDITOR.BAS
 BMAX=bmax
 LINENUM=linenum
+        .exportzp RELOC_OFFSET
+RELOC_OFFSET = reloc_addr
 
         .code
 
@@ -82,23 +79,6 @@ COMPILE_BUFFER:
         sta     buf_ptr+1
         pla
         sta     buf_ptr
-
-        ; Compile / Run
-        pla
-        pla
-        tax
-        beq     no_save
-
-        ; We need to relocate the bytecode, calculate the offset:
-        lda     #<bytecode_start
-        sec
-        sbc     end_ptr
-        tax
-        lda     #>bytecode_start
-        sbc     end_ptr+1
-no_save:
-        stx     reloc_addr
-        sta     reloc_addr+1
 
         ; Save our CPU return stack
         lda     saved_cpu_stack
