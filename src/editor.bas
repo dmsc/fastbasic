@@ -646,9 +646,9 @@ PROC CheckEmptyBuf
 ENDPROC
 
 '-------------------------------------
-' Initializes E: device
+' Initializes editor device
 PROC InitScreen
-  close #0 : open #0, 12, 0, "E:"
+  graphics 0
   poke @@LMARGN, $00
   poke @KEYREP, 3
 ENDPROC
