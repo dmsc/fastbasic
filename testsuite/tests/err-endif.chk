@@ -1,0 +1,4 @@
+Name: Check proper parsing of ENDIF
+Test: compile-error
+Error: no end loop/proc/if at line 9 column 0
+Error-pos: 9:0

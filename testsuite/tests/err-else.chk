@@ -1,0 +1,4 @@
+Name: Check proper parsing of ELSE
+Test: run
+Output:
+1         0

@@ -1,0 +1,4 @@
+Name: Check proper parsing of LOOP
+Test: compile-error
+Error: no end loop/proc/if at line 7 column 0
+Error-pos: 7:0

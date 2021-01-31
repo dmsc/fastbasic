@@ -1,0 +1,4 @@
+Name: Check proper parsing of WEND
+Test: compile-error
+Error: no end loop/proc/if at line 8 column 0
+Error-pos: 8:0

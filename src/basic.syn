@@ -631,19 +631,19 @@ PARSE_LINE_COMMAND:
         "Move"  EXPR C_EXPR C_EXPR emit TOK_MOVE
         "-move" EXPR C_EXPR C_EXPR emit TOK_NMOVE
         "DO" E_EOL emit LT_DO_LOOP E_PUSH_LT
-        "Loop" emit TOK_JUMP E_POP_LOOP
+        "Loop" E_EOL emit TOK_JUMP E_POP_LOOP
         "Repeat" E_EOL emit LT_REPEAT E_PUSH_LT
         "Until" FORCE_BOOL_EXPR emit TOK_CJUMP E_POP_REPEAT
         "While" emit LT_WHILE_1 E_PUSH_LT FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_WHILE_2 } E_PUSH_LT
-        "WEnd" emit TOK_JUMP E_POP_WHILE
+        "WEnd" E_EOL emit TOK_JUMP E_POP_WHILE
         "If" FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT THEN_OR_MULTILINE
         "For" VAR_WORD_LVALUE_SADDR EQUAL emit TOK_PUSH EXPR emit TOK_DPOKE \
               "To" EXPR STEP_OPTIONAL \
               emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
         "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
-        "ELse" emit TOK_JUMP emit LT_ELSE E_ELSEIF
+        "ELse" E_EOL emit TOK_JUMP emit LT_ELSE E_ELSEIF
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
-        "Endif" E_POP_IF
+        "Endif" E_EOL E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
         "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
