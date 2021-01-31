@@ -38,6 +38,7 @@ class parse {
             public:
                 size_t pos;
                 size_t opos;
+                size_t tpos;
         };
         class jump {
             public:
@@ -61,6 +62,61 @@ class parse {
         int label_num;
         bool finalized;
         std::vector<codew> *code;
+        // Used to store an un-abbreviated line
+        struct expand_line {
+            std::string text;
+            int indent = 0;
+            int next_indent = 0;
+            // Returns expanded line
+            std::string get()
+            {
+                std::string ret = (indent > 0) ? std::string(indent, ' ')
+                                               : std::string();
+                ret += text;
+                indent = next_indent;
+                text.clear();
+                return ret;
+            }
+            void add_space(char c, size_t num)
+            {
+                char l = 0;
+                if( text.size() )
+                    l = text.back();
+
+                // Don't add a space after another space, parenthesis and '#':
+                switch(l) {
+                    case 0:
+                    case ' ':
+                    case '(':
+                    case '[':
+                    case '#':
+                        return;
+                }
+
+                // Don't add space if before a letter or number:
+                switch(c)
+                {
+                    case '$':
+                        // '$' can be a string suffix or an hexadecimal prefix!
+                        if( num > 1 )
+                            break;
+                        // fall-through
+                    case '[':
+                    case '(':
+                    case '%':
+                        if( (l >= '0' && l <= '9') || (l >= 'A' && l <= 'Z') ||
+                            (l >= 'a' && l <= 'z') || l == '_' || l == '$' )
+                            return;
+                        break;
+                    case ',':
+                    case ')':
+                    case ']':
+                        return;
+                }
+
+                text += ' ';
+            }
+        } expand;
 
         parse():
             sto_var(-1),
@@ -78,6 +134,10 @@ class parse {
         {
             auto lbl = new_label();
             jumps.push_back({type, lbl, linenum});
+            if( loop_add_indent(type) )
+            {
+                expand.next_indent = expand.next_indent + 2;
+            }
             return lbl;
         }
         bool peek_loop(LoopType type)
@@ -106,6 +166,11 @@ class parse {
                     loop_error("missing " + get_loop_name(type));
                     return std::string();
                 }
+            }
+            if( loop_add_indent(type) )
+            {
+                expand.next_indent -= 2;
+                expand.indent = expand.next_indent;
             }
             auto lbl = last.label;
             jumps.pop_back();
@@ -138,12 +203,13 @@ class parse {
             sto_var = -1;
             str = l;
             saved_errors.clear();
+            expand.text.clear();
             linenum = ln;
         }
 
         saved_pos save()
         {
-            return saved_pos{pos, code->size()};
+            return saved_pos{pos, code->size(), expand.text.size()};
         }
 
         void error(std::string str)
@@ -186,6 +252,7 @@ class parse {
                 debug("restore pos=" + std::to_string(pos) + " <= " + std::to_string(s.pos));
             pos = s.pos;
             code->resize(s.opos, codew::ctok(TOK_END, 0));
+            expand.text.resize(s.tpos);
         }
 
         codew remove_last()
@@ -322,6 +389,21 @@ class parse {
                 }
             }
             return false;
+        }
+        void add_text(std::string s)
+        {
+            if( s.size() )
+                expand.add_space(s[0], s.size());
+            expand.text += s;
+        }
+        void add_text_str(std::string s)
+        {
+            for(auto c: s) {
+                if( c == '"' )
+                    expand.text.push_back('"');
+                expand.text.push_back(c);
+            }
+            expand.text.push_back('"');
         }
         bool emit_word(std::string s)
         {

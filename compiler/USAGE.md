@@ -93,6 +93,12 @@ allowed options are:
   Enable parser debug options. This is only useful to debug parser, as it
   writes the full parsing tree with all the tried constructs.
 
+- **-l**  
+  In addition to compiling the file, also write to standard output a prettified
+  version of the input program, with all abbreviations expanded, one statement
+  per line and indented code. This is useful to examine compiler errors in heavily
+  abbreviated code.
+
 - **-h**  
   Shows available compiler options.
 

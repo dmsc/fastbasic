@@ -37,6 +37,7 @@ static unsigned long get_number(parse &s)
         while( s.range('0', '9') || s.range('A', 'F') || s.range('a', 'f') );
         auto sn = s.str.substr(start, s.pos - start);
         s.debug("(got '" + sn + "')");
+        s.add_text( "$" + sn );
         return std::stoul(sn, 0, 16);
     }
     else
@@ -55,6 +56,7 @@ static unsigned long get_number(parse &s)
         }
         auto sn = s.str.substr(start, s.pos - start);
         s.debug("(got '" + sn + "')");
+        s.add_text( sn );
         if( sn.length() && sn[0] == '-' )
             return 65536 - std::stoul(sn.substr(1));
         else
@@ -71,6 +73,7 @@ static bool get_asm_word_constant(parse &s)
         // Reads ASM constant
         if( s.get_ident(name) )
         {
+            s.add_text( "@" + name );
             s.emit_word( name );
             s.skipws();
             return true;
@@ -89,6 +92,7 @@ static bool get_asm_byte_constant(parse &s)
         // Reads ASM constant
         if( s.get_ident(name) )
         {
+            s.add_text( "@@" + name );
             s.emit_byte( name );
             s.skipws();
             return true;
@@ -132,6 +136,7 @@ static bool get_const_string(parse &s, std::string &str)
     {
         if( s.expect('"') && !s.peek('"') )
         {
+            s.add_text_str(str);
             return true;
         }
         char c = s.str[s.pos];
@@ -154,7 +159,10 @@ bool SMB_E_REM(parse &s)
 {
     s.debug("E_REM");
     while( !s.eos() && !s.expect('\n') && !s.expect('\x9b') )
+    {
+        s.expand.text.push_back(s.str[s.pos]);
         s.pos++;
+    }
     return true;
 }
 
@@ -163,7 +171,10 @@ bool SMB_E_EOL(parse &s)
     s.debug("E_EOL");
     s.skipws();
     if( s.expect('\'') )
+    {
+        s.add_text("\'");
         return SMB_E_REM(s);
+    }
     return( s.eos() || s.peek(':') || s.eol() );
 }
 
@@ -357,6 +368,7 @@ bool SMB_E_VAR_CREATE(parse &s)
     v[name] = 0 + 256 * v_num;
     s.emit_byte(v_num);
     last_var_name = name;
+    s.add_text( name );
     return true;
 }
 
@@ -393,6 +405,7 @@ bool var_check(parse &s, int type)
         return false;
     if( (v[name] & 0xFF) != type )
         return false;
+    s.add_text(name);
     s.emit_byte( v[name] >> 8 );
     return true;
 }
@@ -448,6 +461,7 @@ static atari_fp get_fp_number(parse &s)
 
     auto sn = s.str.substr(start, s.pos - start);
     s.debug("(got '" + sn + "')");
+    s.add_text(sn);
     return atari_fp( std::stod(sn) );
 }
 
@@ -475,6 +489,7 @@ bool SMB_E_LABEL_DEF(parse &s)
         return false;
     v[name] = VT_UNDEF;
     last_label_name = name;
+    s.add_text(name);
     s.emit_label("fb_lbl_" + name);
     return true;
 }
@@ -497,6 +512,7 @@ bool SMB_E_LABEL(parse &s)
     // Check type
     if( v[name] != type )
         return false;
+    s.add_text(name);
     s.emit_word("fb_lbl_" + name);
     return true;
 }

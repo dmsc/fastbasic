@@ -99,6 +99,7 @@ static int show_help()
                  " -n\t\tdon't run the optimizer, produces same code as 6502 version\n"
                  " -prof\t\tshow token usage statistics\n"
                  " -s=<name>\tplace code into given segment\n"
+                 " -l\t\tproduce a listing of the unabbreviated parsed source\n"
                  " -v\t\tshow version and exit\n"
                  " -h\t\tshow this help\n";
     return 0;
@@ -118,6 +119,7 @@ int main(int argc, char **argv)
     std::ofstream ofile;
     bool show_stats = false;
     bool optimize = true;
+    bool show_text = false;
 
     for(auto &arg: args)
     {
@@ -129,6 +131,8 @@ int main(int argc, char **argv)
             show_stats = true;
         else if( arg == "-v" )
             return show_version();
+        else if( arg == "-l" )
+            show_text = true;
         else if( arg == "-h" )
             return show_help();
         else if( arg.empty() )
@@ -204,6 +208,9 @@ int main(int argc, char **argv)
                 std::cerr << "\n";
                 return 1;
             }
+            else if( show_text )
+                std::cout << s.expand.get() << "\n";
+
             s.expect(':');
         }
         ln += lines;

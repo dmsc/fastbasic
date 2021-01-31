@@ -44,3 +44,4 @@ enum LoopType {
 std::string get_loop_name(enum LoopType l);
 LoopType get_looptype(std::string t);
 
+bool loop_add_indent(enum LoopType l);

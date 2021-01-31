@@ -65,6 +65,7 @@ class cc_emit
                 lbl_num ++;
             }
             ret += "\t\ts.debug(\"GOT '" + dbg + "'\");\n";
+            ret += "\t\ts.add_text(\"" + dbg + "\");\n";
             return ret;
         }
         static std::string emit_bytes(bool last, std::vector<std::string> &ebytes, int lnum)

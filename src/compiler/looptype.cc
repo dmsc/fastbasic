@@ -81,3 +81,26 @@ LoopType get_looptype(std::string t)
     throw std::runtime_error("invalid loop type");
 }
 
+bool loop_add_indent(enum LoopType l)
+{
+    switch( l )
+    {
+        case LT_PROC_2:
+        case LT_DO_LOOP:
+        case LT_REPEAT:
+        case LT_WHILE_1:
+        case LT_FOR_1:
+        case LT_IF:
+        case LT_ELSE:
+            return true;
+        case LT_ELIF:
+        case LT_PROC_DATA:
+        case LT_EXIT:
+        case LT_WHILE_2:
+        case LT_FOR_2:
+            return false;
+        default:
+            return false;
+    }
+}
+
