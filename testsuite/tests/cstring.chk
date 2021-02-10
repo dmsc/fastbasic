@@ -1,0 +1,10 @@
+Name: Check for parsing of string constants
+Test: run
+Output:
+Basic String
+Using " inside
+Str12
+Str"12
+Str12
+Str12
+Str12

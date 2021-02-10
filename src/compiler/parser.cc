@@ -24,21 +24,37 @@
 
 #include <algorithm>
 
+static unsigned long get_hex(parse &s)
+{
+    auto start = s.pos;
+    while( s.range('0', '9') || s.range('A', 'F') || s.range('a', 'f') );
+    if( s.pos == start )
+        return 65536;   // No digits: error
+    auto sn = s.str.substr(start, s.pos - start);
+    return std::stoul(sn, 0, 16);
+}
+
 static unsigned long get_number(parse &s)
 {
     auto start = s.pos;
     if( s.expect('$') )
     {
         s.debug("(hex)");
-        start ++;
-        if( !s.range('0', '9') && !s.range('A', 'F') && !s.range('a', 'f') )
+        auto h = get_hex(s);
+        if( h > 65535 )
             return 65536;
 
-        while( s.range('0', '9') || s.range('A', 'F') || s.range('a', 'f') );
-        auto sn = s.str.substr(start, s.pos - start);
-        s.debug("(got '" + sn + "')");
-        s.add_text( "$" + sn );
-        return std::stoul(sn, 0, 16);
+        s.debug("(got '" + std::to_string(h) + "')");
+        std::string sn = "$";
+        if( h > 255 )
+        {
+            sn += s.hexd(h>>12);
+            sn += s.hexd(h>>8);
+        }
+        sn += s.hexd(h>>4);
+        sn += s.hexd(h);
+        s.add_text( sn );
+        return h;
     }
     else
     {
@@ -134,14 +150,36 @@ static bool get_const_string(parse &s, std::string &str)
 {
     while( !s.eos() )
     {
-        if( s.expect('"') && !s.peek('"') )
+        if( s.expect('"') )
         {
-            s.add_text_str(str);
-            return true;
+            if( s.expect('"') )
+                str += '"';
+            else if( s.expect('$') )
+            {
+                do
+                {
+                    auto c = get_hex(s);
+                    if( c > 255 )
+                        return false;
+                    str += char(c);
+                } while(s.expect('$'));
+                if( !s.expect('"') )
+                {
+                    s.add_text_str(str);
+                    return true;
+                }
+            }
+            else
+            {
+                s.add_text_str(str);
+                return true;
+            }
         }
-        char c = s.str[s.pos];
-        str += c;
-        s.pos++;
+        else
+        {
+            str += char(s.str[s.pos]);
+            s.pos++;
+        }
     }
     return false;
 }

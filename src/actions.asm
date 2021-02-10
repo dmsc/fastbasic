@@ -181,7 +181,7 @@ ok:     clc
         cmp     #':' ; ':' separates commands
         beq     E_REM::ok
 xit:    sec
-        rts
+ret:    rts
 .endproc
 
 .proc   E_NUMBER_WORD
@@ -192,25 +192,25 @@ xit:    sec
         beq     read_hex
 
         jsr     read_word
+        bcs     E_EOL::ret
 
 .ifdef FASTBASIC_FP
-        bcs     E_EOL::xit
-
         ; In FP version, fails if number is followed by decimal dot
         sta     tmp1
         lda     (bptr), y
         cmp     #'.'
         beq     E_EOL::xit
         lda     tmp1
-
-        sty     bpos
-        jmp     emit_AX
-.else
-        bcc     xit_emit
-        rts
 .endif ; FASTBASIC_FP
 
-read_hex:
+xit_emit:
+        sty     bpos
+        jmp     emit_AX
+.endproc
+
+        ; Read hex number.
+        ; Expected A = 0 on input, emits two bytes
+.proc   read_hex
         ; We have A==0 here
         tax             ; X = low-part of result
         stx     tmp1+1  ; tmp1+1: hi-part of result
@@ -257,10 +257,7 @@ xit:
 
         txa
         ldx     tmp1+1
-xit_emit:
-
-        sty     bpos
-        jmp     emit_AX
+        bcs     E_NUMBER_WORD::xit_emit
 .endproc
 
 .proc   E_NUMBER_BYTE
@@ -274,9 +271,9 @@ xit:    rts
 .proc   E_CONST_STRING
         ; Get characters until a '"' - emit all characters read!
         ldx     #0
-        ; Skip one byte (string length), and store original output position into tmp1
+        ; Skip one byte (string length), and store original output position into tmp2
         jsr     parser_emit_byte
-        sty     tmp1
+        sty     tmp2
 nloop:
         ; Check length
         ldy     bpos
@@ -286,9 +283,9 @@ nloop:
         cmp     #$9b
         beq     xrts   ; Exit with error, C = 1 on EQ.
         ; Store
-store:  inx
-        inc     bpos
-        jsr     parser_emit_byte
+store:  jsr     parser_emit_byte
+incb:   inc     bpos
+        inx
         bne     nloop  ; Jump always
 
 eos:    iny
@@ -296,12 +293,26 @@ eos:    iny
         inc     bpos
         cmp     #'"'    ; Check for "" to encode one ".
         beq     store
+chk:    eor     #'$'    ; Check for $ to encode hex byte
+        beq     cbyte
         ; Store token and length
-eos_ok: ldy     tmp1
+        ldy     tmp2
         txa
         sta     (prog_ptr), y
         clc
 xrts:   rts
+        ; Get hex byte
+cbyte:  stx     tmp2+1
+        jsr     read_hex
+        bcs     xrts
+        dec     opos    ; only emit one byte
+        ldx     tmp2+1
+        ldy     bpos
+        lda     (bptr), y
+        cmp     #'"'
+        beq     incb
+        inx
+        bne     chk
 .endproc
 
 ; Following two routines are only used in FP version

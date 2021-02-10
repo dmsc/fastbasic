@@ -390,6 +390,10 @@ class parse {
             }
             return false;
         }
+        char hexd(int c)
+        {
+            return "0123456789ABCDEF"[15&c];
+        }
         void add_text(std::string s)
         {
             if( s.size() )
@@ -398,12 +402,34 @@ class parse {
         }
         void add_text_str(std::string s)
         {
+            bool in = true;
             for(auto c: s) {
-                if( c == '"' )
-                    expand.text.push_back('"');
-                expand.text.push_back(c);
+                if( in )
+                {
+                    if( c == '"' )
+                        expand.text += "\"\"";
+                    else if( c < 32 || c > 126 )
+                    {
+                        in = false;
+                        expand.text += std::string("\"$") + hexd(c>>4) + hexd(c);
+                    }
+                    else
+                        expand.text.push_back(c);
+                }
+                else
+                {
+                    if( c < 32 || c > 126 || c == '"' )
+                        expand.text += std::string("$") + hexd(c>>4) + hexd(c);
+                    else
+                    {
+                        in = true;
+                        expand.text.push_back('"');
+                        expand.text.push_back(c);
+                    }
+                }
             }
-            expand.text.push_back('"');
+            if( in )
+                expand.text.push_back('"');
         }
         bool emit_word(std::string s)
         {

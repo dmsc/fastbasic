@@ -543,6 +543,22 @@ Will print:
 
     Hello "world"
 
+You can also include any character with
+it's hexadecimal code using `$` just
+after the closing quote, with no spaces
+around. This is the only way to include
+an ENTER character inside a string
+constant, see this example:
+
+    PRINT "Hello"$9B"world"$2E$2E
+
+Will print:
+
+    Hello
+
+    world..
+
+
 The bracket operator `[` `]` allows
 creating a string from a portion of
 another, and accepts two forms:
@@ -594,6 +610,7 @@ But this will work:
     A$="Long string"
     B$=A$[2,2]
     IF B$ = A$[3,3] THEN ? "ERROR"
+
 
 
 String Variables
