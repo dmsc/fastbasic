@@ -26,12 +26,46 @@
 
 static unsigned long get_hex(parse &s)
 {
+    unsigned num = 0;
     auto start = s.pos;
-    while( s.range('0', '9') || s.range('A', 'F') || s.range('a', 'f') );
+    while( s.pos < s.str.length() )
+    {
+        char c = s.str[s.pos];
+        if( c >= '0' && c <= '9' )
+            num = num * 16 + (c - '0');
+        else if( c >= 'a' && c <= 'f' )
+            num = num * 16 + 10 + (c - 'a');
+        else if( c >= 'A' && c <= 'F' )
+            num = num * 16 + 10 + (c - 'A');
+        else
+            break;
+        s.pos ++;
+        if( num > 0xFFFF )
+            return num;
+    }
     if( s.pos == start )
         return 65536;   // No digits: error
-    auto sn = s.str.substr(start, s.pos - start);
-    return std::stoul(sn, 0, 16);
+    return num;
+}
+
+static unsigned long get_dec(parse &s)
+{
+    unsigned num = 0;
+    auto start = s.pos;
+    while( s.pos < s.str.length() )
+    {
+        char c = s.str[s.pos];
+        if( c >= '0' && c <= '9' )
+            num = num * 10 + (c - '0');
+        else
+            break;
+        s.pos ++;
+        if( num > 0xFFFF )
+            return num;
+    }
+    if( s.pos == start )
+        return 65536;   // No digits: error
+    return num;
 }
 
 static unsigned long get_number(parse &s)
@@ -58,25 +92,25 @@ static unsigned long get_number(parse &s)
     }
     else
     {
-        // Skip initial "-"
-        s.expect('-');
+        bool sign = s.expect('-');
+        unsigned num = get_dec(s);
 
-        if( !s.range('0', '9') )
+        if( num > 65535 )
             return 65536;
 
-        while( s.range('0', '9') );
         if( s.expect('.') ) // If ends in a DOT, it's a fp number
         {
             s.pos = start;
             return 65536;
         }
-        auto sn = s.str.substr(start, s.pos - start);
+
+        auto sn = std::to_string( sign ? -num : num );
         s.debug("(got '" + sn + "')");
         s.add_text( sn );
-        if( sn.length() && sn[0] == '-' )
-            return 65536 - std::stoul(sn.substr(1));
+        if( sign )
+            return 65536 - num;
         else
-            return std::stoul(sn);
+            return num;
     }
 }
 

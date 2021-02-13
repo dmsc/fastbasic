@@ -1,0 +1,4 @@
+Name: Check parsing of numbers too big
+Test: run-fp
+Output:
+1.111111111E+29
