@@ -142,7 +142,7 @@ FP_T_EXPR: floating point constant, variable or function
         "(" FP_EXPR ")"
         ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%" emit TOK_FP_LOAD
-        INT_EXPR emit TOK_INT_FP
+        T_EXPR_INTONLY emit TOK_INT_FP
 
 #@endif FASTBASIC_FP
 
@@ -189,11 +189,21 @@ USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
         pass
 
-T_EXPR: integer constant, variable or function
+T_EXPR: integer constant
         emit TOK_BYTE E_NUMBER_BYTE
         emit TOK_NUM E_NUMBER_WORD
         "-" T_EXPR emit TOK_NEG
         "+" T_EXPR
+        PAR_EXPR
+#@if FASTBASIC_FP
+        # In the floating-point version the parsing of integer expressions is
+        # separated to avoid exponential growth when parsing parenthesis
+        # expressions.
+        T_EXPR_INTONLY
+
+        # This is an integer terminal that can't be parsed as a floating point:
+T_EXPR_INTONLY: integer variable or function
+#@endif FASTBASIC_FP
         "Not" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
         "Time"   emit TOK_TIME
@@ -228,7 +238,6 @@ T_EXPR: integer constant, variable or function
         "Len"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
         "Val"    STR_PAR_EXPR emit TOK_VAL
         "ASc"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
-        PAR_EXPR
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
 RD_PORT:
