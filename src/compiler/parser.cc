@@ -23,6 +23,7 @@
 #include "vartype.h"
 
 #include <algorithm>
+#include <cmath>
 
 static unsigned long get_hex(parse &s)
 {
@@ -496,45 +497,71 @@ bool SMB_E_VAR_SEARCH(parse &s)
 }
 
 #ifdef FASTBASIC_FP
+// Get optional exponent for FP number
+static int parse_fp_exp(parse &s)
+{
+    auto spos = s.save();
+    if( s.expect('E') )
+    {
+        // Expect either a '-' or a '+'
+        int exp = 0;
+        bool esign = s.expect('-') || (s.expect('+') , false);
+        if ( s.range('0', '9') )
+        {
+            exp = s.str[s.pos-1] - '0';
+            if ( s.range('0', '9') )
+                exp = exp * 10 + s.str[s.pos-1] - '0';
+            return esign ? -exp : exp;
+        }
+    }
+    s.restore(spos);
+    return 0;
+}
+
 static atari_fp get_fp_number(parse &s)
 {
-    auto start = s.pos;
-    bool ok = false;
-
     // Optional sign
-    s.expect('-');
+    bool sign = s.expect('-');
 
-    // Integer part
-    while( s.range('0', '9') )
-        ok = true;
-
-    // Optional dot
-    if( s.expect('.') )
+    // Get all digits:
+    bool ok = false;
+    double num = 0;
+    int dot = -1, norm = 0;
+    while( s.pos < s.str.length() )
     {
-        // Fractional part
-        while( s.range('0', '9') )
+        char c = s.str[s.pos];
+        if( c >= '0' && c <= '9' )
+        {
+            num = num * 10 + (c - '0');
+            // Normalize numbers too big
+            if( num > 1e30 )
+            {
+                num = num / 1000;
+                norm += 3;
+            }
             ok = true;
+        }
+        else if( c == '.' )
+            dot = s.pos + 1;
+        else
+            break;
+        s.pos ++;
     }
-
     if( !ok )
         return atari_fp(HUGE_VAL); // return invalid number
 
-    // Optional exponent, only if any number before
-    auto spos = s.save();
-    if( s.expect('E') && // "E"
-        (s.expect('-') || s.expect('+') || ok) && // '+' or '-' or nothing
-        s.range('0', '9') ) // One figit
-    {
-        // Optional second digit
-        s.range('0', '9');
-    }
-    else
-        s.restore(spos);
+    // Calculate dot exponent
+    dot = dot >= 0 ? s.pos - dot : 0;
 
-    auto sn = s.str.substr(start, s.pos - start);
+    // Optional exponent and resulting number
+    num = num * std::pow(10, parse_fp_exp(s) - dot + norm);
+    num = sign ? -num : num;
+
+    auto fp = atari_fp(num);
+    auto sn = fp.to_string();
     s.debug("(got '" + sn + "')");
     s.add_text(sn);
-    return atari_fp( std::stod(sn) );
+    return fp;
 }
 
 bool SMB_E_NUMBER_FP(parse &s)

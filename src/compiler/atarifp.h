@@ -80,5 +80,6 @@ class atari_fp {
             return hex(exp) + ", " + hex(mant[0]) + ", " + hex(mant[1]) + ", " +
                    hex(mant[2]) + ", " + hex(mant[3]) + ", " + hex(mant[4]);
         }
+        std::string to_string();
 };
 

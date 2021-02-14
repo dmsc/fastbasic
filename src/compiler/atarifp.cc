@@ -33,3 +33,100 @@ const double atari_fp::expTab[99] = {
     1e+82, 1e+84, 1e+86, 1e+88, 1e+90, 1e+92, 1e+94, 1e+96, 1e+98
 };
 
+// Prints a double in a format suitable for BASIC input
+std::string atari_fp::to_string()
+{
+    // Update internal representation
+    update();
+
+    // Check for '0'
+    if( (exp & 0x7F) == 0 )
+        return "0";
+
+    // Transform mantisa to decimal digits
+    char buf[12];
+    char *dig = buf;
+    for(int i=0; i<5; i++)
+    {
+        dig[2*i]   = '0' + (mant[i] >> 4);
+        dig[2*i+1] = '0' + (mant[i] & 0x0F);
+    }
+    dig[10] = 0;
+
+    // Extract exp and sign
+    int iexp = (exp & 0x7F) * 2 - 136;
+    int sgn = exp & 0x80;
+
+    // Remove zeroes at end
+    int i;
+    for(i=9; i>0 && dig[i] == '0'; i--)
+    {
+        dig[i] = 0;
+        iexp ++;
+    }
+    // Remove possible zero at start
+    if( *dig == '0' )
+    {
+        dig++;
+        i--;
+    }
+
+    // Result string - start with sign
+    std::string ret = sgn ? "-" : "";
+
+    if( iexp < 0 && iexp >= -i-1 )
+    {
+        while( iexp > -i-1 )
+        {
+            ret += *dig;
+            dig++;
+            iexp--;
+        }
+        ret += '.';
+        ret += dig;
+    }
+    else if( iexp+2 == -i )
+    {
+        ret += ".0";
+        ret += dig;
+    }
+    else if( iexp == 0 )
+        ret += dig;
+    else if( iexp == 1 )
+    {
+        ret += dig;
+        ret += '0';
+    }
+    else if( iexp == 2 )
+    {
+        ret += dig;
+        ret += "00";
+    }
+    else if( iexp < -99 )
+    {
+        ret += dig[0];
+        ret += '.';
+        if( i > 0 )
+            ret += dig + 1;
+        ret += "E-";
+        iexp = - iexp - i;
+        if( iexp > 9 )
+            ret += '0' + (iexp/10);
+        ret += '0' + (iexp % 10);
+    }
+    else
+    {
+        ret += dig;
+        ret += 'E';
+        if( iexp < 0 )
+        {
+            ret += '-';
+            iexp = -iexp;
+        }
+        if( iexp > 9 )
+            ret += '0' + (iexp/10);
+        ret += '0' + (iexp % 10);
+    }
+    return ret;
+}
+
