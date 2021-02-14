@@ -33,6 +33,8 @@
 extern bool do_debug;
 
 class parse {
+    private:
+        static const int MAX_RECURSE_LEVEL = 200;
     public:
         class saved_pos {
             public:
@@ -212,6 +214,13 @@ class parse {
             return saved_pos{pos, code->size(), expand.text.size()};
         }
 
+        // Checks if we are too depth into the recursion and bail out
+        void check_level()
+        {
+            if( lvl > MAX_RECURSE_LEVEL )
+                throw std::runtime_error("maximum recursion level reached");
+            lvl ++;
+        }
         void error(std::string str)
         {
             if( !str.empty() )

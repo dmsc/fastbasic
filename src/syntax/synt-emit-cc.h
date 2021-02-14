@@ -118,7 +118,7 @@ class cc_emit
             os << "static bool SMB_" << name << "(parse &s) {\n"
                   "\ts.debug(\"" << name << " (" << lnum << ")\");\n"
                   "\ts.error(\"" << desc << "\");\n"
-                  "\ts.lvl++;\n"
+                  "\ts.check_level();\n"
                   "\ts.skipws();\n"
                   "\tauto spos = s.save();\n"
                << code;
