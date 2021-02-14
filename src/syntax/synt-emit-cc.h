@@ -90,14 +90,14 @@ class cc_emit
             os << "\n";
 
             if( last )
-                os << "\t\ts.debug(\"<-- OK (" + std::to_string(lnum-1) + ")\");\n"
+                os << "\t\ts.debug(\"<-- OK (" + std::to_string(lnum) + ")\");\n"
                       "\t\ts.lvl--;\n"
                       "\t\treturn true;\n";
             return os.str();
         }
         static std::string emit_ret(int lnum)
         {
-            return "\t\ts.debug(\"<-- OK (" + std::to_string(lnum-1) + ")\");\n"
+            return "\t\ts.debug(\"<-- OK (" + std::to_string(lnum) + ")\");\n"
                    "\t\ts.lvl--;\n"
                    "\t\treturn true;\n";
         }
@@ -109,7 +109,7 @@ class cc_emit
         {
             return "\tdo {\n" + line +
                    "\t} while(0);\n"
-                   "\ts.debug(\"-! " + std::to_string(lnum-1) + "\");\n"
+                   "\ts.debug(\"-! " + std::to_string(lnum) + "\");\n"
                    "\ts.restore(spos);\n";
         }
         static void print(std::ostream &os, std::string name, std::string desc,

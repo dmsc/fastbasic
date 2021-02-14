@@ -193,7 +193,7 @@ static std::string readInput(const std::set<std::string> &defines, std::istream 
                     skip --;
                 break;
         }
-        if( !skip )
+        if( !skip || c == '\n' || c == '#' )
             r += char(c);
     }
     return r;

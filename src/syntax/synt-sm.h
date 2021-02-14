@@ -163,13 +163,14 @@ class statemachine {
             ebytes.clear();
             return true;
         }
-        bool parse_line(std::string &line)
+        bool parse_line(std::string &line, int &lnum)
         {
             skip_comments();
             if( complete || p.eof() || p.eol() || !p.blank() )
                 return false;
 
             bool canFail = false; // True if the parsing rule can fail (== has actions)
+            lnum = p.line;
 
             // Reads commands until EOL or comment
             while(1)
@@ -177,8 +178,8 @@ class statemachine {
                 std::string cmd;
                 if( end_line() )
                 {
-                    if( !emit_bytes(true, line, p.line) )
-                        line += EM::emit_ret(p.line);
+                    if( !emit_bytes(true, line, lnum) )
+                        line += EM::emit_ret(lnum);
                     // If line can't fail, rule is complete.
                     complete = !canFail;
                     return true;
@@ -187,7 +188,7 @@ class statemachine {
                 // String?
                 if( p.ch('"') )
                 {
-                    emit_bytes(false, line, p.line);
+                    emit_bytes(false, line, lnum);
                     if(!parse_str(line))
                         return p.error("parse: string \"" + s.str() + "\" invalid");
                     canFail = true;
@@ -222,14 +223,14 @@ class statemachine {
                     continue;
                 }
 
-                emit_bytes(false, line, p.line);
+                emit_bytes(false, line, lnum);
 
                 if( cmd == "pass" )
                 {
                     complete = true;
                     if( !end_line() )
                         return p.error("parse: 'pass' should be the only command in a line");
-                    line += EM::emit_ret(p.line);
+                    line += EM::emit_ret(lnum);
                     // End of command, and end of SM
                     return true;
                 }
@@ -256,9 +257,10 @@ class statemachine {
             lnum = p.line;
             if( !parse_description() ) return false;
             std::string line;
-            while(parse_line(line))
+            int lnum = 0;
+            while(parse_line(line, lnum))
             {
-                _code += EM::emit_line(line, p.line);
+                _code += EM::emit_line(line, lnum);
                 line.clear();
             }
             return true;
