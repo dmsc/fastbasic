@@ -32,6 +32,15 @@
 
 extern bool do_debug;
 
+// Exception class for a parsing error
+class parse_error: public std::runtime_error
+{
+    public:
+        size_t pos;
+        parse_error(std::string msg, size_t pos):
+            std::runtime_error(msg), pos(pos) {}
+};
+
 class parse {
     private:
         static const int MAX_RECURSE_LEVEL = 200;
@@ -218,7 +227,7 @@ class parse {
         void check_level()
         {
             if( lvl > MAX_RECURSE_LEVEL )
-                throw std::runtime_error("maximum recursion level reached");
+                throw parse_error("expression too complex for the compiler", pos);
             lvl ++;
         }
         void error(std::string str)

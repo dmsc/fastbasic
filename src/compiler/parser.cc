@@ -637,16 +637,13 @@ bool SMB_E_DATA_FILE(parse &s)
     s.skipws();
     // Get file name until the '"'
     std::string fname;
+    auto pos = s.pos;
     if( !get_const_string(s, fname) )
         return false;
 
     auto f = open_include_file(s.in_fname, fname);
     if( !f )
-    {
-        std::cerr << s.in_fname << ":" << s.linenum << ":" << s.pos
-                  << ": can't open data file '" << fname << "'";
-        return false;
-    }
+        throw parse_error("can't open data file '" + fname + "'", pos);
 
     // Read the file to a buffer of max 64k
     for(unsigned i=0; i<65536; i++)

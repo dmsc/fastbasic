@@ -83,6 +83,37 @@ static int readLine(std::string &r, std::istream &is)
     return 0;
 }
 
+
+static bool parse_line(std::string line, int ln, parse &s, bool show_text)
+{
+    s.new_line(line, ln);
+    while( s.pos != line.length() )
+    {
+        if( !parse_start(s) || ( s.pos != line.length() && !s.peek(':') )  )
+        {
+            std::string msg = "parse error";
+            if( !s.saved_errors.empty() )
+            {
+                msg += ", expected: ";
+                bool first = true;
+                for(const auto &i: s.saved_errors)
+                {
+                    if( !first )
+                        msg += ", ";
+                    msg += i;
+                    first = false;
+                }
+            }
+            throw parse_error(msg, s.max_pos);
+        }
+        else if( show_text )
+            std::cout << s.expand.get() << "\n";
+
+        s.expect(':');
+    }
+    return true;
+}
+
 static int show_version()
 {
     std::cerr << "FastBasic " VERSION " - (c) 2021 dmsc\n";
@@ -172,48 +203,30 @@ int main(int argc, char **argv)
     int ln = 1;
     while(1)
     {
-        std::string line;
-        int lines = readLine(line, ifile);
-        if( !lines && line.empty() )
-            break;
-        if( do_debug )
-            std::cout << iname << ": parsing line " << ln << "\n";
-        s.new_line(line, ln);
-        while( s.pos != line.length() )
-        {
-            if( !parse_start(s) || ( s.pos != line.length() && !s.peek(':') )  )
-            {
-                std::cerr << iname << ":" << ln << ":" << s.max_pos << ": parse error";
-                if( !s.saved_errors.empty() )
-                {
-                    std::cerr << ", expected: ";
-                    bool first = true;
-                    for(const auto &i: s.saved_errors)
-                    {
-                        if( !first )
-                            std::cerr << ", ";
-                        std::cerr << i;
-                        first = false;
-                    }
-                }
-                std::cerr << "\n";
-                size_t min = 0, max = s.str.length();
-                if( s.max_pos > 40 ) min = s.max_pos - 40;
-                if( s.max_pos + 40 < max ) max = s.max_pos + 40;
-                for(auto i = min; i<s.max_pos; i++)
-                    std::cerr << s.str[i];
-                std::cerr << "<--- HERE -->";
-                for(auto i = s.max_pos; i<max; i++)
-                    std::cerr << s.str[i];
-                std::cerr << "\n";
-                return 1;
-            }
-            else if( show_text )
-                std::cout << s.expand.get() << "\n";
-
-            s.expect(':');
+        try {
+            std::string line;
+            int lines = readLine(line, ifile);
+            if( !lines && line.empty() )
+                break;
+            if( do_debug )
+                std::cout << iname << ": parsing line " << ln << "\n";
+            parse_line(line, ln, s, show_text);
+            ln += lines;
         }
-        ln += lines;
+        catch( parse_error &e )
+        {
+            std::cerr << iname << ":" << ln << ":" << e.pos << ": " << e.what() << "\n";
+            size_t min = 0, max = s.str.length();
+            if( e.pos > 40 ) min = e.pos - 40;
+            if( e.pos + 40 < max ) max = e.pos + 40;
+            for(auto i = min; i<e.pos; i++)
+                std::cerr << s.str[i];
+            std::cerr << "<--- HERE -->";
+            for(auto i = e.pos; i<max; i++)
+                std::cerr << s.str[i];
+            std::cerr << "\n";
+            return 1;
+        }
     }
     if( do_debug )
     {
