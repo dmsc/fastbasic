@@ -61,7 +61,7 @@ N.                ' NEXT
 
 EXE.P1            ' EXEC
 
-PRO.P1            ' PROC
+PR.P1             ' PROC
  ? "P1"
 ENDP.             ' ENDPROC
 
@@ -75,7 +75,7 @@ M.H,H+10,6        ' MOVE
 
 T.                ' TIMER
 PA.0              ' PAUSE
-PR.T.             ' PRINT TIME
+PRI.T.            ' PRINT TIME
 
 R.                ' REPEAT
  ? "R"

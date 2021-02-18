@@ -628,7 +628,7 @@ DLI_STA: DLI destination
 PARSE_LINE_COMMAND: statement
         "." E_REM
         "?" PRINT_EXPR
-        "PRint" PRINT_EXPR
+        "PRInt" PRINT_EXPR
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
@@ -673,7 +673,7 @@ PARSE_LINE_COMMAND: statement
         "PAuse" EXPR emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
-        "PROc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
+        "PRoc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
         "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
         "EXEc" emit { TOK_CALL, VT_UNDEF } E_LABEL
         "DAta" DATA_VAR DATA_END

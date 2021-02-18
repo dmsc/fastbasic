@@ -1165,7 +1165,7 @@ Control Statements
 
 
 **Define A Subroutine.**  
-**PROC _name_ / PRO.**  
+**PROC _name_ / PR.**  
 **ENDPROC / ENDP.**
 
   PROC statement starts the definition
