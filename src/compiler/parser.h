@@ -359,11 +359,7 @@ class parse {
         bool skipws()
         {
             while( pos < str.length() && (str[pos] == ' ' || str[pos] == '\t') )
-            {
                 pos++;
-                if( pos  > max_pos )
-                    max_pos = pos;
-            }
             return true;
         }
         bool expect(char c)
