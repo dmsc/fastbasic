@@ -388,7 +388,7 @@ PRINT_MORE:
         IO_CHAN0
 
 # Parse multi-line IF
-THEN_OR_MULTILINE:
+THEN_OR_MULTILINE: 'THEN'
         "Then" PARSE_START E_POP_IF
         pass
 
@@ -403,31 +403,31 @@ VAR_CREATE_TYPE:
 # variable if not exist.
 # NOTE: the creation rule (E_VAR_SET_TYPE) always fails, so the parser uses the next
 #       rules using the created variable.
-VAR_WORD_LVALUE_SADDR: integer variable
+VAR_WORD_LVALUE_SADDR: variable name
         ARRAY_WORD_ADDR emit TOK_SADDR
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         emit TOK_VAR_SADDR E_VAR_WORD
 
-VAR_STR_LVALUE_SADDR:
+VAR_STR_LVALUE_SADDR: variable name
         emit { TOK_VAR_SADDR, VT_STRING } E_VAR_SEARCH "$"
         ARRAY_STRING_ADDR emit TOK_SADDR
 
-VAR_WORD_SAVE: integer variable
+VAR_WORD_SAVE: variable name
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         E_VAR_WORD E_PUSH_VAR
 
 #@if FASTBASIC_FP
-VAR_FP_LVALUE_SADDR:
+VAR_FP_LVALUE_SADDR: variable name
         emit { TOK_VAR_SADDR, VT_FLOAT } E_VAR_SEARCH "%"
         ARRAY_FLOAT_ADDR emit TOK_SADDR
 #@endif FASTBASIC_FP
 
 # This is a standalone rule to skip spaces before the equal
-EQUAL: variable assignment
+EQUAL: '='
         "="
 
 # Parse optional "STEP" in for
-STEP_OPTIONAL:
+STEP_OPTIONAL: 'STEP'
         "Step" emit TOK_PUSH EXPR
         emit TOK_PUSH_1
 
@@ -464,7 +464,7 @@ ARRAY_STRING_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH "$" emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
 
 # Byte Arrays
-ARRAY_BYTE_ADDR:
+ARRAY_BYTE_ADDR: variable name
         emit { TOK_VAR_LOAD, VT_ARRAY_BYTE } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_ADD
         emit { TOK_NUM, VT_ARRAY_BYTE } E_LABEL emit TOK_PUSH PAR_EXPR emit TOK_ADD
 
@@ -539,12 +539,12 @@ IO_CHAN0:
         emit TOK_0 emit TOK_IOCHN
 
 # Get from keyboard expression
-GETK_EXPR: variable name
+GETK_EXPR:
         ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_GETKEY, TOK_POKE }
         VAR_WORD_LVALUE_SADDR  emit { TOK_GETKEY, TOK_DPOKE }
 
 # Get expression
-GET_EXPR: variable name
+GET_EXPR: comma
         "," ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_GET, TOK_POKE } GET_EXPR_MORE
         "," VAR_WORD_LVALUE_SADDR  emit { TOK_GET, TOK_DPOKE } GET_EXPR_MORE
 
@@ -597,7 +597,7 @@ DATA_VAR: new data array name
 
 # DLI support - builds a machine code routine and store the address to
 # display list interrupt handler:
-DLI_COMMAND:
+DLI_COMMAND: 'SET', label
         # Define a new DLI with given name
         "Set" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT \
               E_LABEL_DEF emit { VT_ARRAY_BYTE } E_LABEL_SET_TYPE \
@@ -625,7 +625,7 @@ DLI_STA: DLI destination
         "Wsync" emit { 141, &WSYNC } DLI_STA
 
 # Parse a line
-PARSE_LINE_COMMAND:
+PARSE_LINE_COMMAND: statement
         "." E_REM
         "?" PRINT_EXPR
         "PRint" PRINT_EXPR
@@ -698,7 +698,7 @@ PARSE_LINE_ASSIGN:
         VAR_FP_LVALUE_SADDR EQUAL FP_EXPR emit TOK_FP_STORE
 #@endif FASTBASIC_FP
 
-PARSE_START: statement or variable assignment
+PARSE_START:
         E_EOL
         PARSE_LINE_COMMAND E_EOL
         PARSE_LINE_ASSIGN E_EOL
