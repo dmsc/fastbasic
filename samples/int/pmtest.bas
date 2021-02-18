@@ -37,7 +37,7 @@ END
 proc MovePm
  x = xPos / 128 : y = P0Mem + yPos / 128
  poke $D01A,$74 ' Change background color
- pause 0
+ pause
  pmhpos 0, x            ' Set new horizontal position
  mset oldPos, 5, 0      ' Clear old sprite
  move adr(PMdata), y, 5 ' Draw at new vertical pos.

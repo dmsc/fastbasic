@@ -166,7 +166,7 @@
     ' This is a tricky optimization!!
     for z=pmadr to 3000
       ' Waits for VBLANK, read collision register
-      pause 0
+      pause
       tmp = peek($d004)
 
       ' Clear collision register and sets player position

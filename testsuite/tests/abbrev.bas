@@ -74,7 +74,8 @@ M.H,H+10,6        ' MOVE
 ?$(H+10)
 
 T.                ' TIMER
-PA.0              ' PAUSE
+PA.1              ' PAUSE
+PA.               ' PAUSE 0
 PRI.T.            ' PRINT TIME
 
 R.                ' REPEAT

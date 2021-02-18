@@ -624,6 +624,11 @@ DLI_STA: DLI destination
         "Into" emit 141 E_NUMBER_WORD
         "Wsync" emit { 141, &WSYNC } DLI_STA
 
+# Optional number after PAUSE
+PAUSE_OPT:
+        EXPR
+        E_EOL emit { TOK_0 }
+
 # Parse a line
 PARSE_LINE_COMMAND: statement
         "." E_REM
@@ -670,7 +675,7 @@ PARSE_LINE_COMMAND: statement
         "Xio"  IO_CHAN C_EXPR XIO_EXPR
         "BPut" IO_CHAN C_EXPR C_EXPR emit TOK_BPUT
         "BGet" IO_CHAN C_EXPR C_EXPR emit TOK_BGET
-        "PAuse" EXPR emit TOK_PAUSE
+        "PAuse" PAUSE_OPT emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
         "PRoc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT

@@ -62,7 +62,7 @@ NEXT
 DLI d3
 ? "Press a Key"
 REPEAT
-  PAUSE 0
+  PAUSE
   pos(0) = pos(0) + 2
   pos(1) = pos(1) + 1
   pos(2) = pos(2) - 1

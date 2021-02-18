@@ -1648,6 +1648,7 @@ General Statements
 
 **Pauses Execution**  
 **PAUSE _num_ / PA.**
+**PAUSE**
 
   Stops the current execution until the
   specified time.
@@ -1657,7 +1658,8 @@ General Statements
   scans in the system, 60 per second in
   NTSC or 50 per second in PAL.
 
-  A value of 0 pauses until the
+  Omitting _num_ is the same as giving
+  a value of 0, and pauses until the
   vertical retrace. This is useful for
   synchronization to the TV refresh and
   for fluid animation.
@@ -1950,7 +1952,7 @@ statement:
       DLI d3
       ? "Press a Key"
       REPEAT
-        PAUSE 0
+        PAUSE
         pos(0) = pos(0) + 2
         pos(1) = pos(1) + 1
         pos(2) = pos(2) - 1
