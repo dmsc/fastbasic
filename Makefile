@@ -183,6 +183,7 @@ COMMON_AS_SRC=\
     src/interp/peekb.asm\
     src/interp/pmgraphics.asm\
     src/interp/poke.asm\
+    src/interp/pop.asm\
     src/interp/position.asm\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\

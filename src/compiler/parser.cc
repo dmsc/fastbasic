@@ -616,6 +616,35 @@ bool SMB_E_LABEL(parse &s)
     return true;
 }
 
+static std::string v_last_name;
+bool SMB_E_LABEL_EXEC(parse &s)
+{
+    s.debug("E_LABEL_EXEC");
+    // Get type
+    auto &v = s.labels;
+    std::string name;
+    if( !s.get_ident(name) )
+        return false;
+    if ( v.find(name) == v.end() )
+    {
+        v[name] = VT_UNDEF;
+    }
+    // Check type
+    if( v[name] != VT_UNDEF )
+        return false;
+    // Store variable name
+    s.add_text(name);
+    v_last_name = name;
+    return true;
+}
+
+bool SMB_E_DO_EXEC(parse &s)
+{
+    s.debug("E_DO_EXEC");
+    s.emit_word("fb_lbl_" + v_last_name);
+    return true;
+}
+
 bool SMB_E_LABEL_SET_TYPE(parse &s)
 {
     s.debug("E_LABEL_SET_TYPE");

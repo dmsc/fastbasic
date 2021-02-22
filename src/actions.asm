@@ -26,7 +26,7 @@
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
         .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
-        .export         E_LABEL, E_LABEL_DEF
+        .export         E_LABEL, E_LABEL_DEF, E_LABEL_EXEC, E_DO_EXEC
         .export         E_PUSH_VAR, E_POP_VAR
         .exportzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
         .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
@@ -608,6 +608,34 @@ nfound: lda     #0
         jsr     add_laddr_list
         bcc     emit_end
 ret:    rts
+.endproc
+
+; Label search only
+.proc   E_LABEL_EXEC
+        ldx     #label_buf - prog_ptr
+        ldy     label_count
+        jsr     list_search
+        bcs     do_create
+        beq     set_var
+        sec
+        rts
+
+do_create:
+        ; Create a new label
+        ldx     #label_ptr - prog_ptr
+        jsr     name_new
+        ldx     label_count
+        inc     label_count
+set_var:
+        stx     E_POP_VAR+1
+        clc
+        rts
+.endproc
+
+.proc   E_DO_EXEC
+        ldx     E_POP_VAR+1
+        jsr     label_create::no_create
+        jmp     E_LABEL::cloop
 .endproc
 
 ; PUSH/POP variables

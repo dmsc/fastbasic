@@ -27,7 +27,7 @@ TOKENS {
  TOK_SHL8, TOK_0, TOK_1
  # PUSH plus composed PUSH ops
  TOK_PUSH, TOK_PUSH_VAR_LOAD
- TOK_PUSH_NUM, TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1
+ TOK_PUSH_NUM, TOK_PUSH_BYTE, TOK_PUSH_0, TOK_PUSH_1, TOK_POP
  # Numeric operators
  TOK_NEG, TOK_ABS, TOK_SGN, TOK_ADD, TOK_SUB, TOK_MUL, TOK_DIV, TOK_MOD
  # Operators on VAR
@@ -90,7 +90,7 @@ EXTERN {
  E_CONST_STRING
  E_VAR_CREATE, E_VAR_SET_TYPE, E_LABEL_SET_TYPE
  E_VAR_WORD, E_VAR_SEARCH
- E_LABEL, E_LABEL_DEF
+ E_LABEL, E_LABEL_DEF, E_LABEL_EXEC, E_DO_EXEC
  E_PUSH_VAR, E_POP_VAR
 
 #@if EXTENDED
@@ -629,6 +629,16 @@ PAUSE_OPT:
         EXPR
         E_EOL emit { TOK_0 }
 
+# Optional expression for EXEC
+OPT_EXPR:
+        EXPR emit { TOK_PUSH }
+        pass
+
+# Optional variable in PROC
+OPT_PROC_VAR:
+        VAR_WORD_SAVE emit { TOK_POP, TOK_VAR_STORE } E_POP_VAR
+        pass
+
 # Parse a line
 PARSE_LINE_COMMAND: statement
         "." E_REM
@@ -678,9 +688,9 @@ PARSE_LINE_COMMAND: statement
         "PAuse" PAUSE_OPT emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
-        "PRoc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT
+        "PRoc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT OPT_PROC_VAR
         "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
-        "EXEc" emit { TOK_CALL, VT_UNDEF } E_LABEL
+        "EXEc" E_LABEL_EXEC OPT_EXPR emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP
