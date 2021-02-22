@@ -178,6 +178,7 @@ search_start:
 
         ; Check rest of characters
 next:
+        inc     CIX
         iny
         lda     (name),y
         jsr     check_char

@@ -371,17 +371,8 @@ exit:
 .proc   emit_varn
         ; Store VARN
         txa
-        jsr     parser_emit_byte
-        ; Fall through
-.endproc
-        ; Advances variable name in source pointer
-.proc   advance_varn
-        lda     bpos
         clc
-        adc     var_namelen
-        sta     bpos
-        clc
-        rts
+        jmp     parser_emit_byte
 .endproc
 
 ; Sets the type of a variable - variable number and new type must be in the stack:
@@ -471,7 +462,7 @@ nfound:
         lda     #128
         jsr     add_laddr_list
         ; Ok, advance parsing pointer with the label length
-        bcc     advance_varn
+        clc
         rts
 .endproc
 
@@ -608,8 +599,7 @@ xit:    rts
 cloop:  bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
 emit_end:
-        jsr     emit_addr
-        jmp     advance_varn
+        jmp     emit_addr
 next:
         jsr     next_laddr
         bcc     cloop
