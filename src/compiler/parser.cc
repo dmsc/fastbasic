@@ -583,7 +583,10 @@ bool SMB_E_LABEL_DEF(parse &s)
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    v[name] = VT_UNDEF;
+    if( v.find(name) == v.end() )
+        v[name] = VT_UNDEF;
+    if( v[name] != VT_UNDEF )
+        return false;
     last_label_name = name;
     s.add_text(name);
     s.emit_label("fb_lbl_" + name);
@@ -599,12 +602,8 @@ bool SMB_E_LABEL(parse &s)
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    if ( v.find(name) == v.end() )
-    {
-        if ( type != VT_UNDEF )
-            return false;
-        v[name] = VT_UNDEF;
-    }
+    if( v.find(name) == v.end() )
+        return false;
     // Check type
     if( v[name] != type )
         return false;
@@ -613,6 +612,8 @@ bool SMB_E_LABEL(parse &s)
     return true;
 }
 
+// Called in EXEC, creates a label if not exists, if already exists checks
+// that it is a PROC.
 bool SMB_E_LABEL_CREATE(parse &s)
 {
     s.debug("E_LABEL_CREATE");
@@ -621,10 +622,9 @@ bool SMB_E_LABEL_CREATE(parse &s)
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    if ( v.find(name) == v.end() )
-    {
+    // Create if not exists
+    if( v.find(name) == v.end() )
         v[name] = VT_UNDEF;
-    }
     // Check type
     if( v[name] != VT_UNDEF )
         return false;
