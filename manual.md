@@ -40,7 +40,8 @@ Currently, FastBasic supports:
   255 characters.
 - Arrays of "word", "byte", floating
   point and strings.
-- User defined procedures.
+- User defined procedures, with integer
+  parameters.
 - Compilation to binary loadable files.
 - Available as a full version `FB.COM`,
   as a smaller integer-only `FBI.COM`
@@ -1044,12 +1045,16 @@ Control Statements
 
 
 **Calls A Subroutine**  
-**EXEC _name_ / EXE.**
+**EXEC _name_ _num1_, ... / EXE.**
 
-  Calls the subroutine _name_. Note
-  that the subroutine must be defined
-  with PROC, but can be defined before
-  or after the call.
+  Calls the subroutine _name_, with the
+  optional parameters _num1_ and so on,
+  separated by commas.
+
+  Note that the subroutine must be
+  defined with PROC with the same number
+  of parameters, but can be defined
+  before or after the call.
 
 
 **Exits From Loop Or PROC**  
@@ -1165,12 +1170,25 @@ Control Statements
 
 
 **Define A Subroutine.**  
-**PROC _name_ / PR.**  
+**PROC _name_ _var1_ .../ PR.**  
 **ENDPROC / ENDP.**
 
   PROC statement starts the definition
   of a subroutine that can be called
   via EXEC.
+
+  You can pass a list of integer
+  variables separated by spaces after
+  the PROC name to specify a number of
+  parameters, the variables will be set
+  to the values passed by the EXEC call.
+  Those variable names are always
+  global, so the values set are seen
+  outside the PROC.
+
+  The number of parameters in the PROC
+  definition and in all the EXEC calls
+  must be the same.
 
   Note that if the PROC statement is
   encountered while executing

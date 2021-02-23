@@ -12,8 +12,6 @@
 DIM P(130), T(130) BYTE, SV(130) BYTE
 
 ' Arguments to procedures bellow
-MULT=0
-DIVI=0
 ZERO=0
 
 ' Precision in digit pairs
@@ -30,7 +28,7 @@ NEXT
 
 ' Calculate ATAN(1/5), positive:
 PRINT "A(1/5):";
-AS=1 : AT=5   : EXEC ARCTAN_SMALL
+EXEC ARCTAN_SMALL 1, 5
 PRINT
 
 ' Multiply by 4
@@ -38,7 +36,7 @@ EXEC MUL4
 
 ' Calculate ATAN(1/239), negative:
 PRINT "A(1/239):";
-AS=0 : AT=239 : EXEC ARCTAN
+EXEC ARCTAN 0, 239
 PRINT
 
 ' Multiply all by 4
@@ -75,24 +73,21 @@ ENDPROC
 ' Calculate ATAN(1/AT), adding the
 ' result to P()
 '
-PROC ARCTAN
+PROC ARCTAN AS AT
  T(0)=1
  ZERO=0
- DIVI=AT
- EXEC DIV
+ EXEC DIV AT
  EXEC SAVE_T
  N=1
  REPEAT
   EXEC ADDSUB
   EXEC RESTORE_T
-  DIVI=AT
-  EXEC DIV
-  EXEC DIV
+  EXEC DIV AT
+  EXEC DIV AT
   EXEC SAVE_T
   EXEC CHKZERO
   N=N+2
-  DIVI=N
-  EXEC DIV
+  EXEC DIV N
   PRINT ".";
  UNTIL ZERO<0
 ENDPROC
@@ -102,11 +97,10 @@ ENDPROC
 ' number (so that AT*AT*100 < 32768),
 ' adding the result to P().
 '
-PROC ARCTAN_SMALL
+PROC ARCTAN_SMALL AS AT
  T(0)=1
  ZERO=0
- DIVI=AT
- EXEC DIV
+ EXEC DIV AT
  EXEC SAVE_T
  N=1
  AT=AT*AT
@@ -114,12 +108,10 @@ PROC ARCTAN_SMALL
   EXEC ADDSUB
   EXEC RESTORE_T
   N=N+2
-  DIVI=AT
-  EXEC DIV
+  EXEC DIV AT
   EXEC CHKZERO
   EXEC SAVE_T
-  DIVI=N
-  EXEC DIV
+  EXEC DIV N
   PRINT ".";
  UNTIL ZERO<0
 ENDPROC
@@ -204,10 +196,10 @@ ENDPROC
 ' Multiplies T() by the small number
 ' MULTI, only works if MULTI*100<32768
 '
-PROC MUL
+PROC MUL MULTI
  C=0
  FOR I=Q TO 0 STEP -1
-  B = T(I) * MULT + C
+  B = T(I) * MULTI + C
   T(I) = B MOD 100
   C = B / 100
  NEXT
@@ -217,7 +209,7 @@ ENDPROC
 ' Divides T() by the small number DIVI,
 ' only works if DIVI*100<32768
 '
-PROC DIV
+PROC DIV DIVI
  C=0
  FOR I=ZERO TO Q
   B = 100 * C + T(I)
