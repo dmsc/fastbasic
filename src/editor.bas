@@ -492,11 +492,12 @@ endproc
 ' Calls 'CountLines
 PROC CountLines
 ' This code is too slow in FastBasic, so we use machine code
-'  nptr = ptr
+'  ptr = nptr
 '  while nptr <> MemEnd
 '    inc nptr
 '    if peek(nptr-1) = $9b then exit
 '  wend
+  ptr = nptr
   nptr = USR(@Count_Lines, ptr, MemEnd - ptr)
 ENDPROC
 
@@ -517,7 +518,7 @@ PROC ScrollUp
   inc topLine
 
   ' Get last screen line length by searching next EOL
-  ptr = ScrAdr(23)
+  nptr = ScrAdr(23)
   exec CountLines
   ScrAdr(23) = nptr
 
@@ -567,7 +568,7 @@ PROC CalcRedrawScreen
   exec CheckEmptyBuf
 
   ' Search given line
-  ptr = Adr(MemStart)
+  nptr = Adr(MemStart)
   y = 0
   while y < topLine
    exec CountLines
@@ -576,11 +577,10 @@ PROC CalcRedrawScreen
      topLine = y
      exit
    endif
-   ptr = nptr
    inc y
   wend
 
-  ScrAdr(0) = ptr
+  ScrAdr(0) = nptr
   exec RedrawScreen
 ENDPROC
 
@@ -593,14 +593,13 @@ PROC RedrawScreen
   exec ShowInfo
   hdraw = 0
   y = 0
-  ptr = ScrAdr(0)
+  nptr = ScrAdr(0)
   while y < 23
     exec CountLines
     lLen = nptr - ptr - 1
     exec DrawLinePtr
-    ptr = nptr
     inc y
-    ScrAdr(y) = ptr
+    ScrAdr(y) = nptr
   wend
 
   exec ChgLine
@@ -776,7 +775,6 @@ PROC MoveLineUp
   put 156
   nptr = ScrAdr(scrLine)
   for y = scrLine to 22
-    ptr = nptr
     exec CountLines
     ScrAdr(y+1) = nptr
   next y
@@ -843,7 +841,6 @@ PROC CopyFromMark
     nptr = Adr(MemStart)
     y = 0
     while y <= markPos and nptr <> MemEnd
-      ptr = nptr
       exec CountLines
       inc y
     wend
