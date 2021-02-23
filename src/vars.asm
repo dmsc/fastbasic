@@ -19,11 +19,11 @@
 ; Handles a list of names (variables or labels)
 ; --------------------------------------------
 
-        .export         var_search, list_search, name_new
+        .export         var_search, label_search, name_new
         .exportzp       var_namelen
 
         ; From alloc.asm
-        .importzp       var_buf, prog_ptr, label_count, var_count
+        .importzp       var_buf, prog_ptr, label_count, var_count, label_buf
         .import         alloc_area_8
         ; From parser.asm
         .import         parser_skipws
@@ -64,6 +64,12 @@ first:
         cmp     #26
 exit:
         rts
+.endproc
+
+.proc   label_search
+        ldy     label_count
+        ldx     #label_buf - prog_ptr
+        bne     list_search     ; X is never 0 above
 .endproc
 
         ; Search the list of variables by name,

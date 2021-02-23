@@ -26,7 +26,7 @@
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
         .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
-        .export         E_LABEL, E_LABEL_DEF, E_LABEL_EXEC, E_DO_EXEC
+        .export         E_LABEL, E_LABEL_DEF, E_LABEL_CREATE, E_DO_EXEC
         .export         E_PUSH_VAR, E_POP_VAR
         .exportzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
         .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
@@ -36,12 +36,11 @@
         ; From runtime.asm
         .import         read_word
         ; From vars.asm
-        .import         var_search, name_new
-        .import         list_search
+        .import         var_search, name_new, label_search
         .importzp       var_namelen, label_count, var_count
         ; From alloc.asm
         .import         alloc_laddr
-        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr, label_buf
+        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
         ; From parser.asm
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
@@ -133,29 +132,6 @@ reloc_addr:     .res    2
         inx
         clc
 ok:     rts
-.endproc
-
-; Pops code pointer from loop stack and emit
-.proc   pop_emit_addr
-        jsr     pop_codep
-.endproc        ; Fall through
-; Emits address into codep, relocating if necessary.
-.proc   emit_addr
-        clc
-        adc     reloc_addr
-        pha
-        txa
-        adc     reloc_addr+1
-        tax
-        pla
-.endproc        ; Fall through
-;
-; Emits 16bit AX into codep
-.proc   emit_AX
-        clc
-        jsr     parser_emit_byte
-        txa
-        jmp     parser_emit_byte
 .endproc
 
 ; Parser external subs
@@ -433,38 +409,6 @@ xit:    rts
 ;
 ; At end of parsing, we check that all entries in the laddr list are <> 0.
 ;
-; Label definition search/create
-.proc   E_LABEL_DEF
-        lda     #0              ; Type of label: undefined
-        jsr     label_create
-
-        ; Fills all undefined labels with current position:
-        bcs     nfound
-
-        ; If we found a *definition* for the label, error out (label already
-        ; defined).
-cloop:  bmi     xit_label_err
-
-        ; Write current codep to AX
-        jsr     patch_codep
-
-        ; Mark the label as "resolved", so we can show error if not all
-        ; labels are defined after parsing ends.
-        tya     ; Y = 1 from patch_codep
-        sta     (tmp1), y
-
-        ; Continue searching the address list
-next:   jsr     next_laddr
-        bcc     cloop
-
-        ; No more entries, adds our address as a "definition" (A = 128)
-nfound:
-        lda     #128
-        jsr     add_laddr_list
-        ; Ok, advance parsing pointer with the label length
-        clc
-        rts
-.endproc
 
 ; Sets the type of the last label defined
 .proc   E_LABEL_SET_TYPE
@@ -476,44 +420,6 @@ nfound:
         inc     label_ptr+1
         clc
 xit:    rts
-.endproc
-
-        ; Create a label if not exists and starts searching in the label
-        ; address list.
-        ;
-        ; This jumps to next_laddr, so it returns the same values.
-.proc   label_create
-        ; Check if we have a valid name - this exits on error!
-        sta     tmp3    ; Store label type
-        ldx     #label_buf - prog_ptr
-        ldy     label_count
-        jsr     list_search
-        bcs     do_create
-        ; Check if type is compatible
-        cmp     tmp3
-        beq     no_create       ; Yes, search address
-xit_pop_2:              ; Exit from caller with error
-        pla
-        pla
-::xit_label_err:
-        sec
-        rts
-
-do_create:
-        ; See if we need to create it
-        lda     tmp3
-        bne     xit_pop_2
-        ; Create a new label
-        ldx     #label_ptr - prog_ptr
-        jsr     name_new
-        ldx     label_count
-        inc     label_count
-no_create:
-        lda     laddr_buf
-        ldy     laddr_buf+1
-        sty     tmp1+1
-        stx     laddr_search_num
-        bne     laddr_search_start      ; Assume laddr_buf+1 is never 0
 .endproc
 
         ; Search next matching label in the label address table.
@@ -554,8 +460,14 @@ cpnum:  eor     #$00
         lda     (tmp1), y       ; lo address in A
         plp                     ; And type in P
 xit:    rts
+
 ::laddr_search_num = cpnum + 1
-::laddr_search_start = comp
+::laddr_search_start:
+        lda     laddr_buf
+        ldy     laddr_buf+1
+        sty     tmp1+1
+        stx     laddr_search_num
+        bne     comp            ; Assume laddr_buf+1 is never 0
 .endproc
 
 ; Adds a label address pointer to the list
@@ -585,40 +497,88 @@ xit:    rts
         txa
         sta     (tmp2), y
       ; clc     ; get_codep clears carry
-        rts
+xit:    rts
 .endproc
 
-; Label search / create (on use)
-.proc   E_LABEL
-        jsr     get_last_tok    ; Get label TYPE from last token
-        jsr     label_create
-        ; Emits a label, searching the label address in the label list
+; Label definition search/create
+.proc   E_LABEL_DEF
+
+        ; Search and create the label
+        jsr     E_LABEL_CREATE
+        bcs     add_laddr_list::xit     ; Label already defined
+
+        ; Search in the label list
+        jsr     laddr_search_start
         bcs     nfound
 
+        ; If we found a *definition* for the label, error out (label already
+        ; defined).
+cloop:  bmi     xit_label_err
+
+        ; Write current codep to AX
+        jsr     patch_codep
+
+        ; Mark the label as "resolved", so we can show error if not all
+        ; labels are defined after parsing ends.
+        tya     ; Y = 1 from patch_codep
+        sta     (tmp1), y
+
+        ; Continue searching the address list
+next:   jsr     next_laddr
+        bcc     cloop
+
+        ; No more entries, adds our address as a "definition" (A = 128)
+nfound:
+        lda     #128
+        jmp     add_laddr_list
+.endproc
+
+; Label search on use
+.proc   E_LABEL
+        jsr     get_last_tok    ; Get label TYPE from last token
+        sta     tmp3    ; Store label type
+
+        ; Check if we have a valid name - this exits on error!
+        jsr     label_search
+        bcs     xit_label_err
+
+        ; Check if type is compatible
+        cmp     tmp3
+        beq     start_searching
+::xit_label_err:
+        sec
+        rts
+
+; Get EXEC label address and store - this is split because we first parse the
+; label (and create it if needed), then parse arguments and at last emit the
+; call address
+::E_DO_EXEC:
+        ldx     #0
+
+        ; Emits a label, searching the label address in the label list
+start_searching:
+        jsr     laddr_search_start
+        bcs     nfound
+
+cloop:
         ; Check label status
-cloop:  bpl     next    ; 0 == label not defined, 1 == label defined, 128 == label address
+        ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
-emit_end:
-        jmp     emit_addr
+        bmi     emit_addr
 next:
         jsr     next_laddr
         bcc     cloop
         ; Not found, add to the label address list
 nfound: lda     #0
         jsr     add_laddr_list
-        bcc     emit_end
+        bcc     emit_addr
 ret:    rts
 .endproc
 
-; Label search only
-.proc   E_LABEL_EXEC
-        ldx     #label_buf - prog_ptr
-        ldy     label_count
-        jsr     list_search
-        bcs     do_create
-        beq     set_var
-        sec
-        rts
+; Label search and create if not exists
+.proc   E_LABEL_CREATE
+        jsr     label_search
+        bcc     check_var
 
 do_create:
         ; Create a new label
@@ -626,16 +586,42 @@ do_create:
         jsr     name_new
         ldx     label_count
         inc     label_count
+        clc
 set_var:
         stx     E_DO_EXEC+1
-        clc
+        rts
+
+        ; Check if label is PROC, error if not
+check_var:
+        beq     set_var
+        sec
         rts
 .endproc
 
-.proc   E_DO_EXEC
-        ldx     #0
-        jsr     label_create::no_create
-        jmp     E_LABEL::cloop
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Emits code for loop address, any address or word
+;
+; Pops code pointer from loop stack and emit
+.proc   pop_emit_addr
+        jsr     pop_codep
+.endproc        ; Fall through
+; Emits address into codep, relocating if necessary.
+.proc   emit_addr
+        clc
+        adc     reloc_addr
+        pha
+        txa
+        adc     reloc_addr+1
+        tax
+        pla
+.endproc        ; Fall through
+;
+; Emits 16bit AX into codep
+.proc   emit_AX
+        clc
+        jsr     parser_emit_byte
+        txa
+        jmp     parser_emit_byte
 .endproc
 
 ; PUSH/POP variables

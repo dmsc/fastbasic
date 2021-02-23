@@ -613,10 +613,9 @@ bool SMB_E_LABEL(parse &s)
     return true;
 }
 
-static std::string v_last_name;
-bool SMB_E_LABEL_EXEC(parse &s)
+bool SMB_E_LABEL_CREATE(parse &s)
 {
-    s.debug("E_LABEL_EXEC");
+    s.debug("E_LABEL_CREATE");
     // Get type
     auto &v = s.labels;
     std::string name;
@@ -631,14 +630,14 @@ bool SMB_E_LABEL_EXEC(parse &s)
         return false;
     // Store variable name
     s.add_text(name);
-    v_last_name = name;
+    s.last_label = name;
     return true;
 }
 
 bool SMB_E_DO_EXEC(parse &s)
 {
     s.debug("E_DO_EXEC");
-    s.emit_word("fb_lbl_" + v_last_name);
+    s.emit_word("fb_lbl_" + s.last_label);
     return true;
 }
 

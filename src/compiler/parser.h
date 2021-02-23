@@ -73,6 +73,7 @@ class parse {
         int label_num;
         bool finalized;
         std::vector<codew> *code;
+        std::string last_label;
         // Used to store an un-abbreviated line
         struct expand_line {
             std::string text;
