@@ -635,7 +635,7 @@ OPT_EXEC_PARAM:
         pass
 
 EXEC_PARAM_MORE:
-        C_EXPR
+        C_EXPR EXEC_PARAM_MORE
         pass
 
 # Optional variable in PROC

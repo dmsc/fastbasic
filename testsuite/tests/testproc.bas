@@ -27,3 +27,11 @@ proc param x y
    ? "X="; x
    ? "Y="; y
 endproc
+
+' Proc with a parameter
+proc param3 x y z
+   ? "P="; x, y, z
+endproc
+
+exec param3 1, 2, 3
+
