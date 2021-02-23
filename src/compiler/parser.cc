@@ -255,20 +255,17 @@ bool SMB_E_PUSH_VAR(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_VAR");
-    s.sto_var = s.remove_last().get_val();
+    s.var_stk.push_back(s.remove_last().get_val());
     return true;
 }
 
 bool SMB_E_POP_VAR(parse &s)
 {
     s.debug("E_POP_VAR");
-    if (s.sto_var < 0)
-    {
-        s.debug("---------->ERROR: no variable stored!\n");
-        return false;
-    }
-    s.emit_byte( s.sto_var );
-    s.sto_var = -1;
+    if (s.var_stk.empty())
+        throw parse_error("variable stack empty", s.pos);
+    s.emit_byte( s.var_stk.back() );
+    s.var_stk.pop_back();
     return true;
 }
 

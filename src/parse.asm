@@ -22,7 +22,7 @@
         .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; Parser state
         .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
-        .exportzp       loop_sp
+        .exportzp       loop_sp, var_sp
         ; Output state
         .exportzp       opos
         ; From actions.asm
@@ -34,7 +34,7 @@
         .import         alloc_prog
         .importzp       prog_ptr, BASIC_TOP
         ; From vars.asm
-        .importzp       var_count, label_count
+        .exportzp       var_count, label_count
         ; From runtime.asm
         .importzp       IOCHN, COLOR, IOERROR
         .import         putc
@@ -53,8 +53,15 @@ end_ptr:.res 2
 bmax:   .res 1
 opos:   .res 1
 pptr:   .res 2
-linenum:.res 2
-loop_sp:.res 1
+
+; This variables are cleared in one loop:
+zp_clear_start:
+linenum:        .res 2
+loop_sp:        .res 1
+var_sp:         .res 1
+label_count:    .res 1
+var_count:      .res 1
+zp_clear_end:
 
         .code
         .include "atari.inc"
@@ -177,11 +184,12 @@ parser_start:
         tsx
         stx     saved_cpu_stack
         lda     #0
-        sta     linenum
-        sta     linenum+1
-        sta     loop_sp
-        sta     var_count
-        sta     label_count
+        ldx     #zp_clear_end - zp_clear_start
+zp_clear:
+        sta     zp_clear_start, x
+        dex
+        bpl     zp_clear
+
 parse_line:
         ldx     #0
         stx     bpos

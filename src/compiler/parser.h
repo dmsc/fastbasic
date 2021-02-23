@@ -58,7 +58,7 @@ class parse {
                 int linenum;
         };
         std::string in_fname;
-        int sto_var;
+        std::vector<int> var_stk;
         int lvl, maxlvl;
         std::string str;
         size_t pos;
@@ -130,7 +130,6 @@ class parse {
         } expand;
 
         parse():
-            sto_var(-1),
             lvl(0), maxlvl(0), pos(0),
             max_pos(0), linenum(0), label_num(0),
             finalized(false),
@@ -211,7 +210,7 @@ class parse {
         void new_line(std::string l, int ln)
         {
             pos = max_pos = 0;
-            sto_var = -1;
+            var_stk.clear();
             str = l;
             saved_errors.clear();
             expand.text.clear();

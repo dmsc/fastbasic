@@ -630,13 +630,17 @@ PAUSE_OPT:
         E_EOL emit { TOK_0 }
 
 # Optional expression for EXEC
-OPT_EXPR:
-        EXPR emit { TOK_PUSH }
+OPT_EXEC_PARAM:
+        EXPR EXEC_PARAM_MORE emit { TOK_PUSH }
+        pass
+
+EXEC_PARAM_MORE:
+        C_EXPR
         pass
 
 # Optional variable in PROC
 OPT_PROC_VAR:
-        VAR_WORD_SAVE emit { TOK_POP, TOK_VAR_STORE } E_POP_VAR
+        VAR_WORD_SAVE OPT_PROC_VAR emit { TOK_POP, TOK_VAR_STORE } E_POP_VAR
         pass
 
 # Parse a line
@@ -690,7 +694,7 @@ PARSE_LINE_COMMAND: statement
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
         "PRoc" emit { TOK_JUMP, LT_PROC_DATA } E_PUSH_LT E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT OPT_PROC_VAR
         "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
-        "EXEc" E_LABEL_EXEC OPT_EXPR emit { TOK_CALL } E_DO_EXEC
+        "EXEc" E_LABEL_EXEC OPT_EXEC_PARAM emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END
 #@if FASTBASIC_FP

@@ -20,9 +20,10 @@ endproc
 
 exec before
 
-exec param 123
+exec param 123, i * i * i
 
 ' Proc with a parameter
-proc param x
+proc param x y
    ? "X="; x
+   ? "Y="; y
 endproc

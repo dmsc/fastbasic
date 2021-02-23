@@ -31,7 +31,7 @@
         .exportzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
         .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
         .exportzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
-        .importzp       loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
+        .importzp       var_sp, loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
         .exportzp       reloc_addr
         ; From runtime.asm
         .import         read_word
@@ -104,9 +104,9 @@ read_fp = AFP
 
 ;----------------------------------------------------------
 ; Use cassette buffer for loop stack, max 128 bytes
-; Note that at $480 we store the interpreter stack.
 loop_stk        =       $400
-
+; And at $480 store the "variable" stack, used procedure parameters
+var_stk         =       $480
 
 ;----------------------------------------------------------
         .zeropage
@@ -627,13 +627,13 @@ do_create:
         ldx     label_count
         inc     label_count
 set_var:
-        stx     E_POP_VAR+1
+        stx     E_DO_EXEC+1
         clc
         rts
 .endproc
 
 .proc   E_DO_EXEC
-        ldx     E_POP_VAR+1
+        ldx     #0
         jsr     label_create::no_create
         jmp     E_LABEL::cloop
 .endproc
@@ -641,13 +641,17 @@ set_var:
 ; PUSH/POP variables
 .proc   E_PUSH_VAR
         jsr     get_last_tok    ; Get variable ID from last token
-        sta     E_POP_VAR+1
+        ldx     var_sp
+        sta     var_stk, x
+        inc     var_sp
         clc
         rts
 .endproc
 
 .proc   E_POP_VAR
-        lda     #0
+        dec     var_sp
+        ldx     var_sp
+        lda     var_stk, x
         jmp     parser_emit_byte
 .endproc
 

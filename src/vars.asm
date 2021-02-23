@@ -20,10 +20,10 @@
 ; --------------------------------------------
 
         .export         var_search, list_search, name_new
-        .exportzp       var_namelen, label_count, var_count
+        .exportzp       var_namelen
 
         ; From alloc.asm
-        .importzp       var_buf, prog_ptr
+        .importzp       var_buf, prog_ptr, label_count, var_count
         .import         alloc_area_8
         ; From parser.asm
         .import         parser_skipws
@@ -44,8 +44,6 @@ INBUFF  = $F3
 name:   .res 2
 var:    .res 2
 len:    .res 1
-label_count:    .res 1
-var_count:      .res    1
 
 ; Use a longer name for external references
 var_namelen=    len
