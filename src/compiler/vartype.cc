@@ -19,6 +19,7 @@
 // vartype.cc: Defines types of variables
 
 #include "vartype.h"
+#include <stdexcept>
 
 VarType get_vartype(std::string t)
 {
@@ -82,3 +83,42 @@ bool var_type_is_array(enum VarType t)
     return false;
 }
 
+labelType::labelType(): type(0) {}
+
+labelType::labelType(std::string str)
+{
+    if( str == "VT_ARRAY_WORD" )
+        type = 128;
+    else if( str == "VT_ARRAY_BYTE" )
+        type = 129;
+    else
+        throw std::runtime_error("invalid label type " + str);
+}
+
+bool labelType::is_defined()
+{
+    return type >= 64;
+}
+
+bool labelType::is_proc()
+{
+    return type < 128;
+}
+
+bool labelType::add_proc_params(int params)
+{
+    if( !type )
+        type = params + 1;
+
+    return num_params() == params;
+}
+
+int labelType::num_params()
+{
+    return (type & 63) - 1;
+}
+
+void labelType::define()
+{
+    type |= 64;
+}

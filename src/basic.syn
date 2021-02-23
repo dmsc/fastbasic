@@ -95,6 +95,8 @@ EXTERN {
 
 #@if EXTENDED
  E_DATA_FILE
+ E_COUNT_PARAM
+ E_PROC_CHECK
 #@endif
 
 #@if FASTBASIC_FP
@@ -635,12 +637,23 @@ OPT_EXEC_PARAM:
         pass
 
 EXEC_PARAM_MORE:
+#@if EXTENDED
+        # In the cross-compiler, we count parameters to detect program errors
+        E_COUNT_PARAM
+#@endif
         C_EXPR EXEC_PARAM_MORE
         pass
 
 # Optional variable in PROC
 OPT_PROC_VAR:
+#@if EXTENDED
+        # In the cross-compiler, we count parameters to detect program errors
+        E_COUNT_PARAM
+#@endif
         VAR_WORD_SAVE OPT_PROC_VAR emit { TOK_POP, TOK_VAR_STORE } E_POP_VAR
+#@if EXTENDED
+        E_PROC_CHECK
+#@endif
         pass
 
 # Parse a line

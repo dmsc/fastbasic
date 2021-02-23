@@ -22,6 +22,7 @@
 
 #include "codew.h"
 #include "looptype.h"
+#include "vartype.h"
 
 #include <algorithm>
 #include <map>
@@ -68,12 +69,13 @@ class parse {
         std::map<std::string, std::vector<codew>> procs;
         std::vector<std::string> proc_stack;
         std::map<std::string, int> vars;
-        std::map<std::string, int> labels;
+        std::map<std::string, labelType> labels;
         std::vector<jump> jumps;
         int label_num;
         bool finalized;
         std::vector<codew> *code;
-        std::string last_label;
+        std::string last_label; // Last label to be referenced in an EXEC
+        int current_params;     // Number of parameters in PROC/EXEC being parsed
         // Used to store an un-abbreviated line
         struct expand_line {
             std::string text;

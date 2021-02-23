@@ -575,7 +575,6 @@ bool SMB_E_NUMBER_FP(parse &s)
 
 #endif
 
-static std::string last_label_name;
 bool SMB_E_LABEL_DEF(parse &s)
 {
     s.debug("E_LABEL_DEF");
@@ -584,10 +583,11 @@ bool SMB_E_LABEL_DEF(parse &s)
     if( !s.get_ident(name) )
         return false;
     if( v.find(name) == v.end() )
-        v[name] = VT_UNDEF;
-    if( v[name] != VT_UNDEF )
+        v[name] = labelType();
+    if( v[name].is_defined() )
         return false;
-    last_label_name = name;
+    s.last_label = name;
+    s.current_params = 0;
     s.add_text(name);
     s.emit_label("fb_lbl_" + name);
     return true;
@@ -597,19 +597,27 @@ bool SMB_E_LABEL(parse &s)
 {
     s.debug("E_LABEL");
     // Get type
-    enum VarType type = get_vartype(s.remove_last().get_str());
-    auto &v = s.labels;
+    auto ltype = labelType(s.remove_last().get_str());
+    // Get identifier
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    if( v.find(name) == v.end() )
+    auto it = s.labels.find(name);
+    if( it == s.labels.end() )
         return false;
     // Check type
-    if( v[name] != type )
+    if( it->second != ltype )
         return false;
     s.add_text(name);
     s.emit_word("fb_lbl_" + name);
     return true;
+}
+
+bool SMB_E_COUNT_PARAM(parse &s)
+{
+    s.debug("E_COUNT_PARAM");
+    s.current_params ++;
+    return false;
 }
 
 // Called in EXEC, creates a label if not exists, if already exists checks
@@ -617,41 +625,53 @@ bool SMB_E_LABEL(parse &s)
 bool SMB_E_LABEL_CREATE(parse &s)
 {
     s.debug("E_LABEL_CREATE");
-    // Get type
-    auto &v = s.labels;
     std::string name;
     if( !s.get_ident(name) )
         return false;
-    // Create if not exists
-    if( v.find(name) == v.end() )
-        v[name] = VT_UNDEF;
+    // Get type, create if not exists
+    auto &v = s.labels[name];
     // Check type
-    if( v[name] != VT_UNDEF )
+    if( !v.is_proc() )
         return false;
     // Store variable name
     s.add_text(name);
     s.last_label = name;
+    s.current_params = 0;
     return true;
 }
 
 bool SMB_E_DO_EXEC(parse &s)
 {
+    int pnum = s.current_params;
     s.debug("E_DO_EXEC");
+    auto &l = s.labels[s.last_label];
+    if( !l.add_proc_params(pnum) )
+        throw parse_error("invalid number of parameters in EXEC, expected " +
+                std::to_string(l.num_params()) + ", got "
+                + std::to_string(pnum) , s.pos);
     s.emit_word("fb_lbl_" + s.last_label);
+    return true;
+}
+
+bool SMB_E_PROC_CHECK(parse &s)
+{
+    int pnum = s.current_params - 1;
+    s.debug("E_PROC_CHECK");
+    auto &l = s.labels[s.last_label];
+    if( !l.add_proc_params(pnum) )
+        throw parse_error("invalid number of parameters in PROC, expected " +
+                std::to_string(l.num_params()) + ", got "
+                + std::to_string(pnum) , s.pos);
+    l.define();
     return true;
 }
 
 bool SMB_E_LABEL_SET_TYPE(parse &s)
 {
     s.debug("E_LABEL_SET_TYPE");
-
     s.skipws();
     // Get type
-    enum VarType type = get_vartype(s.remove_last().get_str());
-    auto &v = s.labels;
-    if( do_debug )
-        std::cout << "\tset label '" << last_label_name << "' to " << int(type) << "\n";
-    v[last_label_name] = (v[last_label_name] & ~0xFF) + type;
+    s.labels[s.last_label] = labelType(s.remove_last().get_str());
     return true;
 }
 

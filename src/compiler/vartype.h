@@ -21,6 +21,7 @@
 #pragma once
 #include <string>
 
+// Variable types
 enum VarType {
         VT_UNDEF = 0,
         VT_WORD,
@@ -35,4 +36,22 @@ enum VarType {
 VarType get_vartype(std::string t);
 std::string get_vt_name(enum VarType t);
 bool var_type_is_array(enum VarType t);
+
+// Label types
+class labelType {
+    public:
+        // Create from string in parser file
+        labelType(std::string t);
+        labelType();
+        bool is_defined();
+        bool is_proc();
+        bool add_proc_params(int params);
+        int  num_params();
+        void define();
+        bool operator !=(const labelType &l) const { return type != l.type; }
+    private:
+        int type;
+};
+
+
 
