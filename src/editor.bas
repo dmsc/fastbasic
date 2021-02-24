@@ -854,7 +854,7 @@ PROC CopyFromMark
       linLen = 255
     endif
     move ptr, EditBuf, linLen
-    edit = 1
+    edited = 1
     exec SaveLine
     exec ForceDrawCurrentLine
 
