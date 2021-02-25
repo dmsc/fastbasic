@@ -23,6 +23,8 @@
         .export heap_start
         .export BYTECODE_ADDR
 
+        .exportzp ZP_INTERP_LOAD, ZP_INTERP_SIZE
+
         .include "atari.inc"
 
         ; Linker vars
@@ -32,6 +34,10 @@
         .import __RT_DATA_SIZE__
 
         .import interpreter_run, bytecode_start
+
+        ; Interpreter locations exported as ZP to the BASIC sources
+ZP_INTERP_LOAD = < __INTERP_START__
+ZP_INTERP_SIZE = < __INTERP_SIZE__
 
         ; Start of HEAP - aligned to 256 bytes
 heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
