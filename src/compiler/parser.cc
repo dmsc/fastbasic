@@ -94,9 +94,9 @@ static unsigned long get_number(parse &s)
     else
     {
         bool sign = s.expect('-');
-        unsigned num = get_dec(s);
+        int num = get_dec(s);
 
-        if( num > 65535 )
+        if( num > 65535 || num < 0 )
             return 65536;
 
         if( s.expect('.') ) // If ends in a DOT, it's a fp number
