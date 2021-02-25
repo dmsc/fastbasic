@@ -43,9 +43,8 @@ OldMargin = PEEK(@@LMARGN)
 FileName$ = "D:HELP.TXT"
 
 ' MemStart: the start of available memory, used as a buffer for the file data
+' MemEnd: pointer to the end of the buffer.
 dim MemStart(-1) byte
-' MemEnd: the end of the current file, initialized to MemStart.
-MemEnd = Adr(MemStart)
 
 ' NOTE: variables already are initialized to '0' in the runtime.
 ' topLine:      Line at the top of the screen
@@ -65,7 +64,7 @@ MemEnd = Adr(MemStart)
 ' Loads initial file, and change the filename
 exec InitScreen
 exec LoadFile
-FileName$ ="D:"
+exec DefaultFileName
 
 ' escape = 0  ' already initialized to 0
 do
@@ -73,6 +72,22 @@ do
   exec ProcessKeys
 loop
 
+'-------------------------------------
+' Sets FileName$ to the default drive
+'
+proc DefaultFileName
+  FileName$="D:"
+endproc
+
+
+'-------------------------------------
+' Starts the editor with an empty file
+'
+proc NewFile
+  exec DefaultFileName
+  MemEnd = Adr(MemStart)
+  exec RedrawNewFile
+endproc
 
 '-------------------------------------
 ' Clears top line to show a message
@@ -532,7 +547,6 @@ ENDPROC
 '
 PROC LoadFile
 
-  MemEnd = adr(MemStart)
   open #1, 4, 0, FileName$
   if err() = 1
     bget #1, Adr(MemStart), dpeek(@MEMTOP) - Adr(MemStart)
@@ -542,9 +556,12 @@ PROC LoadFile
   if err() = 136
     MemEnd = dpeek($358) + adr(MemStart)
   else
+    ' Load error, we show the error to the user
+    ' and restart with an empty file
     exec FileError
+    exec NewFile
+    exit
   endif
-  close #1
 
   exec RedrawNewFile
 ENDPROC
@@ -553,6 +570,7 @@ ENDPROC
 ' Redraw screen after new file
 '
 PROC RedrawNewFile
+  close #1
   fileSaved = 1
   column = 0
   topLine = 0
@@ -991,9 +1009,7 @@ PROC ProcessKeys
   elif key = $0E
     exec AskSaveFileChanged
     if not key
-      FileName$="D:"
-      MemEnd = Adr(MemStart)
-      exec RedrawNewFile
+      exec NewFile
     endif
   '
   '--------- Control-L (load) -----
@@ -1047,7 +1063,7 @@ PROC SaveCompiledFile
 
   ' Save original filename
   move Adr(FileName$), EditBuf, 128
-  poke Len(FileName$) + Adr(FileName$), $58
+  exec DefaultFileName
 
   ? "Name";
   exec InputFileName
