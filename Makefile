@@ -34,6 +34,10 @@ INTASM=-I build/gen/int $(ASMFLAGS)
 FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
 INTCXX=-Ibuild/gen/int -Isrc/compiler
 
+# By default use quiet build
+Q=@
+ECHO=@printf "\e[0;32m%s\e[0m\n"
+
 # Detect Windows OS and set file extensions:
 ifeq ($(strip $(shell echo '_WIN32' | $(CROSS)$(CXX) -E - | grep  "_WIN32")),_WIN32)
     # Linux / OS-X
@@ -507,14 +511,14 @@ all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 dist: $(ATR) $(ZIPFILE)
 
 clean: test-clean
-	rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
+	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
 	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_HOST) $(TARGET_OBJ) \
 	      $(COMPILER_HST_DEPS) $(COMPILER_TGT_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
 	      $(SAMP_OBJS) $(HOST_OBJ)
 
 distclean: clean test-distclean
-	rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
+	$(Q)rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
 	    build/gen/int/basic.cc build/gen/fp/basic.cc \
 	    build/gen/int/basic.h  build/gen/fp/basic.h  \
 	    build/gen/int/basic.inc  build/gen/fp/basic.inc  \
@@ -522,17 +526,18 @@ distclean: clean test-distclean
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
 	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
-	-rmdir build/gen/fp build/gen/int \
+	$(Q)-rmdir build/gen/fp build/gen/int \
 	       build/obj/fp/interp build/obj/int/interp build/obj/fp build/obj/int \
 	       build/obj/cxx-fp build/obj/cxx-int \
 	       build/obj/cxx-tgt-fp build/obj/cxx-tgt-int \
 	       build/compiler/asminc \
 	       build/bin build/gen build/obj build/disk build/compiler
-	$(MAKE) -C testsuite distclean
+	$(Q)$(MAKE) -C testsuite distclean
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
-	mkatr $@ $(DOSDIR) -b $^
+	$(ECHO) "Creating ATR disk image"
+	$(Q)mkatr $@ $(DOSDIR) -b $^
 
 # Build compiler ZIP file.
 $(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) | build
@@ -544,198 +549,238 @@ $(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) | build
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 build/disk/%.bas: samples/fp/%.bas | build/disk
-	LC_ALL=C tr '\n' '\233' < $< > $@
+	$(Q)LC_ALL=C tr '\n' '\233' < $< > $@
 
 build/disk/%.bas: samples/int/%.bas | build/disk
-	LC_ALL=C tr '\n' '\233' < $< > $@
+	$(Q)LC_ALL=C tr '\n' '\233' < $< > $@
 
 build/disk/%.bas: tests/%.bas | build/disk
-	LC_ALL=C tr '\n' '\233' < $< > $@
+	$(Q)LC_ALL=C tr '\n' '\233' < $< > $@
 
 # Transform a text file to ATASCII (replace $0A with $9B)
 build/disk/%: % version.mk | build/disk
-	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
+	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
 
 build/disk/%.txt: %.md version.mk | build/disk
-	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
+	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
 
 # Copy ".XEX" as ".COM"
 build/disk/%.com: build/bin/%.xex | build/disk
-	cp $< $@
+	$(Q)cp $< $@
 
 # Parser generator for 6502
 $(ASYNT): src/syntax/asynt.cc | build/gen
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(ECHO) "Compile syntax parsing tool $<"
+	$(Q)$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Parser generator for C++
 $(CSYNT): src/syntax/csynt.cc | build/gen
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(ECHO) "Compile syntax parsing tool $<"
+	$(Q)$(CXX) $(CXXFLAGS) -o $@ $<
 
 # Host compiler build
 build/obj/cxx-int/%.o: src/compiler/%.cc | build/obj/cxx-int
-	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(ECHO) "Compile INT $<"
+	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 build/obj/cxx-int/%.o: build/gen/int/%.cc | build/obj/cxx-int
-	$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(ECHO) "Compile INT $<"
+	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 $(COMPILER_HOST_INT): $(COMPILER_HST_INT_OBJ) | build/bin
-	$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+	$(ECHO) "Linking INT compiler"
+	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
 
 build/obj/cxx-fp/%.o: src/compiler/%.cc | build/obj/cxx-fp
-	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(ECHO) "Compile FP $<"
+	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 build/obj/cxx-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-fp
-	$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(ECHO) "Compile FP $<"
+	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 $(COMPILER_HOST_FP): $(COMPILER_HST_FP_OBJ) | build/bin
-	$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+	$(ECHO) "Linking FP compiler"
+	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
 
 $(CA65_HOST): $(CA65_SRC) | build/bin
-	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile CA65"
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 
 $(LD65_HOST): $(LD65_SRC) | build/bin
-	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile LD65"
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 
 $(AR65_HOST): $(AR65_SRC) | build/bin
-	$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile AR65"
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 
 # Target compiler build
 ifeq ($(CROSS),)
 $(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/% | build/compiler
-	cp -f $< $@
+	$(Q)cp -f $< $@
 else
 build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
-	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(ECHO) "Compile INT $<"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 build/obj/cxx-tgt-int/%.o: build/gen/int/%.cc | build/obj/cxx-tgt-int
-	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(ECHO) "Compile INT $<"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 $(COMPILER_TARGET_INT): $(COMPILER_TGT_INT_OBJ) | build/compiler
-	$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+	$(ECHO) "Linking target INT compiler"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
 
 build/obj/cxx-tgt-fp/%.o: src/compiler/%.cc | build/obj/cxx-tgt-fp
-	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(ECHO) "Compile FP $<"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 build/obj/cxx-tgt-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
-	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(ECHO) "Compile FP $<"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 $(COMPILER_TARGET_FP): $(COMPILER_TGT_FP_OBJ) | build/compiler
-	$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+	$(ECHO) "Linking target FP compiler"
+	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
 
 $(CA65_TARGET): $(CA65_SRC) | build/compiler
-	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile target CA65"
+	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 
 $(LD65_TARGET): $(LD65_SRC) | build/compiler
-	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile target LD65"
+	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 
 $(AR65_TARGET): $(AR65_SRC) | build/compiler
-	$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(ECHO) "Compile target AR65"
+	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
 build/gen/fp/%.asm: src/%.syn $(ASYNT) | build/gen/fp
-	$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $< -o $@
+	$(ECHO) "Creating FP parsing bytecode"
+	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $< -o $@
 
 # Generator for syntax file - 6502 version - INTEGER
 build/gen/int/%.asm: src/%.syn $(ASYNT) | build/gen/int
-	$(ASYNT) $(SYNTFLAGS_ASM) $< -o $@
+	$(ECHO) "Creating INT parsing bytecode"
+	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $< -o $@
 
 # Generator for syntax file - C++ version - FLOAT
 build/gen/fp/%.cc build/gen/fp/%.h: src/%.syn $(CSYNT) | build/gen/fp
-	$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $< -o build/gen/fp/$*.cc
+	$(ECHO) "Creating FP cross parser"
+	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $< -o build/gen/fp/$*.cc
 
 # Generator for syntax file - C++ version - INTEGER
 build/gen/int/%.cc build/gen/int/%.h: src/%.syn $(CSYNT) | build/gen/int
-	$(CSYNT) $(SYNTFLAGS_CPP) $< -o build/gen/int/$*.cc
+	$(ECHO) "Creating INT cross parser"
+	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $< -o build/gen/int/$*.cc
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
-	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Main program file
 build/bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
-	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(ECHO) "Linking floating point IDE"
+	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
-	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(ECHO) "Linking command line compiler"
+	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
-	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(ECHO) "Linking integer IDE"
+	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
 build/bin/%.xex: build/obj/fp/%.o $(LIB_FP) | build/bin $(LD65_HOST)
-	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(ECHO) "Linking floating point $@"
+	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
-	$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(ECHO) "Linking integer $@"
+	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
 build/gen/fp/%.asm: build/gen/%.bas $(COMPILER_HOST_FP) | build/gen/fp
-	$(COMPILER_HOST_FP) $< $@
+	$(ECHO) "Compiling FP BASIC $<"
+	$(Q)$(COMPILER_HOST_FP) $< $@
 
 build/gen/fp/%.asm: src/%.bas $(COMPILER_HOST_FP) | build/gen/fp
-	$(COMPILER_HOST_FP) $< $@
+	$(ECHO) "Compiling FP BASIC $<"
+	$(Q)$(COMPILER_HOST_FP) $< $@
 
 build/gen/int/%.asm: src/%.bas $(COMPILER_HOST_INT) | build/gen/int
-	$(COMPILER_HOST_INT) $< $@
+	$(ECHO) "Compiling INT BASIC $<"
+	$(Q)$(COMPILER_HOST_INT) $< $@
 
 build/gen/fp/%.asm: samples/fp/%.bas $(COMPILER_HOST_FP) | build/gen/fp
-	$(COMPILER_HOST_FP) $< $@
+	$(ECHO) "Compiling FP BASIC sample $<"
+	$(Q)$(COMPILER_HOST_FP) $< $@
 
 build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
-	$(COMPILER_HOST_INT) $< $@
+	$(ECHO) "Compiling INT BASIC sample $<"
+	$(Q)$(COMPILER_HOST_INT) $< $@
 
 # Object file rules
 build/obj/fp/%.o: src/%.asm | build/obj/fp build/obj/fp/interp $(CA65_HOST)
-	$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
+	$(ECHO) "Assembly FP $<"
+	$(Q)$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
-	$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
+	$(ECHO) "Assembly FP $<"
+	$(Q)$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp $(CA65_HOST)
-	$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
+	$(ECHO) "Assembly INT $<"
+	$(Q)$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
-	$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
+	$(ECHO) "Assembly INT $<"
+	$(Q)$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
 
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
 build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
-	mkdir -p $@
+	$(Q)mkdir -p $@
 
 # Library files
 $(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP) | build/compiler $(AR65_HOST)
-	rm -f $@
-	$(AR65_HOST) a $@ $^
+	$(ECHO) "Creating FP library $@"
+	$(Q)rm -f $@
+	$(Q)$(AR65_HOST) a $@ $^
 
 $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
-	rm -f $@
-	$(AR65_HOST) a $@ $^
+	$(ECHO) "Creating INT library $@"
+	$(Q)rm -f $@
+	$(Q)$(AR65_HOST) a $@ $^
 
 # Runs the test suite
 .PHONY: test
 .PHONY: test-clean
 .PHONY: test-distclean
 test: $(COMPILER_COMMON) $(COMPILER_HOST) build/bin/fbc.xex
-	$(MAKE) -C testsuite
+	$(Q)$(MAKE) -C testsuite
 
 test-clean:
-	$(MAKE) -C testsuite clean
+	$(Q)$(MAKE) -C testsuite clean
 
 test-distclean:
-	$(MAKE) -C testsuite distclean
+	$(Q)$(MAKE) -C testsuite distclean
 
 # Copy manual to compiler changing the version string.
 build/compiler/MANUAL.md: manual.md version.mk | build/compiler
-	LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Copy other files to compiler folder
 build/compiler/%: compiler/% | build/compiler
-	cp -f $< $@
+	$(Q)cp -f $< $@
 
 # Copy assembly include files from CC65
 build/compiler/asminc/%: cc65/asminc/% | build/compiler/asminc
-	cp -f $< $@
+	$(Q)cp -f $< $@
 
 # Dependencies
 $(COMMON_OBJS_FP): src/deftok.inc

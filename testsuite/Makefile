@@ -21,6 +21,10 @@ CC=gcc
 CFLAGS=-g -O2 -Wall -I$(MINI65)/src/ -I$(MINI65)/ccan/
 LDLIBS=-lm
 
+# By default use quiet build
+Q=@
+ECHO=@printf "\e[0;32m%s\e[0m\n"
+
 RUNTEST=fbtest
 
 MINI65_SRC=\
@@ -60,34 +64,37 @@ all: runtests
 runtests: $(TESTS_STAMP) fbtest
 
 %.stamp: %.chk %.bas fbtest $(TESTS_DEPS)
-	@./fbtest $<
+	$(Q)./fbtest $<
 	@touch $@
 
 clean:
-	rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST) $(TESTS_STAMP)
+	@rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(OBJS) $(RUNTEST) $(TESTS_STAMP)
 
 distclean: clean
-	-rmdir obj
+	@-rmdir obj
 
 $(RUNTEST): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+	$(ECHO) "Linking $@"
+	$(Q)$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 obj/%.o: $(MINI65)/src/%.c | obj mini65/src
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "Compiling $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 obj/%.o: src/%.c | obj mini65/src
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "Compiling $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 obj:
-	mkdir -p $@
+	@mkdir -p $@
 
 # Update mini65 submodule if not found
 mini65/src:
-	git submodule update --init $(MINI65)
+	$(Q)git submodule update --init $(MINI65)
 
 # Automatic generation of dependency information for C files
 obj/%.d: src/%.c | obj mini65/src
-	$(CC) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(CFLAGS) $<
+	@$(CC) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(CFLAGS) $<
 
 ifneq "$(MAKECMDGOALS)" "clean"
     ifneq "$(MAKECMDGOALS)" "distclean"
