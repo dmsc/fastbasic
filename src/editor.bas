@@ -593,6 +593,7 @@ PROC CalcRedrawScreen
    if nptr = MemEnd
      '  Line is outside of current file, go to last line
      topLine = y
+     nptr = ptr
      exit
    endif
    inc y
