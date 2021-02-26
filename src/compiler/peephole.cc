@@ -524,6 +524,13 @@ class peephole
                         del(3); del(2); del(1); del(0); i--;
                         continue;
                     }
+                    //   TOK_NUM / 0 / TOK_ADD_VAR -> TOK_VAR_LOAD
+                    if( mtok(0,TOK_NUM) && mword(1) && val(1) == 0 &&
+                        mtok(2,TOK_ADD_VAR) )
+                    {
+                        del(1); del(0); set_tok(0, TOK_VAR_LOAD); i--;
+                        continue;
+                    }
                     //   TOK_PUSH / TOK_NUM / 0 / TOK_SUB   -> -
                     if( mtok(0,TOK_PUSH) && mtok(1,TOK_NUM) && mword(2) &&
                         val(2) == 0 && mtok(3,TOK_SUB) )
