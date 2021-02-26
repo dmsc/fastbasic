@@ -304,11 +304,8 @@ PROC CopyToEdit
   if linLen > 255
     linLen = 255
   endif
-  if linLen <> 0
-    move ptr, EditBuf, linLen
-  else
-    poke EditBuf, $9b
-  endif
+  move ptr, EditBuf, linLen
+  poke EditBuf + linLen, $9b
 ENDPROC
 
 '-------------------------------------
