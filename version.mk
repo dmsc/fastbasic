@@ -1,1 +1,1 @@
-VERSION=4.5-beta
+VERSION=4.5-rc
