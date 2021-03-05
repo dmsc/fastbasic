@@ -21,18 +21,41 @@
 CROSS=
 CXX=g++
 CC=gcc
+
+# Optimization flags, added to C and C++ compiler flags
 OPTFLAGS=-O2
-CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(OPTFLAGS)
-CFLAGS=-Wall $(OPTFLAGS)
-CFLAGS_CC65=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
+
+# Flags to the syntax generator
 SYNTFLAGS_CPP=-DEXTENDED
 SYNTFLAGS_ASM=
 SYNTFP=-DFASTBASIC_FP
-ASMFLAGS=-I cc65/asminc
-FPASM=-D FASTBASIC_FP -I build/gen/fp $(ASMFLAGS)
-INTASM=-I build/gen/int $(ASMFLAGS)
+
+# General flags for 6502 assembly files
+CA65_FLAGS=-g -tatari -I cc65/asminc
+
+# Flags added to assembly sources for Floating Point / Integer compilers:
+CA65_FP_FLAGS=-D FASTBASIC_FP -I build/gen/fp $(CA65_FLAGS)
+CA65_INT_FLAGS=-I build/gen/int $(CA65_FLAGS)
+
+# Flags for the LD65 linker
+LD65_FLAGS=-Ccompiler/fastbasic.cfg
+
+# Flags added to C++ sources for Floating Point / Integer compilers:
 FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
 INTCXX=-Ibuild/gen/int -Isrc/compiler
+
+# Flags added to the compilation of CC65 tools (CA65, LD65 and AR65):
+CC65_CFLAGS=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
+
+# Flags for local tools needed to generate target files
+HOST_OPTFLAGS=$(OPTFLAGS)
+HOST_CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(HOST_OPTFLAGS)
+HOST_CFLAGS=-Wall $(HOST_OPTFLAGS)
+
+# Flags for cross-compilation, could differ from host tools:
+TARGET_OPTFLAGS=$(OPTFLAGS)
+TARGET_CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(TARGET_OPTFLAGS)
+TARGET_CFLAGS=-Wall $(TARGET_OPTFLAGS)
 
 # By default use quiet build
 Q=@
@@ -54,10 +77,6 @@ include version.mk
 
 # Do not delete intermediate files
 .SECONDARY:
-
-# Cross
-LD65OPTS=-Ccompiler/fastbasic.cfg
-CA65OPTS=-g -tatari
 
 ATR=build/fastbasic.atr
 ZIPFILE=build/fastbasic.zip
@@ -493,18 +512,18 @@ ASYNT=build/gen/asynt
 CSYNT=build/gen/csynt
 
 # The compiler object files, for FP and INT versions, HOST and TARGET
-COMPILER_HST_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-fp/%.o)
-COMPILER_HST_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-int/%.o)
-COMPILER_TGT_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-fp/%.o)
-COMPILER_TGT_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-int/%.o)
+COMPILER_HOST_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-fp/%.o)
+COMPILER_HOST_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-int/%.o)
+COMPILER_TARGET_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-fp/%.o)
+COMPILER_TARGET_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-int/%.o)
 
 # The compiler dependencies - auto-generated
-COMPILER_HST_DEPS=$(COMPILER_HST_INT_OBJ:.o=.d) $(COMPILER_HST_FP_OBJ:.o=.d)
-COMPILER_TGT_DEPS=$(COMPILER_TGT_INT_OBJ:.o=.d) $(COMPILER_TGT_FP_OBJ:.o=.d)
+COMPILER_HOST_DEPS=$(COMPILER_HOST_INT_OBJ:.o=.d) $(COMPILER_HOST_FP_OBJ:.o=.d)
+COMPILER_TARGET_DEPS=$(COMPILER_TARGET_INT_OBJ:.o=.d) $(COMPILER_TARGET_FP_OBJ:.o=.d)
 
 # All the HOST and TARGET obj
-HOST_OBJ=$(COMPILER_HST_FP_OBJ) $(COMPILER_HST_INT_OBJ)
-TARGET_OBJ=$(COMPILER_TGT_FP_OBJ) $(COMPILER_TGT_INT_OBJ)
+HOST_OBJ=$(COMPILER_HOST_FP_OBJ) $(COMPILER_HOST_INT_OBJ)
+TARGET_OBJ=$(COMPILER_TARGET_FP_OBJ) $(COMPILER_TARGET_INT_OBJ)
 
 all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 
@@ -513,12 +532,12 @@ dist: $(ATR) $(ZIPFILE)
 clean: test-clean
 	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
 	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_HOST) $(TARGET_OBJ) \
-	      $(COMPILER_HST_DEPS) $(COMPILER_TGT_DEPS) \
+	      $(COMPILER_HOST_DEPS) $(COMPILER_TARGET_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
 	      $(SAMP_OBJS) $(HOST_OBJ)
 
 distclean: clean test-distclean
-	$(Q)rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
+	$(Q)-rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
 	    build/gen/int/basic.cc build/gen/fp/basic.cc \
 	    build/gen/int/basic.h  build/gen/fp/basic.h  \
 	    build/gen/int/basic.inc  build/gen/fp/basic.inc  \
@@ -571,90 +590,92 @@ build/disk/%.com: build/bin/%.xex | build/disk
 # Parser generator for 6502
 $(ASYNT): src/syntax/asynt.cc | build/gen
 	$(ECHO) "Compile syntax parsing tool $<"
-	$(Q)$(CXX) $(CXXFLAGS) -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
 
 # Parser generator for C++
 $(CSYNT): src/syntax/csynt.cc | build/gen
 	$(ECHO) "Compile syntax parsing tool $<"
-	$(Q)$(CXX) $(CXXFLAGS) -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
 
 # Host compiler build
 build/obj/cxx-int/%.o: src/compiler/%.cc | build/obj/cxx-int
 	$(ECHO) "Compile INT $<"
-	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 build/obj/cxx-int/%.o: build/gen/int/%.cc | build/obj/cxx-int
 	$(ECHO) "Compile INT $<"
-	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -c -o $@ $<
 
-$(COMPILER_HOST_INT): $(COMPILER_HST_INT_OBJ) | build/bin
+$(COMPILER_HOST_INT): $(COMPILER_HOST_INT_OBJ) | build/bin
 	$(ECHO) "Linking INT compiler"
-	$(Q)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -o $@ $^
 
 build/obj/cxx-fp/%.o: src/compiler/%.cc | build/obj/cxx-fp
 	$(ECHO) "Compile FP $<"
-	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 build/obj/cxx-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-fp
 	$(ECHO) "Compile FP $<"
-	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -c -o $@ $<
 
-$(COMPILER_HOST_FP): $(COMPILER_HST_FP_OBJ) | build/bin
+$(COMPILER_HOST_FP): $(COMPILER_HOST_FP_OBJ) | build/bin
 	$(ECHO) "Linking FP compiler"
-	$(Q)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -o $@ $^
 
 $(CA65_HOST): $(CA65_SRC) | build/bin
 	$(ECHO) "Compile CA65"
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CC) $(HOST_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 $(LD65_HOST): $(LD65_SRC) | build/bin
 	$(ECHO) "Compile LD65"
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CC) $(HOST_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 $(AR65_HOST): $(AR65_SRC) | build/bin
 	$(ECHO) "Compile AR65"
-	$(Q)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CC) $(HOST_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 # Target compiler build
 ifeq ($(CROSS),)
+# No cross-compilation, just copy host tools to target tools:
 $(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/% | build/compiler
 	$(Q)cp -f $< $@
 else
+# Cross-compilation: compile for target
 build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
 	$(ECHO) "Compile INT $<"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -c -o $@ $<
 
 build/obj/cxx-tgt-int/%.o: build/gen/int/%.cc | build/obj/cxx-tgt-int
 	$(ECHO) "Compile INT $<"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -c -o $@ $<
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -c -o $@ $<
 
-$(COMPILER_TARGET_INT): $(COMPILER_TGT_INT_OBJ) | build/compiler
+$(COMPILER_TARGET_INT): $(COMPILER_TARGET_INT_OBJ) | build/compiler
 	$(ECHO) "Linking target INT compiler"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(INTCXX) -o $@ $^
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -o $@ $^
 
 build/obj/cxx-tgt-fp/%.o: src/compiler/%.cc | build/obj/cxx-tgt-fp
 	$(ECHO) "Compile FP $<"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -c -o $@ $<
 
 build/obj/cxx-tgt-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
 	$(ECHO) "Compile FP $<"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -c -o $@ $<
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -c -o $@ $<
 
-$(COMPILER_TARGET_FP): $(COMPILER_TGT_FP_OBJ) | build/compiler
+$(COMPILER_TARGET_FP): $(COMPILER_TARGET_FP_OBJ) | build/compiler
 	$(ECHO) "Linking target FP compiler"
-	$(Q)$(CROSS)$(CXX) $(CXXFLAGS) $(FPCXX) -o $@ $^
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -o $@ $^
 
 $(CA65_TARGET): $(CA65_SRC) | build/compiler
 	$(ECHO) "Compile target CA65"
-	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 $(LD65_TARGET): $(LD65_SRC) | build/compiler
 	$(ECHO) "Compile target LD65"
-	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 $(AR65_TARGET): $(AR65_SRC) | build/compiler
 	$(ECHO) "Compile target AR65"
-	$(Q)$(CROSS)$(CC) $(CFLAGS) $(CFLAGS_CC65) -o $@ $^
+	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
@@ -684,24 +705,24 @@ build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
 # Main program file
 build/bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking floating point IDE"
-	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking command line compiler"
-	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking integer IDE"
-	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Compiled program files
 build/bin/%.xex: build/obj/fp/%.o $(LIB_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking floating point $@"
-	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking integer $@"
-	$(Q)$(LD65_HOST) $(LD65OPTS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
 build/gen/fp/%.asm: build/gen/%.bas $(COMPILER_HOST_FP) | build/gen/fp
@@ -727,19 +748,19 @@ build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
 # Object file rules
 build/obj/fp/%.o: src/%.asm | build/obj/fp build/obj/fp/interp $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
-	$(Q)$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
+	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
-	$(Q)$(CA65_HOST) $(CA65OPTS) $(FPASM) -l $(@:.o=.lst) -o $@ $<
+	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
-	$(Q)$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
+	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
 build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
-	$(Q)$(CA65_HOST) $(CA65OPTS) $(INTASM) -l $(@:.o=.lst) -o $@ $<
+	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
@@ -805,28 +826,30 @@ $(ASYNT): \
 $(HOST_OBJ) $(TARGET_OBJ): version.mk
 
 # Automatic generation of dependency information for C++ files
-build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
-build/obj/cxx-tgt-int/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
 build/obj/cxx-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
 build/obj/cxx-int/%.d: build/gen/int/%.cc | build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(CXXFLAGS) $<
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
 build/obj/cxx-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
 build/obj/cxx-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(CXXFLAGS) $<
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
+ifneq ($(CROSS),)
+build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-tgt-int
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
+build/obj/cxx-tgt-int/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-int
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
+build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-tgt-fp
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
+build/obj/cxx-tgt-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
+endif
 
 ifneq "$(MAKECMDGOALS)" "clean"
     ifneq "$(MAKECMDGOALS)" "distclean"
-        -include $(COMPILER_HST_DEPS)
+        -include $(COMPILER_HOST_DEPS)
         ifneq ($(CROSS),)
-            -include $(COMPILER_TGT_DEPS)
+            -include $(COMPILER_TARGET_DEPS)
         endif
     endif
 endif
