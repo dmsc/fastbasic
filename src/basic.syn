@@ -186,6 +186,7 @@ ADR_EXPR: string or variable
 #@if FASTBASIC_FP
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
 #@endif FASTBASIC_FP
+        emit { TOK_VAR_ADDR } E_VAR_WORD
 
 USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE

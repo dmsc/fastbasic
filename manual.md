@@ -869,6 +869,10 @@ with the hardware. Use with care!
   and following locations contain the
   string characters.
 
+- ADR(_var_) / &_var_ :
+  Returns the address of the _variable_
+  in memory.
+
 - DPEEK(_addr_) / D.(_addr_) :
   Returns the value of memory location
   _addr_ and _addr_+1 as a 16 bit
