@@ -40,14 +40,24 @@ distclean: clean
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
 	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
-	$(Q)test -d build/obj/tests && rmdir build/obj/tests || true
-	$(Q)test -d build/tests && rmdir build/tests || true
-	$(Q)-rmdir build/gen/fp build/gen/int \
-	       build/obj/fp/interp build/obj/int/interp build/obj/fp build/obj/int \
-	       build/obj/cxx-fp build/obj/cxx-int \
-	       build/obj/cxx-tgt-fp build/obj/cxx-tgt-int \
-	       build/compiler/asminc \
-	       build/bin build/gen build/obj build/disk build/compiler
+	$(Q)test -d build/obj/tests       && rmdir build/obj/tests       || true
+	$(Q)test -d build/tests           && rmdir build/tests           || true
+	$(Q)test -d build/gen/fp          && rmdir build/gen/fp          || true
+	$(Q)test -d build/gen/int         && rmdir build/gen/int         || true
+	$(Q)test -d build/obj/fp/interp   && rmdir build/obj/fp/interp   || true
+	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
+	$(Q)test -d build/obj/fp          && rmdir build/obj/fp          || true
+	$(Q)test -d build/obj/int         && rmdir build/obj/int         || true
+	$(Q)test -d build/obj/cxx-fp      && rmdir build/obj/cxx-fp      || true
+	$(Q)test -d build/obj/cxx-int     && rmdir build/obj/cxx-int     || true
+	$(Q)test -d build/obj/cxx-tgt-fp  && rmdir build/obj/cxx-tgt-fp  || true
+	$(Q)test -d build/obj/cxx-tgt-int && rmdir build/obj/cxx-tgt-int || true
+	$(Q)test -d build/compiler/asminc && rmdir build/compiler/asminc || true
+	$(Q)test -d build/bin             && rmdir build/bin             || true
+	$(Q)test -d build/gen             && rmdir build/gen             || true
+	$(Q)test -d build/obj             && rmdir build/obj             || true
+	$(Q)test -d build/disk            && rmdir build/disk            || true
+	$(Q)test -d build/compiler        && rmdir build/compiler        || true
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build

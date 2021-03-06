@@ -16,6 +16,9 @@
 #  with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
+# Main rule:
+target: all
+
 # Set "CROSS" to the compiler prefix, forces compilation of two compilers, one
 # native and one for the cross-target.
 CROSS=

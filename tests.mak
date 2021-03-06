@@ -64,7 +64,7 @@ build/%.stamp: testsuite/%.chk testsuite/%.bas $(RUNTEST) $(TESTS_DEPS) | build/
 	$(Q)$(RUNTEST) $<
 	@touch $@
 
-$(RUNTEST): $(RUNTEST_OBJS)
+$(RUNTEST): $(RUNTEST_OBJS) | build/bin
 	$(ECHO) "Linking $@"
 	$(Q)$(CC) $(TEST_CFLAGS) -o $@ $^ $(TEST_LDLIBS)
 
