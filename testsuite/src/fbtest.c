@@ -36,6 +36,7 @@ static const char *fb_int_compiler   = "build/bin/fastbasic-int";
 static const char *ca65_path         = "build/bin/ca65";
 static const char *ld65_path         = "build/bin/ld65";
 static const char *fb_lib_path       = "build/compiler";
+static const char *output_dir        = "build/tests";
 
 #define CA65_OPTS   "-t atari -g"
 #define FB_LIB_FP   "fastbasic-fp.lib"
@@ -345,6 +346,32 @@ xit:
     return e;
 }
 
+static char *build_fname(const char *base_name, const char *ext)
+{
+    char *ret;
+    asprintf(&ret, "%s/%s.%s", output_dir, base_name, ext);
+    if( !ret )
+    {
+        fprintf(stderr,"memory error");
+        exit(1);
+    }
+    return ret;
+}
+
+
+static char *source_fname(const char *base_name, const char *ext)
+{
+    char *ret;
+    asprintf(&ret, "%s.%s", base_name, ext);
+    if( !ret )
+    {
+        fprintf(stderr,"memory error");
+        exit(1);
+    }
+    return ret;
+}
+
+
 enum tests {
     test_run = 1,
     test_fp = 2,
@@ -549,21 +576,23 @@ int fbtest(const char *fname)
     // base_name: file name without extension
     char *base_name = strndup(fname, ext - fname);
 
+    // tag_name: file name without directory and extension
+    char *tag_name = rindex(base_name, '/');
+    if( !tag_name )
+        tag_name = base_name;
+    else
+        tag_name = tag_name + 1;
+
     // basname: input basic file name
-    char *basname;
-    asprintf(&basname, "%s.bas", base_name);
+    char *basname = source_fname(base_name, "bas");
     // atbname: BASIC file converted to ATASCII
-    char *atbname;
-    asprintf(&atbname, "%s.atb", base_name);
+    char *atbname = build_fname(tag_name, "atb");
     // xexname: XEX file name
-    char *xexname;
-    asprintf(&xexname, "%s.xex", base_name);
+    char *xexname = build_fname(tag_name, "xex");
     // asmname: Assembler file name
-    char *asmname;
-    asprintf(&asmname, "%s.asm", base_name);
+    char *asmname = build_fname(tag_name, "asm");
     // objname: Object file name
-    char *objname;
-    asprintf(&objname, "%s.o", base_name);
+    char *objname = build_fname(tag_name, "o");
 
     // Generate ATASCII file
     atascii_convert(basname, atbname);

@@ -1,8 +1,2 @@
 build/
 temp/
-testsuite/tests/*.atb
-testsuite/tests/*.asm
-testsuite/tests/*.o
-testsuite/tests/*.xex
-testsuite/tests/*.stamp
-testsuite/fbtest
