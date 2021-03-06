@@ -521,5 +521,6 @@ COMPILER_TARGET_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-int/%.o)
 HOST_OBJ=$(COMPILER_HOST_FP_OBJ) $(COMPILER_HOST_INT_OBJ)
 TARGET_OBJ=$(COMPILER_TARGET_FP_OBJ) $(COMPILER_TARGET_INT_OBJ)
 
+include tests.mak
 include rules.mak
 include deps.mak

@@ -21,14 +21,17 @@ all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 
 dist: $(ATR) $(ZIPFILE)
 
-clean: test-clean
+.PHONY: clean
+clean:
 	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
 	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_HOST) $(TARGET_OBJ) \
 	      $(COMPILER_HOST_DEPS) $(COMPILER_TARGET_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
 	      $(SAMP_OBJS) $(HOST_OBJ)
+	$(Q)rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(RUNTEST_OBJS) $(RUNTEST) $(TESTS_STAMP) $(RUNTEST_OBJS:.o=.d)
 
-distclean: clean test-distclean
+.PHONY: distclean
+distclean: clean
 	$(Q)-rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
 	    build/gen/int/basic.cc build/gen/fp/basic.cc \
 	    build/gen/int/basic.h  build/gen/fp/basic.h  \
@@ -37,13 +40,14 @@ distclean: clean test-distclean
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
 	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
+	$(Q)test -d build/obj/tests && rmdir build/obj/tests || true
+	$(Q)test -d build/tests && rmdir build/tests || true
 	$(Q)-rmdir build/gen/fp build/gen/int \
 	       build/obj/fp/interp build/obj/int/interp build/obj/fp build/obj/int \
 	       build/obj/cxx-fp build/obj/cxx-int \
 	       build/obj/cxx-tgt-fp build/obj/cxx-tgt-int \
 	       build/compiler/asminc \
 	       build/bin build/gen build/obj build/disk build/compiler
-	$(Q)$(MAKE) -C testsuite distclean
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
@@ -254,6 +258,8 @@ build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
+
+build/tests build/obj/tests \
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
 build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
@@ -269,19 +275,6 @@ $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
-
-# Runs the test suite
-.PHONY: test
-.PHONY: test-clean
-.PHONY: test-distclean
-test: $(COMPILER_COMMON) $(COMPILER_HOST) build/bin/fbc.xex
-	$(Q)$(MAKE) -C testsuite
-
-test-clean:
-	$(Q)$(MAKE) -C testsuite clean
-
-test-distclean:
-	$(Q)$(MAKE) -C testsuite distclean
 
 # Copy manual to compiler changing the version string.
 build/compiler/MANUAL.md: manual.md version.mk | build/compiler

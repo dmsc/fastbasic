@@ -30,12 +30,12 @@
 
 // Flags
 static int verbose;
-static const char *fb_atari_compiler = "../build/bin/fbc.xex";
-static const char *fb_fp_compiler    = "../build/bin/fastbasic-fp";
-static const char *fb_int_compiler   = "../build/bin/fastbasic-int";
-static const char *ca65_path         = "../build/bin/ca65";
-static const char *ld65_path         = "../build/bin/ld65";
-static const char *fb_lib_path       = "../build/compiler";
+static const char *fb_atari_compiler = "build/bin/fbc.xex";
+static const char *fb_fp_compiler    = "build/bin/fastbasic-fp";
+static const char *fb_int_compiler   = "build/bin/fastbasic-int";
+static const char *ca65_path         = "build/bin/ca65";
+static const char *ld65_path         = "build/bin/ld65";
+static const char *fb_lib_path       = "build/compiler";
 
 #define CA65_OPTS   "-t atari -g"
 #define FB_LIB_FP   "fastbasic-fp.lib"
