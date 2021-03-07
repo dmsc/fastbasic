@@ -190,10 +190,10 @@ zp_clear:
         dex
         bpl     zp_clear
 
-parse_line:
-        ldx     #0
-        stx     bpos
-        stx     bmax
+parse_line:     ; Here A=0
+        tax
+        sta     bpos
+        sta     bmax
 
         lda     buf_ptr
         cmp     end_ptr
@@ -220,7 +220,7 @@ loop:
 loop_redo:
         sta     (bptr), y
         cmp     #$9B
-        beq     ucase_end
+        beq     ucase_end       ; End upper-casing, C=1
 
         cmp     #'"'
         bne     skip_str        ; Skip string constants
@@ -239,26 +239,26 @@ skip_str:
 ucase_end:
 .endproc
 
+        ; C=1 always from above
         ; Point buf_ptr to next line
         tya
-        sec
         adc     buf_ptr
         sta     buf_ptr
         bcc     :+
         inc     buf_ptr+1
 :
 
+        lda     #0
 parse_start:
-        ; Parse statement
+        ; Parse statement, A=0 on input
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
-        lda     #0
         sta     opos
-        pha
         pha
 
         ; Parser sub
 parser_sub:
+        pha
         stx     pptr
         sty     pptr+1
         tsx
@@ -326,8 +326,7 @@ pcall:
         lda     pptr+1
         pha
         lda     pptr
-        pha
-        bcs     parser_sub
+        bcs     parser_sub      ; Jump always
 
 pemit_ret:
         jsr     emit_sub
@@ -348,12 +347,12 @@ pexit_ok:
         ldy     bpos
         inc     bpos
         lda     (bptr), y
-        cmp     #':'            ; Colon: continue parsing line
-        beq     parse_start
-        cmp     #$9B
+        eor     #':'            ; Colon: continue parsing line
+        beq     parse_start     ; jump with A=0
+        eor     #$9B^':'
         bne     set_parse_error
 
-        ; End parsing of current line
+        ; End parsing of current line, jump with A=0
         jmp     parse_line
 
         ; Calls a machine-language subroutine
