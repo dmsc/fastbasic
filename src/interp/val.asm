@@ -53,19 +53,16 @@ SKBLANK = $DBA1
 
         ; Reads a '+' or '-'
         lda     (INBUFF), y
-        cmp     #'+'
-        beq     skip
         cmp     #'-'
+        beq     do_minus        ; C=1 if equal
+        clc
+        eor     #'+'
         bne     convert
-
-        jsr     skip
-        php
-        jsr     neg_AX
-        plp
-        rts
-
-skip:   iny
+do_minus:
+        iny
 convert:
+        php     ; Store C flag for negative numbers
+
         sty     tmp2+1  ; Store starting Y position - used to check if read any digits
         ; Clears result
         lda     #0
@@ -113,13 +110,18 @@ loop:
         bne     loop
 
 ebig:
+        plp
         sec
-xit:    rts
+        rts
 
 xit_n:  cpy     tmp2+1
-        beq     xit    ; No digits read
+        beq     ebig    ; No digits read
 
+        plp
+        bcc     ok
+        jsr     neg_AX
         clc
+ok:
         rts
 .endproc
 
