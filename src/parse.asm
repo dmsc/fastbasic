@@ -190,10 +190,10 @@ zp_clear:
         dex
         bpl     zp_clear
 
-parse_line:     ; Here A=0
-        tax
-        sta     bpos
-        sta     bmax
+parse_line:
+        ldx     #0
+        stx     bpos
+        stx     bmax
 
         lda     buf_ptr
         cmp     end_ptr
@@ -349,8 +349,11 @@ pexit_ok:
         lda     (bptr), y
         eor     #':'            ; Colon: continue parsing line
         beq     parse_start     ; jump with A=0
-        eor     #$9B^':'
-        bne     set_parse_error
+
+        ; Current syntax file always checks for EOL at the end of parsing,
+        ; no need to check here
+;        eor     #$9B^':'
+;        bne     set_parse_error
 
         ; End parsing of current line, jump with A=0
         jmp     parse_line
@@ -413,8 +416,9 @@ skip_nextline:
         cmp     #SM_EMIT_N      ; Note: comparisons sorted for faster skip
         bcs     skip_nextline
         tax
-        .assert SM_EXIT = 0, error, "SM_EXIT must be 0"
-        beq     pexit_err
+; When skipping, we can't find an SM_EXIT before a RET:
+;        .assert SM_EXIT = 0, error, "SM_EXIT must be 0"
+;        beq     pexit_err
         dex
         .assert SM_RET  = 1, error, "SM_RET must be 1"
         beq     go_ploop
