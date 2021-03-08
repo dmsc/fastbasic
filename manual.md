@@ -1049,7 +1049,7 @@ Control Statements
 
 
 **Calls A Subroutine**  
-**EXEC _name_ _num1_, ... / EXE.**
+**EXEC _name_ _num1_, ... / EXE. / @**
 
   Calls the subroutine _name_, with the
   optional parameters _num1_ and so on,
@@ -1059,6 +1059,9 @@ Control Statements
   defined with PROC with the same number
   of parameters, but can be defined
   before or after the call.
+
+  Instead of `EXEC` you can simply use
+  a `@` in front of the procedure name.
 
 
 **Exits From Loop Or PROC**  
@@ -1179,7 +1182,7 @@ Control Statements
 
   PROC statement starts the definition
   of a subroutine that can be called
-  via EXEC.
+  via EXEC or `@`.
 
   You can pass a list of integer
   variables separated by spaces after
