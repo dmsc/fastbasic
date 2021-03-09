@@ -9,13 +9,14 @@ The current features are:
 - Small size (currently the full floating point IDE is 9.3k, the integer IDE is 8k, and the runtime is less than 3k);
 - Fast execution (currently, 2 times faster than compiled TurboBasicXL in the "sieve.bas" benchmark, 6 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
-- Feels "alike" TurboBasicXL, with many of the extended statements.
-- Integrated editor and compiler.
-- A cross-compiler is available that directly compiles sources to Atari executables in any modern PC.
+- Procedures with parameters and short calling syntax;
+- Feels "alike" TurboBasicXL, with many of the extended statements;
+- Integrated editor and compiler running in the Atari 8-bit;
+- A cross-compiler is available that directly compiles sources to Atari executables on any modern PC;
 - Statements for Player/Missile graphics and Display List Interrupts.
 
 For support, use the GitHub bug-tracker or see the AtariAge thread at:
-http://atariage.com/forums/topic/275698-fastbasic-summer-release/
+https://atariage.com/forums/topic/318133-fastbasic-45-2021-release/
 
 
 Manual
