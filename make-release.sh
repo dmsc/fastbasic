@@ -22,7 +22,7 @@ LTO_FLAGS="-flto -flto-partition=none"
 CXX_FLAGS="-DNDEBUG -Os -Wall"
 LIN64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++ -Wl,--gc-sections"
 LIN32_FLAGS="$CXX_FLAGS $LTO_FLAGS -m32 -static-libstdc++ -Wl,--gc-sections"
-WIN_FLAGS="$CXX_FLAGS -static-libstdc++ -static-libgcc -Wl,--gc-sections"
+WIN_FLAGS="$CXX_FLAGS -static -Wl,--gc-sections"
 OSX32_FLAGS="$CXX_FLAGS $LTO_FLAGS -m32 -static-libstdc++"
 OSX64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++"
 
