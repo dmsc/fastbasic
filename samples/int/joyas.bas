@@ -101,7 +101,7 @@ do
 
   ' Call game loop
   while nmoves > 0
-    exec GameLoop
+    @GameLoop
   wend
 
   if hiScore < score then hiScore = score
@@ -246,14 +246,14 @@ proc GameLoop
 
   ' Loop until no pieces are left to move
   repeat
-    exec FallPieces
-    exec MatchPieces
+    @FallPieces
+    @MatchPieces
   until not lsize
 
   ' Game over if no more moves
   if nmoves < 1 then exit
 
-  exec MoveCursor
+  @MoveCursor
 
   ' Perform an exchange
   poke crsPos + mainBoard, peek(nxtPos + screenBoard)

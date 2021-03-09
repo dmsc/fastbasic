@@ -1,7 +1,7 @@
 
 ' Record start time
 ETIME%=0
-EXEC GetTime
+@GetTime
 STIME%=ETIME%
 
 DIM RR(320)
@@ -33,7 +33,7 @@ FOR ZI=64 TO -64 STEP -1
 NEXT ZI
 
 ' Read End time
-EXEC GetTime
+@GetTime
 ETIME%=ETIME%-STIME%
 
 ' Enable text window

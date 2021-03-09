@@ -27,7 +27,7 @@ repeat
  else
   if xPos <  6400 Then xSpd = -xSpd
  endif
- exec MovePm  ' Move P/M Graphics
+ @MovePm            ' Move P/M Graphics
 until Key()
 
 graphics 0
