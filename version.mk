@@ -1,1 +1,1 @@
-VERSION=4.5-rc
+VERSION=4.5
