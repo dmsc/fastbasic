@@ -11,6 +11,9 @@ TEST.
 EST.STRING INDEXING
 EST.S
 NG INDEXING
+TEST.STRING INDEXING
+-1        ><
+0         ><
 1         >TEST.STRING INDEXING<
 2         >EST.STRING INDEXING<
 3         >ST.STRING INDEXING<
@@ -55,6 +58,7 @@ NG INDEXING
 20        >G<
 21        ><
 22        ><
+-1        ><
 0         ><
 1         >E<
 2         >ES<
