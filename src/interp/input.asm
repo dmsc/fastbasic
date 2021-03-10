@@ -55,11 +55,15 @@ line_buf        = LBUFF
 
         sty     IOERROR
         sta     line_buf - 1    ; Assume that this location is available
-        beq     no_eol  ; EOF
+        beq     no_eol          ; No characters read
+        ; Error 136: end of file, keep last character
         cpy     #$88
         beq     no_eol
-        tya
-        bmi     no_eol  ; TODO: ERROR!?
+        ; TODO: do we need to handle other errors?
+        ;       tya
+        ;       bmi     no_eol
+
+        ; Remove EOL at end of buffer
         dec     line_buf - 1
 no_eol:
         lda     #<(line_buf-1)
