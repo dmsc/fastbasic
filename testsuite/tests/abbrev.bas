@@ -92,7 +92,7 @@ PU. #0,65         ' PUT
 
 SE.0,0,0          ' SETCOLOR
 
-PMG.0             ' PMGRAPHICS
+PMG.1             ' PMGRAPHICS
 PM.0,2            ' PMHPOS
 
 S.0,100,10,4      ' SOUND
