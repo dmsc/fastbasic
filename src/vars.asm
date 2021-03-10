@@ -221,18 +221,18 @@ exit_2:
         lda     #0
         sta     (var), y
 
-        ; Copy name of var/label
+        ; Copy name of var/label, last byte with high bit set
         dey
-        lda     (name),y
-        eor     #$80
+        lda     #$80
 loop:
+        ora     (name),y
         sta     (var),y
+        lda     #0
         dey
-        bmi     end
-        lda     (name),y
         bpl     loop
 
 end:    rts
 .endproc
 
 ; vi:syntax=asm_ca65
+;
