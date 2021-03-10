@@ -1,0 +1,7 @@
+Name: Test for out of memory error
+Test: run
+Output:
+Start
+Ok
+
+Memory Error
