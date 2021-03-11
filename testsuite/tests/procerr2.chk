@@ -1,0 +1,4 @@
+Name: Check detection of already defined PROC
+Test: compile-error
+Error: parse error at line 6 column 10
+Error-pos: 6:5

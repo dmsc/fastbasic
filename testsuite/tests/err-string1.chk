@@ -1,0 +1,4 @@
+Name: Check unclosed string
+Test: compile-error
+Error: parse error at line 2 column 8
+Error-pos: 2:3

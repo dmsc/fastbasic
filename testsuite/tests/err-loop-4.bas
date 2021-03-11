@@ -1,0 +1,6 @@
+' EXIR from DATA
+DATA A() = 1,2,
+EXIT
+DATA 3,4
+
+

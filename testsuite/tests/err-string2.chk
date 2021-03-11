@@ -1,0 +1,4 @@
+Name: Check bad hex escape in string
+Test: compile-error
+Error: parse error at line 2 column 14
+Error-pos: 2:3

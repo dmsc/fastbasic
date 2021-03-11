@@ -1,0 +1,4 @@
+Name: Check detection of loop errors
+Test: compile-error
+Error: bad loop at line 3 column 0
+Error-pos: 3:4
