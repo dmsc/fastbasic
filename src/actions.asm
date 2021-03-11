@@ -418,7 +418,7 @@ xit:    rts
         dec     label_ptr+1
         sta     (label_ptr), y  ; Store to (label_ptr - 1)
         inc     label_ptr+1
-        clc
+        ; clc                   ; Already clear
 xit:    rts
 .endproc
 
@@ -435,7 +435,7 @@ xit:    rts
 .proc   next_laddr
 loop:
         lda     tmp1
-        clc
+        ; clc   ; Always called with C=0
         adc     #4
         bcc     comp
         inc     tmp1+1
@@ -524,7 +524,8 @@ cloop:  bmi     xit_label_err
         sta     (tmp1), y
 
         ; Continue searching the address list
-next:   jsr     next_laddr
+        ; here C=0 always
+        jsr     next_laddr
         bcc     cloop
 
         ; No more entries, adds our address as a "definition" (A = 128)
@@ -540,14 +541,14 @@ nfound:
 
         ; Check if we have a valid name - this exits on error!
         jsr     label_search
-        bcs     xit_label_err
+        bcs     xit
 
         ; Check if type is compatible
         cmp     tmp3
         beq     start_searching
 ::xit_label_err:
         sec
-        rts
+xit:    rts
 
 ; Get EXEC label address and store - this is split because we first parse the
 ; label (and create it if needed), then parse arguments and at last emit the
@@ -564,8 +565,10 @@ cloop:
         ; Check label status
         ; 0 == label not defined, 1 == label defined, 128 == label address
         ; Found, get address from label and emit
+        ; here C=0 always
         bmi     emit_addr
-next:
+
+        ; here C=0 always
         jsr     next_laddr
         bcc     cloop
         ; Not found, add to the label address list
@@ -607,7 +610,7 @@ check_var:
 .endproc        ; Fall through
 ; Emits address into codep, relocating if necessary.
 .proc   emit_addr
-        clc
+     ;  clc     ; get_codep clears carry and emit_addr is called with C=0
         adc     reloc_addr
         pha
         txa
@@ -630,7 +633,7 @@ check_var:
         ldx     var_sp
         sta     var_stk, x
         inc     var_sp
-        clc
+        ; clc                   ; Already clear
         rts
 .endproc
 
@@ -751,8 +754,11 @@ ok:
         inx
         bmi     loop_error
 
+        ; Keep new loop_sp in stack
+        txa
+        pha
+
         ; Move all stack 3 positions up
-        stx     loop_sp
 move:
         dex
         lda     loop_stk-3, x
@@ -761,15 +767,15 @@ comp_y: cpx     #$FC
         bne     move
 
         ; Store our new stack entry
-        lda     loop_sp
-        pha
-        ldy     comp_y+1
-        sty     loop_sp
+        ; X is the new slot
+        stx     loop_sp
         lda     #LT_EXIT
         jsr     push_codep
+
+        ; Restore new loop_sp
         pla
         sta     loop_sp
-        clc
+        ; clc   ; push_codep clears C
         rts
 .endproc
 

@@ -359,6 +359,7 @@ pexit_ok:
         jmp     parse_line
 
         ; Calls a machine-language subroutine
+        ; NOTE: we always call ML subs with carry clear (C=0)
 pcall_ml:
         jsr     call_ax1
         bcc     ploop
