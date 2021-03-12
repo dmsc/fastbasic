@@ -1,0 +1,36 @@
+Name: Test miscellaneous floating-point functions
+Test: run-fp
+Output:
+Start
+-0.123
+1E+10
+1         12
+1         13
+1         -12
+1         -13
+1         32767
+3         -32768
+3         5376
+3         BAD       1E+98
+1         OK
+3         BAD       1
+3         BAD       1
+1         OK
+1         OK
+1         OK
+1         OK
+3         OK
+1         OK
+200
+1         OK
+1         OK
+1         OK
+1         OK
+1         OK
+3         BAD       1.11111111E+10
+1         OK
+1         OK
+1         OK
+1         OK
+1         OK
+1         OK

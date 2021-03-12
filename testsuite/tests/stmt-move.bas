@@ -31,6 +31,12 @@ for x=249 to 260
   exec sum_a
 next
 
+' Test special case in calculation of division by 255:
+for x=505 to 515 : a(x) = x-505 : next
+? a(508);a(509);a(510);a(511);a(512)
+-move adr(a), adr(a)+1, 511
+? a(508);a(509);a(510);a(511);a(512)
+
 ' Test addresses about 256 / MOVE
 ad = ((adr(a) + 265) & $FF00) - adr(a)
 for x=ad-3 to ad+3
