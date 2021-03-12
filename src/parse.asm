@@ -384,9 +384,9 @@ call_ax1:
 
 pexit_err:
         pla
-        sta     opos
+        ; sta     opos  ; // Ignored
         pla
-        sta     bpos
+        ; sta     bpos  ; // Ignored
         pla
         sta     pptr
         pla
