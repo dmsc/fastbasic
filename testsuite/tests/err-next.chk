@@ -1,0 +1,5 @@
+Name: Test for error parsing variables that start with NEXT
+Test: run
+Output:
+Start
+1

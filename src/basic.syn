@@ -687,7 +687,7 @@ PARSE_LINE_COMMAND: statement
         "For" VAR_WORD_LVALUE_SADDR EQUAL emit TOK_PUSH EXPR emit TOK_DPOKE \
               "To" EXPR STEP_OPTIONAL \
               emit { TOK_FOR, TOK_CNJUMP, LT_FOR_2 } E_PUSH_LT emit LT_FOR_1 E_PUSH_LT
-        "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_POP_FOR emit TOK_FOR_EXIT
+        "Next" emit TOK_FOR_NEXT emit TOK_CJUMP NEXT_VARNAME E_EOL E_POP_FOR emit TOK_FOR_EXIT
         "ELse" E_EOL emit TOK_JUMP emit LT_ELSE E_ELSEIF
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
         "Endif" E_EOL E_POP_IF
