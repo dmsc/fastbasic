@@ -1623,6 +1623,9 @@ General Statements
   equivalent to "_var_ = _var_ - 1",
   but faster.
 
+  _var_ can be any integer variable or
+  integer array element.
+
 
 **Allocate An Array**  
 **DIM _arr_(_size_) [type], .../ DI.**
@@ -1669,6 +1672,9 @@ General Statements
   Increments the variable by 1, this is
   equivalent to "_var_ = _var_ + 1",
   but faster.
+
+  _var_ can be any integer variable or
+  integer array element.
 
 
 **Pauses Execution**  
