@@ -463,6 +463,8 @@ xit:    rts
 
 ::laddr_search_num = cpnum + 1
 ::laddr_search_start:
+::last_label_num = *+1
+        ldx     #0
         lda     laddr_buf
         ldy     laddr_buf+1
         sty     tmp1+1
@@ -500,12 +502,10 @@ xit:    rts
 xit:    rts
 .endproc
 
-; Label definition search/create
+; Pushes the PROC/DATA loop, search, create a label and define the location
 .proc   E_LABEL_DEF
-
-        ; Search and create the label
-        jsr     E_LABEL_CREATE
-        bcs     add_laddr_list::xit     ; Label already defined
+        lda     #LT_PROC_DATA
+        jsr     push_codep
 
         ; Search in the label list
         jsr     laddr_search_start
@@ -531,7 +531,7 @@ cloop:  bmi     xit_label_err
         ; No more entries, adds our address as a "definition" (A = 128)
 nfound:
         lda     #128
-        jmp     add_laddr_list
+        bmi     add_laddr_list
 .endproc
 
 ; Label search on use
@@ -542,6 +542,7 @@ nfound:
         ; Check if we have a valid name - this exits on error!
         jsr     label_search
         bcs     xit
+        stx     last_label_num
 
         ; Check if type is compatible
         cmp     tmp3
@@ -554,7 +555,6 @@ xit:    rts
 ; label (and create it if needed), then parse arguments and at last emit the
 ; call address
 ::E_DO_EXEC:
-        ldx     #0
 
         ; Emits a label, searching the label address in the label list
 start_searching:
@@ -581,24 +581,18 @@ ret:    rts
 ; Label search and create if not exists
 .proc   E_LABEL_CREATE
         jsr     label_search
-        bcc     check_var
+        stx     last_label_num
+        ; Already defined, just store index
+        bcc     ret
 
 do_create:
         ; Create a new label
         ldx     #label_ptr - prog_ptr
         jsr     name_new
-        ldx     label_count
         inc     label_count
         clc
-set_var:
-        stx     E_DO_EXEC+1
-        rts
+ret:    rts
 
-        ; Check if label is PROC, error if not
-check_var:
-        beq     set_var
-        sec
-        rts
 .endproc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,0 +1,5 @@
+Name: Test for error parsing variables that start with DATA
+Test: run
+Output:
+Start
+1234

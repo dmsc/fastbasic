@@ -577,16 +577,15 @@ bool SMB_E_NUMBER_FP(parse &s)
 
 bool SMB_E_LABEL_DEF(parse &s)
 {
+    auto l = s.push_loop(LT_PROC_DATA);
+    s.remove_last();
+    s.push_proc(l);
+
     s.debug("E_LABEL_DEF");
     auto &v = s.labels;
-    std::string name;
-    if( !s.get_ident(name) )
-        return false;
-    if( v.find(name) == v.end() )
-        v[name] = labelType();
+    auto name = s.last_label;
     if( v[name].is_defined() )
         return false;
-    s.last_label = name;
     s.current_params = 0;
     s.add_text(name);
     s.emit_label("fb_lbl_" + name);
