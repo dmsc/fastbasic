@@ -137,6 +137,7 @@ ENDPROC
 '-------------------------------------
 ' Compile and run
 PROC CompileAndRun
+  exec ClrTopLine
   ' Pass the relocation offset, 0 means no
   ' relocation (compile and run at same address)
   dpoke @@RELOC_OFFSET, 0
@@ -146,6 +147,7 @@ ENDPROC
 '-------------------------------------
 ' Compile to a file
 PROC CompileAndSave
+  exec ClrTopLine
   ' Pass the relocation offset, the compiled code
   ' is run at "BYTECODE_ADDR" instead of "MemEnd + 1",
   ' the output buffer.
@@ -157,7 +159,6 @@ ENDPROC
 ' Compile (and run) file
 PROC CompileFile
   ' Compile main file
-  exec ClrTopLine
   ? "Parsing: ";
   poke MemEnd, $9B
   if USR( @compile_buffer, Adr(MemStart), MemEnd+1)
