@@ -255,7 +255,7 @@ bool SMB_E_PUSH_VAR(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_VAR");
-    s.var_stk.push_back(s.remove_last().get_val());
+    s.var_stk.push_back(s.remove_last());
     return true;
 }
 
@@ -264,7 +264,7 @@ bool SMB_E_POP_VAR(parse &s)
     s.debug("E_POP_VAR");
     if (s.var_stk.empty())
         throw parse_error("variable stack empty", s.pos);
-    s.emit_byte( s.var_stk.back() );
+    s.code->push_back(s.var_stk.back());
     s.var_stk.pop_back();
     return true;
 }

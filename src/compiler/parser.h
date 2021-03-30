@@ -59,7 +59,7 @@ class parse {
                 int linenum;
         };
         std::string in_fname;
-        std::vector<int> var_stk;
+        std::vector<codew> var_stk;
         int lvl, maxlvl;
         std::string str;
         size_t pos;
