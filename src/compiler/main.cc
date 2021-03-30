@@ -253,14 +253,17 @@ int main(int argc, char **argv)
     std::set<std::string> globals, globals_zp;
     for(auto &c: s.full_code())
     {
-        // Lower-case symbols are internal
-        auto s = c.get_str();
-        if( !s.empty() && s[0] >= 'A' && s[0] <= '_' )
+        if( c.is_symbol() )
         {
-            if( c.is_sword() )
-                globals.insert(c.get_str());
-            else if( c.is_sbyte() )
-                globals_zp.insert(c.get_str());
+            // Lower-case symbols are internal
+            auto s = c.get_str();
+            if( !s.empty() && s[0] >= 'A' && s[0] <= '_' )
+            {
+                if( c.is_sword() )
+                    globals.insert(c.get_str());
+                else if( c.is_sbyte() )
+                    globals_zp.insert(c.get_str());
+            }
         }
     }
 

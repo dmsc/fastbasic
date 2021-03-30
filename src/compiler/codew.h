@@ -21,6 +21,7 @@
 
 #include "basic.h" // enum tokens
 #include "atarifp.h"
+#include <stdexcept>
 
 class codew {
     private:
@@ -166,25 +167,28 @@ class codew {
         bool is_string() const {
             return type == string;
         }
+        bool is_symbol() const {
+            return type == byte_str || type == word_str || type == label;
+        }
         // Get data
         std::string get_str() {
             if( type == byte_str || type == word_str || type == label ||
                 type == string )
                 return str;
             else
-                return std::string();
+                throw std::runtime_error("internal error: not a string");
         }
         int get_val() const {
             if( type == byte || type == word )
                 return num;
             else
-                return -1;
+                throw std::runtime_error("internal error: not a value");
         }
         enum tokens get_tok() const {
             if( type == tok )
                 return tk;
             else
-                return TOK_LAST_TOKEN;
+                throw std::runtime_error("internal error: not a token");
         }
         int linenum() const
         {
