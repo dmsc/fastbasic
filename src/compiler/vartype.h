@@ -33,8 +33,13 @@ enum VarType {
         VT_FLOAT
 };
 
+// Returns VarType from the type name
 VarType get_vartype(std::string t);
+// Returns the variable type name from VarType.
 std::string get_vt_name(enum VarType t);
+// Returns the size in bytes for this variable type
+int get_vt_size(enum VarType t);
+// Returns true if VarType is an array type
 bool var_type_is_array(enum VarType t);
 
 // Label types

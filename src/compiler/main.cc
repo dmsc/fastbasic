@@ -285,19 +285,19 @@ int main(int argc, char **argv)
     for(auto &i: s.used_tokens())
         ofile << "\t.importzp\t" << token_name(i) << "\n";
     ofile << ";-----------------------------\n"
-             "\t.import __HEAP_RUN__\n"
              "; Variables\n";
+    // Create a map to reorder variables by number:
+    auto vlist = std::map<int, std::string>();
     for(auto &v: s.vars)
         if (!v.first.empty() && v.first[0] != '-' )
-            ofile << "\t.export fb_var_" << v.first << "\n";
-    ofile << "\t.segment \"HEAP\"\n"
-             "\t.res " << s.vars.size() * 2 << "\n";
-    for(auto &v: s.vars)
-        if (!v.first.empty() && v.first[0] != '-' )
+            vlist.emplace(v.second, v.first);
+    ofile << "\t.segment \"HEAP\"\n";
+    // And now, output all variables:
+    for(auto &v: vlist)
     {
-        auto vnum  = v.second >> 8;
-        auto vtype = VarType(v.second & 0xFF);
-        ofile << "fb_var_" << v.first << "\t= __HEAP_RUN__ + " << vnum * 2
+        auto vtype = VarType(v.first & 0xFF);
+        ofile << "\t.export fb_var_" << v.second << "\n";
+        ofile << "fb_var_" << v.second << ":\t.res " << get_vt_size(vtype)
               << "\t; " << get_vt_name(vtype) << " variable\n";
     }
     ofile << ";-----------------------------\n"

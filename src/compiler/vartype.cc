@@ -65,6 +65,24 @@ std::string get_vt_name(enum VarType t)
     return "UNDEFINED";
 }
 
+int get_vt_size(enum VarType t)
+{
+    switch(t) {
+        case VT_ARRAY_WORD:
+        case VT_ARRAY_BYTE:
+        case VT_ARRAY_STRING:
+        case VT_ARRAY_FLOAT:
+        case VT_WORD:
+        case VT_STRING:
+            return 2;
+        case VT_FLOAT:
+            return 6;
+        case VT_UNDEF:
+            return 0;
+    }
+    return 0;
+}
+
 // Properties of variable types:
 bool var_type_is_array(enum VarType t)
 {
