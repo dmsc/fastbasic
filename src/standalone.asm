@@ -28,14 +28,14 @@
 ; ----------------------
 
         ; Main symbol
-        .export         start, heap_start
+        .export         start
         .exportzp       array_ptr, BASIC_TOP
         ; From intrepreter.asm
         .import         interpreter_run
         ; From bytecode
         .import         bytecode_start
         ; Linker vars
-        .import         __BSS_RUN__, __BSS_SIZE__
+        .import         __HEAP_RUN__
 
         .include "atari.inc"
 
@@ -44,9 +44,6 @@
         ; Zero page variables:
 array_ptr:      .res    2       ; Top of array memory
 BASIC_TOP=      array_ptr
-
-        ; Start of HEAP - aligned to 256 bytes
-heap_start=    ( __BSS_RUN__+__BSS_SIZE__ + 255 ) & $FF00
 
         .code
 start:

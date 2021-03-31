@@ -31,9 +31,11 @@
         .export         compiled_num_vars, compiled_var_page, CLEAR_DATA
         .exportzp       saved_cpu_stack
 
-        .import         putc, var_page, heap_start
+        .import         putc, var_page, __HEAP_RUN__, __HEAP_SIZE__
         .importzp       tmp1, tmp2, array_ptr
-        .importzp       NUM_VARS
+
+        ; Start of HEAP - aligned to 256 bytes
+        .assert (<__HEAP_RUN__) = 0, error, "Heap must be page aligned"
 
         ; Top of available memory
 MEMTOP=         $2E5
@@ -56,7 +58,7 @@ saved_cpu_stack:
 .proc   clear_data
         ; Init all pointers to end of program data
         ldx     #0
-        lda     #>heap_start
+        lda     #>__HEAP_RUN__
 ::compiled_var_page=*-1
         sta     var_page
         stx     array_ptr
@@ -65,7 +67,8 @@ saved_cpu_stack:
         ; ldx #0        ;  X already 0
         ; This value will be patched with the number of variables in the program
         ; in the IDE and native compilers
-        lda     #NUM_VARS
+        .assert __HEAP_SIZE__ < 512, error, "error, variable heap must be < 512 bytes"
+        lda     #<(__HEAP_SIZE__/2)
 ::compiled_num_vars=*-1
         asl
         bcc     :+

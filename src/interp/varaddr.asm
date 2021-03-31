@@ -29,7 +29,10 @@
 
         .export         get_op_var, var_page
         .importzp       next_instruction, cptr
-        .import         heap_start
+        .import         __HEAP_RUN__
+
+        ; Start of HEAP - aligned to 256 bytes
+        .assert (<__HEAP_RUN__) = 0, error, "Heap must be page aligned"
 
         .segment        "RUNTIME"
 
@@ -47,7 +50,7 @@
         inc     cptr
         bne     :+
         inc     cptr+1
-:       ldx     #>heap_start
+:       ldx     #>__HEAP_RUN__
 ::var_page = * - 1
         asl
         bcc     :+

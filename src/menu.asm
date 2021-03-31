@@ -24,7 +24,7 @@
         .import fb_var_NEWPTR
 
         ; From header
-        .import COMP_HEAD_2, heap_start
+        .import COMP_HEAD_2, __HEAP_RUN__
 
         ; From runtime.asm
         .import putc
@@ -151,7 +151,7 @@ run_program:
         sta     sptr
 
         ; Reload var_page, as it was overwritten by interpreter_run
-        lda     #>heap_start
+        lda     #>__HEAP_RUN__
         sta     var_page
 
 restore_break:

@@ -278,7 +278,6 @@ int main(int argc, char **argv)
     ofile << "\n"
              "; Exported symbols\n"
              "\t.export bytecode_start\n"
-             "\t.exportzp NUM_VARS\n"
              "\n\t.include \"atari.inc\"\n\n";
 
     // Write tokens
@@ -286,18 +285,19 @@ int main(int argc, char **argv)
     for(auto &i: s.used_tokens())
         ofile << "\t.importzp\t" << token_name(i) << "\n";
     ofile << ";-----------------------------\n"
-             "; Variables\n"
-             "NUM_VARS = " << s.vars.size() << "\n"
-             "\t.import heap_start\n";
+             "\t.import __HEAP_RUN__\n"
+             "; Variables\n";
     for(auto &v: s.vars)
         if (!v.first.empty() && v.first[0] != '-' )
             ofile << "\t.export fb_var_" << v.first << "\n";
+    ofile << "\t.segment \"HEAP\"\n"
+             "\t.res " << s.vars.size() * 2 << "\n";
     for(auto &v: s.vars)
         if (!v.first.empty() && v.first[0] != '-' )
     {
         auto vnum  = v.second >> 8;
         auto vtype = VarType(v.second & 0xFF);
-        ofile << "fb_var_" << v.first << "\t= heap_start + " << vnum * 2
+        ofile << "fb_var_" << v.first << "\t= __HEAP_RUN__ + " << vnum * 2
               << "\t; " << get_vt_name(vtype) << " variable\n";
     }
     ofile << ";-----------------------------\n"
