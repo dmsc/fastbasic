@@ -166,14 +166,15 @@ too_long:
 
 .proc parser_error
         ; Prints error message in Y
+        ; Message is stored shifted, and bit 0 set for the last byte
 ploop:  lda     error_msg_list, y
-        php
         iny
-        and     #$7F
+        lsr     ; Restore character, shift end bit to C
+        php     ; Save C
         jsr     putc
-        plp
-        bpl     ploop
-        sec
+        plp     ; Restore C
+        bcc     ploop
+        ; C is set at end, signaling error
 ::parse_end:
         jmp     EXE_END
 .endproc

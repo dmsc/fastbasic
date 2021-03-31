@@ -28,9 +28,9 @@ error_msg_list = * - 1
         ::name    = <(* - error_msg_list)
         .exportzp name
         .repeat .strlen(msg)-1, I
-                .byte   .strat(msg, I)
+                .byte   .strat(msg, I) * 2
         .endrepeat
-        .byte   .strat(msg, .strlen(msg)-1) ^ $80
+        .byte   .strat(msg, .strlen(msg)-1) * 2 + 1
 .endmacro
         def_error ERR_LABEL,    "undef label"
         def_error ERR_TOO_LONG, "too long"
