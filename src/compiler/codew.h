@@ -31,6 +31,7 @@ class codew {
             byte_str,   // One byte, as a label
             word,       // Two bytes, as number (-32768 to 32767)
             word_str,   // Two bytes, as a label
+            varn,       // A variable number
             label,      // A label (target of a jump)
             fp,         // A FP number, 6 bytes.
             string      // A constant string, length+bytes
@@ -120,6 +121,15 @@ class codew {
             c.str = s;
             return c;
         }
+        static codew cvarn(std::string name, int vnum, int lnum)
+        {
+            codew c;
+            c.type = varn;
+            c.lnum = lnum;
+            c.num = vnum;
+            c.str = name;
+            return c;
+        }
         static codew cfp(atari_fp x, int lnum)
         {
             codew c;
@@ -151,6 +161,9 @@ class codew {
         }
         bool is_byte() const {
             return type == byte;
+        }
+        bool is_varn() const {
+            return type == varn;
         }
         bool is_word() const {
             return type == word;
@@ -184,6 +197,12 @@ class codew {
             else
                 throw std::runtime_error("internal error: not a value");
         }
+        int get_varn() const {
+            if( type == varn )
+                return num;
+            else
+                throw std::runtime_error("internal error: not a variable");
+        }
         enum tokens get_tok() const {
             if( type == tok )
                 return tk;
@@ -204,6 +223,8 @@ class codew {
                     return "\t.byte\t" + std::to_string(num & 0xFF);
                 case word:
                     return "\t.word\t" + std::to_string(num & 0xFFFF);
+                case varn:
+                    return "\tmakevar\t\"" + str  + "\"";
                 case byte_str:
                     return "\t.byte\t" + str;
                 case word_str:

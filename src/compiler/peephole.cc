@@ -98,6 +98,14 @@ class peephole
             else
                 return 0x8000;
         }
+        int varn(size_t idx)
+        {
+            idx += current;
+            if ( idx < code.size() )
+                return code[idx].get_varn();
+            else
+                return 0x8000;
+        }
         std::string str(size_t idx)
         {
             idx += current;
@@ -311,7 +319,7 @@ class peephole
                         set_tok(1, TOK_PUSH_0); del(0);
                     }
                     //   TOK_VAR_LOAD / x
-                    if( mtok(1,TOK_VAR_LOAD) && mbyte(2) )
+                    if( mtok(1,TOK_VAR_LOAD) )
                     {
                         set_tok(1, TOK_PUSH_VAR_LOAD); del(0);
                     }
@@ -576,20 +584,20 @@ class peephole
                     }
                     //   TOK_VAR_ADDR / x / TOK_SADDR / TOK_GET / TOK_DPOKE
                     //      -> TOK_GET / TOK_VAR_STORE / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2, TOK_SADDR) &&
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2, TOK_SADDR) &&
                         mtok(3, TOK_GET) && mtok(4, TOK_DPOKE) )
                     {
-                        set_tok(0, TOK_GET); set_b(2, val(1)); set_tok(1, TOK_VAR_STORE);
-                        del(4); del(3); i--;
+                        ins_tok(0, TOK_GET); set_tok(1, TOK_VAR_STORE);
+                        del(5); del(4); del(3); i--;
                         continue;
                     }
                     //   TOK_VAR_ADDR / x / TOK_SADDR / TOK_GETKEY / TOK_DPOKE
                     //      -> TOK_GET / TOK_VAR_STORE / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2, TOK_SADDR) &&
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2, TOK_SADDR) &&
                         mtok(3, TOK_GETKEY) && mtok(4, TOK_DPOKE) )
                     {
-                        set_tok(0, TOK_GETKEY); set_b(2, val(1)); set_tok(1, TOK_VAR_STORE);
-                        del(4); del(3); i--;
+                        ins_tok(0, TOK_GETKEY); set_tok(1, TOK_VAR_STORE);
+                        del(5); del(4); del(3); i--;
                         continue;
                     }
                     //   TOK_NUM / x<256 / TOK_PEEK
@@ -633,7 +641,7 @@ class peephole
                     {
                         int x = val(1);
                         set_tok(0, TOK_VAR_LOAD);
-                        set_b(1, val(4));
+                        copy(1, 4, 1); del(2);
                         set_b(4, x);
                         set_tok(3, TOK_BYTE_POKE);
                         del(5); del(2);
@@ -660,7 +668,7 @@ class peephole
                         mtok(3, TOK_VAR_LOAD) && mtok(5, TOK_POKE) )
                     {
                         copy(4, 1, 1);
-                        set_b(1, val(5));
+                        copy(1, 5, 1); del(6);
                         set_tok(0, TOK_VAR_LOAD);
                         set_tok(3, TOK_BYTE_POKE);
                         del(6); del(5); del(2);
@@ -686,7 +694,7 @@ class peephole
                     {
                         int x = val(1);
                         set_tok(0, TOK_VAR_LOAD);
-                        set_b(1, val(4));
+                        copy(1, 4, 1); del(2);
                         set_w(4, x);
                         set_tok(3, TOK_NUM_POKE);
                         del(5); del(2);
@@ -794,31 +802,32 @@ class peephole
                         del(3);
                     }
                     //   TOK_PUSH / TOK_VAR / x / TOK_ADD   -> TOK_ADD_VAR / x
-                    if( mtok(0, TOK_PUSH) && mtok(1, TOK_VAR_LOAD) && mbyte(2) && mtok(3,TOK_ADD) )
+                    if( mtok(0, TOK_PUSH) && mtok(1, TOK_VAR_LOAD) && mtok(3,TOK_ADD) )
                     {
                         set_tok(1, TOK_ADD_VAR); del(3); del(0); i--;
                         continue;
                     }
                     //   TOK_VAR / x / TOK_PUSH / TOK_NUM / y / TOK_ADD   -> TOK_NUM / y / TOK_ADD_VAR / x
-                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
+                    if( mtok(0, TOK_VAR_LOAD) && mtok(2, TOK_PUSH) &&
                         mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_ADD) )
                     {
                         set_tok(0, TOK_NUM);
                         set_tok(2, TOK_ADD_VAR);
-                        set_b(3, val(1));
+                        copy(3, 1, 1); del(4);
                         set_w(1, val(4));
                         del(5); del(4); i--;
                         continue;
                     }
                     //   TOK_VAR / x / TOK_PUSH / TOK_VAR / y / TOK_USHL / TOK_ADD   ->
                     //        TOK_VAR / y / TOK_USHL / TOK_ADD_VAR / x
-                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
-                        mtok(3, TOK_VAR_LOAD) && mbyte(4) && mtok(5, TOK_USHL) &&
+                    if( mtok(0, TOK_VAR_LOAD) && mtok(2, TOK_PUSH) &&
+                        mtok(3, TOK_VAR_LOAD) && mtok(5, TOK_USHL) &&
                         mtok(6, TOK_ADD) )
                     {
-                        int vx = val(1);
-                        set_b(1, val(4));
-                        set_b(4, vx);
+                        copy(1, 4, 1);
+                        copy(5, 2, 1);
+                        del(6);
+                        del(2);
                         set_tok(2, TOK_USHL);
                         set_tok(3, TOK_ADD_VAR);
                         del(6); del(5); i--;
@@ -832,20 +841,20 @@ class peephole
                     //
                     //      TOK_NUM / n / TOK_ADD_VAR / y / TOK_USHL / TOK_ADD:VAR / x
                     //
-                    if( mtok(0, TOK_VAR_LOAD) && mbyte(1) && mtok(2, TOK_PUSH) &&
-                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_ADD_VAR) && mbyte(6) &&
+                    if( mtok(0, TOK_VAR_LOAD) && mtok(2, TOK_PUSH) &&
+                        mtok(3, TOK_NUM) && mword(4) && mtok(5, TOK_ADD_VAR) &&
                         mtok(7, TOK_USHL) && mtok(8, TOK_ADD) )
                     {
                         ins_w(9, 1);
-                        set_b(9, val(1));
+                        copy(9, 1, 1); del(10);
                         set_tok(8, TOK_ADD_VAR);
                         del(2); del(1); del(0); i--;
                         continue;
                     }
                     //  VAR + VAR    ==>   2 * VAR
                     //   TOK_VAR / x / TOK_PUSH / TOK_VAR / x / TOK_ADD   -> TOK_VAR / x / TOK_USHL
-                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
-                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_ADD) && val(1) == val(4) )
+                    if( mtok(0,TOK_VAR_LOAD) && mtok(2,TOK_PUSH) &&
+                        mtok(3,TOK_VAR_LOAD) && mtok(5,TOK_ADD) && varn(1) == varn(4) )
                     {
                         set_tok(2, TOK_USHL); del(5); del(4); del(3); i--;
                         continue;
@@ -853,10 +862,10 @@ class peephole
                     //  VAR = VAR + 1   ==>  INC VAR
                     //   TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_VAR_STORE / x
                     //        -> TOK_INCVAR / x
-                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                    if( mtok(0,TOK_VAR_LOAD) && mtok(2,TOK_PUSH) &&
                         mtok(3,TOK_NUM) && mword(4) && val(4) == 1 &&
-                        mtok(5,TOK_ADD) && mtok(6,TOK_VAR_STORE) && mbyte(7) &&
-                        val(1) == val(7) )
+                        mtok(5,TOK_ADD) && mtok(6,TOK_VAR_STORE) &&
+                        varn(1) == varn(7) )
                     {
                         set_tok(0, TOK_INCVAR);
                         del(7); del(6); del(5); del(4); del(3); del(2); i--;
@@ -865,11 +874,11 @@ class peephole
                     //  VAR = VAR + 1   ==>  INC VAR
                     //   TOK_VAR_A / x / TOK_SADDR / TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_DPOKE
                     //        -> TOK_INCVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_SADDR) &&
-                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_PUSH) &&
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_SADDR) &&
+                        mtok(3,TOK_VAR_LOAD) && mtok(5,TOK_PUSH) &&
                         mtok(6,TOK_NUM) && mword(7) && val(7) == 1 &&
                         mtok(8,TOK_ADD) && mtok(9,TOK_DPOKE) &&
-                        val(1) == val(4) )
+                        varn(1) == varn(4) )
                     {
                         set_tok(0, TOK_INCVAR);
                         del(9); del(8); del(7); del(6); del(5); del(4); del(3); del(2); i--;
@@ -877,7 +886,7 @@ class peephole
                     }
                     //  INC VAR  ==>  INC VAR (optimized)
                     //   TOK_VAR_A / x / TOK_INC -> TOK_INCVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_INC) )
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_INC) )
                     {
                         set_tok(0, TOK_INCVAR);
                         del(2); i--;
@@ -893,10 +902,10 @@ class peephole
                     //  VAR = VAR - 1   ==>  DEC VAR
                     //   TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_SUB / TOK_VAR_STORE / x
                     //        -> TOK_DECVAR / x
-                    if( mtok(0,TOK_VAR_LOAD) && mbyte(1) && mtok(2,TOK_PUSH) &&
+                    if( mtok(0,TOK_VAR_LOAD) && mtok(2,TOK_PUSH) &&
                         mtok(3,TOK_NUM) && mword(4) && val(4) == 1 &&
-                        mtok(5,TOK_SUB) && mtok(6,TOK_VAR_STORE) && mbyte(7) &&
-                        val(1) == val(7) )
+                        mtok(5,TOK_SUB) && mtok(6,TOK_VAR_STORE) &&
+                        varn(1) == varn(7) )
                     {
                         set_tok(0, TOK_DECVAR);
                         del(7); del(6); del(5); del(4); del(3); del(2); i--;
@@ -905,11 +914,11 @@ class peephole
                     //  VAR = VAR - 1   ==>  DEC VAR
                     //   TOK_VAR_A / x / TOK_SADDR / TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_SUB / TOK_DPOKE
                     //        -> TOK_DECVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_SADDR) &&
-                        mtok(3,TOK_VAR_LOAD) && mbyte(4) && mtok(5,TOK_PUSH) &&
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_SADDR) &&
+                        mtok(3,TOK_VAR_LOAD) && mtok(5,TOK_PUSH) &&
                         mtok(6,TOK_NUM) && mword(7) && val(7) == 1 &&
                         mtok(8,TOK_SUB) && mtok(9,TOK_DPOKE) &&
-                        val(1) == val(4) )
+                        varn(1) == varn(4) )
                     {
                         set_tok(0, TOK_DECVAR);
                         del(9); del(8); del(7); del(6); del(5); del(4); del(3); del(2); i--;
@@ -917,7 +926,7 @@ class peephole
                     }
                     //  DEC VAR  ==>  DEC VAR (optimized)
                     //   TOK_VAR_A / x / TOK_DEC -> TOK_DECVAR / x
-                    if( mtok(0,TOK_VAR_ADDR) && mbyte(1) && mtok(2,TOK_DEC) )
+                    if( mtok(0,TOK_VAR_ADDR) && mtok(2,TOK_DEC) )
                     {
                         set_tok(0, TOK_DECVAR);
                         del(2); i--;

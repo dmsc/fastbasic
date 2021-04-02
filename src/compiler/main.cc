@@ -285,6 +285,11 @@ int main(int argc, char **argv)
     for(auto &i: s.used_tokens())
         ofile << "\t.importzp\t" << token_name(i) << "\n";
     ofile << ";-----------------------------\n"
+             "; Macro to get variable ID from name\n"
+             "\t.import __HEAP_RUN__\n"
+             ".macro makevar name\n"
+             "\t.byte <((.ident (.concat (\"fb_var_\", name)) - __HEAP_RUN__)/2)\n"
+             ".endmacro\n"
              "; Variables\n";
     // Create a map to reorder variables by number:
     auto vlist = std::map<int, std::string>();

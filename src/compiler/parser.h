@@ -482,6 +482,14 @@ class parse {
             code->push_back(codew::cbyte(s, linenum));
             return true;
         }
+        bool emit_varn(std::string vname)
+        {
+            auto it = vars.find(vname);
+            if( it == vars.end() )
+                throw std::runtime_error("invalid var name");
+            code->push_back(codew::cvarn(vname, vars[vname] >> 8, linenum));
+            return true;
+        }
         bool emit_byte(int x)
         {
             code->push_back(codew::cbyte(x, linenum));

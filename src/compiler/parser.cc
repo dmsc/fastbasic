@@ -436,7 +436,7 @@ bool SMB_E_VAR_CREATE(parse &s)
         return false;
     auto v_num = v.size();
     v[name] = 0 + 256 * v_num;
-    s.emit_byte(v_num);
+    s.emit_varn(name);
     last_var_name = name;
     s.add_text( name );
     return true;
@@ -476,7 +476,7 @@ bool var_check(parse &s, int type)
     if( (v[name] & 0xFF) != type )
         return false;
     s.add_text(name);
-    s.emit_byte( v[name] >> 8 );
+    s.emit_varn(name);
     return true;
 }
 
