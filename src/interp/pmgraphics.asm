@@ -91,7 +91,7 @@ pmg_dmactl_tab:
 pmgmode_tab:
         .byte       $80,$40
 
-        .segment        "RT_DATA"
+        .bss
 pmgbase:
         .byte 0
 pmgmode:
