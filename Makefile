@@ -36,6 +36,9 @@ SYNTFP=-DFASTBASIC_FP
 # General flags for 6502 assembly files
 CA65_FLAGS=-g -tatari -I cc65/asminc
 
+# Flags added to the ROM-able library
+CA65_ROM=-DNO_SMCODE
+
 # Flags added to assembly sources for Floating Point / Integer compilers:
 CA65_FP_FLAGS=-D FASTBASIC_FP -I build/gen/fp $(CA65_FLAGS)
 CA65_INT_FLAGS=-I build/gen/int $(CA65_FLAGS)
@@ -101,6 +104,8 @@ AR65_TARGET=build/compiler/ar65$(EXT)
 
 LIB_INT=build/compiler/fastbasic-int.lib
 LIB_FP=build/compiler/fastbasic-fp.lib
+LIB_ROM_INT=build/compiler/fastbasic-cart-int.lib
+LIB_ROM_FP=build/compiler/fastbasic-cart-fp.lib
 
 # Sample programs
 SAMPLE_FP_BAS=\
@@ -282,17 +287,24 @@ COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=build/obj/fp/%.o) \
                $(FP_AS_SRC:src/%.asm=build/obj/fp/%.o)
 IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=build/obj/fp/%.o)
 CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:build/gen/%.bas=build/obj/fp/%.o)
+RT_OBJS_ROM_FP=$(RT_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
+COMMON_OBJS_ROM_FP=$(COMMON_AS_SRC:src/%.asm=build/obj/rom-fp/%.o) \
+               $(FP_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=build/obj/int/%.o)
 COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=build/obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=build/obj/%.o)
+RT_OBJS_ROM_INT=$(RT_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
+IDE_OBJS_ROM_INT=$(IDE_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
 
 # Compiler library files
 COMPILER_COMMON=\
 	 $(LIB_INT)\
 	 $(LIB_FP)\
+	 $(LIB_ROM_INT)\
+	 $(LIB_ROM_FP)\
 	 build/compiler/fastbasic.cfg\
 	 build/compiler/fastbasic-cart.cfg\
 	 build/compiler/fb$(SHEXT)\

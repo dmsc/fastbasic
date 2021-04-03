@@ -260,6 +260,10 @@ build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
+build/obj/rom-fp/%.o: src/%.asm | build/obj/rom-fp build/obj/rom-fp/interp $(CA65_HOST)
+	$(ECHO) "Assembly Cart FP $<"
+	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
+
 build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
@@ -268,9 +272,13 @@ build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
+build/obj/rom-int/%.o: src/%.asm | build/obj/rom-int build/obj/rom-int/interp $(CA65_HOST)
+	$(ECHO) "Assembly Cart INT $<"
+	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
 build/tests build/obj/tests \
 build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
+build/obj/rom-fp build/obj/rom-int build/obj/rom-fp/interp build/obj/rom-int/interp \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
 build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
 	$(Q)mkdir -p $@
@@ -281,8 +289,18 @@ $(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP) | build/compiler $(AR65_HOST)
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
+$(LIB_ROM_FP): $(RT_OBJS_ROM_FP) $(COMMON_OBJS_ROM_FP) | build/compiler $(AR65_HOST)
+	$(ECHO) "Creating Cart FP library $@"
+	$(Q)rm -f $@
+	$(Q)$(AR65_HOST) a $@ $^
+
 $(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating INT library $@"
+	$(Q)rm -f $@
+	$(Q)$(AR65_HOST) a $@ $^
+
+$(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(COMMON_OBJS_ROM_INT) | build/compiler $(AR65_HOST)
+	$(ECHO) "Creating Cart INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
