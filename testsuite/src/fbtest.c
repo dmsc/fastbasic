@@ -42,6 +42,9 @@ static const char *output_dir        = "build/tests";
 #define FB_LIB_FP   "fastbasic-fp.lib"
 #define FB_LIB_INT  "fastbasic-int.lib"
 #define FB_CFG_FILE "fastbasic.cfg"
+#define FB_LIB_ROM_FP   "fastbasic-cart-fp.lib"
+#define FB_LIB_ROM_INT  "fastbasic-cart-int.lib"
+#define FB_CFG_FILE_ROM "fastbasic-cart.cfg"
 
 // Maximum number of cycles for the native compiler
 #define MAX_FPC_CYCLES 28000000
@@ -69,8 +72,9 @@ static int str_get_char(void)
 }
 
 // Runs atari XEX file capturing the output
-static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
-                         const char *input, size_t input_len, uint64_t max_cycles)
+static int run_atari_prog(const char *progname, char *output, size_t *output_len,
+                          const char *input, size_t input_len, uint64_t max_cycles,
+                          int is_rom)
 {
     // Init input/output
     str_in = input;
@@ -87,10 +91,14 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
     // sim65_set_debug(s, sim65_debug_trace);
     atari_init(s, 0, str_get_char, str_put_char);
     sim65_set_cycle_limit(s, max_cycles);
-    enum sim65_error e = atari_xex_load(s, xexname);
+    enum sim65_error e;
+    if( is_rom )
+        e = atari_rom_load(s, 0xA000, progname);
+    else
+        e = atari_xex_load(s, progname);
     if (e == sim65_err_user)
     {
-        fprintf(stderr, "%s: error reading XEX file\n", xexname);
+        fprintf(stderr, "%s: error reading XEX/ROM file\n", progname);
         free(s);
         return -1;
     }
@@ -98,7 +106,7 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
     {
         // Prints error message
         fprintf(stderr, "%s: simulator returned %s at address %04x.\n",
-                xexname, sim65_error_str(s, e), sim65_error_addr(s));
+                progname, sim65_error_str(s, e), sim65_error_addr(s));
         free(s);
         return -1;
     }
@@ -112,14 +120,20 @@ static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
     return x;
 }
 
+static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
+                         const char *input, size_t input_len, uint64_t max_cycles)
+{
+    return run_atari_prog(xexname, output, output_len, input, input_len, max_cycles, 0);
+}
+
 // Run's an XEX file testing if the output matches the expected output
 int run_test_xex(const char *fname, const char *input, const char *expected_out,
-                 uint64_t max_cycles)
+                 uint64_t max_cycles, int rom)
 {
     size_t len = strlen(expected_out) + 128;
     char *out = calloc(len + 1, 1);
 
-    int e = run_atari_xex(fname, out, &len, input, strlen(input), max_cycles);
+    int e = run_atari_prog(fname, out, &len, input, strlen(input), max_cycles, rom);
     if (!e)
     {
         // Check
@@ -249,11 +263,14 @@ static int run_prog(const char *prog, char *out, size_t *len)
 }
 
 static int compile_cross(const char *basname, const char *asmname,
-                         const char *objname, const char *xexname, int fp,
-                         int comp_ok, int error_pos_line, int error_pos_column)
+                         const char *objname, const char *outname, int fp,
+                         int comp_ok, int error_pos_line, int error_pos_column,
+                         int compile_rom)
 {
     const char *comp = fp ? fb_fp_compiler : fb_int_compiler;
-    const char *libs = fp ? FB_LIB_FP : FB_LIB_INT;
+    const char *libs = compile_rom ? (fp ? FB_LIB_ROM_FP : FB_LIB_ROM_INT)
+                                   : (fp ? FB_LIB_FP : FB_LIB_INT);
+    const char *cfg = compile_rom ? FB_CFG_FILE_ROM : FB_CFG_FILE;
     char *cmd = 0;
     char *out = calloc(8192, 1);
     int e = -1;
@@ -261,7 +278,7 @@ static int compile_cross(const char *basname, const char *asmname,
     // Erase all files
     unlink(asmname);
     unlink(objname);
-    unlink(xexname);
+    unlink(outname);
 
     if (asprintf(&cmd, "%s %s %s", comp, basname, asmname) < 0)
     {
@@ -313,10 +330,10 @@ static int compile_cross(const char *basname, const char *asmname,
             goto xit;
         }
 
-        // Now, link to XEX
+        // Now, link to XEX / ROM
         free(cmd);
         if (asprintf(&cmd, "%s -C %s/%s -o %s %s %s/%s", ld65_path, fb_lib_path,
-                    FB_CFG_FILE, xexname, objname, fb_lib_path, libs) < 0)
+                     cfg, outname, objname, fb_lib_path, libs) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
             goto xit;
@@ -589,6 +606,8 @@ int fbtest(const char *fname)
     char *atbname = build_fname(tag_name, "atb");
     // xexname: XEX file name
     char *xexname = build_fname(tag_name, "xex");
+    // romname: ROM file name
+    char *romname = build_fname(tag_name, "rom");
     // asmname: Assembler file name
     char *asmname = build_fname(tag_name, "asm");
     // objname: Object file name
@@ -616,18 +635,19 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp native\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
                     break;
             }
         }
         if (0 != (test & test_fp))
         {
+            // XEX version:
             if (verbose)
                 fprintf(stderr, "%s: compile fp cross\n", fname);
             // Floating Point: cross
             if (compile_cross(basname, asmname, objname, xexname, 1,
                               !(test & test_compile_error),
-                              error_pos_line, error_pos_column))
+                              error_pos_line, error_pos_column, 0))
                 break;
 
             if (test & test_run)
@@ -635,18 +655,37 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
+                    break;
+            }
+
+            // CARTRIDGE version:
+            if (verbose)
+                fprintf(stderr, "%s: compile cartridge fp cross\n", fname);
+            // Floating Point: cross
+            if (compile_cross(basname, asmname, objname, romname, 1,
+                              !(test & test_compile_error),
+                              error_pos_line, error_pos_column, 1))
+                break;
+
+            if (test & test_run)
+            {
+                if (verbose)
+                    fprintf(stderr, "%s: run cartridge fp cross\n", fname);
+                // Now, runs and checks ROM
+                if (run_test_xex(romname, input_buf, expected_out, max_cycles, 1))
                     break;
             }
         }
         if (0 != (test & test_int))
         {
+            // XEX version:
             if (verbose)
                 fprintf(stderr, "%s: compile int cross\n", fname);
             // Integer: cross
             if (compile_cross(basname, asmname, objname, xexname, 0,
                               !(test & test_compile_error),
-                              error_pos_line, error_pos_column))
+                              error_pos_line, error_pos_column, 0))
                 break;
 
             if (test & test_run)
@@ -654,7 +693,25 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run int cross\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out, max_cycles))
+                if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
+                    break;
+            }
+
+            // CARTRIDGE version:
+            if (verbose)
+                fprintf(stderr, "%s: compile cartridge int cross\n", fname);
+            // Integer: cross
+            if (compile_cross(basname, asmname, objname, romname, 0,
+                              !(test & test_compile_error),
+                              error_pos_line, error_pos_column, 1))
+                break;
+
+            if (test & test_run)
+            {
+                if (verbose)
+                    fprintf(stderr, "%s: run cartridge int cross\n", fname);
+                // Now, runs and checks ROM
+                if (run_test_xex(romname, input_buf, expected_out, max_cycles, 1))
                     break;
             }
         }
@@ -672,6 +729,7 @@ int fbtest(const char *fname)
     free(name);
     free(basname);
     free(atbname);
+    free(romname);
     free(xexname);
     free(asmname);
     free(objname);

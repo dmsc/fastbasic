@@ -8,7 +8,10 @@ inc b
 dec a
 inc b
 ? a,b
-data arr1() = -1,0,1
+dim arr1(2)
+arr1(0) = -1
+arr1(1) = 0
+arr1(2) = 1
 ? arr1(0), arr1(1), arr1(2)
 inc arr1(0) : inc arr1(1) : inc arr1(2)
 ? arr1(0), arr1(1), arr1(2)
