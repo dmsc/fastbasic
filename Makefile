@@ -297,7 +297,7 @@ COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=build/obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=build/obj/%.o)
 RT_OBJS_ROM_INT=$(RT_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
-IDE_OBJS_ROM_INT=$(IDE_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
+COMMON_OBJS_ROM_INT=$(COMMON_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
 
 # Compiler library files
 COMPILER_COMMON=\
@@ -508,10 +508,12 @@ COMPILER_TARGET=\
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
      $(COMMON_OBJS_FP) \
+     $(RT_OBJS_ROM_FP) $(COMMON_OBJS_ROM_FP) \
      $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
      $(RT_OBJS_INT) \
      $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
      $(COMMON_OBJS_INT) \
+     $(RT_OBJS_ROM_INT) $(COMMON_OBJS_ROM_INT) \
      $(SAMP_OBJS)
 
 # Listing files

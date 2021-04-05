@@ -46,8 +46,13 @@ distclean: clean
 	$(Q)test -d build/gen/int         && rmdir build/gen/int         || true
 	$(Q)test -d build/obj/fp/interp   && rmdir build/obj/fp/interp   || true
 	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
+	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
+	$(Q)test -d build/obj/rom-fp/interp && rmdir build/obj/rom-fp/interp || true
+	$(Q)test -d build/obj/rom-int/interp && rmdir build/obj/rom-int/interp || true
 	$(Q)test -d build/obj/fp          && rmdir build/obj/fp          || true
 	$(Q)test -d build/obj/int         && rmdir build/obj/int         || true
+	$(Q)test -d build/obj/rom-fp      && rmdir build/obj/rom-fp      || true
+	$(Q)test -d build/obj/rom-int     && rmdir build/obj/rom-int     || true
 	$(Q)test -d build/obj/cxx-fp      && rmdir build/obj/cxx-fp      || true
 	$(Q)test -d build/obj/cxx-int     && rmdir build/obj/cxx-int     || true
 	$(Q)test -d build/obj/cxx-tgt-fp  && rmdir build/obj/cxx-tgt-fp  || true
