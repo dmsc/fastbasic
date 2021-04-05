@@ -22,7 +22,7 @@ LTO_FLAGS="-flto -flto-partition=none"
 CXX_FLAGS="-DNDEBUG -Os -Wall"
 LIN64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++ -Wl,--gc-sections"
 WIN_FLAGS="$CXX_FLAGS -static -Wl,--gc-sections"
-OSX64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++"
+OSX64_FLAGS="$CXX_FLAGS -flto -static-libstdc++"
 
 echo "----------- Compiling release $ver -------------"
 echo ""
@@ -48,9 +48,9 @@ compile_osx() {
     # Compile FAT binary for OSX.
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
-    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT= TARGET_OPTFLAGS="$OSX64_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS=x86_64-apple-darwin20.2- CC=cc CXX=c++ SHEXT= EXT= TARGET_OPTFLAGS="$OSX64_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-macosx.zip"
-    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= TARGET_OPTFLAGS="$OSX32_FLAGS" distclean
+    make SHEXT= EXT= distclean
     PATH="$OPATH"
 }
 
