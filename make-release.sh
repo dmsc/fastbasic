@@ -21,9 +21,7 @@ out="$rdir/fastbasic-$ver"
 LTO_FLAGS="-flto -flto-partition=none"
 CXX_FLAGS="-DNDEBUG -Os -Wall"
 LIN64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++ -Wl,--gc-sections"
-LIN32_FLAGS="$CXX_FLAGS $LTO_FLAGS -m32 -static-libstdc++ -Wl,--gc-sections"
 WIN_FLAGS="$CXX_FLAGS -static -Wl,--gc-sections"
-OSX32_FLAGS="$CXX_FLAGS $LTO_FLAGS -m32 -static-libstdc++"
 OSX64_FLAGS="$CXX_FLAGS $LTO_FLAGS -static-libstdc++"
 
 echo "----------- Compiling release $ver -------------"
@@ -34,13 +32,6 @@ compile_lin64() {
     make $ncpu CROSS= EXT= SHEXT= OPTFLAGS="$LIN64_FLAGS" dist
     mv -f build/fastbasic.zip "${out}-linux64.zip"
     mv -f build/fastbasic.atr "${out}.atr"
-    make CROSS= EXT= SHEXT= distclean
-}
-
-compile_lin32() {
-    # Compile for 32bit Linux - not considered cross-compilation
-    make $ncpu CROSS= EXT= SHEXT= OPTFLAGS="$LIN32_FLAGS" build/fastbasic.zip
-    mv build/fastbasic.zip "${out}-linux32.zip"
     make CROSS= EXT= SHEXT= distclean
 }
 
@@ -57,30 +48,7 @@ compile_osx() {
     # Compile FAT binary for OSX.
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
-    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m64 TARGET_OPTFLAGS="$OSX64_FLAGS" \
-         build/compiler/fastbasic-int_m64 \
-         build/compiler/fastbasic-fp_m64 \
-         build/compiler/ca65_m64 \
-         build/compiler/ld65_m64 \
-         build/compiler/ar65_m64
-    #  Clean and compile to 32bit:
-    make clean
-    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT=_m32 TARGET_OPTFLAGS="$OSX32_FLAGS" \
-         build/compiler/fastbasic-int_m32 \
-         build/compiler/fastbasic-fp_m32 \
-         build/compiler/ca65_m32 \
-         build/compiler/ld65_m32 \
-         build/compiler/ar65_m32
-    #  Build the fat binary with "LIPO":
-    for bin in fastbasic-int fastbasic-fp ca65 ld65 ar65; do
-        x86_64-apple-darwin15-lipo -create \
-            build/compiler/${bin}_m32 build/compiler/${bin}_m64 \
-            -output build/compiler/${bin}
-
-        rm -f build/compiler/${bin}_m64 build/compiler/${bin}_m32
-    done
-    #  Pack
-    make CROSS=x86_64-apple-darwin15- SHEXT= EXT= TARGET_OPTFLAGS="$OSX32_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS=x86_64-apple-darwin15- SHEXT= EXT= TARGET_OPTFLAGS="$OSX64_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-macosx.zip"
     make CROSS=x86_64-apple-darwin15- SHEXT= EXT= TARGET_OPTFLAGS="$OSX32_FLAGS" distclean
     PATH="$OPATH"
@@ -89,7 +57,6 @@ compile_osx() {
 make distclean
 
 compile_lin64
-#compile_lin32
 compile_win32
 compile_osx
 
