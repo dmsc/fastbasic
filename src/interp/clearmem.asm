@@ -59,8 +59,14 @@ saved_cpu_stack:
         ; Init all pointers to end of program data
         ldx     #0
         lda     #>__HEAP_RUN__
+        ;
+        ; Note: this is only necessary so that the IDE and command line
+        ;       compilers can use a different address for the variables
+        ;       than the compiled program - so we can't overwrite the
+        ;       "var_page" from the compiler and we must do it on runtime.
 ::compiled_var_page=*-1
         sta     var_page
+
         stx     array_ptr
         sta     array_ptr+1
         ; Allocate and clear 2 bytes of memory for each variable
