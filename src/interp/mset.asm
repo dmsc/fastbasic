@@ -30,8 +30,6 @@
         .import         stack_l, stack_h, next_ins_incsp_2, mem_set
         .importzp       tmp1, tmp2
 
-        .include "atari.inc"
-
         .segment        "RUNTIME"
 
 .proc   EXE_MSET

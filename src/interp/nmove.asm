@@ -31,8 +31,6 @@
         .import         stack_l, stack_h, next_ins_incsp_2
         .importzp       divmod_sign
 
-        .include "atari.inc"
-
         .exportzp       move_dwn_src, move_dwn_dst
         .importzp       tmp3, saddr
 move_dwn_src= saddr

@@ -29,8 +29,6 @@
 
         .importzp       next_instruction
 
-        .include "atari.inc"
-
         .segment        "RUNTIME"
 
 .proc   EXE_USR_PARAM   ; Stores AX as an usr parameter

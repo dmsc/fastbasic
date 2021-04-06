@@ -30,8 +30,6 @@
         .import         stack_l, stack_h, next_ins_incsp_2
         .importzp       tmp3, saddr
 
-        .include "atari.inc"
-
 .ifdef NO_SMCODE
 src = tmp3
 dst = saddr

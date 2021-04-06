@@ -41,8 +41,6 @@
         .import         move_dwn
         .importzp       move_dwn_src, move_dwn_dst
 
-        .include "atari.inc"
-
         ; Use DATA segment, so it is available
         .data
 
