@@ -48,6 +48,7 @@ TESTS_DEPS=\
 	build/compiler/asminc/atari_pokey.inc\
 
 TESTS_XEX=$(TESTS:testsuite/%.chk=build/%.xex)
+TESTS_ROM=$(TESTS:testsuite/%.chk=build/%.rom)
 TESTS_ASM=$(TESTS:testsuite/%.chk=build/%.asm)
 TESTS_OBJ=$(TESTS:testsuite/%.chk=build/%.o)
 TESTS_ATB=$(TESTS:testsuite/%.chk=build/%.atb)

@@ -28,7 +28,7 @@ clean:
 	      $(COMPILER_HOST_DEPS) $(COMPILER_TARGET_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
 	      $(SAMP_OBJS) $(HOST_OBJ)
-	$(Q)rm -f $(TESTS_XEX) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(RUNTEST_OBJS) $(RUNTEST) $(TESTS_STAMP) $(RUNTEST_OBJS:.o=.d)
+	$(Q)rm -f $(TESTS_XEX) $(TESTS_ROM) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(RUNTEST_OBJS) $(RUNTEST) $(TESTS_STAMP) $(RUNTEST_OBJS:.o=.d)
 
 .PHONY: distclean
 distclean: clean
