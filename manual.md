@@ -366,6 +366,11 @@ Floating point variables have an `%` as
 last character in the name. Examples of
 valid names are `MyNum%`, `x1%`.
 
+In FastBasic, variables can't be used
+in an expression before being assigned
+a value, the first assignment declares
+the variable.
+
 
 Numeric Operators
 -----------------
@@ -1627,11 +1632,14 @@ General Statements
   integer array element.
 
 
-**Allocate An Array**  
-**DIM _arr_(_size_) [type], .../ DI.**
+**Allocate an Array / Define Var**  
+**DIM _arr_(_size_) [type], .../ DI.**  
+**DIM _var_, _var$_, _var%_ ...**
 
   The `DIM` statement allows defining
-  arrays of specified length.
+  arrays of specified length, and
+  declaring variables explicitly,
+  without assigning a value.
 
   The type must be `BYTE` (abbreviated
   `B.`) to define a byte array, with
@@ -1651,12 +1659,26 @@ General Statements
   array dimensioned to 10 holds 11
   values, from 0 to 10.
 
-  You can `DIM` more than one array by
-  separating the names with commas.
-
   The array is cleared after the `DIM`,
   so all elements are 0 or an empty
   string.
+
+  In the second form, the variables
+  given in the list are defined with
+  the correct type, without giving a
+  default value. The variables can
+  be defined multiple times without
+  an error if the types are always
+  the same.
+
+  You can `DIM` more than one array or
+  variable by separating the names
+  with commas.
+
+  Example:
+
+      DIM A(10), X, T$
+      ? A(5), X
 
 
 **Ends Program**  

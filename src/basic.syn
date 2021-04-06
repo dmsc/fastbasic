@@ -520,9 +520,16 @@ DIM_VAR_TYPE:
 #@endif FASTBASIC_FP
         PAR_EXPR     emit { TOK_PUSH_1, TOK_ADD } TYPE_BYTE
         PAR_EXPR     emit { TOK_PUSH_1, TOK_ADD, TOK_USHL } TYPE_WORD
+        # Also allow creating non-array variables
+        VAR_CREATE_TYPE
 
 DIM_VAR: new variable name
         E_VAR_CREATE E_PUSH_VAR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM E_POP_VAR
+        E_VAR_WORD E_PUSH_VAR
+        emit { VT_STRING } E_VAR_SEARCH "$" E_PUSH_VAR
+#@if FASTBASIC_FP
+        emit { VT_FLOAT  } E_VAR_SEARCH "%" E_PUSH_VAR
+#@endif FASTBASIC_FP
 
 # I/O expressions
 IO_CHAN: I/O channel number

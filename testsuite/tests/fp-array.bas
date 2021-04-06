@@ -16,3 +16,6 @@ next
 ? Fib%(300)
 ? adr(Fib%) - adr(A%)
 
+' Also test DIM for normal float variables
+dim FV%
+? FV% : FV%=1.25 : ? FV%

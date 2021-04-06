@@ -18,3 +18,6 @@ next i
 
 ? arr1(15),arr1(16),arr1(17),arr1(18),arr1(19)
 
+' Also test DIM for normal variables
+dim ivar, svar$
+? ivar; svar$
