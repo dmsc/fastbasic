@@ -54,20 +54,17 @@ cartridge_start:
         ; Copies ROM to RAM
 
         ; Copy ZP interpreter
-        lda     #<__INTERP_LOAD__
-        ldx     #>__INTERP_LOAD__
-        sta     move_dwn_src
-        stx     move_dwn_src+1
-        lda     #<__INTERP_RUN__
-        ldx     #0
-        sta     move_dwn_dst
-        stx     move_dwn_dst+1
-        lda     #<__INTERP_SIZE__
-        jsr     move_dwn
+        ldx     #<__INTERP_SIZE__
+copy_interpreter:
+        lda     __INTERP_LOAD__, x
+        sta     <__INTERP_RUN__, x
+        dex
+        bpl     copy_interpreter
 
         .assert (__INTERP_RUN__ < $100), error, "Interpreter must be in ZP"
-        .assert (__INTERP_SIZE__ < $100), error, "Interpreter must be in ZP"
+        .assert (__INTERP_SIZE__ < $80), error, "Interpreter must be less than 128 bytes"
 
+        ; Copy the RT_DATA segment
         lda     #<__RT_DATA_LOAD__
         ldx     #>__RT_DATA_LOAD__
         sta     move_dwn_src
