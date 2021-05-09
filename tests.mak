@@ -42,6 +42,9 @@ TESTS_DEPS=\
 	build/compiler/fastbasic-fp.lib\
 	build/compiler/fastbasic-int.lib\
 	build/compiler/fastbasic.cfg\
+	build/compiler/fastbasic-cart-fp.lib\
+	build/compiler/fastbasic-cart-int.lib\
+	build/compiler/fastbasic-cart.cfg\
 	build/compiler/asminc/atari_antic.inc\
 	build/compiler/asminc/atari_gtia.inc\
 	build/compiler/asminc/atari.inc\
