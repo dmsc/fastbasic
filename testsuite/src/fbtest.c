@@ -586,7 +586,7 @@ int fbtest(const char *fname)
         error_data = strdup("");
 
     // Get file names from test file
-    const char *ext = rindex(fname, '.');
+    const char *ext = strrchr(fname, '.');
     if (!ext)
         ext = fname + strlen(fname);
 
@@ -594,7 +594,7 @@ int fbtest(const char *fname)
     char *base_name = strndup(fname, ext - fname);
 
     // tag_name: file name without directory and extension
-    char *tag_name = rindex(base_name, '/');
+    char *tag_name = strrchr(base_name, '/');
     if( !tag_name )
         tag_name = base_name;
     else
