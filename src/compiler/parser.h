@@ -46,6 +46,7 @@ class parse {
     private:
         static const int MAX_RECURSE_LEVEL = 200;
     public:
+        static constexpr auto label_prefix = "fb_lbl_";
         class saved_pos {
             public:
                 size_t pos;

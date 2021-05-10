@@ -588,7 +588,7 @@ bool SMB_E_LABEL_DEF(parse &s)
         return false;
     s.current_params = 0;
     s.add_text(name);
-    s.emit_label("fb_lbl_" + name);
+    s.emit_label(s.label_prefix + name);
     return true;
 }
 
@@ -608,7 +608,7 @@ bool SMB_E_LABEL(parse &s)
     if( it->second != ltype )
         return false;
     s.add_text(name);
-    s.emit_word("fb_lbl_" + name);
+    s.emit_word(s.label_prefix + name);
     return true;
 }
 
@@ -648,7 +648,7 @@ bool SMB_E_DO_EXEC(parse &s)
         throw parse_error("invalid number of parameters in EXEC, expected " +
                 std::to_string(l.num_params()) + ", got "
                 + std::to_string(pnum) , s.pos);
-    s.emit_word("fb_lbl_" + s.last_label);
+    s.emit_word(s.label_prefix + s.last_label);
     return true;
 }
 
