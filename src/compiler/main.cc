@@ -330,9 +330,29 @@ int main(int argc, char **argv)
             // Adds a label to facilitate debugging of resulting program
             ofile << lbl << ":\t; LINE " << ln << "\n";
         }
-        // Export labels
+        // Handle labels
         if( c.is_label() )
-            ofile << "\t.export\t" << c.get_str() << "\n";
+        {
+            // Check if the name starts with the label prefix
+            auto full_name = c.get_str();
+            auto ln = std::string(s.label_prefix).length();
+            if( full_name.substr(0, ln) == s.label_prefix )
+            {
+                // Yes, this is a valid label
+                auto name = full_name.substr(ln);
+                auto it = s.labels.find(name);
+                if( it == s.labels.end() )
+                    std::cerr << "internal error: unknown label type '" << name << "'\n";
+                else
+                {
+                    if( it->second.is_proc() )
+                        ofile << "\t.segment \"" << segname << "\"\n";
+                    else
+                        ofile << "\t.segment \"RT_DATA\"\n";
+                }
+                ofile << "\t.export\t" << full_name << "\n";
+            }
+        }
         ofile << c.to_asm() << "\n";
     }
 
