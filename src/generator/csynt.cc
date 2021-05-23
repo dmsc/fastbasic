@@ -30,12 +30,18 @@
 #include <string>
 #include <vector>
 
-bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
+bool p_file(options &opt, std::ostream &out, std::ostream &hdr)
 {
+    parseState p;
     syntax_parser<statemachine<cc_emit>> pf(p);
 
-    if( !pf.parse_file(p) )
-        return false;
+    while(opt.next_input())
+    {
+        auto inp = opt.input();
+        p.reset(inp.first.c_str(), inp.second);
+        if( !pf.parse_file(p) )
+            return false;
+    }
 
     // Sort tokens by index (order in token table)
     std::vector<std::string> sorted_toks(pf.tok.next());
@@ -109,9 +115,5 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 int main(int argc, const char **argv)
 {
  options opt(argc, argv);
- parseState ps;
- auto inp = opt.input();
-
- ps.reset(inp.first.c_str(), inp.second);
- return !p_file(ps, opt.output(), opt.output_header(".h"));
+ return !p_file(opt, opt.output(), opt.output_header(".h"));
 }

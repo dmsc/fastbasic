@@ -21,13 +21,14 @@
 
 #include <set>
 #include <fstream>
+#include <vector>
 
 class options
 {
     private:
         void usage()
         {
-            std::cerr << "Usage: " << prog_name << " [-options] [input_file]\n"
+            std::cerr << "Usage: " << prog_name << " [-options] [input_files...]\n"
                          "\n"
                          "Options:\n"
                          "  -h       Show this help.\n"
@@ -109,8 +110,9 @@ class options
         }
 
     public:
+        size_t current = 0;
         std::set<std::string> defs;
-        std::string input_name;
+        std::vector<std::string> input_names;
         std::string output_name;
         std::string prog_name;
         std::ofstream output_file;
@@ -146,8 +148,19 @@ class options
             return output_hfile;
         }
 
+        bool next_input()
+        {
+            return current < input_names.size();
+        }
+
         std::pair<std::string, std::string> input()
         {
+            if( current >= input_names.size() )
+                return make_pair(std::string(), std::string());
+
+            std::string input_name = input_names[current];
+            current ++;
+
             if( input_name.empty() || input_name == "-" )
                 return make_pair(readInput(std::cin), "stdin");
             std::ifstream input_file;
@@ -188,11 +201,12 @@ class options
                     else
                         error("invalid option '" + x + "'\n");
                 }
-                else if ( input_name.empty() )
-                    input_name = x;
                 else
-                    error("only one input file expected");
+                    input_names.push_back(x);
             }
+            // If np input files, add an empty name for standard input
+            if( !input_names.size() )
+                input_names.push_back(std::string());
         }
 };
 
