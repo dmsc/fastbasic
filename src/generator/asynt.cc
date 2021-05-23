@@ -96,10 +96,9 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 int main(int argc, const char **argv)
 {
  options opt(argc, argv);
- std::string inp = opt.input();
+ parseState ps;
+ auto inp = opt.input();
 
- parseState ps(inp.c_str());
- p_file(ps, opt.output(), opt.output_header(".inc"));
-
- return 0;
+ ps.reset(inp.first.c_str(), inp.second);
+ return !p_file(ps, opt.output(), opt.output_header(".inc"));
 }

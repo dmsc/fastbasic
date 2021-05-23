@@ -37,7 +37,19 @@ struct parseState
 {
     const char *str;
     unsigned pos, line, col;
-    parseState(const char *str): str(str), pos(0), line(1), col(1)  { }
+    std::string file_name;
+    parseState()
+    {
+        reset("", std::string());
+    }
+    void reset(const char *new_str, std::string new_fname)
+    {
+        str = new_str;
+        pos = 0;
+        line = 1;
+        col = 1;
+        file_name = new_fname;
+    }
     bool advance()
     {
         if( str[pos] )
@@ -108,7 +120,7 @@ struct parseState
     }
     bool error(std::string err)
     {
-        std::cerr << "parse: error at " << line << ":" << col << ": " << err << "\n";
+        std::cerr << file_name << ": error at " << line << ":" << col << ": " << err << "\n";
         return !all();
     }
 };

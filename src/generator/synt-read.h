@@ -146,15 +146,15 @@ class options
             return output_hfile;
         }
 
-        std::string input()
+        std::pair<std::string, std::string> input()
         {
             if( input_name.empty() || input_name == "-" )
-                return readInput(std::cin);
+                return make_pair(readInput(std::cin), "stdin");
             std::ifstream input_file;
             input_file.open(input_name);
             if( !input_file.is_open() )
                 error("can't open input file: '" + input_name + "'");
-            return readInput(input_file);
+            return make_pair(readInput(input_file), input_name);
         }
 
         options(int argc, const char **argv):
