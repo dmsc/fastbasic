@@ -39,12 +39,80 @@ class options
             std::cerr << prog_name << ": error, " << msg << ". Use '-h' for help.\n";
             std::exit(1);
         }
+        std::string readInput(std::istream &in) const
+        {
+            std::string r;
+            int c;
+            // Simple state machine to detect "#@if <word>" and "#@endif"
+            int st = 0, skip = 0;
+            std::string word;
+            while( -1 != (c = in.get()) )
+            {
+                switch( st )
+                {
+                    case 0:
+                        st = ( c == '#' ) ? 1 : 0;
+                        break;
+                    case 1:
+                        st = ( c == '@' ) ? 2 : 0;
+                        break;
+                    case 2:
+                        st = ( c == 'i' || c == 'I' ) ? 3 : (c == 'e' || c == 'E') ? 6 : 0;
+                        break;
+                    case 3:
+                        st = ( c == 'f' || c == 'F' ) ? 4 : 0;
+                        break;
+                    case 4:
+                        st = ( c == ' ' ) ? 5 : 0;
+                        break;
+                    case 5:
+                        // WORD
+                        if ( c >= 'a' && c <= 'z' )
+                            word += (c - ('a'-'A'));
+                        else if ( (c >= 'A' && c <= 'Z') || c == '_' || (word.empty() && c == '!') )
+                            word += c;
+                        else
+                        {
+                            // Search WORD in defines, start skip if not found, or if found
+                            // and started with '!':
+                            if( word.size() > 1 && word[0] == '!' )
+                                skip = skip + (defs.find(word.substr(1)) != defs.end());
+                            else if( !word.empty() )
+                                skip = skip + (defs.find(word) == defs.end());
+
+                            st = 0;
+                            word.clear();
+                        }
+                        break;
+                    case 6:
+                        st = ( c == 'n' || c == 'N' ) ? 7 : 0;
+                        break;
+                    case 7:
+                        st = ( c == 'd' || c == 'D' ) ? 8 : 0;
+                        break;
+                    case 8:
+                        st = ( c == 'i' || c == 'I' ) ? 9 : 0;
+                        break;
+                    case 9:
+                        st = ( c == 'f' || c == 'F' ) ? 10 : 0;
+                        break;
+                    case 10:
+                        st = 0;
+                        if( skip )
+                            skip --;
+                        break;
+                }
+                if( !skip || c == '\n' || c == '#' )
+                    r += char(c);
+            }
+            return r;
+        }
+
     public:
         std::set<std::string> defs;
         std::string input_name;
         std::string output_name;
         std::string prog_name;
-        std::ifstream input_file;
         std::ofstream output_file;
         std::ofstream output_hfile;
 
@@ -78,17 +146,15 @@ class options
             return output_hfile;
         }
 
-        std::istream &input()
+        std::string input()
         {
             if( input_name.empty() || input_name == "-" )
-                return std::cin;
+                return readInput(std::cin);
+            std::ifstream input_file;
+            input_file.open(input_name);
             if( !input_file.is_open() )
-            {
-                input_file.open(input_name);
-                if( !input_file.is_open() )
-                    error("can't open input file: '" + input_name + "'");
-            }
-            return input_file;
+                error("can't open input file: '" + input_name + "'");
+            return readInput(input_file);
         }
 
         options(int argc, const char **argv):
@@ -129,74 +195,4 @@ class options
             }
         }
 };
-
-static std::string readInput(const std::set<std::string> &defines, std::istream &in)
-{
-    std::string r;
-    int c;
-    // Simple state machine to detect "#@if <word>" and "#@endif"
-    int st = 0, skip = 0;
-    std::string word;
-    while( -1 != (c = in.get()) )
-    {
-        switch( st )
-        {
-            case 0:
-                st = ( c == '#' ) ? 1 : 0;
-                break;
-            case 1:
-                st = ( c == '@' ) ? 2 : 0;
-                break;
-            case 2:
-                st = ( c == 'i' || c == 'I' ) ? 3 : (c == 'e' || c == 'E') ? 6 : 0;
-                break;
-            case 3:
-                st = ( c == 'f' || c == 'F' ) ? 4 : 0;
-                break;
-            case 4:
-                st = ( c == ' ' ) ? 5 : 0;
-                break;
-            case 5:
-                // WORD
-                if ( c >= 'a' && c <= 'z' )
-                    word += (c - ('a'-'A'));
-                else if ( (c >= 'A' && c <= 'Z') || c == '_' || (word.empty() && c == '!') )
-                    word += c;
-                else
-                {
-                    // Search WORD in defines, start skip if not found, or if found
-                    // and started with '!':
-                    if( word.size() > 1 && word[0] == '!' )
-                        skip = skip + (defines.find(word.substr(1)) != defines.end());
-                    else if( !word.empty() )
-                        skip = skip + (defines.find(word) == defines.end());
-
-                    st = 0;
-                    word.clear();
-                }
-                break;
-            case 6:
-                st = ( c == 'n' || c == 'N' ) ? 7 : 0;
-                break;
-            case 7:
-                st = ( c == 'd' || c == 'D' ) ? 8 : 0;
-                break;
-            case 8:
-                st = ( c == 'i' || c == 'I' ) ? 9 : 0;
-                break;
-            case 9:
-                st = ( c == 'f' || c == 'F' ) ? 10 : 0;
-                break;
-            case 10:
-                st = 0;
-                if( skip )
-                    skip --;
-                break;
-        }
-        if( !skip || c == '\n' || c == '#' )
-            r += char(c);
-    }
-    return r;
-}
-
 
