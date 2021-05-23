@@ -24,6 +24,7 @@ build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
 build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
 $(CSYNT): \
  src/generator/csynt.cc \
+ src/generator/parse.h \
  src/generator/synt-parse.h \
  src/generator/synt-wlist.h \
  src/generator/synt-sm.h \
@@ -31,6 +32,7 @@ $(CSYNT): \
  src/generator/synt-read.h
 $(ASYNT): \
  src/generator/asynt.cc \
+ src/generator/parse.h \
  src/generator/synt-parse.h \
  src/generator/synt-wlist.h \
  src/generator/synt-sm.h \

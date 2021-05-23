@@ -24,48 +24,18 @@
 #include "synt-wlist.h"
 #include "synt-sm.h"
 #include "synt-read.h"
+#include "parse.h"
 
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 
 bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 {
-    // Parse TOKENS
-    wordlist tok(p, "TOKENS", 0);
-    if( !tok.parse() )
-    {
-        p.error("missing TOKENS table");
+    syntax_parser<statemachine<asm_emit>> pf(p);
+
+    if( !pf.parse_file(p) )
         return false;
-    }
-
-    // Parse EXTERN routines
-    wordlist ext(p, "EXTERN", 128);
-    if( !ext.parse() )
-        p.error("missing EXTERN table");
-
-    // Parse state machines
-    std::map<std::string, std::unique_ptr<statemachine<asm_emit>>> sm_list;
-
-    while( !p.eof() )
-    {
-        auto sm = std::make_unique<statemachine<asm_emit>>(p);
-        if( sm->parse() )
-        {
-            sm_list[sm->name()] = std::move(sm);
-        }
-        else
-        {
-            sentry s(p);
-            p.all();
-            p.error("invalid input '" + s.str() + "'");
-        }
-    }
-
-    std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
-    std::cerr << "syntax: " << (ext.next() + sm_list.size() - 128)
-              << " tables in the parser-table.\n";
 
     // Output header
     hdr << "; Syntax state machine - header\n"
@@ -74,7 +44,7 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
            "\n"
            "; Token Values\n";
 
-    for(auto i: tok.map())
+    for(auto i: pf.tok.map())
         hdr << "\t.importzp " << i.first << "\n";
     hdr << "\n";
     hdr << "\t.assert\tTOK_END = 0, error, \"TOK_END must be 0\"";
@@ -87,22 +57,22 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
 
     // External symbols
     out << "; External symbols\n";
-    for(auto i: ext.map())
+    for(auto i: pf.ext.map())
         out << " .global " << i.first << "\n";
 
     // State machine symbol IDs
     out << "\n"
            "; State Machine IDs\n";
     int n = 128;
-    for(auto i: ext.map())
+    for(auto i: pf.ext.map())
     {
         i.second = n++;
         out << "SMB_" << i.first << "\t= " << i.second << "\n";
     }
-    out << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
+    out << "\nSMB_STATE_START\t= " << pf.ext.next() << "\n\n";
 
-    int ns = ext.next();
-    for(auto &sm: sm_list)
+    int ns = pf.ext.next();
+    for(auto &sm: pf.sm_list)
         out << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
 
     // Emit array with addresses
@@ -110,14 +80,14 @@ bool p_file(parseState &p, std::ostream &out, std::ostream &hdr)
            "; Address of State Machine tables\n"
            "\n"
            "SM_TABLE_ADDR:\n";
-    for(auto i: ext.map())
+    for(auto i: pf.ext.map())
         out << "\t.word " << i.first << " - 1\n";
-    for(auto &sm: sm_list)
+    for(auto &sm: pf.sm_list)
         out << "\t.word " << sm.second->name() << " - 1\n";
     // Emit state machine tables
     out << "\n"
            "; State machine tables\n";
-    for(auto &sm: sm_list)
+    for(auto &sm: pf.sm_list)
         sm.second->print(out);
 
     return true;
