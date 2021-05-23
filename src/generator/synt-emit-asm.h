@@ -74,10 +74,11 @@ class asm_emit
             return line;
         }
         static void print(std::ostream &os, std::string name, std::string desc,
-                          const std::string &code, bool ok, int lnum)
+                          const std::vector<std::string> &code, bool ok, int lnum)
         {
-            os << name << ":\t; " << lnum << "\n"
-               << code;
+            os << name << ":\t; " << lnum << "\n";
+            for(const auto &line: code)
+                os << line;
             if( !ok )
                 os << "\t.byte SM_EXIT\n";
             os << "\n";

@@ -113,15 +113,16 @@ class cc_emit
                    "\ts.restore(spos);\n";
         }
         static void print(std::ostream &os, std::string name, std::string desc,
-                          const std::string &code, bool ok, int lnum)
+                          const std::vector<std::string> &code, bool ok, int lnum)
         {
             os << "static bool SMB_" << name << "(parse &s) {\n"
                   "\ts.debug(\"" << name << " (" << lnum << ")\");\n"
                   "\ts.check_level();\n"
                   "\ts.skipws();\n"
                   "\ts.error(\"" << desc << "\");\n"
-                  "\tauto spos = s.save();\n"
-               << code;
+                  "\tauto spos = s.save();\n";
+            for(const auto &line: code)
+                os << line;
             os << "\ts.lvl--;\n"
                   "\treturn false;\n}\n"
                   "\n";

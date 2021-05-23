@@ -29,7 +29,7 @@ class statemachine {
         bool complete;
         int lnum;          // Line number in input file
         std::string _name; // Table name
-        std::string _code; // Parsing code
+        std::vector<std::string> _code; // Parsing code lines
         std::string _desc; // Table description
         std::vector<std::string> ebytes;
         bool parse_description()
@@ -159,8 +159,10 @@ class statemachine {
         bool parse_line(std::string &line, int &lnum)
         {
             skip_comments();
-            if( complete || p.eof() || p.eol() || !p.blank() )
+            if( p.eof() || p.eol() || !p.blank() )
                 return false;
+            if( complete )
+                return p.error("table '" + _name + "' is already completed");
 
             bool canFail = false; // True if the parsing rule can fail (== has actions)
             lnum = p.line;
@@ -251,22 +253,39 @@ class statemachine {
             int lnum = 0;
             while(parse_line(line, lnum))
             {
-                _code += EM::emit_line(line, lnum);
+                _code.push_back(EM::emit_line(line, lnum));
                 line.clear();
             }
             return true;
         }
         bool parse_extra()
         {
-            if( complete )
-                return p.error("table '" + _name + "' is already completed");
-
+            bool do_complete = complete;
+            std::string last;
+            if( do_complete )
+            {
+                // Remove last line to re-add later
+                complete = false;
+                if( _code.size() )
+                {
+                    last = _code.back();
+                    _code.pop_back();
+                }
+            }
             std::string line;
             int lnum = 0;
             while(parse_line(line, lnum))
             {
-                _code += EM::emit_line(line, lnum);
+                _code.push_back(EM::emit_line(line, lnum));
                 line.clear();
+            }
+            // Restore if needed
+            if( do_complete )
+            {
+                if( complete )
+                    return p.error("table '" + _name + "' was already completed");
+                complete = true;
+                _code.push_back(last);
             }
             return true;
         }
