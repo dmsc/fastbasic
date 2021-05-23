@@ -260,6 +260,7 @@ class statemachine {
         }
         bool parse_extra()
         {
+            bool prepend = p.ch('<');
             bool do_complete = complete;
             std::string last;
             if( do_complete )
@@ -276,7 +277,10 @@ class statemachine {
             int lnum = 0;
             while(parse_line(line, lnum))
             {
-                _code.push_back(EM::emit_line(line, lnum));
+                if( prepend )
+                    _code.insert(_code.begin(), EM::emit_line(line, lnum));
+                else
+                    _code.push_back(EM::emit_line(line, lnum));
                 line.clear();
             }
             // Restore if needed
