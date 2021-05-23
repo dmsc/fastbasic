@@ -54,7 +54,9 @@ class wordlist {
             skip_comments();
             sentry s(p);
             std::string tok = read_ident();
-            if( !s(tok == name && skip_comments() && p.ch('{')) )
+            if( !s(tok == name) )
+                return true; // Allow missing list
+            if( !s(skip_comments() && p.ch('{')) )
                 return false;
             // Read all tokens
             while(1)

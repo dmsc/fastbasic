@@ -42,6 +42,7 @@ bool p_file(options &opt, std::ostream &out, std::ostream &hdr)
         if( !pf.parse_file(p) )
             return false;
     }
+    pf.show_summary();
 
     // Output header
     hdr << "; Syntax state machine - header\n"

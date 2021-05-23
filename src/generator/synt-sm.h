@@ -32,13 +32,6 @@ class statemachine {
         std::string _code; // Parsing code
         std::string _desc; // Table description
         std::vector<std::string> ebytes;
-        bool parse_name()
-        {
-            sentry s(p);
-            while(p.ident_ch());
-            _name = s.str();
-            return s( p.ch(':') );
-        }
         bool parse_description()
         {
             // Description is from ':' to the end of line, skipping spaces
@@ -245,17 +238,29 @@ class statemachine {
             return false;
         }
     public:
-        statemachine(parseState &p): p(p), complete(false), lnum(-1) {}
+        statemachine(parseState &p, std::string name):
+            p(p), complete(false), lnum(-1), _name(name) {}
         std::string name() const {
             return _name;
         }
         bool parse()
         {
-            skip_comments();
-            if( p.eof() || p.eol() || p.blank() ) return false;
-            if( !parse_name() ) return false;
             lnum = p.line;
             if( !parse_description() ) return false;
+            std::string line;
+            int lnum = 0;
+            while(parse_line(line, lnum))
+            {
+                _code += EM::emit_line(line, lnum);
+                line.clear();
+            }
+            return true;
+        }
+        bool parse_extra()
+        {
+            if( complete )
+                return p.error("table '" + _name + "' is already completed");
+
             std::string line;
             int lnum = 0;
             while(parse_line(line, lnum))

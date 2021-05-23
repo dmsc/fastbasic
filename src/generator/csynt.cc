@@ -42,6 +42,7 @@ bool p_file(options &opt, std::ostream &out, std::ostream &hdr)
         if( !pf.parse_file(p) )
             return false;
     }
+    pf.show_summary();
 
     // Sort tokens by index (order in token table)
     std::vector<std::string> sorted_toks(pf.tok.next());
