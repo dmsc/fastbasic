@@ -99,13 +99,13 @@ build/disk/%.com: build/bin/%.xex | build/disk
 	$(Q)cp $< $@
 
 # Parser generator for 6502
-$(ASYNT): src/syntax/asynt.cc | build/gen
-	$(ECHO) "Compile syntax parsing tool $<"
+$(ASYNT): src/generator/asynt.cc | build/gen
+	$(ECHO) "Compile 6502 parser generator tool $<"
 	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
 
 # Parser generator for C++
-$(CSYNT): src/syntax/csynt.cc | build/gen
-	$(ECHO) "Compile syntax parsing tool $<"
+$(CSYNT): src/generator/csynt.cc | build/gen
+	$(ECHO) "Compile C parser generator tool $<"
 	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
 
 # Host compiler build
@@ -326,20 +326,6 @@ $(COMMON_OBJS_FP): src/deftok.inc
 $(COMMON_OBJS_INT): src/deftok.inc
 build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
 build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
-$(CSYNT): \
- src/syntax/csynt.cc \
- src/syntax/synt-parse.h \
- src/syntax/synt-wlist.h \
- src/syntax/synt-sm.h \
- src/syntax/synt-emit-cc.h \
- src/syntax/synt-read.h
-$(ASYNT): \
- src/syntax/asynt.cc \
- src/syntax/synt-parse.h \
- src/syntax/synt-wlist.h \
- src/syntax/synt-sm.h \
- src/syntax/synt-emit-asm.h \
- src/syntax/synt-read.h
 
 $(HOST_OBJ) $(TARGET_OBJ): version.mk
 
