@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 class asm_emit
 {
@@ -82,5 +83,24 @@ class asm_emit
             if( !ok )
                 os << "\t.byte SM_EXIT\n";
             os << "\n";
+        }
+        static int has_call(const std::vector<std::string> &code, std::string sub)
+        {
+            auto s = emit_call(sub);
+            int n = 0;
+            for(const auto &line: code)
+                if( line.find(s) != line.npos )
+                    n++;
+            return n;
+        }
+        static bool end_call(const std::vector<std::string> &code, std::string sub)
+        {
+            if( !code.size() )
+                return false;
+            auto l = code.back();
+            auto s = emit_call(sub) + emit_ret(0);
+            if( l == s )
+                return true;
+            return false;
         }
 };

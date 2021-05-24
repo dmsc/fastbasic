@@ -245,6 +245,14 @@ class statemachine {
         std::string name() const {
             return _name;
         }
+        int has_call(std::string tab)
+        {
+            return EM::has_call(_code, tab);
+        }
+        bool end_call(std::string tab)
+        {
+            return EM::end_call(_code, tab);
+        }
         bool parse()
         {
             lnum = p.line;
@@ -295,5 +303,18 @@ class statemachine {
         }
         void print(std::ostream &out) const {
             EM::print(out, _name, _desc, _code, complete, lnum);
+        }
+        bool tail_call(const statemachine<EM> &from)
+        {
+            if( complete )
+                return p.error("table '" + _name + "' was already completed");
+            if( !_code.size() )
+                return p.error("invalid optimization in table '" + _name + "'");
+
+            _code.pop_back();
+            for(auto &l: from._code)
+                _code.push_back(l);
+            complete = from.complete;
+            return true;
         }
 };

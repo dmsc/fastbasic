@@ -44,6 +44,49 @@ bool p_file(options &opt, std::ostream &out, std::ostream &hdr)
     }
     pf.show_summary();
 
+    // Optimize parsing tables:
+    //
+    //   If a table ends with a call to another table, and that table
+    //   is only referenced once, just join the two tables.
+    //
+    // This is needed to allow floating-point syntax to alter integer
+    // syntax without making the integer parser bigger.
+    std::vector<std::string> to_delete;
+    for(const auto &sm: pf.sm_list)
+    {
+        auto n = sm.second->name();
+        int used = n == "PARSE_START" ? 1 : 0;
+
+        for(const auto &sm2: pf.sm_list)
+            used += sm2.second->has_call(n);
+        if( !used )
+        {
+            std::cerr << "syntax: table '" << n << "' unused.\n";
+            return false;
+        }
+        if( used == 1 )
+        {
+            // This table was used only once, see if we can do a tail call
+            for(const auto &sm2: pf.sm_list)
+            {
+                if( sm2.second->end_call(n) )
+                {
+                    // Perform optimization:
+                    std::cerr << "syntax: optimizing table '" << n
+                              << "' into '" << sm2.second->name() << "'.\n";
+                    if( !sm2.second->tail_call(*sm.second) )
+                        return false;
+                    // Add name to tables to delete
+                    to_delete.push_back(n);
+                }
+            }
+        }
+    }
+
+    // Delete unused tables
+    for(auto &n: to_delete)
+        pf.sm_list.erase(n);
+
     // Output header
     hdr << "; Syntax state machine - header\n"
            "; -----------------------------\n"
