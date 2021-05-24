@@ -190,24 +190,25 @@ $(AR65_TARGET): $(AR65_SRC) | build/compiler
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
-build/gen/fp/%.asm: src/%.syn $(ASYNT) | build/gen/fp
+build/gen/fp/basic.asm: $(SYNTAX_FP) $(ASYNT) | build/gen/fp
 	$(ECHO) "Creating FP parsing bytecode"
-	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $< -o $@
+	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $(SYNTAX_FP) -o $@
+
 
 # Generator for syntax file - 6502 version - INTEGER
-build/gen/int/%.asm: src/%.syn $(ASYNT) | build/gen/int
+build/gen/int/basic.asm: $(SYNTAX_INT) $(ASYNT) | build/gen/int
 	$(ECHO) "Creating INT parsing bytecode"
-	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $< -o $@
+	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTAX_INT) -o $@
 
 # Generator for syntax file - C++ version - FLOAT
-build/gen/fp/%.cc build/gen/fp/%.h: src/%.syn $(CSYNT) | build/gen/fp
+build/gen/fp/basic.cc build/gen/fp/basic.h: $(SYNTAX_FP) $(CSYNT) | build/gen/fp
 	$(ECHO) "Creating FP cross parser"
-	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $< -o build/gen/fp/$*.cc
+	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $(SYNTAX_FP) -o build/gen/fp/basic.cc
 
 # Generator for syntax file - C++ version - INTEGER
-build/gen/int/%.cc build/gen/int/%.h: src/%.syn $(CSYNT) | build/gen/int
+build/gen/int/basic.cc build/gen/int/basic.h: $(SYNTAX_INT) $(CSYNT) | build/gen/int
 	$(ECHO) "Creating INT cross parser"
-	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $< -o build/gen/int/$*.cc
+	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTAX_INT) -o build/gen/int/basic.cc
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk

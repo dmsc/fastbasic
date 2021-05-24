@@ -1,0 +1,143 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2021 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+
+# Floating point computations
+TOKENS {
+ TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
+ TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
+ TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
+ TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
+ TOK_FP_STR
+ # Used for floating point array access
+ TOK_MUL6
+}
+
+# And parsing functions
+EXTERN {
+ E_NUMBER_FP
+}
+
+# Floating point expressions
+FP_EXPR:
+        FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
+
+FP_EXPR_MORE: '+', '-'
+        "+" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_ADD FP_EXPR_MORE
+        "-" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_SUB FP_EXPR_MORE
+        pass
+
+FP_M_EXPR_MORE: '*', '/'
+        "*" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_MUL FP_M_EXPR_MORE
+        "/" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_DIV FP_M_EXPR_MORE
+        pass
+
+FP_E_EXPR_MORE: '^'
+        "^" T_EXPR emit TOK_FP_IPOW FP_E_EXPR_MORE
+        "^" emit TOK_FP_LOG10 FP_T_EXPR emit { TOK_FP_MUL, TOK_FP_EXP10 } FP_E_EXPR_MORE
+        pass
+
+FP_T_EXPR: floating point constant, variable or function
+        emit TOK_FLOAT E_NUMBER_FP
+        "-" FP_T_EXPR emit TOK_FP_NEG
+        "+" FP_T_EXPR
+        # FP Functions
+        "Abs"   FP_T_EXPR emit TOK_FP_ABS
+        "ATn"   FP_T_EXPR emit TOK_FP_ATN
+        "SGn"   FP_T_EXPR emit TOK_FP_SGN
+        "EXp10" FP_T_EXPR emit TOK_FP_EXP10
+        "EXP"   FP_T_EXPR emit TOK_FP_EXP
+        "LOg10" FP_T_EXPR emit TOK_FP_LOG10
+        "LOG"   FP_T_EXPR emit TOK_FP_LOG
+        "SQr"   FP_T_EXPR emit TOK_FP_SQRT
+        "SIn"   FP_T_EXPR emit TOK_FP_SIN
+        "COs"   FP_T_EXPR emit TOK_FP_COS
+        "Val"   STR_PAR_EXPR emit TOK_FP_VAL
+        "RNd()" emit TOK_FP_RND
+        "(" FP_EXPR ")"
+        ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
+        emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%" emit TOK_FP_LOAD
+        INT_FUNCTIONS emit TOK_INT_FP
+
+ADR_EXPR:
+        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
+
+INT_FUNCTIONS:
+        "Int"    FP_T_EXPR emit TOK_FP_INT
+
+STRING_FUNCTIONS:
+        "STR$" FP_T_EXPR emit TOK_FP_STR
+
+# FP Comparisons:
+COMP_FP_RIGHT: floating-point comparison operator
+        "="  FP_EXPR emit { TOK_FP_CMP, TOK_EQ }
+        ">"  FP_EXPR emit { TOK_FP_CMP, TOK_GT }
+        ">=" FP_EXPR emit { TOK_FP_CMP, TOK_LT, TOK_L_NOT }
+        "<>" FP_EXPR emit { TOK_FP_CMP, TOK_NEQ }
+        "<=" FP_EXPR emit { TOK_FP_CMP, TOK_GT, TOK_L_NOT }
+        "<"  FP_EXPR emit { TOK_FP_CMP, TOK_LT }
+
+# Adds floating-point comparisons as boolean expressions
+COMP_OR_BOOL:
+        emit TOK_INT_FP COMP_FP_RIGHT COMP_EXPR_MORE
+
+TEST_BOOL_EXPR:
+        emit TOK_INT_FP COMP_FP_RIGHT  OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
+
+EXPR:
+        FP_EXPR COMP_FP_RIGHT
+
+NOT_EXPR:
+        FP_EXPR COMP_FP_RIGHT
+
+# Print & Input
+PRINT_ONE:
+        FP_EXPR emit { TOK_FP_STR, TOK_PRINT_STR } PRINT_SEP
+
+INPUT_VAR:
+        VAR_FP_LVALUE_SADDR    emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
+
+# Arrays
+ARRAY_FLOAT_ADDR:
+        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
+
+# This is added at start of current table (<)
+DIM_VAR_TYPE:<
+        "%" PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_MUL6, VT_ARRAY_FLOAT }
+
+DIM_VAR:
+        emit { VT_FLOAT  } E_VAR_SEARCH "%" E_PUSH_VAR
+
+# Can create Float variables now
+VAR_CREATE_TYPE:
+        "%" emit VT_FLOAT
+
+# Variables
+VAR_FP_LVALUE_SADDR: variable name
+        emit { TOK_VAR_SADDR, VT_FLOAT } E_VAR_SEARCH "%"
+        ARRAY_FLOAT_ADDR emit TOK_SADDR
+
+# And statements
+STATEMENT:
+        "DEG" emit { TOK_1, TOK_BYTE_POKE, DEGFLAG }
+        "RAd" emit { TOK_0, TOK_BYTE_POKE, DEGFLAG }
+
+LINE_ASSIGNMENT:
+        VAR_FP_LVALUE_SADDR EQUAL FP_EXPR emit TOK_FP_STORE
+
+# vi:syntax=perl

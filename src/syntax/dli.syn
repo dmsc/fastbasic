@@ -1,0 +1,53 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2021 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+
+# DLI support - builds a machine code routine and store the address to
+# display list interrupt handler:
+DLI_COMMAND: 'SET', label
+        # Define a new DLI with given name
+        "Set" E_LABEL_CREATE emit { TOK_JUMP } \
+              E_LABEL_DEF emit { VT_ARRAY_BYTE } E_LABEL_SET_TYPE \
+              emit { 72, 138, 72, 166, COLRSH } EQUAL \
+              DLI_LDA emit { 141, &WSYNC } DLI_STA DLI_CODES
+        # Continuation of a DLI line
+        EQUAL DLI_LDA DLI_STA DLI_CODES
+        # Activate DLI with given name
+        emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
+              emit { TOK_DPOKE, TOK_BYTE, 192, TOK_NUM_POKE, &NMIEN }
+        # Clear the DLI
+        emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
+
+DLI_CODES:
+        "," DLI_LDA DLI_STA DLI_CODES
+        ","
+        emit { 230, COLRSH, 104, 170, 104, 64 } E_POP_PROC_DATA
+
+DLI_LDA: DLI source data
+        emit { 189, VT_ARRAY_BYTE } E_LABEL
+        emit 169 E_NUMBER_BYTE
+
+DLI_STA: DLI destination
+        "Into" emit 141 E_NUMBER_WORD
+        "Wsync" emit { 141, &WSYNC } DLI_STA
+
+
+STATEMENT:
+        "DLi" DLI_COMMAND
+
+# vi:syntax=perl

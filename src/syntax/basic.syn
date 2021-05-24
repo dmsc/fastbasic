@@ -47,10 +47,8 @@ TOKENS {
  TOK_POKE, TOK_DPOKE, TOK_MOVE, TOK_NMOVE, TOK_MSET, TOK_INC, TOK_DEC
  TOK_VAR_STORE, TOK_SADDR, TOK_INCVAR, TOK_DECVAR, TOK_BYTE_POKE
  TOK_NUM_POKE, TOK_VAR_STORE_0
- # Graphic support statements
- TOK_POSITION, TOK_GRAPHICS, TOK_DRAWTO
- # P/M statements
- TOK_PMGRAPHICS
+ # Position (used also in graphics)
+ TOK_POSITION
  # Print statements
  TOK_PRINT_STR, TOK_PRINT_TAB
  # I/O
@@ -70,16 +68,6 @@ TOKENS {
  # USR, calls ML routinr
  TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
 
-#@if FASTBASIC_FP
- # Floating point computations
- TOK_INT_FP, TOK_FP_VAL, TOK_FP_SGN, TOK_FP_ABS, TOK_FP_NEG, TOK_FLOAT
- TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
- TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
- TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
- TOK_FP_STR
- # Used for floating point array access
- TOK_MUL6
-#@endif FASTBASIC_FP
 }
 
 EXTERN {
@@ -99,54 +87,7 @@ EXTERN {
  E_PROC_CHECK
 #@endif
 
-#@if FASTBASIC_FP
- E_NUMBER_FP
-#@endif FASTBASIC_FP
 }
-
-# Floating point expressions
-#@if FASTBASIC_FP
-FP_EXPR:
-        FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
-
-FP_EXPR_MORE: '+', '-'
-        "+" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_ADD FP_EXPR_MORE
-        "-" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_SUB FP_EXPR_MORE
-        pass
-
-FP_M_EXPR_MORE: '*', '/'
-        "*" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_MUL FP_M_EXPR_MORE
-        "/" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_DIV FP_M_EXPR_MORE
-        pass
-
-FP_E_EXPR_MORE: '^'
-        "^" T_EXPR emit TOK_FP_IPOW FP_E_EXPR_MORE
-        "^" emit TOK_FP_LOG10 FP_T_EXPR emit { TOK_FP_MUL, TOK_FP_EXP10 } FP_E_EXPR_MORE
-        pass
-
-FP_T_EXPR: floating point constant, variable or function
-        emit TOK_FLOAT E_NUMBER_FP
-        "-" FP_T_EXPR emit TOK_FP_NEG
-        "+" FP_T_EXPR
-        # FP Functions
-        "Abs"   FP_T_EXPR emit TOK_FP_ABS
-        "ATn"   FP_T_EXPR emit TOK_FP_ATN
-        "SGn"   FP_T_EXPR emit TOK_FP_SGN
-        "EXp10" FP_T_EXPR emit TOK_FP_EXP10
-        "EXP"   FP_T_EXPR emit TOK_FP_EXP
-        "LOg10" FP_T_EXPR emit TOK_FP_LOG10
-        "LOG"   FP_T_EXPR emit TOK_FP_LOG
-        "SQr"   FP_T_EXPR emit TOK_FP_SQRT
-        "SIn"   FP_T_EXPR emit TOK_FP_SIN
-        "COs"   FP_T_EXPR emit TOK_FP_COS
-        "Val"   STR_PAR_EXPR emit TOK_FP_VAL
-        "RNd()" emit TOK_FP_RND
-        "(" FP_EXPR ")"
-        ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
-        emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%" emit TOK_FP_LOAD
-        T_EXPR_INTONLY emit TOK_INT_FP
-
-#@endif FASTBASIC_FP
 
 # Normal expressions
 INT_EXPR: integer expression
@@ -183,9 +124,6 @@ ADR_EXPR: string or variable
         emit { TOK_NUM, VT_ARRAY_WORD   } E_LABEL
         emit { TOK_NUM, VT_ARRAY_BYTE   } E_LABEL
         emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH
-#@if FASTBASIC_FP
-        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
-#@endif FASTBASIC_FP
         emit { TOK_VAR_ADDR } E_VAR_WORD
 
 USR_EXPR_MORE:
@@ -198,15 +136,10 @@ T_EXPR: integer constant
         "-" T_EXPR emit TOK_NEG
         "+" T_EXPR
         PAR_EXPR
-#@if FASTBASIC_FP
-        # In the floating-point version the parsing of integer expressions is
-        # separated to avoid exponential growth when parsing parenthesis
-        # expressions.
-        T_EXPR_INTONLY
+        INT_FUNCTIONS
 
-        # This is an integer terminal that can't be parsed as a floating point:
-T_EXPR_INTONLY: integer variable or function
-#@endif FASTBASIC_FP
+# This is an integer terminal that can't be parsed as a floating point:
+INT_FUNCTIONS: integer variable or function
         "Not" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
         "Time"   emit TOK_TIME
@@ -227,12 +160,6 @@ T_EXPR_INTONLY: integer variable or function
         "PTrig"  emit { TOK_NUM, &PTRIG0, TOK_PUSH_BYTE, 7 } RD_PORT
         "Stick"  emit { TOK_NUM, &STICK0, TOK_PUSH_BYTE, 3 } RD_PORT
         "STRig"  emit { TOK_NUM, &STRIG0, TOK_PUSH_BYTE, 3 } RD_PORT
-        "PMadr"  T_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, \
-                                 TOK_PEEK, TOK_USHL, TOK_MUL, TOK_PUSH_NUM, &PMGBASE, \
-                                 TOK_PEEK, TOK_SHL8, TOK_ADD }
-#@if FASTBASIC_FP
-        "Int"    FP_T_EXPR emit TOK_FP_INT
-#@endif FASTBASIC_FP
         "Rand"   T_EXPR emit TOK_RAND
         "Dpeek"  T_EXPR emit TOK_DPEEK
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
@@ -261,18 +188,12 @@ OR_AND_BOOL:
 TEST_BOOL_EXPR:
         emit TOK_COMP_0 OR_AND_BOOL
         emit TOK_PUSH COMP_EXPR_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
-#@if FASTBASIC_FP
-        emit TOK_INT_FP COMP_FP_RIGHT  OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
-#@endif FASTBASIC_FP
         pass
 
 # General Expression - Can be INT or BOOL
 EXPR:
         INT_EXPR TEST_BOOL_EXPR
         STR_EXPR COMP_STR_RIGHT
-#@if FASTBASIC_FP
-        FP_EXPR COMP_FP_RIGHT
-#@endif FASTBASIC_FP
 
 # Forced BOOL expressions, convert to BOOL always
 FORCE_BOOL_EXPR:
@@ -295,16 +216,10 @@ AND_EXPR_MORE:
 NOT_EXPR:
         "Not" NOT_EXPR emit TOK_L_NOT
         INT_EXPR COMP_OR_BOOL
-#@if FASTBASIC_FP
-        FP_EXPR COMP_FP_RIGHT
-#@endif FASTBASIC_FP
         STR_EXPR COMP_STR_RIGHT
 
 COMP_OR_BOOL:
         emit TOK_PUSH COMP_EXPR_RIGHT COMP_EXPR_MORE
-#@if FASTBASIC_FP
-        emit TOK_INT_FP COMP_FP_RIGHT COMP_EXPR_MORE
-#@endif FASTBASIC_FP
         emit TOK_COMP_0
 
 COMP_EXPR_RIGHT: integer comparison operator
@@ -314,17 +229,6 @@ COMP_EXPR_RIGHT: integer comparison operator
         "<"  INT_EXPR emit TOK_LT
         ">"  INT_EXPR emit TOK_GT
         "="  INT_EXPR emit TOK_EQ
-
-#@if FASTBASIC_FP
-# FP Comparisons:
-COMP_FP_RIGHT: floating-point comparison operator
-        "="  FP_EXPR emit { TOK_FP_CMP, TOK_EQ }
-        ">"  FP_EXPR emit { TOK_FP_CMP, TOK_GT }
-        ">=" FP_EXPR emit { TOK_FP_CMP, TOK_LT, TOK_L_NOT }
-        "<>" FP_EXPR emit { TOK_FP_CMP, TOK_NEQ }
-        "<=" FP_EXPR emit { TOK_FP_CMP, TOK_GT, TOK_L_NOT }
-        "<"  FP_EXPR emit { TOK_FP_CMP, TOK_LT }
-#@endif FASTBASIC_FP
 
 # Push and string expression
 PCMP_STR_EXPR:
@@ -344,14 +248,14 @@ COMP_EXPR_MORE:
 
 # String expressions: base plus optional index
 STR_EXPR: string expression
-        STR_EXPR_BASE OPT_STR_INDEX
+        STRING_FUNCTIONS OPT_STR_INDEX
 
 OPT_STR_INDEX:
         "[" emit TOK_PUSH EXPR C_EXPR "]" emit TOK_STR_IDX OPT_STR_INDEX
         "[" emit TOK_PUSH EXPR "]" emit { TOK_PUSH_BYTE, 255, TOK_STR_IDX } OPT_STR_INDEX
         pass
 
-STR_EXPR_BASE:
+STRING_FUNCTIONS:
         # Either, a constant string
         "\"" emit TOK_CSTRING E_CONST_STRING
         # Or a string function
@@ -359,9 +263,6 @@ STR_EXPR_BASE:
         "STR$" T_EXPR emit TOK_INT_STR
         # Convert pointer to string!
         "$" PAR_EXPR
-#@if FASTBASIC_FP
-        "STR$" FP_T_EXPR emit TOK_FP_STR
-#@endif FASTBASIC_FP
         # Or a string variable
         emit { TOK_VAR_LOAD, VT_STRING } E_VAR_SEARCH "$"
         # Or a string array
@@ -375,9 +276,6 @@ PRINT_SEP:
 
 PRINT_ONE:
         EXPR emit { TOK_INT_STR, TOK_PRINT_STR } PRINT_SEP
-#@if FASTBASIC_FP
-        FP_EXPR emit { TOK_FP_STR, TOK_PRINT_STR } PRINT_SEP
-#@endif FASTBASIC_FP
         STR_EXPR emit TOK_PRINT_STR PRINT_SEP
         "," emit TOK_PRINT_TAB
         ";"
@@ -397,9 +295,6 @@ THEN_OR_MULTILINE: 'THEN'
 
 VAR_CREATE_TYPE:
         "$" emit VT_STRING
-#@if FASTBASIC_FP
-        "%" emit VT_FLOAT
-#@endif FASTBASIC_FP
         emit VT_WORD
 
 # Parse variable as L-VALUE, stores the *address* in the stack, this creates the
@@ -419,12 +314,6 @@ VAR_WORD_SAVE: variable name
         E_VAR_CREATE VAR_CREATE_TYPE E_VAR_SET_TYPE
         E_VAR_WORD E_PUSH_VAR
 
-#@if FASTBASIC_FP
-VAR_FP_LVALUE_SADDR: variable name
-        emit { TOK_VAR_SADDR, VT_FLOAT } E_VAR_SEARCH "%"
-        ARRAY_FLOAT_ADDR emit TOK_SADDR
-#@endif FASTBASIC_FP
-
 # This is a standalone rule to skip spaces before the equal
 EQUAL: '='
         "="
@@ -443,20 +332,6 @@ NEXT_VARNAME:
 POSITION:
         EXPR C_EXPR emit TOK_POSITION
 
-# SOUND arguments, three possibilities:
-#  SOUND voice, freq, distort, vol
-#  SOUND voice
-#  SOUND
-SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB \
-              emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
-                     TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
-        SOUND_S1 emit { TOK_0, TOK_DPOKE }
-        emit { TOK_NUM, &SOUND_OFF, TOK_USR_ADDR, TOK_USR_CALL }
-
-SOUND_S1:
-        EXPR emit { TOK_USHL, TOK_PUSH_NUM, &AUDF1, TOK_ADD, TOK_SADDR }
-
 # Word Arrays
 ARRAY_WORD_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_WORD } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
@@ -470,12 +345,6 @@ ARRAY_STRING_ADDR:
 ARRAY_BYTE_ADDR: variable name
         emit { TOK_VAR_LOAD, VT_ARRAY_BYTE } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit TOK_ADD
         emit { TOK_NUM, VT_ARRAY_BYTE } E_LABEL emit TOK_PUSH PAR_EXPR emit TOK_ADD
-
-#@if FASTBASIC_FP
-# Float Arrays
-ARRAY_FLOAT_ADDR:
-        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
-#@endif FASTBASIC_FP
 
 # DIM
 DIM_MORE: comma
@@ -500,9 +369,6 @@ INPUT_VAR:
         VAR_WORD_LVALUE_SADDR  emit { TOK_INPUT_STR, TOK_VAL, TOK_DPOKE }
         ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_INPUT_STR, TOK_VAL, TOK_POKE }
         VAR_STR_LVALUE_SADDR   emit { TOK_INPUT_STR, TOK_COPY_STR }
-#@if FASTBASIC_FP
-        VAR_FP_LVALUE_SADDR    emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
-#@endif FASTBASIC_FP
 
 # Optional WORD array type
 TYPE_WORD:
@@ -515,9 +381,6 @@ TYPE_BYTE:
 
 DIM_VAR_TYPE:
         "$" PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_USHL, VT_ARRAY_STRING }
-#@if FASTBASIC_FP
-        "%" PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_MUL6, VT_ARRAY_FLOAT }
-#@endif FASTBASIC_FP
         PAR_EXPR     emit { TOK_PUSH_1, TOK_ADD } TYPE_BYTE
         PAR_EXPR     emit { TOK_PUSH_1, TOK_ADD, TOK_USHL } TYPE_WORD
         # Also allow creating non-array variables
@@ -527,9 +390,6 @@ DIM_VAR: new variable name
         E_VAR_CREATE E_PUSH_VAR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM E_POP_VAR
         E_VAR_WORD E_PUSH_VAR
         emit { VT_STRING } E_VAR_SEARCH "$" E_PUSH_VAR
-#@if FASTBASIC_FP
-        emit { VT_FLOAT  } E_VAR_SEARCH "%" E_PUSH_VAR
-#@endif FASTBASIC_FP
 
 # I/O expressions
 IO_CHAN: I/O channel number
@@ -605,35 +465,6 @@ DATA_VAR: new data array name
         DATA_TYPE
         E_LABEL_CREATE "()" emit { TOK_JUMP } E_LABEL_DEF DATA_TYPE
 
-# DLI support - builds a machine code routine and store the address to
-# display list interrupt handler:
-DLI_COMMAND: 'SET', label
-        # Define a new DLI with given name
-        "Set" E_LABEL_CREATE emit { TOK_JUMP } \
-              E_LABEL_DEF emit { VT_ARRAY_BYTE } E_LABEL_SET_TYPE \
-              emit { 72, 138, 72, 166, COLRSH } EQUAL \
-              DLI_LDA emit { 141, &WSYNC } DLI_STA DLI_CODES
-        # Continuation of a DLI line
-        EQUAL DLI_LDA DLI_STA DLI_CODES
-        # Activate DLI with given name
-        emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
-              emit { TOK_DPOKE, TOK_BYTE, 192, TOK_NUM_POKE, &NMIEN }
-        # Clear the DLI
-        emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
-
-DLI_CODES:
-        "," DLI_LDA DLI_STA DLI_CODES
-        ","
-        emit { 230, COLRSH, 104, 170, 104, 64 } E_POP_PROC_DATA
-
-DLI_LDA: DLI source data
-        emit { 189, VT_ARRAY_BYTE } E_LABEL
-        emit 169 E_NUMBER_BYTE
-
-DLI_STA: DLI destination
-        "Into" emit 141 E_NUMBER_WORD
-        "Wsync" emit { 141, &WSYNC } DLI_STA
-
 # Optional number after PAUSE
 PAUSE_OPT:
         EXPR
@@ -670,7 +501,7 @@ OPT_PROC_VAR:
         pass
 
 # Parse a line
-PARSE_LINE_COMMAND: statement
+STATEMENT: statement
         "." E_REM
         "?" PRINT_EXPR
         "PRInt" PRINT_EXPR
@@ -699,16 +530,7 @@ PARSE_LINE_COMMAND: statement
         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
         "Endif" E_EOL E_POP_IF
         "EXit" emit TOK_JUMP E_EXIT_LOOP
-        "Graphics" emit { TOK_0, TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
-        "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
-        "FColor" EXPR emit { TOK_NUM_POKE, &FILDAT }
         "POSition" POSITION
-        "LOCate" POSITION emit { TOK_BYTE, 6, TOK_IOCHN } GET_EXPR
-        "PLot" POSITION emit { TOK_BYTE, 6, TOK_IOCHN, TOK_BYTE_PEEK, COLOR, TOK_PUT } IO_CHAN0
-        "DRawto" POSITION emit { TOK_BYTE, DRAWLN, TOK_DRAWTO }
-        "FIllto" POSITION emit { TOK_BYTE, FILLIN, TOK_DRAWTO }
-        "SEtcolor" EXPR emit { TOK_PUSH_NUM, &COLOR0, TOK_ADD, TOK_SADDR } EXPR_AB emit TOK_POKE
-        "Sound" SOUND
         "DIm" DIM_VAR DIM_MORE
         "CLose" IO_CHAN emit TOK_CLOSE
         "Open" IO_CHAN emit { TOK_PUSH_BYTE, OPEN } XIO_EXPR
@@ -723,29 +545,19 @@ PARSE_LINE_COMMAND: statement
         EXEC_CALL E_LABEL_CREATE OPT_EXEC_PARAM emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END
-#@if FASTBASIC_FP
-        "DEG" emit { TOK_1, TOK_BYTE_POKE, DEGFLAG }
-        "RAd" emit { TOK_0, TOK_BYTE_POKE, DEGFLAG }
-#@endif FASTBASIC_FP
-        "PMGraphics" EXPR emit TOK_PMGRAPHICS
-        "PMhpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } "," EXPR emit TOK_POKE
         "Timer" emit { TOK_0, TOK_BYTE_POKE, 20, TOK_0, TOK_BYTE_POKE, 19 }
-        "DLi" DLI_COMMAND
         "CLR" emit { TOK_NUM, &CLEAR_DATA, TOK_USR_ADDR, TOK_USR_CALL }
 
-PARSE_LINE_ASSIGN:
+LINE_ASSIGNMENT:
         VAR_WORD_SAVE                  EQUAL EXPR emit TOK_VAR_STORE E_POP_VAR
         VAR_WORD_LVALUE_SADDR          EQUAL EXPR emit TOK_DPOKE
         ARRAY_BYTE_ADDR emit TOK_SADDR EQUAL EXPR emit TOK_POKE
         VAR_STR_LVALUE_SADDR           EQUAL STR_EXPR emit TOK_COPY_STR
         VAR_STR_LVALUE_SADDR           EQUAL "+" STR_EXPR emit TOK_CAT_STR
-#@if FASTBASIC_FP
-        VAR_FP_LVALUE_SADDR EQUAL FP_EXPR emit TOK_FP_STORE
-#@endif FASTBASIC_FP
 
 PARSE_START:
         E_EOL
-        PARSE_LINE_COMMAND E_EOL
-        PARSE_LINE_ASSIGN E_EOL
+        STATEMENT E_EOL
+        LINE_ASSIGNMENT E_EOL
 
 # vi:syntax=perl

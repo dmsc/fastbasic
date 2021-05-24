@@ -488,6 +488,19 @@ AR65_SRC=\
 	cc65/ar65/objdata.c\
 	cc65/ar65/objfile.c\
 
+# Syntax files for integer version
+SYNTAX_INT=\
+	src/syntax/basic.syn\
+	src/syntax/dli.syn\
+	src/syntax/graphics.syn\
+	src/syntax/pm.syn\
+	src/syntax/sound.syn\
+
+# Syntax files for floating-point version
+SYNTAX_FP=\
+	$(SYNTAX_INT)\
+	src/syntax/float.syn\
+
 # Host compiler
 COMPILER_HOST=\
 	 $(CA65_HOST)\
