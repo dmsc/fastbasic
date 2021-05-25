@@ -674,6 +674,21 @@ bool SMB_E_LABEL_SET_TYPE(parse &s)
     return true;
 }
 
+// Sets the segment of the data
+bool SMB_E_DATA_SEGMENT(parse &s)
+{
+    std::string seg_name;
+
+    s.debug("E_DATA_SEGMENT");
+    s.skipws();
+    if( !s.get_ident(seg_name) )
+        return false;
+
+    // Set segment
+    s.labels[s.last_label].set_segment(seg_name);
+    return true;
+}
+
 // Reads a DATA array from a file
 bool SMB_E_DATA_FILE(parse &s)
 {

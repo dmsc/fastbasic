@@ -347,6 +347,8 @@ int main(int argc, char **argv)
                 {
                     if( it->second.is_proc() )
                         ofile << "\t.segment \"" << segname << "\"\n";
+                    else if( it->second.get_segment().size() )
+                        ofile << "\t.segment \"" << it->second.get_segment() << "\"\n";
                     else
                         ofile << "\t.segment \"DATA\"\n";
                 }

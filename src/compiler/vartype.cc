@@ -140,3 +140,8 @@ void labelType::define()
 {
     type |= 64;
 }
+
+void labelType::set_segment(std::string seg)
+{
+    segment = seg;
+}

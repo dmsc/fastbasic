@@ -53,9 +53,12 @@ class labelType {
         bool add_proc_params(int params);
         int  num_params();
         void define();
+        void set_segment(std::string);
+        std::string get_segment() const { return segment; };
         bool operator !=(const labelType &l) const { return type != l.type; }
     private:
         int type;
+        std::string segment;
 };
 
 

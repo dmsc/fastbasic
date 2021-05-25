@@ -1,6 +1,7 @@
-Name: Test DATA FILE inclusion
+Name: Test DATA FILE inclusion and DATA segments
 Test: run-int
 Output:
 Start
 39        32
 8231
+1         0

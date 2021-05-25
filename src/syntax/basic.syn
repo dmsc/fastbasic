@@ -83,6 +83,7 @@ EXTERN {
 
 #@if EXTENDED
  E_DATA_FILE
+ E_DATA_SEGMENT
  E_COUNT_PARAM
  E_PROC_CHECK
 #@endif
@@ -453,8 +454,18 @@ DATA_TYPE: data type
         TYPE_BYTE EQUAL E_LABEL_SET_TYPE DATA_BYTES
         TYPE_WORD EQUAL E_LABEL_SET_TYPE E_NUMBER_WORD DATA_WORDS
 #@if EXTENDED
+        # Allow reading from file
         TYPE_BYTE "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
         TYPE_WORD "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
+        # Allow setting the data segment
+        TYPE_BYTE DATA_SEGMENT EQUAL DATA_BYTES
+        TYPE_WORD DATA_SEGMENT EQUAL E_NUMBER_WORD DATA_WORDS
+        TYPE_BYTE "File" DATA_SEGMENT "\"" E_DATA_FILE
+        TYPE_WORD "File" DATA_SEGMENT "\"" E_DATA_FILE
+
+# Allow setting the data segment
+DATA_SEGMENT:
+        "[" E_LABEL_SET_TYPE E_DATA_SEGMENT "]"
 #@endif
 
 DATA_END:
