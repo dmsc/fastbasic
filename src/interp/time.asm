@@ -31,10 +31,12 @@
 
         .segment        "RUNTIME"
 
+        .include        "atari.inc"
+
 .proc   EXE_TIME
-retry:  ldx     19
-        lda     20
-        cpx     19
+retry:  ldx     RTCLOK+1
+        lda     RTCLOK+2
+        cpx     RTCLOK+1
         bne     retry
         jmp     next_instruction
 .endproc
