@@ -38,7 +38,7 @@ EXE_CHR:        ; AX = CHR( AX )
         ldx     #>chr_string
         jmp     next_instruction
 
-        .segment        "RT_DATA"
+        .data
         ; Buffer for the return string, 2 bytes
 chr_string:
         .byte   1       ; The string length - 1 byte

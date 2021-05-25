@@ -29,7 +29,7 @@
         ; Linker vars
         .import __INTERP_START__, __INTERP_SIZE__
         .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
-        .import __RT_DATA_SIZE__
+        .import __DATA_SIZE__
 
         .import interpreter_run, bytecode_start
 
@@ -38,7 +38,7 @@ ZP_INTERP_LOAD = < __INTERP_START__
 ZP_INTERP_SIZE = < __INTERP_SIZE__
 
         ; Start of relocated bytecode
-BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__
+BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __DATA_SIZE__
 
         ; Ensure that the Editor or Command Line bytecode starts at same address that
         ; compiled bytecode, so we have only one initialization
@@ -68,7 +68,7 @@ COMP_HEAD_2:
 
         ; Number of bytes to write in RUNTIME + JUMPTAB segments
         .export COMP_RT_SIZE
-COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __RT_DATA_SIZE__ - __JUMPTAB_RUN__ + 4
+COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __DATA_SIZE__ - __JUMPTAB_RUN__ + 4
 
         ; This is the runtime startup code, loads the editor.
         ; Note that this code is patched before writing to a file

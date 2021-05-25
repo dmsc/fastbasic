@@ -348,7 +348,7 @@ int main(int argc, char **argv)
                     if( it->second.is_proc() )
                         ofile << "\t.segment \"" << segname << "\"\n";
                     else
-                        ofile << "\t.segment \"RT_DATA\"\n";
+                        ofile << "\t.segment \"DATA\"\n";
                 }
                 ofile << "\t.export\t" << full_name << "\n";
             }

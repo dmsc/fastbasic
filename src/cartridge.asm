@@ -35,14 +35,10 @@
         .import         __CARTFLAGS__
         .import         __BSS_RUN__, __BSS_SIZE__
         .import         __INTERP_LOAD__, __INTERP_RUN__, __INTERP_SIZE__
-        .import         __RT_DATA_LOAD__, __RT_DATA_RUN__, __RT_DATA_SIZE__
         .import         __DATA_LOAD__, __DATA_RUN__, __DATA_SIZE__
         ; Move
         .import         move_dwn
         .importzp       move_dwn_src, move_dwn_dst
-
-        ; Use DATA segment, so it is available
-        .data
 
         .code
         ; Forces an error if compilation options allows self-modifying-code:
@@ -64,17 +60,17 @@ copy_interpreter:
         .assert (__INTERP_RUN__ < $100), error, "Interpreter must be in ZP"
         .assert (__INTERP_SIZE__ < $80), error, "Interpreter must be less than 128 bytes"
 
-        ; Copy the RT_DATA segment
-        lda     #<__RT_DATA_LOAD__
-        ldx     #>__RT_DATA_LOAD__
+        ; Copy the DATA segment
+        lda     #<__DATA_LOAD__
+        ldx     #>__DATA_LOAD__
         sta     move_dwn_src
         stx     move_dwn_src+1
-        lda     #<__RT_DATA_RUN__
-        ldx     #>__RT_DATA_RUN__
+        lda     #<__DATA_RUN__
+        ldx     #>__DATA_RUN__
         sta     move_dwn_dst
         stx     move_dwn_dst+1
-        lda     #<(__RT_DATA_SIZE__ + __DATA_SIZE__)
-        ldx     #>(__RT_DATA_SIZE__ + __DATA_SIZE__)
+        lda     #<__DATA_SIZE__
+        ldx     #>__DATA_SIZE__
         jsr     move_dwn
 
         jmp     start
