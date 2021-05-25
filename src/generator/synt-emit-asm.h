@@ -84,6 +84,11 @@ class asm_emit
                 os << "\t.byte SM_EXIT\n";
             os << "\n";
         }
+        static bool is_empty(const std::vector<std::string> &code)
+        {
+            return code.size() == 0 ||
+                   (code.size() == 1 && code[0] == emit_ret(0));
+        }
         static int has_call(const std::vector<std::string> &code, std::string sub)
         {
             auto s = emit_call(sub);
@@ -102,5 +107,20 @@ class asm_emit
             if( l == s )
                 return true;
             return false;
+        }
+        static bool delete_call(std::vector<std::string> &code, std::string sub)
+        {
+            bool ret = false;
+            auto s = emit_call(sub);
+            for(auto &line: code)
+            {
+                auto i = line.find(s);
+                if( i != line.npos )
+                {
+                    // Remove just the substring
+                    line.erase(i, s.length());
+                }
+            }
+            return ret;
         }
 };

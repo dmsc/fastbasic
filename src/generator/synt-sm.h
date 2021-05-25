@@ -249,6 +249,14 @@ class statemachine {
         {
             return EM::has_call(_code, tab);
         }
+        int is_empty()
+        {
+            return EM::is_empty(_code);
+        }
+        bool delete_call(std::string tab)
+        {
+            return EM::delete_call(_code, tab);
+        }
         bool end_call(std::string tab)
         {
             return EM::end_call(_code, tab);

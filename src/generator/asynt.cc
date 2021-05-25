@@ -86,6 +86,30 @@ bool p_file(options &opt, std::ostream &out, std::ostream &hdr)
     // Delete unused tables
     for(auto &n: to_delete)
         pf.sm_list.erase(n);
+    to_delete.clear();
+
+    //
+    //   If a table is empty, remove all references to it.
+    //
+    for(const auto &sm: pf.sm_list)
+    {
+        if( sm.second->is_empty() )
+        {
+            auto n = sm.second->name();
+
+            std::cerr << "syntax: optimizing table '" << n << "' empty, will delete.\n";
+            // Ok, delete this table
+            to_delete.push_back(n);
+
+            // And all references
+            for(const auto &sm2: pf.sm_list)
+                sm2.second->delete_call(n);
+        }
+    }
+
+    // Delete unused tables
+    for(auto &n: to_delete)
+        pf.sm_list.erase(n);
 
     // Output header
     hdr << "; Syntax state machine - header\n"
