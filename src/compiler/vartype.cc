@@ -105,6 +105,11 @@ labelType::labelType(): type(0) {}
 
 labelType::labelType(std::string str)
 {
+    set_type(str);
+}
+
+void labelType::set_type(std::string str)
+{
     if( str == "VT_ARRAY_WORD" )
         type = 128;
     else if( str == "VT_ARRAY_BYTE" )

@@ -670,7 +670,7 @@ bool SMB_E_LABEL_SET_TYPE(parse &s)
     s.debug("E_LABEL_SET_TYPE");
     s.skipws();
     // Get type
-    s.labels[s.last_label] = labelType(s.remove_last().get_str());
+    s.labels[s.last_label].set_type(s.remove_last().get_str());
     return true;
 }
 
