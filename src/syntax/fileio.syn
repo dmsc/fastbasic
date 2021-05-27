@@ -1,0 +1,69 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2021 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+# File Input/Output statements
+
+TOKENS {
+ TOK_XIO, TOK_CLOSE, TOK_GET
+ TOK_BPUT, TOK_BGET
+ # Set's IO channel (before PRINT/INPUT/PUT/GET)
+ TOK_IOCHN
+}
+
+# I/O channel expressions
+IO_CHAN: I/O channel number
+        "#" EXPR
+
+IO_CHAN_OPT:
+        IO_CHAN emit TOK_IOCHN ","
+
+# Resets I/O channel to 0
+IO_CHAN0:
+        emit TOK_0 emit TOK_IOCHN
+
+# Used only for CLS
+IO_CHAN_OPT_NOCOMMA:
+        IO_CHAN emit TOK_IOCHN
+
+# Get expression
+GET_EXPR: comma
+        "," ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_GET, TOK_POKE } GET_EXPR_MORE
+        "," VAR_WORD_LVALUE_SADDR  emit { TOK_GET, TOK_DPOKE } GET_EXPR_MORE
+
+GET_EXPR_MORE:
+        GET_EXPR
+        IO_CHAN0
+
+# Parses a XIO AUX1/AUX2/STRING expression
+XIO_EXPR:
+        C_EXPR C_EXPR emit { TOK_SHL8, TOK_ADD, TOK_PUSH } "," STR_EXPR emit TOK_XIO
+
+# Patch INPUT statement, adds support for I/O channel
+INPUT_STR:<
+        IO_CHAN emit TOK_IOCHN ","                       # I/O channel, don't print prompt
+
+# All statements
+STATEMENT:
+        "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
+        "CLose" IO_CHAN emit TOK_CLOSE
+        "Open" IO_CHAN emit { TOK_PUSH_BYTE, OPEN } XIO_EXPR
+        "Xio"  IO_CHAN C_EXPR XIO_EXPR
+        "BPut" IO_CHAN C_EXPR C_EXPR emit TOK_BPUT
+        "BGet" IO_CHAN C_EXPR C_EXPR emit TOK_BGET
+
+# vi:syntax=perl

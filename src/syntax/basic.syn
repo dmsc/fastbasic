@@ -51,11 +51,8 @@ TOKENS {
  TOK_POSITION
  # Print statements
  TOK_PRINT_STR, TOK_PRINT_TAB
- # I/O
- TOK_GETKEY, TOK_INPUT_STR, TOK_XIO, TOK_CLOSE, TOK_GET, TOK_PUT
- TOK_BPUT, TOK_BGET
- # Set's IO channel (before PRINT/INPUT/PUT/GET)
- TOK_IOCHN
+ # Simple console input and output
+ TOK_GETKEY, TOK_INPUT_STR, TOK_PUT
  # Jumps
  TOK_JUMP, TOK_CJUMP, TOK_CNJUMP, TOK_CALL, TOK_RET, TOK_CRET, TOK_CNRET
  # FOR loop support
@@ -353,7 +350,6 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        IO_CHAN emit TOK_IOCHN ","                       # I/O channel, don't print prompt
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
         emit { TOK_BYTE, 63, TOK_PUT }                   # Prints a '?' by default
@@ -391,36 +387,19 @@ DIM_VAR: new variable name
         E_VAR_WORD E_PUSH_VAR
         emit { VT_STRING } E_VAR_SEARCH "$" E_PUSH_VAR
 
-# I/O expressions
-IO_CHAN: I/O channel number
-        "#" EXPR
-
+# No I/O channel support
 IO_CHAN_OPT:
-        IO_CHAN emit TOK_IOCHN ","
         pass
 
-# Used only for CLS
 IO_CHAN_OPT_NOCOMMA:
-        IO_CHAN emit TOK_IOCHN
         pass
 
-# Resets I/O channel to 0
 IO_CHAN0:
-        emit TOK_0 emit TOK_IOCHN
 
 # Get from keyboard expression
 GETK_EXPR:
         ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_GETKEY, TOK_POKE }
         VAR_WORD_LVALUE_SADDR  emit { TOK_GETKEY, TOK_DPOKE }
-
-# Get expression
-GET_EXPR: comma
-        "," ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_GET, TOK_POKE } GET_EXPR_MORE
-        "," VAR_WORD_LVALUE_SADDR  emit { TOK_GET, TOK_DPOKE } GET_EXPR_MORE
-
-GET_EXPR_MORE:
-        GET_EXPR
-        IO_CHAN0
 
 # A comma followed by an expression
 C_EXPR: comma followed by an expression
@@ -429,10 +408,6 @@ C_EXPR: comma followed by an expression
 # Get two comma separated expressions ",A,B" and returns "A*16+B"
 EXPR_AB:
         "," EXPR emit { TOK_USHL, TOK_USHL, TOK_USHL, TOK_USHL } C_EXPR emit TOK_ADD
-
-# Parses a XIO AUX1/AUX2/STRING expression
-XIO_EXPR:
-        C_EXPR C_EXPR emit { TOK_SHL8, TOK_ADD, TOK_PUSH } "," STR_EXPR emit TOK_XIO
 
 # Parses a "DATA" expression, get's binary data in memory
 DATA_WORDS: data word
@@ -507,7 +482,6 @@ STATEMENT: statement
         "PRInt" PRINT_EXPR
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
-        "GEt" IO_CHAN emit TOK_IOCHN GET_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
         "CLS" IO_CHAN_OPT_NOCOMMA emit { TOK_BYTE, CLS, TOK_PUT } IO_CHAN0
         "Poke"  EXPR emit TOK_SADDR "," EXPR emit TOK_POKE
@@ -532,11 +506,6 @@ STATEMENT: statement
         "EXit" emit TOK_JUMP E_EXIT_LOOP
         "POSition" POSITION
         "DIm" DIM_VAR DIM_MORE
-        "CLose" IO_CHAN emit TOK_CLOSE
-        "Open" IO_CHAN emit { TOK_PUSH_BYTE, OPEN } XIO_EXPR
-        "Xio"  IO_CHAN C_EXPR XIO_EXPR
-        "BPut" IO_CHAN C_EXPR C_EXPR emit TOK_BPUT
-        "BGet" IO_CHAN C_EXPR C_EXPR emit TOK_BGET
         "PAuse" PAUSE_OPT emit TOK_PAUSE
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC

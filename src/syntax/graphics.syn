@@ -17,6 +17,7 @@
 #
 
 # Graphic support statements
+# NOTE: in the Atari 8-bit this depends on file I/O, as uses I/O channel 6.
 
 TOKENS {
  TOK_GRAPHICS, TOK_DRAWTO
