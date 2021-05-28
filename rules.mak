@@ -40,40 +40,8 @@ distclean: clean
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
 	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
-	$(Q)test -d build/obj/tests       && rmdir build/obj/tests       || true
-	$(Q)test -d build/tests           && rmdir build/tests           || true
-	$(Q)test -d build/gen/fp          && rmdir build/gen/fp          || true
-	$(Q)test -d build/gen/int         && rmdir build/gen/int         || true
-	$(Q)test -d build/obj/fp/interp/atari   && rmdir build/obj/fp/interp/atari   || true
-	$(Q)test -d build/obj/fp/interp/a800    && rmdir build/obj/fp/interp/a800    || true
-	$(Q)test -d build/obj/fp/interp/atarifp && rmdir build/obj/fp/interp/atarifp || true
-	$(Q)test -d build/obj/fp/interp   && rmdir build/obj/fp/interp   || true
-	$(Q)test -d build/obj/int/interp/atari   && rmdir build/obj/int/interp/atari   || true
-	$(Q)test -d build/obj/int/interp/a800    && rmdir build/obj/int/interp/a800    || true
-	$(Q)test -d build/obj/int/interp/atarifp && rmdir build/obj/int/interp/atarifp || true
-	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
-	$(Q)test -d build/obj/rom-fp/interp/atari   && rmdir build/obj/rom-fp/interp/atari   || true
-	$(Q)test -d build/obj/rom-fp/interp/a800    && rmdir build/obj/rom-fp/interp/a800    || true
-	$(Q)test -d build/obj/rom-fp/interp/atarifp && rmdir build/obj/rom-fp/interp/atarifp || true
-	$(Q)test -d build/obj/rom-fp/interp && rmdir build/obj/rom-fp/interp || true
-	$(Q)test -d build/obj/rom-int/interp/atari   && rmdir build/obj/rom-int/interp/atari   || true
-	$(Q)test -d build/obj/rom-int/interp/a800    && rmdir build/obj/rom-int/interp/a800    || true
-	$(Q)test -d build/obj/rom-int/interp/atarifp && rmdir build/obj/rom-int/interp/atarifp || true
-	$(Q)test -d build/obj/rom-int/interp && rmdir build/obj/rom-int/interp || true
-	$(Q)test -d build/obj/fp          && rmdir build/obj/fp          || true
-	$(Q)test -d build/obj/int         && rmdir build/obj/int         || true
-	$(Q)test -d build/obj/rom-fp      && rmdir build/obj/rom-fp      || true
-	$(Q)test -d build/obj/rom-int     && rmdir build/obj/rom-int     || true
-	$(Q)test -d build/obj/cxx-fp      && rmdir build/obj/cxx-fp      || true
-	$(Q)test -d build/obj/cxx-int     && rmdir build/obj/cxx-int     || true
-	$(Q)test -d build/obj/cxx-tgt-fp  && rmdir build/obj/cxx-tgt-fp  || true
-	$(Q)test -d build/obj/cxx-tgt-int && rmdir build/obj/cxx-tgt-int || true
-	$(Q)test -d build/compiler/asminc && rmdir build/compiler/asminc || true
-	$(Q)test -d build/bin             && rmdir build/bin             || true
-	$(Q)test -d build/gen             && rmdir build/gen             || true
-	$(Q)test -d build/obj             && rmdir build/obj             || true
-	$(Q)test -d build/disk            && rmdir build/disk            || true
-	$(Q)test -d build/compiler        && rmdir build/compiler        || true
+	$(Q)printf "%s\n" $(BUILD_FOLDERS) | sort -r | while read folder; do \
+		test -d $$folder && rmdir $$folder || true ; done
 
 # Build an ATR disk image using "mkatr".
 $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
@@ -293,14 +261,8 @@ build/obj/rom-int/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/rom-int/%) $(CA6
 	$(ECHO) "Assembly Cart INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
-build/tests build/obj/tests \
-$(AS_FOLDERS:src%=build/obj/rom-int%) \
-$(AS_FOLDERS:src%=build/obj/rom-fp%) \
-$(AS_FOLDERS:src%=build/obj/int%) \
-$(AS_FOLDERS:src%=build/obj/fp%) \
-build/gen build/obj \
-build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
-build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
+# Rule to build all folders
+$(BUILD_FOLDERS):
 	$(Q)mkdir -p $@
 
 # Library files

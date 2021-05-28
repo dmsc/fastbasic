@@ -567,6 +567,29 @@ COMPILER_TARGET_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-int/%.o)
 HOST_OBJ=$(COMPILER_HOST_FP_OBJ) $(COMPILER_HOST_INT_OBJ)
 TARGET_OBJ=$(COMPILER_TARGET_FP_OBJ) $(COMPILER_TARGET_INT_OBJ)
 
+# All folders created during compilation:
+BUILD_FOLDERS=\
+ $(AS_FOLDERS:src%=build/obj/fp%)\
+ $(AS_FOLDERS:src%=build/obj/int%)\
+ $(AS_FOLDERS:src%=build/obj/rom-fp%)\
+ $(AS_FOLDERS:src%=build/obj/rom-int%)\
+ build/bin\
+ build/compiler/asminc\
+ build/compiler\
+ build/disk\
+ build/gen/fp\
+ build/gen/int\
+ build/gen\
+ build/obj/cxx-fp\
+ build/obj/cxx-int\
+ build/obj/cxx-tgt-fp\
+ build/obj/cxx-tgt-int\
+ build/obj/tests\
+ build/obj\
+ build/tests\
+ build\
+
+
 include tests.mak
 include rules.mak
 include deps.mak
