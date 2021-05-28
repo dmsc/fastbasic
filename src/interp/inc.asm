@@ -63,7 +63,7 @@ loadH:  inc     $FF01, x
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "INC"
         deftoken "INCVAR"
 

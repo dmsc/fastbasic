@@ -49,7 +49,7 @@
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "RET"
         deftoken "CRET"
         deftoken "CNRET"

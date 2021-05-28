@@ -49,7 +49,7 @@
         jmp     next_ins_incsp_2
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "MSET"
 
 ; vi:syntax=asm_ca65

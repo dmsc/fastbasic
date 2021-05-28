@@ -44,7 +44,7 @@ chr_string:
         .byte   1       ; The string length - 1 byte
         .byte   0       ; The string data - filled above
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "CHR"
 
 ; vi:syntax=asm_ca65

@@ -157,7 +157,7 @@ xit:    rts
 .endproc
 
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "NMOVE"
 
 ; vi:syntax=asm_ca65

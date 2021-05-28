@@ -40,7 +40,7 @@
         jmp     inc_cptr_1
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "BYTE_PEEK"
 
 ; vi:syntax=asm_ca65

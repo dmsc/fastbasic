@@ -156,7 +156,7 @@ positive:
         beq     set1
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "LT"
         deftoken "GT"
         deftoken "EQ"

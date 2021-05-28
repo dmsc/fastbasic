@@ -128,7 +128,7 @@ L4:     dey
         rts
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "DIV"
         deftoken "MOD"
 

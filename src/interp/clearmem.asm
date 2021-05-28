@@ -153,7 +153,7 @@ loop:   lda     memory_error_msg, y
         rts
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "END"
 
         .assert	TOK_END = 0, error, "TOK_END must be 0"

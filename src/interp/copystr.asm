@@ -110,7 +110,7 @@ ok_len:
         bcs     EXE_COPY_STR::cloop
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "COPY_STR"
         deftoken "CAT_STR"
 

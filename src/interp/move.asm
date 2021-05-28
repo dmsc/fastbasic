@@ -95,7 +95,7 @@ xit:    jmp     next_ins_incsp_2
 
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "MOVE"
 
 ; vi:syntax=asm_ca65

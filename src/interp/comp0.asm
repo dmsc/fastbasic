@@ -67,7 +67,7 @@
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "COMP_0"
         deftoken "0"
         deftoken "1"

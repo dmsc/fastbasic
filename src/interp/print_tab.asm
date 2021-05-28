@@ -40,7 +40,7 @@
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "PRINT_TAB"
 
 ; vi:syntax=asm_ca65

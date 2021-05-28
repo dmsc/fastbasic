@@ -18,8 +18,8 @@
 
 # Make dependencies
 
-$(COMMON_OBJS_FP): src/deftok.inc
-$(COMMON_OBJS_INT): src/deftok.inc
+$(A800_FP_OBJS): src/deftok.inc
+$(A800_OBJS): src/deftok.inc
 build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
 build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
 $(CSYNT): \

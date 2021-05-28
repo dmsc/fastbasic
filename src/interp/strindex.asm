@@ -89,7 +89,7 @@ zero:
         beq     xit
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "STR_IDX"
 
 ; vi:syntax=asm_ca65

@@ -81,7 +81,7 @@
 xit:    jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "NUM"
         deftoken "BYTE"
         deftoken "PUSH_NUM"

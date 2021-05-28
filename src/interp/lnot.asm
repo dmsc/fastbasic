@@ -36,7 +36,7 @@
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "L_NOT"
 
 ; vi:syntax=asm_ca65

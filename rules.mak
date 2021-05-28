@@ -44,10 +44,21 @@ distclean: clean
 	$(Q)test -d build/tests           && rmdir build/tests           || true
 	$(Q)test -d build/gen/fp          && rmdir build/gen/fp          || true
 	$(Q)test -d build/gen/int         && rmdir build/gen/int         || true
+	$(Q)test -d build/obj/fp/interp/atari   && rmdir build/obj/fp/interp/atari   || true
+	$(Q)test -d build/obj/fp/interp/a800    && rmdir build/obj/fp/interp/a800    || true
+	$(Q)test -d build/obj/fp/interp/atarifp && rmdir build/obj/fp/interp/atarifp || true
 	$(Q)test -d build/obj/fp/interp   && rmdir build/obj/fp/interp   || true
+	$(Q)test -d build/obj/int/interp/atari   && rmdir build/obj/int/interp/atari   || true
+	$(Q)test -d build/obj/int/interp/a800    && rmdir build/obj/int/interp/a800    || true
+	$(Q)test -d build/obj/int/interp/atarifp && rmdir build/obj/int/interp/atarifp || true
 	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
-	$(Q)test -d build/obj/int/interp  && rmdir build/obj/int/interp  || true
+	$(Q)test -d build/obj/rom-fp/interp/atari   && rmdir build/obj/rom-fp/interp/atari   || true
+	$(Q)test -d build/obj/rom-fp/interp/a800    && rmdir build/obj/rom-fp/interp/a800    || true
+	$(Q)test -d build/obj/rom-fp/interp/atarifp && rmdir build/obj/rom-fp/interp/atarifp || true
 	$(Q)test -d build/obj/rom-fp/interp && rmdir build/obj/rom-fp/interp || true
+	$(Q)test -d build/obj/rom-int/interp/atari   && rmdir build/obj/rom-int/interp/atari   || true
+	$(Q)test -d build/obj/rom-int/interp/a800    && rmdir build/obj/rom-int/interp/a800    || true
+	$(Q)test -d build/obj/rom-int/interp/atarifp && rmdir build/obj/rom-int/interp/atarifp || true
 	$(Q)test -d build/obj/rom-int/interp && rmdir build/obj/rom-int/interp || true
 	$(Q)test -d build/obj/fp          && rmdir build/obj/fp          || true
 	$(Q)test -d build/obj/int         && rmdir build/obj/int         || true
@@ -215,15 +226,15 @@ build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
 	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Main program file
-build/bin/fb.xex: $(IDE_OBJS_FP) $(COMMON_OBJS_FP) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
+build/bin/fb.xex: $(IDE_OBJS_FP) $(A800_FP_OBJS) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking floating point IDE"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-build/bin/fbc.xex: $(CMD_OBJS_FP) $(COMMON_OBJS_FP) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
+build/bin/fbc.xex: $(CMD_OBJS_FP) $(A800_FP_OBJS) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking command line compiler"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
-build/bin/fbi.xex: $(IDE_OBJS_INT) $(COMMON_OBJS_INT) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
+build/bin/fbi.xex: $(IDE_OBJS_INT) $(A800_OBJS) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking integer IDE"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
@@ -258,7 +269,7 @@ build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
 	$(Q)$(COMPILER_HOST_INT) $< $@
 
 # Object file rules
-build/obj/fp/%.o: src/%.asm | build/obj/fp build/obj/fp/interp $(CA65_HOST)
+build/obj/fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/fp/%) $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
@@ -266,11 +277,11 @@ build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/rom-fp/%.o: src/%.asm | build/obj/rom-fp build/obj/rom-fp/interp $(CA65_HOST)
+build/obj/rom-fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/rom-fp/%) $(CA65_HOST)
 	$(ECHO) "Assembly Cart FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/int/%.o: src/%.asm | build/obj/int build/obj/int/interp $(CA65_HOST)
+build/obj/int/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/int/%) $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
@@ -278,34 +289,37 @@ build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/rom-int/%.o: src/%.asm | build/obj/rom-int build/obj/rom-int/interp $(CA65_HOST)
+build/obj/rom-int/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/rom-int/%) $(CA65_HOST)
 	$(ECHO) "Assembly Cart INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
 build/tests build/obj/tests \
-build/gen build/obj build/obj/fp build/obj/int build/obj/fp/interp build/obj/int/interp \
-build/obj/rom-fp build/obj/rom-int build/obj/rom-fp/interp build/obj/rom-int/interp \
+$(AS_FOLDERS:src%=build/obj/rom-int%) \
+$(AS_FOLDERS:src%=build/obj/rom-fp%) \
+$(AS_FOLDERS:src%=build/obj/int%) \
+$(AS_FOLDERS:src%=build/obj/fp%) \
+build/gen build/obj \
 build/gen/fp build/gen/int build/obj/cxx-fp build/obj/cxx-int build/obj/cxx-tgt-fp \
 build/obj/cxx-tgt-int build/bin build/disk build/compiler/asminc build/compiler build:
 	$(Q)mkdir -p $@
 
 # Library files
-$(LIB_FP): $(RT_OBJS_FP) $(COMMON_OBJS_FP) | build/compiler $(AR65_HOST)
+$(LIB_FP): $(RT_OBJS_FP) $(A800_FP_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating FP library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
-$(LIB_ROM_FP): $(RT_OBJS_ROM_FP) $(COMMON_OBJS_ROM_FP) | build/compiler $(AR65_HOST)
+$(LIB_ROM_FP): $(RT_OBJS_ROM_FP) $(A800_FP_ROM_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating Cart FP library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
-$(LIB_INT): $(RT_OBJS_INT) $(COMMON_OBJS_INT) | build/compiler $(AR65_HOST)
+$(LIB_INT): $(RT_OBJS_INT) $(A800_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
-$(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(COMMON_OBJS_ROM_INT) | build/compiler $(AR65_HOST)
+$(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(A800_ROM_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating Cart INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
@@ -322,39 +336,4 @@ build/compiler/%: compiler/% | build/compiler
 build/compiler/asminc/%: cc65/asminc/% | build/compiler/asminc
 	$(Q)cp -f $< $@
 
-# Dependencies
-$(COMMON_OBJS_FP): src/deftok.inc
-$(COMMON_OBJS_INT): src/deftok.inc
-build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
-build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
 
-$(HOST_OBJ) $(TARGET_OBJ): version.mk
-
-# Automatic generation of dependency information for C++ files
-build/obj/cxx-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-int/%.d: build/gen/int/%.cc | build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
-ifneq ($(CROSS),)
-build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-int/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
-endif
-
-ifneq "$(MAKECMDGOALS)" "clean"
-    ifneq "$(MAKECMDGOALS)" "distclean"
-        -include $(COMPILER_HOST_DEPS)
-        ifneq ($(CROSS),)
-            -include $(COMPILER_TARGET_DEPS)
-        endif
-    endif
-endif

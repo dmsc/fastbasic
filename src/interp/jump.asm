@@ -71,7 +71,7 @@ skip:   lda     cptr
         bcs     EXE_JUMP::sto
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "CALL"
         deftoken "JUMP"
         deftoken "CJUMP"

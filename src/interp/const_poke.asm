@@ -54,7 +54,7 @@
         jmp     inc_cptr_2
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "NUM_POKE"
         deftoken "BYTE_POKE"
 

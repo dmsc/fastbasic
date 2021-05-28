@@ -59,7 +59,7 @@
         rts
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "VAR_ADDR"
 
 ; vi:syntax=asm_ca65

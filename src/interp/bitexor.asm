@@ -42,7 +42,7 @@
         jmp     next_ins_incsp
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "BIT_EXOR"
 
 ; vi:syntax=asm_ca65

@@ -47,7 +47,7 @@ loop:   iny
 nil:    jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "PRINT_STR"
 
 ; vi:syntax=asm_ca65

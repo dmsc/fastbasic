@@ -34,7 +34,7 @@ SYNTFLAGS_ASM=
 SYNTFP=-DFASTBASIC_FP
 
 # General flags for 6502 assembly files
-CA65_FLAGS=-g -tatari -I cc65/asminc
+CA65_FLAGS=-g -tatari -I cc65/asminc -I src
 
 # Flags added to the ROM-able library
 CA65_ROM=-DNO_SMCODE
@@ -145,6 +145,14 @@ DOS=\
     efast.com\
     pause.com\
 
+# folders with assembly files
+AS_FOLDERS=\
+    src\
+    src/interp\
+    src/interp/a800\
+    src/interp/atari\
+    src/interp/atarifp\
+
 # ASM files used in the RUNTIME
 RT_AS_SRC=\
     src/standalone.asm\
@@ -169,22 +177,20 @@ CMD_AS_SRC=$(COMPILER_AS_SRC)\
     src/cmdmenu.asm\
     src/comp_header.asm\
 
-# Common ASM files
+# Base ASM files
 # NOTE: clearmem should be above other files because it defines
 #       TOK_END that should be the first token.
-COMMON_AS_SRC=\
+BASE_AS_SRC=\
     src/alloc.asm\
     src/interpreter.asm\
     src/interp/clearmem.asm\
     src/interp/absneg.asm\
     src/interp/addsub.asm\
-    src/interp/bgetput.asm\
     src/interp/bitand.asm\
     src/interp/bitexor.asm\
     src/interp/bitor.asm\
     src/interp/chr.asm\
     src/interp/cmpstr.asm\
-    src/interp/color.asm\
     src/interp/comp0.asm\
     src/interp/const.asm\
     src/interp/const_poke.asm\
@@ -195,11 +201,7 @@ COMMON_AS_SRC=\
     src/interp/dpoke.asm\
     src/interp/for.asm\
     src/interp/for_exit.asm\
-    src/interp/getkey.asm\
-    src/interp/graphics.asm\
     src/interp/inc.asm\
-    src/interp/input.asm\
-    src/interp/iochn.asm\
     src/interp/jump.asm\
     src/interp/land.asm\
     src/interp/lnot.asm\
@@ -209,67 +211,82 @@ COMMON_AS_SRC=\
     src/interp/mul.asm\
     src/interp/negax.asm\
     src/interp/nmove.asm\
-    src/interp/pause.asm\
     src/interp/peek.asm\
     src/interp/peekb.asm\
-    src/interp/pmgraphics.asm\
     src/interp/poke.asm\
     src/interp/pop.asm\
-    src/interp/position.asm\
     src/interp/print_str.asm\
     src/interp/print_tab.asm\
     src/interp/push.asm\
-    src/interp/put.asm\
-    src/interp/putchar.asm\
-    src/interp/rand.asm\
     src/interp/return.asm\
     src/interp/saddr.asm\
     src/interp/sgn.asm\
     src/interp/shl8.asm\
-    src/interp/soundoff.asm\
-    src/interp/str.asm\
-    src/interp/streol.asm\
     src/interp/strindex.asm\
-    src/interp/time.asm\
     src/interp/ushl.asm\
     src/interp/usr.asm\
     src/interp/val.asm\
     src/interp/varadd.asm\
     src/interp/varaddr.asm\
     src/interp/varstore.asm\
-    src/interp/xio.asm\
+
+# Common Atari specific code
+ATARI_AS_SRC=\
+    src/interp/atari/color.asm\
+    src/interp/atari/pause.asm\
+    src/interp/atari/pmgraphics.asm\
+    src/interp/atari/rand.asm\
+    src/interp/atari/soundoff.asm\
+    src/interp/atari/time.asm\
+
+# Atari 8-bit specific code
+A800_AS_SRC=\
+    $(BASE_AS_SRC)\
+    $(ATARI_AS_SRC)\
+    src/interp/a800/bgetput.asm\
+    src/interp/a800/getkey.asm\
+    src/interp/a800/graphics.asm\
+    src/interp/a800/input.asm\
+    src/interp/a800/iochn.asm\
+    src/interp/a800/position.asm\
+    src/interp/a800/put.asm\
+    src/interp/a800/putchar.asm\
+    src/interp/a800/str.asm\
+    src/interp/a800/streol.asm\
+    src/interp/a800/xio.asm\
 
 # FP Interpreter ASM files
-FP_AS_SRC=\
-    src/interp/fp_abs.asm\
-    src/interp/fp_atn.asm\
-    src/interp/fp_cmp.asm\
-    src/interp/fp_coef.asm\
-    src/interp/fp_const.asm\
-    src/interp/fp_div.asm\
-    src/interp/fp_evalpoly.asm\
-    src/interp/fp_exp.asm\
-    src/interp/fp_exp10.asm\
-    src/interp/fp_int.asm\
-    src/interp/fp_intfp.asm\
-    src/interp/fp_ipow.asm\
-    src/interp/fp_load.asm\
-    src/interp/fp_log.asm\
-    src/interp/fp_log10.asm\
-    src/interp/fp_mul.asm\
-    src/interp/fp_pop.asm\
-    src/interp/fp_push.asm\
-    src/interp/fp_rnd.asm\
-    src/interp/fp_set1.asm\
-    src/interp/fp_sgn.asm\
-    src/interp/fp_sincos.asm\
-    src/interp/fp_sqrt.asm\
-    src/interp/fp_store.asm\
-    src/interp/fp_str.asm\
-    src/interp/fp_sub.asm\
-    src/interp/fp_val.asm\
-    src/interp/fpmain.asm\
-    src/interp/mul6.asm\
+A800_FP_AS_SRC=\
+    $(A800_AS_SRC)\
+    src/interp/atarifp/fp_abs.asm\
+    src/interp/atarifp/fp_atn.asm\
+    src/interp/atarifp/fp_cmp.asm\
+    src/interp/atarifp/fp_coef.asm\
+    src/interp/atarifp/fp_const.asm\
+    src/interp/atarifp/fp_div.asm\
+    src/interp/atarifp/fp_evalpoly.asm\
+    src/interp/atarifp/fp_exp.asm\
+    src/interp/atarifp/fp_exp10.asm\
+    src/interp/atarifp/fp_int.asm\
+    src/interp/atarifp/fp_intfp.asm\
+    src/interp/atarifp/fp_ipow.asm\
+    src/interp/atarifp/fp_load.asm\
+    src/interp/atarifp/fp_log.asm\
+    src/interp/atarifp/fp_log10.asm\
+    src/interp/atarifp/fp_mul.asm\
+    src/interp/atarifp/fp_pop.asm\
+    src/interp/atarifp/fp_push.asm\
+    src/interp/atarifp/fp_rnd.asm\
+    src/interp/atarifp/fp_set1.asm\
+    src/interp/atarifp/fp_sgn.asm\
+    src/interp/atarifp/fp_sincos.asm\
+    src/interp/atarifp/fp_sqrt.asm\
+    src/interp/atarifp/fp_store.asm\
+    src/interp/atarifp/fp_str.asm\
+    src/interp/atarifp/fp_sub.asm\
+    src/interp/atarifp/fp_val.asm\
+    src/interp/atarifp/fpmain.asm\
+    src/interp/atarifp/mul6.asm\
 
 # BAS editor source
 IDE_BAS_SRC=\
@@ -283,21 +300,19 @@ CMD_BAS_SRC=\
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=build/obj/fp/%.o)
 IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=build/obj/fp/%.o)
 CMD_OBJS_FP=$(CMD_AS_SRC:src/%.asm=build/obj/fp/%.o)
-COMMON_OBJS_FP=$(COMMON_AS_SRC:src/%.asm=build/obj/fp/%.o) \
-               $(FP_AS_SRC:src/%.asm=build/obj/fp/%.o)
+A800_FP_OBJS=$(A800_FP_AS_SRC:src/%.asm=build/obj/fp/%.o)
 IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=build/obj/fp/%.o)
 CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:build/gen/%.bas=build/obj/fp/%.o)
 RT_OBJS_ROM_FP=$(RT_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
-COMMON_OBJS_ROM_FP=$(COMMON_AS_SRC:src/%.asm=build/obj/rom-fp/%.o) \
-               $(FP_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
+A800_FP_ROM_OBJS=$(A800_FP_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
 
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=build/obj/int/%.o)
-COMMON_OBJS_INT=$(COMMON_AS_SRC:src/%.asm=build/obj/int/%.o)
+A800_OBJS=$(A800_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=build/obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=build/obj/%.o)
 RT_OBJS_ROM_INT=$(RT_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
-COMMON_OBJS_ROM_INT=$(COMMON_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
+A800_ROM_OBJS=$(A800_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
 
 # Compiler library files
 COMPILER_COMMON=\
@@ -521,13 +536,13 @@ COMPILER_TARGET=\
 # All ASM Output files
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
-     $(COMMON_OBJS_FP) \
-     $(RT_OBJS_ROM_FP) $(COMMON_OBJS_ROM_FP) \
+     $(A800_FP_OBJS) \
+     $(RT_OBJS_ROM_FP) $(A800_FP_ROM_OBJS) \
      $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
      $(RT_OBJS_INT) \
      $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
-     $(COMMON_OBJS_INT) \
-     $(RT_OBJS_ROM_INT) $(COMMON_OBJS_ROM_INT) \
+     $(A800_OBJS) \
+     $(RT_OBJS_ROM_INT) $(A800_ROM_OBJS) \
      $(SAMP_OBJS)
 
 # Listing files

@@ -78,7 +78,7 @@ xit:
         jmp     pushXX_set0
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "CMP_STR"
 
 ; vi:syntax=asm_ca65

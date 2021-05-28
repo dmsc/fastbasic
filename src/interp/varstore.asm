@@ -69,7 +69,7 @@ save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "DIM"
         deftoken "VAR_STORE"
         deftoken "VAR_STORE_0"

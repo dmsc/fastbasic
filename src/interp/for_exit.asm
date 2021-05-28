@@ -43,7 +43,7 @@
         jmp     next_ins_incsp
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "FOR_EXIT"
 
 ; vi:syntax=asm_ca65

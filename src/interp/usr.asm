@@ -62,7 +62,7 @@
 .endproc
 
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "USR_PARAM"
         deftoken "USR_ADDR"
         deftoken "USR_CALL"

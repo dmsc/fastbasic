@@ -46,7 +46,7 @@ EXE_SUB:
         jmp     next_ins_incsp
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "ADD"
         deftoken "SUB"
 

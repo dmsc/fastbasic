@@ -60,7 +60,7 @@ loadL:  lda     $FF00, y
         jmp     next_instruction
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "DPEEK"
         deftoken "VAR_LOAD"
         deftoken "PUSH_VAR_LOAD"

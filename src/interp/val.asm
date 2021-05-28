@@ -125,7 +125,7 @@ ok:
         rts
 .endproc
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "VAL"
 
 ; vi:syntax=asm_ca65

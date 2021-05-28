@@ -39,7 +39,7 @@ EXE_NEG:        ; AX = -AX
         jsr     neg_AX
 xit:    jmp     next_instruction
 
-        .include "../deftok.inc"
+        .include "deftok.inc"
         deftoken "ABS"
         deftoken "NEG"
 
