@@ -450,7 +450,7 @@ bool SMB_E_VAR_SET_TYPE(parse &s)
     // Get type
     enum VarType type = get_vartype(s.remove_last().get_str());
     auto &v = s.vars;
-    if( do_debug )
+    if( s.do_debug )
         std::cout << "\tset var '" << last_var_name << "' to " << int(type) << "\n";
     v[last_var_name] = (v[last_var_name] & ~0xFF) + type;
     // If type is FLOAT, allocate two more invisible variables

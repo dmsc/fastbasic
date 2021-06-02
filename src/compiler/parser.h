@@ -31,8 +31,6 @@
 #include <vector>
 #include <iostream>
 
-extern bool do_debug;
-
 // Exception class for a parsing error
 class parse_error: public std::runtime_error
 {
@@ -59,6 +57,7 @@ class parse {
                 std::string label;
                 int linenum;
         };
+        bool do_debug = false;
         std::string in_fname;
         std::vector<codew> var_stk;
         int lvl, maxlvl;
@@ -133,7 +132,8 @@ class parse {
             }
         } expand;
 
-        parse():
+        parse(bool do_debug):
+            do_debug(do_debug),
             lvl(0), maxlvl(0), pos(0),
             max_pos(0), linenum(0), label_num(0),
             finalized(false),

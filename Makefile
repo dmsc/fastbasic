@@ -337,6 +337,7 @@ COMPILER_SRC=\
 	atarifp.cc\
 	basic.cc\
 	codestat.cc\
+	compile.cc\
 	ifile.cc\
 	looptype.cc\
 	main.cc\
