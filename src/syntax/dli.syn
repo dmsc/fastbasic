@@ -28,7 +28,7 @@ DLI_COMMAND: 'SET', label
         # Continuation of a DLI line
         EQUAL DLI_LDA DLI_STA DLI_CODES
         # Activate DLI with given name
-        emit { TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
+        emit { TOK_0, TOK_PAUSE, TOK_NUM, &VDSLST, TOK_SADDR, TOK_NUM, VT_ARRAY_BYTE } E_LABEL \
               emit { TOK_DPOKE, TOK_BYTE, 192, TOK_NUM_POKE, &NMIEN }
         # Clear the DLI
         emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
