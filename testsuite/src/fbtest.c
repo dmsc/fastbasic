@@ -280,7 +280,7 @@ static int compile_cross(const char *basname, const char *asmname,
     unlink(objname);
     unlink(outname);
 
-    if (asprintf(&cmd, "%s %s %s", comp, basname, asmname) < 0)
+    if (asprintf(&cmd, "%s -c -o %s %s", comp, asmname, basname) < 0)
     {
         fprintf(stderr, "%s: memory error.\n", basname);
         goto xit;

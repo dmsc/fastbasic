@@ -218,23 +218,23 @@ build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
 # Generates basic bytecode from source file
 build/gen/fp/%.asm: build/gen/%.bas $(COMPILER_HOST_FP) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"
-	$(Q)$(COMPILER_HOST_FP) $< $@
+	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
 
 build/gen/fp/%.asm: src/%.bas $(COMPILER_HOST_FP) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"
-	$(Q)$(COMPILER_HOST_FP) $< $@
+	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
 
 build/gen/int/%.asm: src/%.bas $(COMPILER_HOST_INT) | build/gen/int
 	$(ECHO) "Compiling INT BASIC $<"
-	$(Q)$(COMPILER_HOST_INT) $< $@
+	$(Q)$(COMPILER_HOST_INT) -o $@ -c $<
 
 build/gen/fp/%.asm: samples/fp/%.bas $(COMPILER_HOST_FP) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC sample $<"
-	$(Q)$(COMPILER_HOST_FP) $< $@
+	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
 
 build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
 	$(ECHO) "Compiling INT BASIC sample $<"
-	$(Q)$(COMPILER_HOST_INT) $< $@
+	$(Q)$(COMPILER_HOST_INT) -o $@ -c $<
 
 # Object file rules
 build/obj/fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/fp/%) $(CA65_HOST)
@@ -289,6 +289,18 @@ $(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(A800_ROM_OBJS) | build/compiler $(AR65_HOST
 # Copy manual to compiler changing the version string.
 build/compiler/MANUAL.md: manual.md version.mk | build/compiler
 	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+
+# Copy other files to compiler folder
+build/compiler/%: compiler/% | build/compiler
+	$(Q)cp -f $< $@
+
+# Copy compatibility binaries
+build/compiler/fb$(EXT): build/compiler/fastbasic-fp$(EXT)
+	$(Q)cp -f $< $@
+
+# Copy compatibility binaries
+build/compiler/fb-int$(EXT): build/compiler/fastbasic-int$(EXT)
+	$(Q)cp -f $< $@
 
 # Copy other files to compiler folder
 build/compiler/%: compiler/% | build/compiler

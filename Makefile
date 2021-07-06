@@ -71,11 +71,9 @@ ECHO=@printf "\e[0;32m%s\e[0m\n"
 ifeq ($(strip $(shell echo '_WIN32' | $(CROSS)$(CXX) -E - | grep  "_WIN32")),_WIN32)
     # Linux / OS-X
     EXT=
-    SHEXT=
 else
     # Windows:
     EXT=.exe
-    SHEXT=.bat
 endif
 
 # Get version string
@@ -322,8 +320,8 @@ COMPILER_COMMON=\
 	 $(LIB_ROM_FP)\
 	 build/compiler/fastbasic.cfg\
 	 build/compiler/fastbasic-cart.cfg\
-	 build/compiler/fb$(SHEXT)\
-	 build/compiler/fb-int$(SHEXT)\
+	 build/compiler/fb$(EXT)\
+	 build/compiler/fb-int$(EXT)\
 	 build/compiler/USAGE.md\
 	 build/compiler/LICENSE\
 	 build/compiler/MANUAL.md\
@@ -341,6 +339,7 @@ COMPILER_SRC=\
 	ifile.cc\
 	looptype.cc\
 	main.cc\
+	os.cc\
 	parser.cc\
 	peephole.cc\
 	vartype.cc\
