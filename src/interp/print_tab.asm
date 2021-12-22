@@ -27,7 +27,7 @@
 ; Print a tabulation (comma separator in print)
 ; ---------------------------------------------
 
-        .import         putspc, stack_l
+        .import         putc, stack_l
         .importzp       prtcoln, sptr, next_instruction, tmp1
 
         .segment        "RUNTIME"
@@ -44,7 +44,8 @@ rep:
 
 ok:
         tay
-:       jsr     putspc
+:       lda     #$20
+        jsr     putc
         dey
         bpl     :-
         jmp     next_instruction

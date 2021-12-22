@@ -27,7 +27,7 @@
 ; CIO put character
 ; -----------------
 
-        .export         putc, putc_direct, putspc
+        .export         putc
         .importzp       IOCHN, prtcoln, IOERROR, tmp2
 
         .include "atari.inc"
@@ -36,6 +36,7 @@
 
 .proc   putc_direct
         tay
+        ldx     IOCHN
         lda     ICAX1,X
         sta     ICAX1Z
         lda     ICPTH, x
@@ -46,11 +47,8 @@
         rts
 .endproc
 
-putspc:
-        lda     #$20
 .proc   putc
         sty     tmp2+1
-        ldx     IOCHN
         cmp     #$9B
         bne     no_eol
         ; Reset tab position
