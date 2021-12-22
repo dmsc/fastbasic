@@ -455,7 +455,6 @@ PROC DrawLinePtr
   pos. 0, y+1
   max = peek(@@RMARGN)
   if lLen < 0
-    dec max
     put $FD
     exec PutBlanks
   else
@@ -474,7 +473,6 @@ PROC DrawLinePtr
       if lLen <> 0
         bput #0, ptr, lLen
       endif
-      max = max - lLen
       exec PutBlanks
     endif
   endif
@@ -486,7 +484,7 @@ ENDPROC
 ' of the current line.
 '
 proc PutBlanks
-  while max : put 32 : dec max : wend
+  while peek(@@RMARGN) <> peek(@@COLCRS) : put 32 : wend
   poke @@OLDCHR, $00
   exec RestoreCursorFlags
 endproc
