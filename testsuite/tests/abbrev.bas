@@ -13,6 +13,12 @@ A = -1
 ? ABSA, A.A
 ABSA = 10
 ? ABSA
+' PRINT TAB:
+? 1 T. 5 3  ' This is parsed as ? 1 ; TAB(5) ; 3
+? 1 T.5+3   ' This is parsed as ? 1 ; TAB(5) ; +3
+? 1 T.(5+3) ' This is parsed as ? 1 ; TAB(5+3)
+? "X"
+
 ' Test all abbreviations:
 
 H = $600

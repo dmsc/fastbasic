@@ -32,7 +32,7 @@
 
         .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
-        .exportzp       tabpos, IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
+        .exportzp       prtcoln, IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
 
         ; From clearmem.asm
         .import         clear_data
@@ -58,7 +58,7 @@ divmod_sign:
         .res    1
 IOCHN:  .res    1
 IOERROR:.res    1
-tabpos: .res    1
+prtcoln:.res    1
 
 
         ; Integer stack, 40 * 2 = 80 bytes
@@ -138,7 +138,7 @@ interpreter_cptr        =       cptr
         ; for an empty string (length = 0).
         ;
         ; lda     #0  ; A == 0 from above
-        sta     tabpos
+        sta     prtcoln
         sta     IOCHN
         sta     IOERROR
         sta     0

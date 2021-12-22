@@ -28,7 +28,7 @@
 ; -----------------
 
         .export         putc, putc_direct, putspc
-        .importzp       IOCHN, tabpos, IOERROR, tmp2
+        .importzp       IOCHN, prtcoln, IOERROR, tmp2
 
         .include "atari.inc"
 
@@ -54,17 +54,14 @@ putspc:
         cmp     #$9B
         bne     no_eol
         ; Reset tab position
-        ldy     #1
-        sty     tabpos
+        ldy     #$FF
+        sty     prtcoln
 no_eol:
         jsr     putc_direct
         sty     IOERROR
 save_y: ldy     tmp2+1
-        dec     tabpos
-        bpl     :+
-        lda     #9
-        sta     tabpos
-:       rts
+        inc     prtcoln
+        rts
 .endproc
 
 ; vi:syntax=asm_ca65

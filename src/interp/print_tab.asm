@@ -27,16 +27,26 @@
 ; Print a tabulation (comma separator in print)
 ; ---------------------------------------------
 
-        .import         putspc
-        .importzp       tabpos, next_instruction
+        .import         putspc, stack_l
+        .importzp       prtcoln, sptr, next_instruction, tmp1
 
         .segment        "RUNTIME"
 
-.proc   EXE_PRINT_TAB   ; PRINT TAB
-        jsr     putspc
+
+.proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
+        sta     tmp1
+        clc
+        sbc     prtcoln
+        bcs     ok
+rep:
+        adc     tmp1
+        bcc     rep
+
+ok:
+        tay
 :       jsr     putspc
-        ldx     tabpos
-        bne     :-
+        dey
+        bpl     :-
         jmp     next_instruction
 .endproc
 

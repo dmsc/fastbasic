@@ -19,6 +19,28 @@ exec print1
 ? ;
 ? "-"
 
+? "A",1
+? "AB",1
+? "ABC",1
+? "ABCD",1
+? "ABCDE",1
+? "ABCDEF",1
+? "ABCDEFG",1
+? "ABCDEFGH",1
+? "ABCDEFGHI",1
+? "ABCDEFGHIJ",1
+? "ABCDEFGHIJK",1
+
+? "A" tab(4) 1
+? "AB" tab(4) 1
+? "ABC" tab(4) 1
+? "ABCD" tab(4) 1
+? "ABCDE" tab(4) 1
+? "ABCDEF" tab(4) 1
+? "ABCDEFG" tab(4) 1
+? "ABCDEFGH" tab(4) 1
+? "ABCDEFGHI" tab(4) 1
+
 proc print1
  ? "in proc"
 endproc

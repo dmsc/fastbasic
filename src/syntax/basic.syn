@@ -265,25 +265,28 @@ STRING_FUNCTIONS:
         # Or a string array
         ARRAY_STRING_ADDR emit TOK_DPEEK
 
-# Statements
-PRINT_SEP:
-        "," emit TOK_PRINT_TAB
+# PRINT statement:
+# - PRINT separator or an end-of-line if not given:
+PRINT_SEP_EOL:
+        "Tab" T_EXPR emit TOK_PRINT_TAB
+        "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
         E_EOL emit { TOK_BYTE, 155, TOK_PUT }
 
+# - One item to print, followed by a separator:
 PRINT_ONE:
-        EXPR emit { TOK_INT_STR, TOK_PRINT_STR } PRINT_SEP
-        STR_EXPR emit TOK_PRINT_STR PRINT_SEP
-        "," emit TOK_PRINT_TAB
-        ";"
+        EXPR emit { TOK_INT_STR, TOK_PRINT_STR }
+        STR_EXPR emit TOK_PRINT_STR
+        pass
 
+# - PRINT expression, including the optional I/O channel
 PRINT_EXPR:
-        IO_CHAN_OPT PRINT_SEP PRINT_MORE
+        IO_CHAN_OPT PRINT_SEP_EOL PRINT_MORE
         IO_CHAN_OPT PRINT_MORE
 
 PRINT_MORE:
-        PRINT_ONE PRINT_MORE
-        IO_CHAN0
+        E_EOL IO_CHAN0
+        PRINT_ONE PRINT_SEP_EOL PRINT_MORE
 
 # Parse multi-line IF
 THEN_OR_MULTILINE: 'THEN'
@@ -350,8 +353,8 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
-        PRINT_SEP                                        # If starts with ',' or ';', don't print anyting
+        "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP_EOL # Prints a given string
+        PRINT_SEP_EOL                                                         # If starts with ',' or ';', don't print anyting
         emit { TOK_BYTE, 63, TOK_PUT }                   # Prints a '?' by default
 
 INPUT_VAR_LIST:

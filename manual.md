@@ -995,7 +995,9 @@ Console Print and Input Statements
 
 
 **Print Strings And Numbers**  
-**PRINT _expr_, ... / ?**
+**PRINT _expr_, ... / ?**  
+**PRINT _expr_ TAB(_expr_) ...**  
+**PRINT _expr_ ; ...**
 
   Outputs strings and numbers to the
   screen.
@@ -1008,17 +1010,39 @@ Console Print and Input Statements
   After writing the last expression,
   the cursor advanced to a new line,
   except if the statement ends in a
-  comma or a semicolon, where the
+  comma, semicolon or `TAB`, where the
   cursor stays in the last position.
 
   If there is a comma before any
-  expression, the column is advanced to
-  the next multiple of 10, so that
-  tabulated data can be printed.
+  expression, spaces are printed to
+  advance the printing column to the
+  next multiple of 10, allowing easy
+  printing of tabulated data.
+
+  The `TAB` function advances the
+  position to a column multiple of the
+  argument, so that `TAB(10)` is the
+  same as using a comma to separate
+  arguments. This is abbreviated `T.`.
+
+  Note that the `,` and `TAB` always
+  print at least one space, and that to
+  separate `TAB` and the previous and
+  next arguments you can simply use
+  spaces.
 
   See the _Device Input and Output
   Statements_ section for the `PRINT #`
   usage.
+
+  *Advanced:* To implement the spacing
+  on `,` and `TAB`, FastBasic maintains
+  the column number independently of
+  the operating system, so it is not
+  affected by the margin and the
+  `POSITION` statement and the output
+  is the same when writing to a printer
+  or a file.
 
 
 **Writes A Character To Screen**  
