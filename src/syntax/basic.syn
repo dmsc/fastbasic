@@ -52,7 +52,7 @@ TOKENS {
  # Print statements
  TOK_PRINT_STR, TOK_PRINT_TAB
  # Simple console input and output
- TOK_GETKEY, TOK_INPUT_STR, TOK_PUT
+ TOK_GETKEY, TOK_INPUT_STR, TOK_PUT, TOK_BYTE_PUT
  # Jumps
  TOK_JUMP, TOK_CJUMP, TOK_CNJUMP, TOK_CALL, TOK_RET, TOK_CRET, TOK_CNRET
  # FOR loop support
@@ -271,7 +271,7 @@ PRINT_SEP_EOL:
         "Tab" T_EXPR emit TOK_PRINT_TAB
         "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
-        E_EOL emit { TOK_BYTE, 155, TOK_PUT }
+        E_EOL emit { TOK_BYTE_PUT, 155 }
 
 # - One item to print, followed by a separator:
 PRINT_ONE:
@@ -355,7 +355,7 @@ DIM_MORE: comma
 INPUT_STR:
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP_EOL # Prints a given string
         PRINT_SEP_EOL                                                         # If starts with ',' or ';', don't print anyting
-        emit { TOK_BYTE, 63, TOK_PUT }                   # Prints a '?' by default
+        emit { TOK_BYTE_PUT, 63 }                   # Prints a '?' by default
 
 INPUT_VAR_LIST:
         INPUT_VAR INPUT_VAR_MORE
@@ -486,7 +486,7 @@ STATEMENT: statement
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
-        "CLS" IO_CHAN_OPT_NOCOMMA emit { TOK_BYTE, CLS, TOK_PUT } IO_CHAN0
+        "CLS" IO_CHAN_OPT_NOCOMMA emit { TOK_BYTE_PUT, CLS } IO_CHAN0
         "Poke"  EXPR emit TOK_SADDR "," EXPR emit TOK_POKE
         "Dpoke" EXPR emit TOK_SADDR "," EXPR emit TOK_DPOKE
         "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET

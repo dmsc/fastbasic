@@ -248,6 +248,7 @@ A800_AS_SRC=\
     src/interp/a800/iochn.asm\
     src/interp/a800/position.asm\
     src/interp/a800/put.asm\
+    src/interp/a800/putbyte.asm\
     src/interp/a800/putchar.asm\
     src/interp/a800/str.asm\
     src/interp/a800/streol.asm\
@@ -256,10 +257,10 @@ A800_AS_SRC=\
 # FP Interpreter ASM files
 A800_FP_AS_SRC=\
     $(A800_AS_SRC)\
+    src/interp/atarifp/fp_coef.asm\
     src/interp/atarifp/fp_abs.asm\
     src/interp/atarifp/fp_atn.asm\
     src/interp/atarifp/fp_cmp.asm\
-    src/interp/atarifp/fp_coef.asm\
     src/interp/atarifp/fp_const.asm\
     src/interp/atarifp/fp_div.asm\
     src/interp/atarifp/fp_evalpoly.asm\

@@ -290,6 +290,25 @@ class peephole
                 }
             }
         }
+        // Transforms print of small constant strings to sequence of BYTE_PUT
+        void print_chars()
+        {
+            for(size_t i=0; i<code.size(); i++)
+            {
+                current = i;
+                if( mtok(0, TOK_CSTRING) && mstring(1) < 3 && mtok(2, TOK_PRINT_STR) )
+                {
+                    auto s = str(1);
+                    del(2); del(1); del(0);
+                    for(char c: s)
+                    {
+                        ins_tok(0, TOK_BYTE_PUT);
+                        ins_b(1, c & 0xFF);
+                        current += 2;
+                    }
+                }
+            }
+        }
         // Folds PUSH followed by known sequences
         void fold_push()
         {
@@ -598,6 +617,23 @@ class peephole
                     {
                         ins_tok(0, TOK_GETKEY); set_tok(1, TOK_VAR_STORE);
                         del(5); del(4); del(3); i--;
+                        continue;
+                    }
+                    //   TOK_NUM / x / TOK_PUT
+                    //      -> TOK_BYTE_PUT / x
+                    if( mtok(0, TOK_NUM) && mword(1) && mtok(2, TOK_PUT) )
+                    {
+                        set_tok(0, TOK_BYTE_PUT);
+                        set_b(1, val(1) & 255);
+                        del(2); i--;
+                        continue;
+                    }
+                    //   TOK_BYTE / x / TOK_PUT
+                    //      -> TOK_BYTE_PUT / x
+                    if( mtok(0, TOK_BYTE) && mtok(2, TOK_PUT) )
+                    {
+                        set_tok(0, TOK_BYTE_PUT);
+                        del(2); i--;
                         continue;
                     }
                     //   TOK_NUM / x<256 / TOK_PEEK
@@ -1188,7 +1224,7 @@ class peephole
                         set_tok(0, TOK_PUT); del(1);
                         continue;
                     }
-                    // Join print constant strings with print EOL
+                    // Join print constant strings with a PUT
                     // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_NUM / X / TOK_PUT
                     //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
                     if( mtok(0, TOK_CSTRING) && mstring(1) < 255 &&
@@ -1197,6 +1233,16 @@ class peephole
                     {
                         set_string(1, str(1) + char(val(4)));
                         del(5); del(4); del(3);
+                    }
+                    // Join print constant strings with a PUT
+                    // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_BYTE_PUT / x
+                    //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
+                    if( mtok(0, TOK_CSTRING) && mstring(1) < 255 &&
+                        mtok(2, TOK_PRINT_STR) && mtok(3, TOK_BYTE_PUT) &&
+                        (mbyte(4) || mword(4)) )
+                    {
+                        set_string(1, str(1) + char(val(4)));
+                        del(4); del(3);
                     }
                     // Join two print constant strings
                     // TOK_CSTRING / S1 / TOK_PRINT_STR / TOK_CSTRING / S2 / TOK_PRINT_STR
@@ -1210,6 +1256,7 @@ class peephole
                     }
                 }
             } while(changed);
+            print_chars();
             shorten_numbers();
             fold_push();
             fold_saddr();
