@@ -43,7 +43,7 @@
         ; Note: if A == 3, mask_tab will point to a 0,
         ; so we will have a MEMORY ERROR.
         ;
-        ldy     #3              ; Load valir for GRACTL
+        ldy     #3              ; Load value for GRACTL
         lda     mask_tab-1,x    ; Get address mask
         and     MEMTOP+1
         clc                     ; Subtract to get P/M base
@@ -85,7 +85,7 @@ mem_ok:
 .endproc
 
 mask_tab:
-        .byte       $f8,$fc
+        .byte       $f8,$fc     ; next is 0 from table bellow
 pmg_dmactl_tab:
         .byte   $00,$1c,$0c
 pmgmode_tab:
