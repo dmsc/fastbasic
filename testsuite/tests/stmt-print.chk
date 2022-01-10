@@ -4,23 +4,24 @@ Output:
 Start
 SCREEN: set graphics 1 with text window
 ->1
-SCREEN: plot 2,2  color 155
+SCREEN: plot 0,2  color 155
 ->2
-SCREEN: plot 2,3  color 97
-SCREEN: plot 2,3  color 155
+SCREEN: plot 0,3  color 97
+SCREEN: plot 0,3  color 155
 ->3
-SCREEN: plot 2,4  color 98
+SCREEN: plot 0,4  color 98
 ->4
-SCREEN: plot 2,5  color 99
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
-SCREEN: plot 2,5  color 32
+SCREEN: plot 0,5  color 99
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
+SCREEN: plot 0,5  color 32
 in proc
 ->5
           1         23                  4

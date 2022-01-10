@@ -28,7 +28,9 @@
 ; ---------------------------------------------
 
         .import         putc, stack_l
-        .importzp       prtcoln, sptr, next_instruction, tmp1
+        .importzp       sptr, next_instruction, tmp1
+
+        .include "atari.inc"
 
         .segment        "RUNTIME"
 
@@ -36,7 +38,7 @@
 .proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
         sta     tmp1
         clc
-        sbc     prtcoln
+        sbc     COLCRS
         bcs     ok
 rep:
         adc     tmp1

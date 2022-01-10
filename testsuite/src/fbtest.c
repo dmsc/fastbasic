@@ -90,6 +90,11 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
         return -1;
     // sim65_set_debug(s, sim65_debug_trace);
     atari_init(s, 0, str_get_char, str_put_char);
+    // Use 0 as left-margin value, to normalize results
+    unsigned char val = 0;
+    sim65_add_data_ram(s, 0x52, &val, 1); // LMARGN
+    sim65_add_data_ram(s, 0x55, &val, 1); // COLCRS
+
     sim65_set_cycle_limit(s, max_cycles);
     enum sim65_error e;
     if( is_rom )

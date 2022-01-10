@@ -1028,21 +1028,21 @@ Console Print and Input Statements
   Note that the `,` and `TAB` always
   print at least one space, and that to
   separate `TAB` and the previous and
-  next arguments you can simply use
-  spaces.
+  next arguments you can use a `;` or
+  simply a space.
 
   See the _Device Input and Output
   Statements_ section for the `PRINT #`
   usage.
 
   *Advanced:* To implement the spacing
-  on `,` and `TAB`, FastBasic maintains
-  the column number independently of
-  the operating system, so it is not
-  affected by the margin and the
-  `POSITION` statement and the output
-  is the same when writing to a printer
-  or a file.
+  on `,` and `TAB`, FastBasic uses the
+  current column in the OS, so that
+  `POSITION` and printing to a graphics
+  screen will work ok, unlike Atari
+  BASIC; but when printing to a file or
+  other devices the number of spaces
+  will not be the same.
 
 
 **Writes A Character To Screen**  

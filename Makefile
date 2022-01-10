@@ -214,7 +214,6 @@ BASE_AS_SRC=\
     src/interp/poke.asm\
     src/interp/pop.asm\
     src/interp/print_str.asm\
-    src/interp/print_tab.asm\
     src/interp/push.asm\
     src/interp/return.asm\
     src/interp/saddr.asm\
@@ -247,6 +246,7 @@ A800_AS_SRC=\
     src/interp/a800/input.asm\
     src/interp/a800/iochn.asm\
     src/interp/a800/position.asm\
+    src/interp/a800/print_tab.asm\
     src/interp/a800/put.asm\
     src/interp/a800/putbyte.asm\
     src/interp/a800/putchar.asm\
