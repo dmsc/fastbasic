@@ -454,46 +454,38 @@ PROC DrawLinePtr
 
   pos. 0, y+1
   max = peek(@@RMARGN)
-  if lLen < 0
-    put $FD
-    exec PutBlanks
-  else
-    if hDraw
-      ptr = ptr + hDraw
-      lLen = lLen - hDraw
-      put $9E
-      dec max
-    endif
-
-    if lLen > max
-      bput #0, ptr, max
-      poke @@OLDCHR, $DF
-      exec RestoreCursorFlags
-    else
-      if lLen <> 0
-        bput #0, ptr, lLen
-      endif
-      exec PutBlanks
-    endif
+  ' If scrolled, print arrow and adjust pointers
+  if hDraw
+    ptr = ptr + hDraw
+    lLen = lLen - hDraw
+    put $9E
+    dec max
   endif
 
-ENDPROC
+  if lLen > max
+    ' If length overflows, print one less and an arrow
+    bput #0, ptr, max
+    poke @@OLDCHR, $DF
+  else
+    if lLen < 0
+      ' If line is outside the file, print an EOL symbol.
+      put $FD
+    elif lLen <> 0
+      ' We can't call "BPUT" with a zero len, as that will
+      ' print the character in the accumulator.
+      bput #0, ptr, lLen
+    endif
+    ' And if the line is shorter than the max, fill up with
+    ' spaces up to the end.
+    if lLen <> max
+      ? tab(peek(@@RMARGN));
+    endif
+    ' Fixup last character of line, as the OS don't let us
+    ' print the last column
+    poke @@OLDCHR, $00
+  endif
 
-'-------------------------------------
-' Draws the extra blanks at the right
-' of the current line.
-'
-proc PutBlanks
-  while peek(@@RMARGN) <> peek(@@COLCRS) : put 32 : wend
-  poke @@OLDCHR, $00
-  exec RestoreCursorFlags
-endproc
-
-'-------------------------------------
-' Draws the extra blanks at the right
-' of the current line.
-'
-proc RestoreCursorFlags
+  ' Restore cursor flags
   poke @DSPFLG, 0
   poke @CRSINH, 0
 endproc
