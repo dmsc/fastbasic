@@ -16,18 +16,34 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-emit-asm.h: emit parser as an ASM file
+// synt-parser.h: Parse a syntax file
 #pragma once
-
 #include "synt-sm.h"
+#include "synt-wlist.h"
 #include <map>
 #include <memory>
 #include <string>
 
 namespace syntax
 {
-typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
-class wordlist;
-bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                     const wordlist &tok, const wordlist &ext);
+class parse_state;
+
+class syntax_parser
+{
+  private:
+    parse_state &p;
+    bool parse_sm_name(std::string &name);
+
+  public:
+    wordlist tok;
+    wordlist ext;
+    std::map<std::string, std::unique_ptr<statemachine>> sm_list;
+
+    // Constructor, from a parser state
+    syntax_parser(parse_state &p);
+    // Parse one file
+    bool parse_file();
+    // Show final summary of parser files
+    void show_summary() const;
+};
 } // namespace syntax

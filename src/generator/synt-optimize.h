@@ -16,9 +16,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-emit-asm.h: emit parser as an ASM file
+// synt-optimize.h: Optimizer for the parsing tables
 #pragma once
-
 #include "synt-sm.h"
 #include <map>
 #include <memory>
@@ -27,7 +26,5 @@
 namespace syntax
 {
 typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
-class wordlist;
-bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                     const wordlist &tok, const wordlist &ext);
+bool syntax_optimize(sm_list_type &sm_list);
 } // namespace syntax

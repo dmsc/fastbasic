@@ -1,6 +1,6 @@
 /*
  * FastBasic - Fast basic interpreter for the Atari 8-bit computers
- * Copyright (C) 2017-2021 Daniel Serpell
+ * Copyright (C) 2017-2022 Daniel Serpell
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,76 +16,31 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-wlist.cc: Parse the syntax word lists
-
-#include <iostream>
-#include <string>
+// synt-wlist.h: Parse the syntax word lists
+#pragma once
 #include <map>
+#include <string>
 
-class wordlist {
-    private:
-        parseState &p;
-        int n;
-        const char *name;
-        std::map<std::string, int> list;
-        std::string read_ident()
-        {
-            sentry s(p);
-            while(p.ident_ch());
-            std::string ret = s.str();
-            p.space();
-            return ret;
-        }
-        bool end_line()
-        {
-            return p.space() && (p.eof() || p.eol() || p.comment());
-        }
-        bool skip_comments()
-        {
-            while(!p.eof() && (p.blank() || p.comment())); // Skip comments and blank lines
-            return true;
-        }
-    public:
-        wordlist(parseState &p, const char *name, int start): p(p), n(start), name(name) {}
-        int next() const { return n; }
-        const std::map<std::string, int> &map() const { return list; }
-        bool parse()
-        {
-            skip_comments();
-            sentry s(p);
-            std::string tok = read_ident();
-            if( !s(tok == name) )
-                return true; // Allow missing list
-            if( !s(skip_comments() && p.ch('{')) )
-                return false;
-            // Read all tokens
-            while(1)
-            {
-                skip_comments();
-                sentry s1(p);
-                tok = read_ident();
-                if( tok.empty() )
-                {
-                    p.error("not a word in '" + s1.str() + "'");
-                    p.all();
-                }
-                else
-                {
-                    if( list.end() != list.find(tok) )
-                        p.error("word already exists '" + tok + "'");
-                    else
-                        list[tok] = n++;
-                }
-                sentry s2(p);
-                if( s2( skip_comments() && p.ch('}') ) )
-                    break;
-                if( s2( skip_comments() && p.ch(',') ) )
-                    continue;
-                if( s2( end_line() && skip_comments() ) )
-                    continue;
+namespace syntax
+{
+class parse_state;
 
-                p.error("expected a ',' or newline");
-            }
-            return true;
-        }
+class wordlist
+{
+  private:
+    parse_state &p;
+    int n;
+    const char *name;
+    std::map<std::string, int> list;
+
+  public:
+    // Constructor, with a parsing state, the wordlist name and the starting ID
+    wordlist(parse_state &p, const char *name, int start) : p(p), n(start), name(name) {}
+    // Returns next ID
+    int next() const { return n; }
+    // Access map from names to ID.
+    const std::map<std::string, int> &map() const { return list; }
+    // Parse from parse_state
+    bool parse();
 };
+} // namespace syntax

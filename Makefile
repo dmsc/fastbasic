@@ -29,9 +29,8 @@ CC=gcc
 OPTFLAGS=-O2
 
 # Flags to the syntax generator
-SYNTFLAGS_CPP=-DEXTENDED
-SYNTFLAGS_ASM=
-SYNTFP=-DFASTBASIC_FP
+SYNTFLAGS_CPP=-c -DEXTENDED
+SYNTFLAGS_ASM=-a
 
 # General flags for 6502 assembly files
 CA65_FLAGS=-g -tatari -I cc65/asminc -I src
@@ -504,6 +503,18 @@ AR65_SRC=\
 	cc65/ar65/objdata.c\
 	cc65/ar65/objfile.c\
 
+# Syntax file parser
+SYNTAX_PARSER_SRC=\
+	synt-emit-asm.cc\
+	synt-emit-cc.cc\
+	synt-optimize.cc\
+	synt-parser.cc\
+	synt-preproc.cc\
+	synt-pstate.cc\
+	synt-sm.cc\
+	synt-wlist.cc\
+	syntp.cc\
+
 # Syntax files for integer version
 SYNTAX_INT=\
 	src/syntax/basic.syn\
@@ -554,9 +565,9 @@ XEXS=$(PROGS) $(SAMPLE_X_BAS:%.bas=build/bin/%.xex)
 MAPS=$(PROGS:.xex=.map) $(SAMPLE_X_BAS:%.bas=build/bin/%.map)
 LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=build/bin/%.lbl)
 
-# The syntax parsers, to ASM (for the IDE) and C++ (for the compiler)
-ASYNT=build/gen/asynt
-CSYNT=build/gen/csynt
+# The syntax parser, to ASM (for the IDE) and C++ (for the compiler)
+SYNTP=build/gen/syntp
+SYNTAX_PARSER_OBJ=$(SYNTAX_PARSER_SRC:%.cc=build/gen/obj/%.o)
 
 # The compiler object files, for FP and INT versions, HOST and TARGET
 COMPILER_HOST_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-fp/%.o)
@@ -580,6 +591,7 @@ BUILD_FOLDERS=\
  build/disk\
  build/gen/fp\
  build/gen/int\
+ build/gen/obj\
  build/gen\
  build/obj/cxx-fp\
  build/obj/cxx-int\

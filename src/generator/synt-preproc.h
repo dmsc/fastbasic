@@ -16,18 +16,25 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-emit-asm.h: emit parser as an ASM file
+// synt-preproc.h: Pre-processor for the syntax files
 #pragma once
 
-#include "synt-sm.h"
-#include <map>
-#include <memory>
+#include <istream>
+#include <set>
 #include <string>
 
 namespace syntax
 {
-typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
-class wordlist;
-bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                     const wordlist &tok, const wordlist &ext);
-} // namespace syntax
+class preproc
+{
+  private:
+    std::set<std::string> defs;
+
+  public:
+    // Reads from an input stream, pro-process and stores
+    // the result in a string.
+    std::string read_input(std::istream &in) const;
+    // Adds a new definition
+    void add_def(std::string def);
+};
+}; // namespace syntax

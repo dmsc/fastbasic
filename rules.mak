@@ -24,7 +24,7 @@ dist: $(ATR) $(ZIPFILE)
 .PHONY: clean
 clean:
 	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
-	      $(LBLS) $(ASYNT) $(CSYNT) $(COMPILER_HOST) $(TARGET_OBJ) \
+	      $(LBLS) $(SYNTP) $(COMPILER_HOST) $(TARGET_OBJ) \
 	      $(COMPILER_HOST_DEPS) $(COMPILER_TARGET_DEPS) \
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
 	      $(SAMP_OBJS) $(HOST_OBJ)
@@ -78,14 +78,14 @@ build/disk/%.com: build/bin/%.xex | build/disk
 	$(Q)cp $< $@
 
 # Parser generator for 6502
-$(ASYNT): src/generator/asynt.cc | build/gen
-	$(ECHO) "Compile 6502 parser generator tool $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
+$(SYNTP): $(SYNTAX_PARSER_OBJ) | build/gen
+	$(ECHO) "Compile parser generator tool $@"
+	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $^
 
-# Parser generator for C++
-$(CSYNT): src/generator/csynt.cc | build/gen
-	$(ECHO) "Compile C parser generator tool $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $<
+# Generator build
+build/gen/obj/%.o: src/generator/%.cc | build/gen/obj
+	$(ECHO) "Compile generator $<"
+	$(Q)$(CXX) $(HOST_CXXFLAGS) -c -o $@ $<
 
 # Host compiler build
 build/obj/cxx-int/%.o: src/compiler/%.cc | build/obj/cxx-int
@@ -169,25 +169,25 @@ $(AR65_TARGET): $(AR65_SRC) | build/compiler
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
-build/gen/fp/basic.asm: $(SYNTAX_FP) $(ASYNT) | build/gen/fp
+build/gen/fp/basic.asm: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
 	$(ECHO) "Creating FP parsing bytecode"
-	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTFP) $(SYNTAX_FP) -o $@
+	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_FP) -o $@
 
 
 # Generator for syntax file - 6502 version - INTEGER
-build/gen/int/basic.asm: $(SYNTAX_INT) $(ASYNT) | build/gen/int
+build/gen/int/basic.asm: $(SYNTAX_INT) $(SYNTP) | build/gen/int
 	$(ECHO) "Creating INT parsing bytecode"
-	$(Q)$(ASYNT) $(SYNTFLAGS_ASM) $(SYNTAX_INT) -o $@
+	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_INT) -o $@
 
 # Generator for syntax file - C++ version - FLOAT
-build/gen/fp/basic.cc build/gen/fp/basic.h: $(SYNTAX_FP) $(CSYNT) | build/gen/fp
+build/gen/fp/basic.cc build/gen/fp/basic.h: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
 	$(ECHO) "Creating FP cross parser"
-	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTFP) $(SYNTAX_FP) -o build/gen/fp/basic.cc
+	$(Q)$(SYNTP) $(SYNTFLAGS_CPP) $(SYNTAX_FP) -o build/gen/fp/basic.cc
 
 # Generator for syntax file - C++ version - INTEGER
-build/gen/int/basic.cc build/gen/int/basic.h: $(SYNTAX_INT) $(CSYNT) | build/gen/int
+build/gen/int/basic.cc build/gen/int/basic.h: $(SYNTAX_INT) $(SYNTP) | build/gen/int
 	$(ECHO) "Creating INT cross parser"
-	$(Q)$(CSYNT) $(SYNTFLAGS_CPP) $(SYNTAX_INT) -o build/gen/int/basic.cc
+	$(Q)$(SYNTP) $(SYNTFLAGS_CPP) $(SYNTAX_INT) -o build/gen/int/basic.cc
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk

@@ -22,22 +22,6 @@ $(A800_FP_OBJS): src/deftok.inc
 $(A800_OBJS): src/deftok.inc
 build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
 build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
-$(CSYNT): \
- src/generator/csynt.cc \
- src/generator/parse.h \
- src/generator/synt-parse.h \
- src/generator/synt-wlist.h \
- src/generator/synt-sm.h \
- src/generator/synt-emit-cc.h \
- src/generator/synt-read.h
-$(ASYNT): \
- src/generator/asynt.cc \
- src/generator/parse.h \
- src/generator/synt-parse.h \
- src/generator/synt-wlist.h \
- src/generator/synt-sm.h \
- src/generator/synt-emit-asm.h \
- src/generator/synt-read.h
 
 $(HOST_OBJ) $(TARGET_OBJ): version.mk
 
@@ -46,6 +30,8 @@ COMPILER_HOST_DEPS=$(COMPILER_HOST_INT_OBJ:.o=.d) $(COMPILER_HOST_FP_OBJ:.o=.d)
 COMPILER_TARGET_DEPS=$(COMPILER_TARGET_INT_OBJ:.o=.d) $(COMPILER_TARGET_FP_OBJ:.o=.d)
 
 # Automatic generation of dependency information for C++ files
+build/gen/obj/%.d: src/generator/%.cc | build/gen/obj
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
 build/obj/cxx-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-int
 	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
 build/obj/cxx-int/%.d: build/gen/int/%.cc | build/obj/cxx-int
