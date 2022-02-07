@@ -21,7 +21,7 @@
 
 using namespace syntax;
 
-bool syntax::syntax_optimize(sm_list_type &sm_list)
+bool syntax::syntax_optimize(sm_list &sl)
 {
     // Optimize parsing tables:
     //
@@ -31,12 +31,12 @@ bool syntax::syntax_optimize(sm_list_type &sm_list)
     // This is needed to allow floating-point syntax to alter integer
     // syntax without making the integer parser bigger.
     std::vector<std::string> to_delete;
-    for(const auto &sm : sm_list)
+    for(const auto &sm : sl.sms)
     {
         auto n = sm.second->name();
         int used = n == "PARSE_START" ? 1 : 0;
 
-        for(const auto &sm2 : sm_list)
+        for(const auto &sm2 : sl.sms)
             used += sm2.second->has_call(n);
         if(!used)
         {
@@ -46,7 +46,7 @@ bool syntax::syntax_optimize(sm_list_type &sm_list)
         if(used == 1)
         {
             // This table was used only once, see if we can do a tail call
-            for(const auto &sm2 : sm_list)
+            for(const auto &sm2 : sl.sms)
             {
                 if(sm2.second->end_call(n))
                 {
@@ -64,13 +64,13 @@ bool syntax::syntax_optimize(sm_list_type &sm_list)
 
     // Delete unused tables
     for(auto &n : to_delete)
-        sm_list.erase(n);
+        sl.sms.erase(n);
     to_delete.clear();
 
     //
     //   If a table is empty, remove all references to it.
     //
-    for(const auto &sm : sm_list)
+    for(const auto &sm : sl.sms)
     {
         if(sm.second->is_empty())
         {
@@ -81,17 +81,17 @@ bool syntax::syntax_optimize(sm_list_type &sm_list)
             to_delete.push_back(n);
 
             // And all references
-            for(const auto &sm2 : sm_list)
+            for(const auto &sm2 : sl.sms)
                 sm2.second->delete_call(n);
         }
     }
 
     // Delete unused tables
     for(auto &n : to_delete)
-        sm_list.erase(n);
+        sl.sms.erase(n);
 
     // Do local optimization on each table
-    for(auto &sm : sm_list)
+    for(auto &sm : sl.sms)
         sm.second->optimize();
 
     return true;

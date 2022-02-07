@@ -16,27 +16,25 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-parser.h: Parse a syntax file
+// synt-sm-list.h: List of parsing tables, tokens and externals
 #pragma once
-#include "synt-sm-list.h"
+#include "synt-sm.h"
+#include "synt-wlist.h"
+#include <map>
+#include <memory>
 
 namespace syntax
 {
-class parse_state;
-
-class syntax_parser
+class wordlist;
+// List of syntax tables
+class sm_list
 {
-  private:
-    parse_state &p;
-    sm_list &sl;
-    bool parse_sm_name(std::string &name);
-
   public:
-    // Constructor, from a parser state
-    syntax_parser(parse_state &p, sm_list &sl);
-    // Parse one file
-    bool parse_file();
-    // Show final summary of parser files
-    void show_summary() const;
+      std::map<std::string, std::unique_ptr<statemachine>> sms;
+      wordlist tok;
+      wordlist ext;
+      sm_list()
+          : tok("TOKENS", 0), ext("EXTERN", 128)
+      {}
 };
 } // namespace syntax

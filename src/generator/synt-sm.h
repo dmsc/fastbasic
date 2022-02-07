@@ -21,8 +21,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
-#include <memory>
 
 namespace syntax
 {
@@ -115,7 +113,4 @@ class statemachine
     void optimize();
     std::string error_text() const { return _desc; }
 };
-
-// List of syntax tables
-typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
 } // namespace syntax

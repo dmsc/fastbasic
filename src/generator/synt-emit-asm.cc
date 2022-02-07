@@ -18,7 +18,6 @@
 
 // synt-emit-asm.cc: emit parser as an ASM file
 #include "synt-emit-asm.h"
-#include "synt-wlist.h"
 
 #include <ostream>
 #include <string>
@@ -128,8 +127,7 @@ class asm_emit
 };
 } // namespace
 
-bool syntax::syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                             const wordlist &tok, const wordlist &ext)
+bool syntax::syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list &sl)
 {
     // Output header
     hdr << "; Syntax state machine - header\n"
@@ -138,7 +136,7 @@ bool syntax::syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type 
            "\n"
            "; Token Values\n";
 
-    for(auto i : tok.map())
+    for(auto i : sl.tok.map())
         hdr << "\t.importzp " << i.first << "\n";
     hdr << "\n";
     hdr << "\t.assert\tTOK_END = 0, error, \"TOK_END must be 0\"";
@@ -151,22 +149,22 @@ bool syntax::syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type 
 
     // External symbols
     out << "; External symbols\n";
-    for(auto i : ext.map())
+    for(auto i : sl.ext.map())
         out << " .global " << i.first << "\n";
 
     // State machine symbol IDs
     out << "\n"
            "; State Machine IDs\n";
     int n = 128;
-    for(auto i : ext.map())
+    for(auto i : sl.ext.map())
     {
         i.second = n++;
         out << "SMB_" << i.first << "\t= " << i.second << "\n";
     }
-    out << "\nSMB_STATE_START\t= " << ext.next() << "\n\n";
+    out << "\nSMB_STATE_START\t= " << sl.ext.next() << "\n\n";
 
-    int ns = ext.next();
-    for(auto &sm : sm_list)
+    int ns = sl.ext.next();
+    for(auto &sm : sl.sms)
         out << "SMB_" << sm.second->name() << "\t= " << ns++ << "\n";
 
     // Emit array with addresses
@@ -174,15 +172,15 @@ bool syntax::syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type 
            "; Address of State Machine tables\n"
            "\n"
            "SM_TABLE_ADDR:\n";
-    for(auto i : ext.map())
+    for(auto i : sl.ext.map())
         out << "\t.word " << i.first << " - 1\n";
-    for(auto &sm : sm_list)
+    for(auto &sm : sl.sms)
         out << "\t.word " << sm.second->name() << " - 1\n";
     // Emit state machine tables
     out << "\n"
            "; State machine tables\n";
 
-    for(auto &sm : sm_list)
+    for(auto &sm : sl.sms)
     {
         asm_emit a(out, *sm.second);
         a.print();

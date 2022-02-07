@@ -18,7 +18,6 @@
 
 // synt-emit-cc.cc: emit parser as a C++ file
 #include "synt-emit-cc.h"
-#include "synt-wlist.h"
 
 #include <ostream>
 #include <sstream>
@@ -164,12 +163,11 @@ class cpp_emit
 };
 } // namespace
 
-bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                            const wordlist &tok, const wordlist &ext)
+bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list &sl)
 {
     // Sort tokens by index (order in token table)
-    std::vector<std::string> sorted_toks(tok.next());
-    for(auto i : tok.map())
+    std::vector<std::string> sorted_toks(sl.tok.next());
+    for(auto i : sl.tok.map())
         sorted_toks[i.second] = i.first;
 
     // Output header
@@ -192,12 +190,12 @@ bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &
            "\n";
 
     // Emit state machine tables
-    for(auto &sm : sm_list)
+    for(auto &sm : sl.sms)
         out << "static bool SMB_" << sm.second->name() << "(parse &s);\n";
 
     // Emit state machine tables
     out << "\n";
-    for(auto &sm : sm_list)
+    for(auto &sm : sl.sms)
     {
         cpp_emit c(out, *sm.second);
         c.print();

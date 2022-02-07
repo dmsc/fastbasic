@@ -18,9 +18,9 @@
 
 // synt-optimize.h: Optimizer for the parsing tables
 #pragma once
-#include "synt-sm.h"
+#include "synt-sm-list.h"
 
 namespace syntax
 {
-bool syntax_optimize(sm_list_type &sm_list);
+bool syntax_optimize(sm_list &sml);
 } // namespace syntax

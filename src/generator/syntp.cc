@@ -189,8 +189,9 @@ int main(int argc, const char **argv)
     auto &hstrm = open_output_header(output_name, header_ext, hfile);
 
     // Process all input files:
+    sm_list sl;
     parse_state p;
-    syntax_parser pf(p);
+    syntax_parser pf(p, sl);
     for(auto &name : input_names)
     {
         std::ifstream ifile;
@@ -205,16 +206,16 @@ int main(int argc, const char **argv)
     pf.show_summary();
 
     // Optimize
-    syntax_optimize(pf.sm_list);
+    syntax_optimize(sl);
 
     // And generate code
     if(opt_generate == gen_cpp)
     {
-        syntax_emit_cc(hstrm, ostrm, pf.sm_list, pf.tok, pf.ext);
+        syntax_emit_cc(hstrm, ostrm, sl);
     }
     else if(opt_generate == gen_asm)
     {
-        syntax_emit_asm(hstrm, ostrm, pf.sm_list, pf.tok, pf.ext);
+        syntax_emit_asm(hstrm, ostrm, sl);
     }
 
     return 0;

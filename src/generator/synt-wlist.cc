@@ -22,7 +22,7 @@
 
 using namespace syntax;
 
-bool wordlist::parse()
+bool wordlist::parse(parse_state &p)
 {
     p.skip_comments();
     sentry s(p);

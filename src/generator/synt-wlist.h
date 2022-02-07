@@ -28,19 +28,18 @@ class parse_state;
 class wordlist
 {
   private:
-    parse_state &p;
     int n;
     const char *name;
     std::map<std::string, int> list;
 
   public:
     // Constructor, with a parsing state, the wordlist name and the starting ID
-    wordlist(parse_state &p, const char *name, int start) : p(p), n(start), name(name) {}
+    wordlist(const char *name, int start) : n(start), name(name) {}
     // Returns next ID
     int next() const { return n; }
     // Access map from names to ID.
     const std::map<std::string, int> &map() const { return list; }
     // Parse from parse_state
-    bool parse();
+    bool parse(parse_state &p);
 };
 } // namespace syntax

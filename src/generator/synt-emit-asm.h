@@ -18,11 +18,9 @@
 
 // synt-emit-asm.h: emit parser as an ASM file
 #pragma once
-#include "synt-sm.h"
+#include "synt-sm-list.h"
 
 namespace syntax
 {
-class wordlist;
-bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                     const wordlist &tok, const wordlist &ext);
+bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list &sml);
 } // namespace syntax

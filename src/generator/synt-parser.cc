@@ -23,8 +23,8 @@
 
 using namespace syntax;
 
-syntax_parser::syntax_parser(parse_state &p)
-    : p(p), tok(p, "TOKENS", 0), ext(p, "EXTERN", 128)
+syntax_parser::syntax_parser(parse_state &p, sm_list &sl)
+    : p(p), sl(sl)
 {
 }
 
@@ -43,14 +43,14 @@ bool syntax_parser::parse_sm_name(std::string &name)
 bool syntax_parser::parse_file()
 {
     // Parse TOKENS
-    if(!tok.parse())
+    if(!sl.tok.parse(p))
     {
         p.error("missing TOKENS table");
         return false;
     }
 
     // Parse EXTERN routines
-    if(!ext.parse())
+    if(!sl.ext.parse(p))
     {
         p.error("missing EXTERN table");
         return false;
@@ -72,18 +72,18 @@ bool syntax_parser::parse_file()
         }
 
         // Check if we already have this state-machine
-        auto smi = sm_list.find(name);
-        if(smi != sm_list.end())
+        auto smi = sl.sms.find(name);
+        if(smi != sl.sms.end())
         {
             if(!smi->second->parse_extra())
                 return false;
         }
         else
         {
-            auto sm = std::make_unique<statemachine>(p, name, tok, ext);
+            auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext);
             if(sm->parse())
             {
-                sm_list[name] = std::move(sm);
+                sl.sms[name] = std::move(sm);
             }
             else
             {
@@ -98,7 +98,7 @@ bool syntax_parser::parse_file()
 
 void syntax_parser::show_summary() const
 {
-    std::cerr << "syntax: " << tok.next() << " possible tokens.\n";
-    std::cerr << "syntax: " << (ext.next() + sm_list.size() - 128)
+    std::cerr << "syntax: " << sl.tok.next() << " possible tokens.\n";
+    std::cerr << "syntax: " << (sl.ext.next() + sl.sms.size() - 128)
               << " tables in the parser-table.\n";
 }
