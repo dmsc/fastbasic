@@ -19,6 +19,7 @@
 // synt-sm.cc: Parse and write the syntax state machine
 #include "synt-sm.h"
 #include "synt-pstate.h"
+#include "synt-wlist.h"
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -188,7 +189,10 @@ bool statemachine::parse_line(line &current)
         else if(!cmd.empty())
         {
             canFail = true;
-            current.pc.emplace_back(pcode{pcode::c_call, cmd});
+            if( ext.map().count(cmd) )
+                current.pc.emplace_back(pcode{pcode::c_call_ext, cmd});
+            else
+                current.pc.emplace_back(pcode{pcode::c_call_table, cmd});
         }
         else
             p.error("invalid label \"" + cmd + "\"");
@@ -201,7 +205,7 @@ int statemachine::has_call(std::string tab) const
     int n = 0;
     for(auto &l : code)
         for(auto &c : l.pc)
-            if(c.type == pcode::c_call && c.str == tab)
+            if(c.type == pcode::c_call_table && c.str == tab)
                 n++;
     return n;
 }
@@ -219,7 +223,7 @@ void statemachine::delete_call(std::string tab)
         auto &v = l.pc;
         v.erase(std::remove_if(v.begin(), v.end(),
                                [&](pcode &x)
-                               { return (x.type == pcode::c_call && x.str == tab); }),
+                               { return (x.type == pcode::c_call_table && x.str == tab); }),
                 v.end());
     }
 }
@@ -229,7 +233,7 @@ bool statemachine::end_call(std::string tab) const
     if(code.size())
     {
         auto &l = code.back().pc;
-        if(l.size() == 2 && l[0].type == pcode::c_call && l[0].str == tab &&
+        if(l.size() == 2 && l[0].type == pcode::c_call_table && l[0].str == tab &&
            l[1].type == pcode::c_return)
             return true;
     }

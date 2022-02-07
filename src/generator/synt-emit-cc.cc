@@ -99,7 +99,11 @@ class cpp_emit
               "\t\ts.lvl--;\n"
               "\t\treturn true;\n";
     }
-    void print_call(std::string sub) { os << "\t\tif( !SMB_" << sub << "(s) ) break;\n"; }
+    void print_call_tab(std::string sub) { os << "\t\tif( !SMB_" << sub << "(s) ) break;\n"; }
+    void print_call_ext(std::string sub)
+    {
+        os << "\t\tif( !call_parsing_action(\"" << sub << "\", s) ) break;\n";
+    }
     void print_line(const std::vector<statemachine::pcode> &pc, int lnum)
     {
         os << "\tdo {\n";
@@ -116,8 +120,11 @@ class cpp_emit
             case statemachine::pcode::c_emit_return:
                 print_bytes_ret(c.data, lnum);
                 break;
-            case statemachine::pcode::c_call:
-                print_call(c.str);
+            case statemachine::pcode::c_call_ext:
+                print_call_ext(c.str);
+                break;
+            case statemachine::pcode::c_call_table:
+                print_call_tab(c.str);
                 break;
             case statemachine::pcode::c_return:
                 print_return(lnum);
@@ -184,18 +191,10 @@ bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &
            "#include \"parser.h\"\n"
            "\n";
 
-    // External functions
-    int n = 128;
-    for(auto i : ext.map())
-    {
-        out << "bool SMB_" << i.first << "(parse &s);\t// " << n << "\n";
-        i.second = n++;
-    }
-
     // Emit state machine tables
     for(auto &sm : sm_list)
-        out << "static bool SMB_" << sm.second->name() << "(parse &s);\t// " << n++
-            << "\n";
+        out << "static bool SMB_" << sm.second->name() << "(parse &s);\n";
+
     // Emit state machine tables
     out << "\n";
     for(auto &sm : sm_list)

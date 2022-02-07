@@ -21,10 +21,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <memory>
 
 namespace syntax
 {
 class parse_state;
+class wordlist;
 
 class statemachine
 {
@@ -41,8 +44,10 @@ class statemachine
             c_emit,
             // An emit followed by a return
             c_emit_return,
-            // A call to another table or an external sub
-            c_call,
+            // A call to another table
+            c_call_table,
+            // A call to an external sub
+            c_call_ext,
             // Return success
             c_return
         } type;
@@ -74,6 +79,8 @@ class statemachine
     bool complete;
     int lnum;               // Line number in input file
     std::string _name;      // Table name
+    const wordlist &tok;    // Token list
+    const wordlist &ext;    // Externals list
     std::vector<line> code; // Parsing code lines
     std::string _desc;      // Table description
     // Parse table description
@@ -86,8 +93,8 @@ class statemachine
     bool parse_line(line &current);
 
   public:
-    statemachine(parse_state &p, std::string name)
-        : p(p), complete(false), lnum(-1), _name(name)
+    statemachine(parse_state &p, std::string name, const wordlist &tok, const wordlist &ext)
+        : p(p), complete(false), lnum(-1), _name(name), tok(tok), ext(ext)
     {
     }
     std::string name() const { return _name; }
@@ -108,4 +115,7 @@ class statemachine
     void optimize();
     std::string error_text() const { return _desc; }
 };
+
+// List of syntax tables
+typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
 } // namespace syntax

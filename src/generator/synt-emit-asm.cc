@@ -103,7 +103,8 @@ class asm_emit
             case statemachine::pcode::c_emit_return:
                 print_bytes_ret(c.data);
                 break;
-            case statemachine::pcode::c_call:
+            case statemachine::pcode::c_call_ext:
+            case statemachine::pcode::c_call_table:
                 print_call(c.str);
                 break;
             case statemachine::pcode::c_return:

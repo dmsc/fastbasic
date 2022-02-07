@@ -19,12 +19,8 @@
 // synt-optimize.h: Optimizer for the parsing tables
 #pragma once
 #include "synt-sm.h"
-#include <map>
-#include <memory>
-#include <string>
 
 namespace syntax
 {
-typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
 bool syntax_optimize(sm_list_type &sm_list);
 } // namespace syntax

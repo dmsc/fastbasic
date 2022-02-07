@@ -16,12 +16,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// parser.cc: C++ parser
-
+// parser-actions.cc: parser functions called from the parsing tables
+#include "parser-actions.h"
 #include "parser.h"
 #include "ifile.h"
 #include "vartype.h"
 
+#include <map>
 #include <algorithm>
 #include <cmath>
 
@@ -153,7 +154,7 @@ static bool get_asm_byte_constant(parse &s)
     return false;
 }
 
-bool SMB_E_NUMBER_WORD(parse &s)
+static bool SMB_E_NUMBER_WORD(parse &s)
 {
     s.debug("E_NUMBER_WORD");
     s.skipws();
@@ -167,7 +168,7 @@ bool SMB_E_NUMBER_WORD(parse &s)
     return true;
 }
 
-bool SMB_E_NUMBER_BYTE(parse &s)
+static bool SMB_E_NUMBER_BYTE(parse &s)
 {
     s.debug("E_NUMBER_BYTE");
     s.skipws();
@@ -219,7 +220,7 @@ static bool get_const_string(parse &s, std::string &str)
     return false;
 }
 
-bool SMB_E_CONST_STRING(parse &s)
+static bool SMB_E_CONST_STRING(parse &s)
 {
     s.debug("E_CONST_STRING");
     std::string str;
@@ -228,7 +229,7 @@ bool SMB_E_CONST_STRING(parse &s)
     return false;
 }
 
-bool SMB_E_REM(parse &s)
+static bool SMB_E_REM(parse &s)
 {
     s.debug("E_REM");
     while( !s.eos() && !s.expect('\n') && !s.expect('\x9b') )
@@ -239,7 +240,7 @@ bool SMB_E_REM(parse &s)
     return true;
 }
 
-bool SMB_E_EOL(parse &s)
+static bool SMB_E_EOL(parse &s)
 {
     s.debug("E_EOL");
     s.skipws();
@@ -251,7 +252,7 @@ bool SMB_E_EOL(parse &s)
     return( s.eos() || s.peek(':') || s.eol() );
 }
 
-bool SMB_E_PUSH_VAR(parse &s)
+static bool SMB_E_PUSH_VAR(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_VAR");
@@ -259,7 +260,7 @@ bool SMB_E_PUSH_VAR(parse &s)
     return true;
 }
 
-bool SMB_E_POP_VAR(parse &s)
+static bool SMB_E_POP_VAR(parse &s)
 {
     s.debug("E_POP_VAR");
     if (s.var_stk.empty())
@@ -269,7 +270,7 @@ bool SMB_E_POP_VAR(parse &s)
     return true;
 }
 
-bool SMB_E_PUSH_LT(parse &s)
+static bool SMB_E_PUSH_LT(parse &s)
 {
     // nothing to do!
     s.debug("E_PUSH_LT");
@@ -303,7 +304,7 @@ bool SMB_E_PUSH_LT(parse &s)
     return true;
 }
 
-bool SMB_E_POP_LOOP(parse &s)
+static bool SMB_E_POP_LOOP(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_LOOP");
@@ -315,7 +316,7 @@ bool SMB_E_POP_LOOP(parse &s)
     return true;
 }
 
-bool SMB_E_POP_WHILE(parse &s)
+static bool SMB_E_POP_WHILE(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_WHILE");
@@ -329,7 +330,7 @@ bool SMB_E_POP_WHILE(parse &s)
     return true;
 }
 
-bool SMB_E_POP_IF(parse &s)
+static bool SMB_E_POP_IF(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_IF");
@@ -342,7 +343,7 @@ bool SMB_E_POP_IF(parse &s)
     return true;
 }
 
-bool SMB_E_ELSEIF(parse &s)
+static bool SMB_E_ELSEIF(parse &s)
 {
     // nothing to do!
     s.debug("E_ELSEIF");
@@ -356,7 +357,7 @@ bool SMB_E_ELSEIF(parse &s)
     return true;
 }
 
-bool SMB_E_EXIT_LOOP(parse &s)
+static bool SMB_E_EXIT_LOOP(parse &s)
 {
     // nothing to do!
     s.debug("E_EXIT_LOOP");
@@ -375,7 +376,7 @@ bool SMB_E_EXIT_LOOP(parse &s)
     return true;
 }
 
-bool SMB_E_POP_PROC_DATA(parse &s)
+static bool SMB_E_POP_PROC_DATA(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_PROC_DATA");
@@ -386,7 +387,7 @@ bool SMB_E_POP_PROC_DATA(parse &s)
     return true;
 }
 
-bool SMB_E_POP_PROC_2(parse &s)
+static bool SMB_E_POP_PROC_2(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_PROC_2");
@@ -397,7 +398,7 @@ bool SMB_E_POP_PROC_2(parse &s)
     return true;
 }
 
-bool SMB_E_POP_FOR(parse &s)
+static bool SMB_E_POP_FOR(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_FOR");
@@ -412,7 +413,7 @@ bool SMB_E_POP_FOR(parse &s)
     return true;
 }
 
-bool SMB_E_POP_REPEAT(parse &s)
+static bool SMB_E_POP_REPEAT(parse &s)
 {
     // nothing to do!
     s.debug("E_POP_REPEAT");
@@ -425,7 +426,7 @@ bool SMB_E_POP_REPEAT(parse &s)
 }
 
 static std::string last_var_name;
-bool SMB_E_VAR_CREATE(parse &s)
+static bool SMB_E_VAR_CREATE(parse &s)
 {
     s.debug("E_VAR_CREATE");
     auto &v = s.vars;
@@ -442,7 +443,7 @@ bool SMB_E_VAR_CREATE(parse &s)
     return true;
 }
 
-bool SMB_E_VAR_SET_TYPE(parse &s)
+static bool SMB_E_VAR_SET_TYPE(parse &s)
 {
     s.debug("E_VAR_SET_TYPE");
 
@@ -465,7 +466,7 @@ bool SMB_E_VAR_SET_TYPE(parse &s)
     return var_type_is_array(type);
 }
 
-bool var_check(parse &s, int type)
+static bool var_check(parse &s, int type)
 {
     auto &v = s.vars;
     std::string name;
@@ -480,20 +481,19 @@ bool var_check(parse &s, int type)
     return true;
 }
 
-bool SMB_E_VAR_WORD(parse &s)
+static bool SMB_E_VAR_WORD(parse &s)
 {
     s.debug("E_VAR_WORD");
     return var_check(s, VT_WORD);
 }
 
-bool SMB_E_VAR_SEARCH(parse &s)
+static bool SMB_E_VAR_SEARCH(parse &s)
 {
     enum VarType type = get_vartype(s.remove_last().get_str());
     s.debug("E_VAR_SEARCH: " + get_vt_name(type));
     return var_check(s, type);
 }
 
-#ifdef FASTBASIC_FP
 // Get optional exponent for FP number
 static int parse_fp_exp(parse &s)
 {
@@ -561,7 +561,7 @@ static atari_fp get_fp_number(parse &s)
     return fp;
 }
 
-bool SMB_E_NUMBER_FP(parse &s)
+static bool SMB_E_NUMBER_FP(parse &s)
 {
     s.debug("E_NUMBER_FP");
     s.skipws();
@@ -573,9 +573,7 @@ bool SMB_E_NUMBER_FP(parse &s)
     return true;
 }
 
-#endif
-
-bool SMB_E_LABEL_DEF(parse &s)
+static bool SMB_E_LABEL_DEF(parse &s)
 {
     auto l = s.push_loop(LT_PROC_DATA);
     s.remove_last();
@@ -592,7 +590,7 @@ bool SMB_E_LABEL_DEF(parse &s)
     return true;
 }
 
-bool SMB_E_LABEL(parse &s)
+static bool SMB_E_LABEL(parse &s)
 {
     s.debug("E_LABEL");
     // Get type
@@ -612,7 +610,7 @@ bool SMB_E_LABEL(parse &s)
     return true;
 }
 
-bool SMB_E_COUNT_PARAM(parse &s)
+static bool SMB_E_COUNT_PARAM(parse &s)
 {
     s.debug("E_COUNT_PARAM");
     s.current_params ++;
@@ -621,7 +619,7 @@ bool SMB_E_COUNT_PARAM(parse &s)
 
 // Called in EXEC, creates a label if not exists, if already exists checks
 // that it is a PROC.
-bool SMB_E_LABEL_CREATE(parse &s)
+static bool SMB_E_LABEL_CREATE(parse &s)
 {
     s.debug("E_LABEL_CREATE");
     std::string name;
@@ -639,7 +637,7 @@ bool SMB_E_LABEL_CREATE(parse &s)
     return true;
 }
 
-bool SMB_E_DO_EXEC(parse &s)
+static bool SMB_E_DO_EXEC(parse &s)
 {
     int pnum = s.current_params;
     s.debug("E_DO_EXEC");
@@ -652,7 +650,7 @@ bool SMB_E_DO_EXEC(parse &s)
     return true;
 }
 
-bool SMB_E_PROC_CHECK(parse &s)
+static bool SMB_E_PROC_CHECK(parse &s)
 {
     int pnum = s.current_params - 1;
     s.debug("E_PROC_CHECK");
@@ -665,7 +663,7 @@ bool SMB_E_PROC_CHECK(parse &s)
     return true;
 }
 
-bool SMB_E_LABEL_SET_TYPE(parse &s)
+static bool SMB_E_LABEL_SET_TYPE(parse &s)
 {
     s.debug("E_LABEL_SET_TYPE");
     s.skipws();
@@ -675,7 +673,7 @@ bool SMB_E_LABEL_SET_TYPE(parse &s)
 }
 
 // Reads a DATA array from a file
-bool SMB_E_DATA_FILE(parse &s)
+static bool SMB_E_DATA_FILE(parse &s)
 {
     s.debug("E_DATA_FILE");
     s.skipws();
@@ -698,4 +696,47 @@ bool SMB_E_DATA_FILE(parse &s)
         s.emit_byte( c );
     }
     return true;
+}
+
+// List of all actions by name:
+static std::map<std::string, bool (*)(parse &s)> actions = {
+    { "E_CONST_STRING", SMB_E_CONST_STRING },
+    { "E_COUNT_PARAM", SMB_E_COUNT_PARAM },
+    { "E_DATA_FILE", SMB_E_DATA_FILE },
+    { "E_DO_EXEC", SMB_E_DO_EXEC },
+    { "E_ELSEIF", SMB_E_ELSEIF },
+    { "E_EOL", SMB_E_EOL },
+    { "E_EXIT_LOOP", SMB_E_EXIT_LOOP },
+    { "E_LABEL", SMB_E_LABEL },
+    { "E_LABEL_CREATE", SMB_E_LABEL_CREATE },
+    { "E_LABEL_DEF", SMB_E_LABEL_DEF },
+    { "E_LABEL_SET_TYPE", SMB_E_LABEL_SET_TYPE },
+    { "E_NUMBER_BYTE", SMB_E_NUMBER_BYTE },
+    { "E_NUMBER_FP", SMB_E_NUMBER_FP },
+    { "E_NUMBER_WORD", SMB_E_NUMBER_WORD },
+    { "E_POP_FOR", SMB_E_POP_FOR },
+    { "E_POP_IF", SMB_E_POP_IF },
+    { "E_POP_LOOP", SMB_E_POP_LOOP },
+    { "E_POP_PROC_2", SMB_E_POP_PROC_2 },
+    { "E_POP_PROC_DATA", SMB_E_POP_PROC_DATA },
+    { "E_POP_REPEAT", SMB_E_POP_REPEAT },
+    { "E_POP_VAR", SMB_E_POP_VAR },
+    { "E_POP_WHILE", SMB_E_POP_WHILE },
+    { "E_PROC_CHECK", SMB_E_PROC_CHECK },
+    { "E_PUSH_LT", SMB_E_PUSH_LT },
+    { "E_PUSH_VAR", SMB_E_PUSH_VAR },
+    { "E_REM", SMB_E_REM },
+    { "E_VAR_CREATE", SMB_E_VAR_CREATE },
+    { "E_VAR_SEARCH", SMB_E_VAR_SEARCH },
+    { "E_VAR_SET_TYPE", SMB_E_VAR_SET_TYPE },
+    { "E_VAR_WORD", SMB_E_VAR_WORD }
+};
+
+bool call_parsing_action(const std::string name, parse &s)
+{
+    auto i = actions.find(name);
+    if( i != actions.end() )
+        return i->second(s);
+    else
+        return false;
 }

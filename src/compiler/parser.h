@@ -23,6 +23,7 @@
 #include "codew.h"
 #include "looptype.h"
 #include "vartype.h"
+#include "parser-actions.h"
 
 #include <algorithm>
 #include <map>

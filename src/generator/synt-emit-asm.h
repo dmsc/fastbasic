@@ -18,15 +18,10 @@
 
 // synt-emit-asm.h: emit parser as an ASM file
 #pragma once
-
 #include "synt-sm.h"
-#include <map>
-#include <memory>
-#include <string>
 
 namespace syntax
 {
-typedef std::map<std::string, std::unique_ptr<statemachine>> sm_list_type;
 class wordlist;
 bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
                      const wordlist &tok, const wordlist &ext);

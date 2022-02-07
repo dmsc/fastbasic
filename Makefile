@@ -340,7 +340,7 @@ COMPILER_SRC=\
 	looptype.cc\
 	main.cc\
 	os.cc\
-	parser.cc\
+	parser-actions.cc\
 	peephole.cc\
 	vartype.cc\
 

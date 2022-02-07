@@ -16,13 +16,9 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-emit-cc.h: emit parser as a C++ file
+// parser-actions.h: parser functions called from the parsing tables
 #pragma once
-#include "synt-sm.h"
+#include <string>
 
-namespace syntax
-{
-class wordlist;
-bool syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &sm_list,
-                    const wordlist &tok, const wordlist &ext);
-} // namespace syntax
+class parse;
+bool call_parsing_action(const std::string name, parse &s);

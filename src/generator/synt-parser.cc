@@ -80,7 +80,7 @@ bool syntax_parser::parse_file()
         }
         else
         {
-            auto sm = std::make_unique<statemachine>(p, name);
+            auto sm = std::make_unique<statemachine>(p, name, tok, ext);
             if(sm->parse())
             {
                 sm_list[name] = std::move(sm);
