@@ -83,7 +83,7 @@ $(SYNTP): $(SYNTAX_PARSER_OBJ) | build/gen
 	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $^
 
 # Generator build
-build/gen/obj/%.o: src/generator/%.cc | build/gen/obj
+build/gen/obj/%.o: src/compiler/%.cc | build/gen/obj
 	$(ECHO) "Compile generator $<"
 	$(Q)$(CXX) $(HOST_CXXFLAGS) -c -o $@ $<
 
