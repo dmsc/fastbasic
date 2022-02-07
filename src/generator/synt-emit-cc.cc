@@ -48,7 +48,7 @@ class cpp_emit
             if(c.size() && c[0] == '&')
                 os << "\t\ts.emit_word(\"" << c.substr(1) << "\");\n";
             else if(c.substr(0, 4) == "TOK_")
-                os << "\t\ts.emit_tok(" << c << ");\n";
+                os << "\t\ts.emit_tok(\"" << c << "\");\n";
             else
                 os << "\t\ts.emit_byte(\"" << c << "\");\n";
         }
@@ -172,15 +172,8 @@ bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &
            "#pragma once\n"
            "#include <string>\n"
            "\n"
-           "enum tokens {\n";
-    for(auto i : sorted_toks)
-        hdr << "    " << i << ",\n";
-    hdr << "    TOK_LAST_TOKEN\n"
-           "};\n"
-           "\n"
            "class parse;\n"
-           "bool parse_start(parse &s);\n"
-           "std::string token_name(enum tokens t);\n";
+           "bool parse_start(parse &s);\n";
 
     // Output parser C++ file
     out << "// Syntax state machine\n"
@@ -189,19 +182,6 @@ bool syntax::syntax_emit_cc(std::ostream &hdr, std::ostream &out, sm_list_type &
            "\n"
            "#include \"basic.h\"\n"
            "#include \"parser.h\"\n"
-           "\n"
-           "static const char * token_names["
-        << 1 + tok.next() << "] {\n";
-    // Token names
-    for(auto i : sorted_toks)
-        out << "    \"" << i << "\",\n";
-    out << "    \"LAST_TOKEN\"\n"
-           "};\n"
-           "\n"
-           "std::string token_name(enum tokens t)\n"
-           "{\n"
-           "    return token_names[t];\n"
-           "}\n"
            "\n";
 
     // External functions

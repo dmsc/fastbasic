@@ -27,6 +27,8 @@
 #include "peephole.h"
 #include "codestat.h"
 
+bool parse_start(parse &s);
+
 // Reads a complete source line, respecting ATASCII and ASCII EOL inly
 // outside strings.
 static int readLine(std::string &r, std::istream &is)
@@ -187,7 +189,7 @@ int compiler::compile_file(std::string iname, std::string output_filename)
         return 1;
     }
 
-    s.emit_tok(TOK_END);
+    s.emit_tok("TOK_END");
     // Optimize
     if( optimize )
         do_peephole(s.full_code());
@@ -229,7 +231,7 @@ int compiler::compile_file(std::string iname, std::string output_filename)
     // Write tokens
     ofile << "; TOKENS:\n";
     for(auto &i: s.used_tokens())
-        ofile << "\t.importzp\t" << token_name(i) << "\n";
+        ofile << "\t.importzp\t" << i << "\n";
     ofile << ";-----------------------------\n"
              "; Macro to get variable ID from name\n"
              "\t.import __HEAP_RUN__\n"

@@ -19,7 +19,6 @@
 // codew.h: Representation of bytecode
 #pragma once
 
-#include "basic.h" // enum tokens
 #include "atarifp.h"
 #include <stdexcept>
 
@@ -37,9 +36,8 @@ class codew {
             string      // A constant string, length+bytes
         } type;
         int num;
-        std::string str;
+        std::string str; // String or token
         atari_fp x;
-        enum tokens tk;
         int lnum;
         // Escape string to include in assembly output
         std::string escape(std::string str)
@@ -69,12 +67,12 @@ class codew {
         }
         codew() {};
     public:
-        static codew ctok(enum tokens t, int lnum)
+        static codew ctok(std::string t, int lnum)
         {
             codew c;
             c.type = tok;
             c.lnum = lnum;
-            c.tk = t;
+            c.str = t;
             return c;
         }
         static codew cbyte(std::string s, int lnum)
@@ -147,8 +145,8 @@ class codew {
             return c;
         }
         // Test type
-        bool is_tok(enum tokens t) const {
-            return type == tok && tk == t;
+        bool is_tok(std::string t) const {
+            return type == tok && str == t;
         }
         bool is_sbyte(std::string s) const {
             return type == byte_str && str == s;
@@ -203,9 +201,9 @@ class codew {
             else
                 throw std::runtime_error("internal error: not a variable");
         }
-        enum tokens get_tok() const {
+        std::string get_tok() const {
             if( type == tok )
-                return tk;
+                return str;
             else
                 throw std::runtime_error("internal error: not a token");
         }
@@ -218,7 +216,7 @@ class codew {
             switch(type)
             {
                 case tok:
-                    return "\t.byte\t" + token_name(tk);
+                    return "\t.byte\t" + str;
                 case byte:
                     return "\t.byte\t" + std::to_string(num & 0xFF);
                 case word:

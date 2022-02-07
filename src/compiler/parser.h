@@ -272,7 +272,7 @@ class parse {
             if( pos != s.pos )
                 debug("restore pos=" + std::to_string(pos) + " <= " + std::to_string(s.pos));
             pos = s.pos;
-            code->resize(s.opos, codew::ctok(TOK_END, 0));
+            code->resize(s.opos, codew::ctok("TOK_END", 0));
             expand.text.resize(s.tpos);
         }
 
@@ -468,7 +468,7 @@ class parse {
             code->push_back(codew::clabel(s, linenum));
             return true;
         }
-        bool emit_tok(enum tokens tk)
+        bool emit_tok(std::string tk)
         {
             code->push_back(codew::ctok(tk, linenum));
             return true;
@@ -520,8 +520,8 @@ class parse {
             {
                 finalized = true;
                 // Correctly terminate main code
-                if( !p.size() || !p.back().is_tok(TOK_END) )
-                    p.push_back(codew::ctok(TOK_END,0));
+                if( !p.size() || !p.back().is_tok("TOK_END") )
+                    p.push_back(codew::ctok("TOK_END",0));
                 // To emit procs sorted by line number, copy to a vector
                 std::vector< std::vector<codew>* > sprocs;
                 for(auto &c: procs)
@@ -540,16 +540,16 @@ class parse {
             }
             return p;
         }
-        std::vector<enum tokens> used_tokens()
+        std::vector<std::string> used_tokens()
         {
             auto code = full_code();
-            std::set<enum tokens> set;
+            std::set<std::string> set;
             for(auto &c: code)
             {
                 if( c.is_tok() )
                     set.insert(c.get_tok());
             }
-            std::vector<enum tokens> ret;
+            std::vector<std::string> ret;
             for(auto &t: set)
                 ret.push_back(t);
             return ret;
