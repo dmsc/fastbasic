@@ -55,6 +55,17 @@ std::string os::full_path(const std::string &path, const std::string &filename)
         return path + filename;
 }
 
+std::string os::file_name(const std::string &path)
+{
+    auto p = path.find_last_of(path_sep);
+    if( p != path.npos )
+        return path.substr(p);
+    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+        return path.substr(2);
+    else
+        return path;
+}
+
 std::string os::add_extension(std::string name, std::string ext)
 {
     auto pos = name.find_last_of(".");

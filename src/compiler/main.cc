@@ -73,16 +73,30 @@ static std::string guess_install_folder(std::string arg)
         return arg.substr(0,p);
 }
 
+// Selects a default target based on compiler name
+static std::string default_target(const std::string &prog)
+{
+    // Get program filename
+    auto base = os::file_name(prog);
+
+    // Check if contains the word "-int":
+    if( base.rfind("-int") != base.npos )
+        return "atari-int";
+    else
+        return "default";
+}
+
 int main(int argc, char **argv)
 {
-    auto install_folder = guess_install_folder(argv[0]);
+    auto program_name = std::string(argv[0]);
+    auto install_folder = guess_install_folder(program_name);
     auto syntax_folder = os::full_path(install_folder, "syntax");
     auto target_folder = install_folder;
     std::vector<std::string> args(argv+1, argv+argc);
     std::string out_name;
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
-    std::string target_name = "default"; // default compiler target
+    std::string target_name = default_target(program_name);
     std::string cfg_file_def;
     compiler comp;
     std::vector<std::string> asm_opts = {"-tatari","-g"};
