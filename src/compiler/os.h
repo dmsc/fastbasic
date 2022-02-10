@@ -26,6 +26,8 @@ namespace os
 {
     // Appends a file name to a path
     std::string full_path(const std::string &path, const std::string &filename);
+    // Returns true if the path is an absolute path
+    bool path_absolute(const std::string &path);
     // Changes the filename "extension" to given one.
     std::string add_extension(std::string name, std::string ext);
     // Execute external program, waiting for the result

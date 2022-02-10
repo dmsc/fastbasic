@@ -557,4 +557,9 @@ class parse {
         }
 };
 
-
+// Main parser function
+namespace syntax
+{
+class sm_list;
+bool parse_start(parse &s, const sm_list &sl);
+}

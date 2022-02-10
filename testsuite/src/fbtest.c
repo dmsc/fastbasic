@@ -31,8 +31,7 @@
 // Flags
 static int verbose;
 static const char *fb_atari_compiler = "build/bin/fbc.xex";
-static const char *fb_fp_compiler    = "build/bin/fastbasic-fp";
-static const char *fb_int_compiler   = "build/bin/fastbasic-int";
+static const char *fb_compiler       = "build/bin/fastbasic";
 static const char *ca65_path         = "build/bin/ca65";
 static const char *ld65_path         = "build/bin/ld65";
 static const char *fb_lib_path       = "build/compiler";
@@ -42,6 +41,9 @@ static const char *output_dir        = "build/tests";
 #define FB_LIB_FP   "fastbasic-fp.lib"
 #define FB_LIB_INT  "fastbasic-int.lib"
 #define FB_CFG_FILE "fastbasic.cfg"
+#define FB_PATHS    "-target-path:compiler -syntax-path:src/syntax"
+#define FB_INT_TARGET   "-t:atari-int"
+#define FB_FP_TARGET    "-t:atari-fp"
 #define FB_LIB_ROM_FP   "fastbasic-cart-fp.lib"
 #define FB_LIB_ROM_INT  "fastbasic-cart-int.lib"
 #define FB_CFG_FILE_ROM "fastbasic-cart.cfg"
@@ -272,7 +274,7 @@ static int compile_cross(const char *basname, const char *asmname,
                          int comp_ok, int error_pos_line, int error_pos_column,
                          int compile_rom)
 {
-    const char *comp = fp ? fb_fp_compiler : fb_int_compiler;
+    const char *fb_target = fp ? FB_FP_TARGET : FB_INT_TARGET;
     const char *libs = compile_rom ? (fp ? FB_LIB_ROM_FP : FB_LIB_ROM_INT)
                                    : (fp ? FB_LIB_FP : FB_LIB_INT);
     const char *cfg = compile_rom ? FB_CFG_FILE_ROM : FB_CFG_FILE;
@@ -285,7 +287,7 @@ static int compile_cross(const char *basname, const char *asmname,
     unlink(objname);
     unlink(outname);
 
-    if (asprintf(&cmd, "%s -c -o %s %s", comp, asmname, basname) < 0)
+    if (asprintf(&cmd, "%s " FB_PATHS " %s -c -o %s %s", fb_compiler, fb_target, asmname, basname) < 0)
     {
         fprintf(stderr, "%s: memory error.\n", basname);
         goto xit;
@@ -756,12 +758,11 @@ int main(int argc, char **argv)
                         " -h: Show this help\n"
                         " -v: Verbose execution\n"
                         " -c <compiler.xex>: Sets path of Atari compiler [%s]\n"
-                        " -i <int-compiler>: Sets path of integer cross-compiler [%s]\n"
-                        " -f <fp-compiler>: Sets path of floating-point cross-compiler [%s]\n"
+                        " -f <fp-compiler>: Sets path of cross-compiler [%s]\n"
                         " -l <lib-path>: Sets path for the libraries and includes [%s]\n"
                         " -a <ca65-path>: Sets path for the CA65 assembler [%s]\n"
                         " -k <ld65-path>: Sets path for the LD65 linker [%s]\n",
-                        argv[0], fb_atari_compiler, fb_int_compiler, fb_fp_compiler,
+                        argv[0], fb_atari_compiler, fb_compiler,
                         fb_lib_path, ca65_path, ld65_path);
                 return 0;
             case 'v': // verbose
@@ -776,11 +777,8 @@ int main(int argc, char **argv)
             case 'c': // atari compiler path
                 fb_atari_compiler = optarg;
                 break;
-            case 'i': // integer cross-compiler path
-                fb_int_compiler = optarg;
-                break;
-            case 'f': // floating-point cross-compiler path
-                fb_fp_compiler = optarg;
+            case 'f': // cross-compiler path
+                fb_compiler = optarg;
                 break;
             case 'l': // cross libraries path
                 fb_lib_path = optarg;

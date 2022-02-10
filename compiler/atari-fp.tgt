@@ -1,0 +1,4 @@
+# Atari 8-bit computer, with floating point
+include a800
+syntax float.syn
+library fastbasic-fp.lib

@@ -22,14 +22,26 @@
 
 #ifdef _WIN32
 # include <windows.h>
+# define HAVE_DRIVE 1
 static const char *path_sep = "\\/";
 #else
 # include <unistd.h>
 # include <signal.h>
 # include <sys/wait.h>
+# define HAVE_DRIVE 0
 static const char *path_sep = "/";
 #endif
 
+bool os::path_absolute(const std::string &path)
+{
+    if( path.find_first_of(path_sep) == 0 )
+        return true;
+    // On windows, detect if we have a drive letter
+    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+        return true;
+    else
+        return false;
+}
 
 std::string os::full_path(const std::string &path, const std::string &filename)
 {

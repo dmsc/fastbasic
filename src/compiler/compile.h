@@ -22,6 +22,11 @@
 
 #include <string>
 
+namespace syntax
+{
+class sm_list;
+}
+
 class compiler {
     public:
         std::string segname;
@@ -31,7 +36,8 @@ class compiler {
         bool show_text;
 
         compiler();
-        int compile_file(std::string input_filename, std::string output_filename);
+        int compile_file(std::string input_filename, std::string output_filename,
+                         const syntax::sm_list &sl);
 
 };
 

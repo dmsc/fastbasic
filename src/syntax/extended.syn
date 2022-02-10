@@ -1,0 +1,45 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2022 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+# Syntax for extended commands, available only in the cross-compiler.
+
+EXTERN {
+ E_DATA_FILE
+ E_COUNT_PARAM
+ E_PROC_CHECK
+}
+
+# Reda DATA statements from a file:
+DATA_TYPE:
+        TYPE_BYTE "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
+        TYPE_WORD "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
+
+# In the cross-compiler, we count parameters to detect program errors:
+#  Count parameters before EXEC
+EXEC_PARAM_MORE:<
+        E_COUNT_PARAM
+
+# Count parameters before PROC
+OPT_PROC_VAR:<
+        E_COUNT_PARAM
+
+# Check number of parameters after PROC
+OPT_PROC_VAR:
+        E_PROC_CHECK
+
+# vi:syntax=perl

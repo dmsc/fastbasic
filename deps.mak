@@ -23,39 +23,27 @@ $(A800_OBJS): src/deftok.inc
 build/obj/fp/parse.o: src/parse.asm build/gen/fp/basic.asm
 build/obj/int/parse.o: src/parse.asm build/gen/int/basic.asm
 
-$(HOST_OBJ) $(TARGET_OBJ): version.mk
+$(FASTBASIC_HOST_OBJ) $(FASTBASIC_TARGET_OBJ): version.mk
 
 # The compiler dependencies - auto-generated from c++ files
-COMPILER_HOST_DEPS=$(COMPILER_HOST_INT_OBJ:.o=.d) $(COMPILER_HOST_FP_OBJ:.o=.d)
-COMPILER_TARGET_DEPS=$(COMPILER_TARGET_INT_OBJ:.o=.d) $(COMPILER_TARGET_FP_OBJ:.o=.d)
+FASTBASIC_HOST_DEPS=$(FASTBASIC_HOST_OBJ:.o=.d)
+FASTBASIC_TARGET_DEPS=$(FASTBASIC_TARGET_OBJ:.o=.d)
+SYNTAX_PARSER_DEPS=$(SYNTAX_PARSER_OBJ:.o=.d)
 
 # Automatic generation of dependency information for C++ files
-build/gen/obj/%.d: src/generator/%.cc | build/gen/obj
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-int/%.d: build/gen/int/%.cc | build/obj/cxx-int
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
-build/obj/cxx-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-fp
-	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(HOST_CXXFLAGS) $<
+build/obj/cxx/%.d: src/compiler/%.cc | build/obj/cxx
+	@$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FB_CXX) $(HOST_CXXFLAGS) $<
 ifneq ($(CROSS),)
-build/obj/cxx-tgt-int/%.d: src/compiler/%.cc | build/gen/int/basic.h build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-int/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-int
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(INTCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: src/compiler/%.cc | build/gen/fp/basic.h build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
-build/obj/cxx-tgt-fp/%.d: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
-	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FPCXX) $(TARGET_CXXFLAGS) $<
+build/obj/cxx-tgt/%.d: src/compiler/%.cc | build/obj/cxx-tgt
+	@$(CROSS)$(CXX) -MM -MP -MF $@ -MT "$(@:.d=.o) $@" $(FB_CXX) $(TARGET_CXXFLAGS) $<
 endif
 
 ifneq "$(MAKECMDGOALS)" "clean"
     ifneq "$(MAKECMDGOALS)" "distclean"
-        -include $(COMPILER_HOST_DEPS)
+        -include $(FASTBASIC_HOST_DEPS)
+        -include $(SYNTAX_PARSER_DEPS)
         ifneq ($(CROSS),)
-            -include $(COMPILER_TARGET_DEPS)
+            -include $(FASTBASIC_TARGET_DEPS)
         endif
     endif
 endif

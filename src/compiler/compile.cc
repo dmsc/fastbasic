@@ -27,8 +27,6 @@
 #include "peephole.h"
 #include "codestat.h"
 
-bool parse_start(parse &s);
-
 // Reads a complete source line, respecting ATASCII and ASCII EOL inly
 // outside strings.
 static int readLine(std::string &r, std::istream &is)
@@ -87,12 +85,12 @@ static int readLine(std::string &r, std::istream &is)
 }
 
 // Parses one source line
-static bool parse_line(std::string line, int ln, parse &s, bool show_text)
+static bool parse_line(std::string line, int ln, parse &s, bool show_text, const syntax::sm_list &sl)
 {
     s.new_line(line, ln);
     while( s.pos != line.length() )
     {
-        if( !parse_start(s) || ( s.pos != line.length() && !s.peek(':') )  )
+        if( !syntax::parse_start(s, sl) || ( s.pos != line.length() && !s.peek(':') )  )
         {
             std::string msg = "parse error";
             if( !s.saved_errors.empty() )
@@ -132,7 +130,7 @@ compiler::compiler() {
 }
 
 
-int compiler::compile_file(std::string iname, std::string output_filename)
+int compiler::compile_file(std::string iname, std::string output_filename, const syntax::sm_list &sl)
 {
     std::ifstream ifile;
     std::ofstream ofile;
@@ -158,7 +156,7 @@ int compiler::compile_file(std::string iname, std::string output_filename)
                 break;
             if( do_debug )
                 std::cout << iname << ": parsing line " << ln << "\n";
-            parse_line(line, ln, s, show_text);
+            parse_line(line, ln, s, show_text, sl);
             ln += lines;
         }
         catch( parse_error &e )

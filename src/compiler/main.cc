@@ -23,13 +23,7 @@
 #include <tuple>
 #include "compile.h"
 #include "os.h"
-
-/* Select default library depending on version */
-#ifdef FASTBASIC_FP
-# define DEFAULT_LIB "fastbasic-fp.lib"
-#else
-# define DEFAULT_LIB "fastbasic-int.lib"
-#endif
+#include "target.h"
 
 static int show_version()
 {
@@ -47,6 +41,7 @@ static int show_help()
                  " -n\t\tdon't run the optimizer, produces same code as 6502 version\n"
                  " -prof\t\tshow token usage statistics\n"
                  " -s:<name>\tplace code into given segment\n"
+                 " -t:<target>\tselect compiler target ('atari-fp', 'atari-int', etc.)\n"
                  " -l\t\tproduce a listing of the unabbreviated parsed source\n"
                  " -c\t\tonly compile to assembler, don't produce binary\n"
                  " -C:<name>\tselect linker config file name\n"
@@ -81,13 +76,15 @@ static std::string guess_install_folder(std::string arg)
 int main(int argc, char **argv)
 {
     auto install_folder = guess_install_folder(argv[0]);
+    auto syntax_folder = os::full_path(install_folder, "syntax");
+    auto target_folder = install_folder;
     std::vector<std::string> args(argv+1, argv+argc);
     std::string out_name;
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
+    std::string target_name = "default"; // default compiler target
     compiler comp;
     std::string cfg_file = os::full_path(install_folder, "fastbasic.cfg");
-    std::string lib_name = os::full_path(install_folder, DEFAULT_LIB);
     std::vector<std::string> asm_opts = {"-tatari","-g"};
     std::vector<std::string> link_opts;
     // BAS files, compile INPUT(BAS) to OUTPUT(ASM)
@@ -149,6 +146,13 @@ int main(int argc, char **argv)
                 return show_error("invalid segment name");
             comp.segname = seg;
         }
+        else if( arg.rfind("-t:", 0) == 0 || arg.rfind("-t=", 0) == 0 )
+        {
+            auto tgt = arg.substr(3);
+            if( !tgt.size() || (tgt.find('"') != std::string::npos) )
+                return show_error("invalid compiler target name");
+            target_name = tgt;
+        }
         else if( arg.rfind("-C:", 0) == 0 || arg.rfind("-C=", 0) == 0 )
         {
             cfg_file = arg.substr(3);
@@ -161,6 +165,14 @@ int main(int argc, char **argv)
         {
             link_opts.push_back("--start-addr");
             link_opts.push_back(arg.substr(3));
+        }
+        else if( arg.rfind("-syntax-path:", 0) == 0 || arg.rfind("-syntax-path=", 0) == 0 )
+        {
+            syntax_folder = arg.substr(13);
+        }
+        else if( arg.rfind("-target-path:", 0) == 0 || arg.rfind("-target-path=", 0) == 0 )
+        {
+            target_folder = arg.substr(13);
         }
         else if( arg[0] == '-' )
             return show_error("invalid option '" + arg + "', try -h for help");
@@ -211,11 +223,24 @@ int main(int argc, char **argv)
     if( link_files.size() && exe_name.empty() )
         exe_name = os::add_extension(link_files[0], ".xex");
 
+    // Read target definition
+    target tgt;
+
+    try {
+        tgt.load(target_folder, syntax_folder, target_name);
+    }
+    catch(std::exception &e)
+    {
+        std::cerr << e.what() << "\n";
+        return 1;
+    }
+    std::string lib_name = os::full_path(install_folder, tgt.lib());
+
     for(auto &f: bas_files)
     {
         auto bas_name = std::get<0>(f), asm_name = std::get<1>(f);
         std::cerr << "BAS compile '" << bas_name << "' to '" << asm_name << "'\n";
-        auto e = comp.compile_file(bas_name, asm_name);
+        auto e = comp.compile_file(bas_name, asm_name, tgt.sl());
         if( e )
             return e;
     }

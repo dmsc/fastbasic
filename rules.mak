@@ -24,17 +24,15 @@ dist: $(ATR) $(ZIPFILE)
 .PHONY: clean
 clean:
 	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
-	      $(LBLS) $(SYNTP) $(COMPILER_HOST) $(TARGET_OBJ) \
-	      $(COMPILER_HOST_DEPS) $(COMPILER_TARGET_DEPS) \
+	      $(LBLS) $(SYNTP) $(COMPILER_HOST) $(FASTBASIC_TARGET_OBJ) \
+	      $(FASTBASIC_HOST_DEPS) $(FASTBASIC_TARGET_DEPS) $(SYNTAX_PARSER_DEPS)\
 	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
-	      $(SAMP_OBJS) $(HOST_OBJ)
+	      $(FASTBASIC_HOST_OBJ) $(SYNTAX_PARSER_OBJ)
 	$(Q)rm -f $(TESTS_XEX) $(TESTS_ROM) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(RUNTEST_OBJS) $(RUNTEST) $(TESTS_STAMP) $(RUNTEST_OBJS:.o=.d)
 
 .PHONY: distclean
 distclean: clean
 	$(Q)-rm -f build/gen/int/basic.asm build/gen/fp/basic.asm \
-	    build/gen/int/basic.cc build/gen/fp/basic.cc \
-	    build/gen/int/basic.h  build/gen/fp/basic.h  \
 	    build/gen/int/basic.inc  build/gen/fp/basic.inc  \
 	    build/gen/int/editor.asm build/gen/fp/editor.asm \
 	    $(CMD_BAS_SRC) \
@@ -82,35 +80,14 @@ $(SYNTP): $(SYNTAX_PARSER_OBJ) | build/gen
 	$(ECHO) "Compile parser generator tool $@"
 	$(Q)$(CXX) $(HOST_CXXFLAGS) -o $@ $^
 
-# Generator build
-build/gen/obj/%.o: src/compiler/%.cc | build/gen/obj
-	$(ECHO) "Compile generator $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) -c -o $@ $<
-
 # Host compiler build
-build/obj/cxx-int/%.o: src/compiler/%.cc | build/obj/cxx-int
-	$(ECHO) "Compile INT $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -c -o $@ $<
+build/obj/cxx/%.o: src/compiler/%.cc | build/obj/cxx
+	$(ECHO) "Compile $<"
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FB_CXX) -c -o $@ $<
 
-build/obj/cxx-int/%.o: build/gen/int/%.cc | build/obj/cxx-int
-	$(ECHO) "Compile INT $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -c -o $@ $<
-
-$(COMPILER_HOST_INT): $(COMPILER_HOST_INT_OBJ) | build/bin
-	$(ECHO) "Linking INT compiler"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(INTCXX) -o $@ $^
-
-build/obj/cxx-fp/%.o: src/compiler/%.cc | build/obj/cxx-fp
-	$(ECHO) "Compile FP $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -c -o $@ $<
-
-build/obj/cxx-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-fp
-	$(ECHO) "Compile FP $<"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -c -o $@ $<
-
-$(COMPILER_HOST_FP): $(COMPILER_HOST_FP_OBJ) | build/bin
-	$(ECHO) "Linking FP compiler"
-	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FPCXX) -o $@ $^
+$(FASTBASIC_HOST): $(FASTBASIC_HOST_OBJ) | build/bin
+	$(ECHO) "Linking host compiler"
+	$(Q)$(CXX) $(HOST_CXXFLAGS) $(FB_CXX) -o $@ $^
 
 $(CA65_HOST): $(CA65_SRC) | build/bin
 	$(ECHO) "Compile CA65"
@@ -131,29 +108,13 @@ $(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/% | build/compiler
 	$(Q)cp -f $< $@
 else
 # Cross-compilation: compile for target
-build/obj/cxx-tgt-int/%.o: src/compiler/%.cc | build/obj/cxx-tgt-int
-	$(ECHO) "Compile INT $<"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -c -o $@ $<
+build/obj/cxx-tgt/%.o: src/compiler/%.cc | build/obj/cxx-tgt
+	$(ECHO) "Compile target $<"
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FB_CXX) -c -o $@ $<
 
-build/obj/cxx-tgt-int/%.o: build/gen/int/%.cc | build/obj/cxx-tgt-int
-	$(ECHO) "Compile INT $<"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -c -o $@ $<
-
-$(COMPILER_TARGET_INT): $(COMPILER_TARGET_INT_OBJ) | build/compiler
-	$(ECHO) "Linking target INT compiler"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(INTCXX) -o $@ $^
-
-build/obj/cxx-tgt-fp/%.o: src/compiler/%.cc | build/obj/cxx-tgt-fp
-	$(ECHO) "Compile FP $<"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -c -o $@ $<
-
-build/obj/cxx-tgt-fp/%.o: build/gen/fp/%.cc | build/obj/cxx-tgt-fp
-	$(ECHO) "Compile FP $<"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -c -o $@ $<
-
-$(COMPILER_TARGET_FP): $(COMPILER_TARGET_FP_OBJ) | build/compiler
-	$(ECHO) "Linking target FP compiler"
-	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FPCXX) -o $@ $^
+$(FASTBASIC_TARGET): $(FASTBASIC_TARGET_OBJ) | build/compiler
+	$(ECHO) "Linking target compiler"
+	$(Q)$(CROSS)$(CXX) $(TARGET_CXXFLAGS) $(FB_CXX) -o $@ $^
 
 $(CA65_TARGET): $(CA65_SRC) | build/compiler
 	$(ECHO) "Compile target CA65"
@@ -173,21 +134,10 @@ build/gen/fp/basic.asm: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
 	$(ECHO) "Creating FP parsing bytecode"
 	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_FP) -o $@
 
-
 # Generator for syntax file - 6502 version - INTEGER
 build/gen/int/basic.asm: $(SYNTAX_INT) $(SYNTP) | build/gen/int
 	$(ECHO) "Creating INT parsing bytecode"
 	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_INT) -o $@
-
-# Generator for syntax file - C++ version - FLOAT
-build/gen/fp/basic.cc build/gen/fp/basic.h: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
-	$(ECHO) "Creating FP cross parser"
-	$(Q)$(SYNTP) $(SYNTFLAGS_CPP) $(SYNTAX_FP) -o build/gen/fp/basic.cc
-
-# Generator for syntax file - C++ version - INTEGER
-build/gen/int/basic.cc build/gen/int/basic.h: $(SYNTAX_INT) $(SYNTP) | build/gen/int
-	$(ECHO) "Creating INT cross parser"
-	$(Q)$(SYNTP) $(SYNTFLAGS_CPP) $(SYNTAX_INT) -o build/gen/int/basic.cc
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
@@ -216,25 +166,25 @@ build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
 
 # Generates basic bytecode from source file
-build/gen/fp/%.asm: build/gen/%.bas $(COMPILER_HOST_FP) | build/gen/fp
+build/gen/fp/%.asm: build/gen/%.bas $(FASTBASIC_HOST) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"
-	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
+	$(Q)$(FASTBASIC_HOST) $(FB_FP_FLAGS) -o $@ -c $<
 
-build/gen/fp/%.asm: src/%.bas $(COMPILER_HOST_FP) | build/gen/fp
+build/gen/fp/%.asm: src/%.bas $(FASTBASIC_HOST) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"
-	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
+	$(Q)$(FASTBASIC_HOST) $(FB_FP_FLAGS) -o $@ -c $<
 
-build/gen/int/%.asm: src/%.bas $(COMPILER_HOST_INT) | build/gen/int
+build/gen/int/%.asm: src/%.bas $(FASTBASIC_HOST) | build/gen/int
 	$(ECHO) "Compiling INT BASIC $<"
-	$(Q)$(COMPILER_HOST_INT) -o $@ -c $<
+	$(Q)$(FASTBASIC_HOST) $(FB_INT_FLAGS) -o $@ -c $<
 
-build/gen/fp/%.asm: samples/fp/%.bas $(COMPILER_HOST_FP) | build/gen/fp
+build/gen/fp/%.asm: samples/fp/%.bas $(FASTBASIC_HOST) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC sample $<"
-	$(Q)$(COMPILER_HOST_FP) -o $@ -c $<
+	$(Q)$(FASTBASIC_HOST) $(FB_FP_FLAGS) -o $@ -c $<
 
-build/gen/int/%.asm: samples/int/%.bas $(COMPILER_HOST_INT) | build/gen/int
+build/gen/int/%.asm: samples/int/%.bas $(FASTBASIC_HOST) | build/gen/int
 	$(ECHO) "Compiling INT BASIC sample $<"
-	$(Q)$(COMPILER_HOST_INT) -o $@ -c $<
+	$(Q)$(FASTBASIC_HOST) $(FB_INT_FLAGS) -o $@ -c $<
 
 # Object file rules
 build/obj/fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/fp/%) $(CA65_HOST)
@@ -295,11 +245,15 @@ build/compiler/%: compiler/% | build/compiler
 	$(Q)cp -f $< $@
 
 # Copy compatibility binaries
-build/compiler/fb$(EXT): build/compiler/fastbasic-fp$(EXT)
+build/compiler/fb$(EXT): build/compiler/fastbasic$(EXT)
 	$(Q)cp -f $< $@
 
 # Copy compatibility binaries
-build/compiler/fb-int$(EXT): build/compiler/fastbasic-int$(EXT)
+build/compiler/fb-int$(EXT): build/compiler/fastbasic$(EXT)
+	$(Q)cp -f $< $@
+
+# Copy syntax files to compiler folder
+build/compiler/syntax/%: src/syntax/% | build/compiler/syntax
 	$(Q)cp -f $< $@
 
 # Copy other files to compiler folder

@@ -21,7 +21,7 @@
 
 using namespace syntax;
 
-bool syntax::syntax_optimize(sm_list &sl)
+bool syntax::syntax_optimize(sm_list &sl, bool verbose)
 {
     // Optimize parsing tables:
     //
@@ -51,8 +51,9 @@ bool syntax::syntax_optimize(sm_list &sl)
                 if(sm2.second->end_call(n))
                 {
                     // Perform optimization:
-                    std::cerr << "syntax: optimizing table '" << n << "' into '"
-                              << sm2.second->name() << "'.\n";
+                    if( verbose )
+                        std::cerr << "syntax: optimizing table '" << n << "' into '"
+                                  << sm2.second->name() << "'.\n";
                     if(!sm2.second->tail_call(*sm.second))
                         return false;
                     // Add name to tables to delete
@@ -76,7 +77,8 @@ bool syntax::syntax_optimize(sm_list &sl)
         {
             auto n = sm.second->name();
 
-            std::cerr << "syntax: optimizing table '" << n << "' empty, will delete.\n";
+            if(verbose)
+                std::cerr << "syntax: optimizing table '" << n << "' empty, will delete.\n";
             // Ok, delete this table
             to_delete.push_back(n);
 

@@ -77,13 +77,6 @@ EXTERN {
  E_VAR_WORD, E_VAR_SEARCH
  E_LABEL, E_LABEL_DEF, E_LABEL_CREATE, E_DO_EXEC
  E_PUSH_VAR, E_POP_VAR
-
-#@if EXTENDED
- E_DATA_FILE
- E_COUNT_PARAM
- E_PROC_CHECK
-#@endif
-
 }
 
 # Normal expressions
@@ -430,10 +423,6 @@ DATA_BYTES: data byte
 DATA_TYPE: data type
         TYPE_BYTE EQUAL E_LABEL_SET_TYPE DATA_BYTES
         TYPE_WORD EQUAL E_LABEL_SET_TYPE E_NUMBER_WORD DATA_WORDS
-#@if EXTENDED
-        TYPE_BYTE "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
-        TYPE_WORD "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
-#@endif
 
 DATA_END:
         ","
@@ -454,10 +443,6 @@ OPT_EXEC_PARAM:
         pass
 
 EXEC_PARAM_MORE:
-#@if EXTENDED
-        # In the cross-compiler, we count parameters to detect program errors
-        E_COUNT_PARAM
-#@endif
         C_EXPR EXEC_PARAM_MORE
         pass
 
@@ -468,14 +453,7 @@ EXEC_CALL:
 
 # Optional variable in PROC
 OPT_PROC_VAR:
-#@if EXTENDED
-        # In the cross-compiler, we count parameters to detect program errors
-        E_COUNT_PARAM
-#@endif
         VAR_WORD_SAVE OPT_PROC_VAR emit { TOK_POP, TOK_VAR_STORE } E_POP_VAR
-#@if EXTENDED
-        E_PROC_CHECK
-#@endif
         pass
 
 # Parse a line

@@ -206,7 +206,7 @@ int main(int argc, const char **argv)
     pf.show_summary();
 
     // Optimize
-    syntax_optimize(sl);
+    syntax_optimize(sl, true);
 
     // And generate code
     if(opt_generate == gen_cpp)

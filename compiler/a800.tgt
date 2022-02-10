@@ -1,0 +1,3 @@
+# Atari 8-bit computers, integer only
+syntax basic.syn dli.syn fileio.syn graphics.syn pm.syn sound.syn extended.syn
+library fastbasic-int.lib

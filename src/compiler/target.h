@@ -16,11 +16,25 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-optimize.h: Optimizer for the parsing tables
+// target.h: read target definitions
 #pragma once
 #include "synt-sm-list.h"
+#include <string>
+#include <memory>
 
 namespace syntax
 {
-bool syntax_optimize(sm_list &sml, bool verbose);
-} // namespace syntax
+class sm_list;
+}
+
+class target
+{
+    private:
+        syntax::sm_list s;
+        std::string lib_name;
+    public:
+        target();
+        void load(std::string target_folder, std::string syntax_folder, std::string fname);
+        const syntax::sm_list &sl() const { return s; }
+        std::string lib() const { return lib_name; }
+};

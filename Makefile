@@ -46,8 +46,11 @@ CA65_INT_FLAGS=-I build/gen/int $(CA65_FLAGS)
 LD65_FLAGS=-Ccompiler/fastbasic.cfg
 
 # Flags added to C++ sources for Floating Point / Integer compilers:
-FPCXX=-DFASTBASIC_FP -Ibuild/gen/fp -Isrc/compiler
-INTCXX=-Ibuild/gen/int -Isrc/compiler
+FB_CXX=-Isrc/compiler
+
+# Flags for the cross compiler, integer and floating-point
+FB_INT_FLAGS=-target-path:compiler -syntax-path:src/syntax -t:atari-int
+FB_FP_FLAGS=-target-path:compiler -syntax-path:src/syntax -t:atari-fp
 
 # Flags added to the compilation of CC65 tools (CA65, LD65 and AR65):
 CC65_CFLAGS=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
@@ -87,14 +90,12 @@ PROGS=build/bin/fb.xex build/bin/fbi.xex build/bin/fbc.xex
 
 # To allow cross-compilation (ie, from Linux to Windows), we build two versions
 # of the compiler, one for the host (build machine) and one for the target.
-COMPILER_HOST_INT=build/bin/fastbasic-int
-COMPILER_HOST_FP=build/bin/fastbasic-fp
+FASTBASIC_HOST=build/bin/fastbasic
 CA65_HOST=build/bin/ca65
 LD65_HOST=build/bin/ld65
 AR65_HOST=build/bin/ar65
 
-COMPILER_TARGET_INT=build/compiler/fastbasic-int$(EXT)
-COMPILER_TARGET_FP=build/compiler/fastbasic-fp$(EXT)
+FASTBASIC_TARGET=build/compiler/fastbasic$(EXT)
 CA65_TARGET=build/compiler/ca65$(EXT)
 LD65_TARGET=build/compiler/ld65$(EXT)
 AR65_TARGET=build/compiler/ar65$(EXT)
@@ -329,20 +330,39 @@ COMPILER_COMMON=\
 	 build/compiler/asminc/atari_gtia.inc\
 	 build/compiler/asminc/atari.inc\
 	 build/compiler/asminc/atari_pokey.inc\
+	 build/compiler/syntax/basic.syn\
+	 build/compiler/syntax/dli.syn\
+	 build/compiler/syntax/extended.syn\
+	 build/compiler/syntax/fileio.syn\
+	 build/compiler/syntax/float.syn\
+	 build/compiler/syntax/graphics.syn\
+	 build/compiler/syntax/pm.syn\
+	 build/compiler/syntax/sound.syn\
+	 build/compiler/a800.tgt\
+	 build/compiler/atari-fp.tgt\
+	 build/compiler/atari-int.tgt\
+	 build/compiler/default.tgt\
 
 # Compiler source files (C++)
 COMPILER_SRC=\
 	atarifp.cc\
-	basic.cc\
 	codestat.cc\
 	compile.cc\
 	ifile.cc\
 	looptype.cc\
 	main.cc\
 	os.cc\
+	parser.cc\
 	parser-actions.cc\
 	peephole.cc\
+	target.cc\
 	vartype.cc\
+	synt-optimize.cc\
+	synt-parser.cc\
+	synt-preproc.cc\
+	synt-pstate.cc\
+	synt-sm.cc\
+	synt-wlist.cc\
 
 # CC65 sources
 CA65_SRC=\
@@ -534,16 +554,14 @@ COMPILER_HOST=\
 	 $(CA65_HOST)\
 	 $(LD65_HOST)\
 	 $(AR65_HOST)\
-	 $(COMPILER_HOST_INT)\
-	 $(COMPILER_HOST_FP)
+	 $(FASTBASIC_HOST)\
 
 # Target compiler
 COMPILER_TARGET=\
 	 $(CA65_TARGET)\
 	 $(LD65_TARGET)\
 	 $(AR65_TARGET)\
-	 $(COMPILER_TARGET_INT)\
-	 $(COMPILER_TARGET_FP)
+	 $(FASTBASIC_TARGET)\
 
 # All ASM Output files
 OBJS=$(RT_OBJS_FP) \
@@ -567,17 +585,11 @@ LBLS=$(PROGS:.xex=.lbl) $(SAMPLE_X_BAS:%.bas=build/bin/%.lbl)
 
 # The syntax parser, to ASM (for the IDE) and C++ (for the compiler)
 SYNTP=build/gen/syntp
-SYNTAX_PARSER_OBJ=$(SYNTAX_PARSER_SRC:%.cc=build/gen/obj/%.o)
+SYNTAX_PARSER_OBJ=$(SYNTAX_PARSER_SRC:%.cc=build/obj/cxx/%.o)
 
 # The compiler object files, for FP and INT versions, HOST and TARGET
-COMPILER_HOST_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-fp/%.o)
-COMPILER_HOST_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-int/%.o)
-COMPILER_TARGET_FP_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-fp/%.o)
-COMPILER_TARGET_INT_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt-int/%.o)
-
-# All the HOST and TARGET obj
-HOST_OBJ=$(COMPILER_HOST_FP_OBJ) $(COMPILER_HOST_INT_OBJ)
-TARGET_OBJ=$(COMPILER_TARGET_FP_OBJ) $(COMPILER_TARGET_INT_OBJ)
+FASTBASIC_HOST_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx/%.o)
+FASTBASIC_TARGET_OBJ=$(COMPILER_SRC:%.cc=build/obj/cxx-tgt/%.o)
 
 # All folders created during compilation:
 BUILD_FOLDERS=\
@@ -587,16 +599,14 @@ BUILD_FOLDERS=\
  $(AS_FOLDERS:src%=build/obj/rom-int%)\
  build/bin\
  build/compiler/asminc\
+ build/compiler/syntax\
  build/compiler\
  build/disk\
  build/gen/fp\
  build/gen/int\
- build/gen/obj\
  build/gen\
- build/obj/cxx-fp\
- build/obj/cxx-int\
- build/obj/cxx-tgt-fp\
- build/obj/cxx-tgt-int\
+ build/obj/cxx\
+ build/obj/cxx-tgt\
  build/obj/tests\
  build/obj\
  build/tests\
