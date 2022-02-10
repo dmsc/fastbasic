@@ -1,3 +1,5 @@
-# Atari 8-bit computers, integer only
+# Atari 8-bit computers, base file
 syntax basic.syn dli.syn fileio.syn graphics.syn pm.syn sound.syn extended.syn
+config fastbasic.cfg
 library fastbasic-int.lib
+extension .xex

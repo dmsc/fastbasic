@@ -339,6 +339,8 @@ COMPILER_COMMON=\
 	 build/compiler/syntax/pm.syn\
 	 build/compiler/syntax/sound.syn\
 	 build/compiler/a800.tgt\
+	 build/compiler/atari-cart-fp.tgt\
+	 build/compiler/atari-cart-int.tgt\
 	 build/compiler/atari-fp.tgt\
 	 build/compiler/atari-int.tgt\
 	 build/compiler/default.tgt\

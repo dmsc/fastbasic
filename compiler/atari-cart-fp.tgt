@@ -1,0 +1,5 @@
+# Atari 8-bit computers, with floating point for cartridge output
+include atari-fp
+config fastbasic-cart.cfg
+library fastbasic-cart-fp.lib
+extension .rom

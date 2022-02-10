@@ -2,3 +2,4 @@
 include a800
 syntax float.syn
 library fastbasic-fp.lib
+extension .xex

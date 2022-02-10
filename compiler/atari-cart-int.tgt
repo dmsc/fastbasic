@@ -1,0 +1,5 @@
+# Atari 8-bit computers, integer-only for cartridge output
+include atari-int
+config fastbasic-cart.cfg
+library fastbasic-cart-fp.lib
+extension .rom

@@ -34,6 +34,8 @@ class target_file
         std::string install_folder;
         std::vector<std::string> slist;
         std::string lib_name;
+        std::string cfg_name;
+        std::string bin_ext;
         target_file(std::string install_folder): install_folder(install_folder) {}
         void read_file(std::string fname);
 };
@@ -87,6 +89,14 @@ void target_file::read_file(std::string fname)
             {
                 lib_name = args;
             }
+            else if( key == "config" )
+            {
+                cfg_name = args;
+            }
+            else if( key == "extension" )
+            {
+                bin_ext = args;
+            }
             else if( key == "syntax" )
             {
                 size_t i = 0;
@@ -114,6 +124,8 @@ void target::load(std::string target_folder, std::string syntax_folder, std::str
     target_file f(target_folder);
     f.read_file(fname);
     lib_name = f.lib_name;
+    cfg_name = f.cfg_name;
+    bin_extension = f.bin_ext;
     // Process all syntax files:
     syntax::preproc pre;
     syntax::parse_state p;

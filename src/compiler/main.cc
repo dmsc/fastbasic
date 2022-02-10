@@ -83,8 +83,8 @@ int main(int argc, char **argv)
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
     std::string target_name = "default"; // default compiler target
+    std::string cfg_file_def;
     compiler comp;
-    std::string cfg_file = os::full_path(install_folder, "fastbasic.cfg");
     std::vector<std::string> asm_opts = {"-tatari","-g"};
     std::vector<std::string> link_opts;
     // BAS files, compile INPUT(BAS) to OUTPUT(ASM)
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         }
         else if( arg.rfind("-C:", 0) == 0 || arg.rfind("-C=", 0) == 0 )
         {
-            cfg_file = arg.substr(3);
+            cfg_file_def = arg.substr(3);
         }
         else if( arg.rfind("-X:", 0) == 0 || arg.rfind("-X=", 0) == 0 )
         {
@@ -219,9 +219,6 @@ int main(int argc, char **argv)
         return show_error("missing input file name");
     if( next_is_output )
         return show_error("option '-o' must supply a file name");
-    // Guess final exe file name
-    if( link_files.size() && exe_name.empty() )
-        exe_name = os::add_extension(link_files[0], ".xex");
 
     // Read target definition
     target tgt;
@@ -235,6 +232,11 @@ int main(int argc, char **argv)
         return 1;
     }
     std::string lib_name = os::full_path(install_folder, tgt.lib());
+    std::string cfg_file = cfg_file_def.size() ? cfg_file_def : os::full_path(install_folder, tgt.cfg());
+
+    // Guess final exe file name
+    if( link_files.size() && exe_name.empty() )
+        exe_name = os::add_extension(link_files[0], tgt.bin_ext());
 
     for(auto &f: bas_files)
     {
