@@ -1,6 +1,6 @@
 ;
 ; FastBasic - Fast basic interpreter for the Atari 8-bit computers
-; Copyright (C) 2017-2021 Daniel Serpell
+; Copyright (C) 2017-2022 Daniel Serpell
 ;
 ; This program is free software; you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
