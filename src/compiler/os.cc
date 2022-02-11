@@ -66,6 +66,19 @@ std::string os::file_name(const std::string &path)
         return path;
 }
 
+std::string os::dir_name(const std::string &path)
+{
+    auto p = path.find_last_of(path_sep);
+    if( p && p != path.npos )
+        return path.substr(0, p);
+    else if( !p && path.size() )
+        return path.substr(0, 1);
+    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+        return path.substr(0, 2);
+    else
+        return ".";
+}
+
 std::string os::add_extension(std::string name, std::string ext)
 {
     auto pos = name.find_last_of(".");

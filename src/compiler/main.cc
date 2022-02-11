@@ -61,18 +61,6 @@ static int show_error(std::string msg)
     return 1;
 }
 
-// Tries to guess install folder given the program name
-static std::string guess_install_folder(std::string arg)
-{
-    auto p = arg.find_last_of("/\\");
-    if( p == arg.npos )
-        return ".";
-    else if( p == 0 )
-        return "/";
-    else
-        return arg.substr(0,p);
-}
-
 // Selects a default target based on compiler name
 static std::string default_target(const std::string &prog)
 {
@@ -89,7 +77,8 @@ static std::string default_target(const std::string &prog)
 int main(int argc, char **argv)
 {
     auto program_name = std::string(argv[0]);
-    auto install_folder = guess_install_folder(program_name);
+    // Tries to guess install folder given the program name
+    auto install_folder = os::dir_name(program_name);
     auto syntax_folder = os::full_path(install_folder, "syntax");
     auto target_folder = install_folder;
     std::vector<std::string> args(argv+1, argv+argc);
