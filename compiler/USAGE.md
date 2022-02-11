@@ -21,30 +21,38 @@ Basic Usage
 ===========
 
 For simple compilation of BAS files to XEX (Atari DOS executable), call the
-`fb` or the `fb-int` programs passing the basic source file as the first
-parameter.
+`fastbasic` program, passing the basic source file as the first parameter.
 
 - On Linux:
 
-      /path/to/fb myprog.bas
-
-  or:
-
-      /path/to/fb-int myprog.bas
+      /path/to/fastbasic myprog.bas
 
 - On Windows:
 
-      C:\path\to\fb myprog.bas
+      C:\path\to\fastbasic myprog.bas
 
-  or:
 
-      C:\path\to\fb-int myprog.bas
+The compiler supports multiple possible targets, with different capabilities,
+you can select between the target with the `-t:` compiler option, between the
+following:
 
-There are two compilers, one for the full version, used with the `fb` command,
-and another for the integer only version `fb-int`. You should only use the
-integer version when developing programs to ensure that no floating point
-operations are generated, as currently the size difference of the two versions
-is only 3 bytes.
+- `atari-fp`: Compile to an Atari 8-bit executable (`.xex`) with floating-point
+  support. This is the default if no other target is selected.
+
+- `atari-int`: Compile to an Atari 8-bit executable with only integer support.
+  The compiled program will be a little smaller using this target, as no
+  floating-point initialization is done.
+
+- `atari-cart-fp`: Compile to an Atari 8-bit cartridge image (`.rom`), with
+  floating point support. Currently, the cartridge support is limited to 8kB.
+
+- `atari-cart-int`: Compile to an Atari 8-bit cartridge image (`.rom`), with
+  only integer support.
+
+This example produces a cartridge image:
+
+     fastbasic -t:atari-cart-fp myprog.bas
+
 
 The compiler generates various files from the basic source:
 
@@ -52,9 +60,11 @@ The compiler generates various files from the basic source:
   file is taken from the name of the first source passed to the compiler,
   removing the original extension.
 
+- `ROM` file, standard Atari 8-bit cartridge image.
+
 - `LBL` file, a list of labels, useful for debugging. This file includes a
   label for each line number in the basic source, and the name is the same as
-  the `XEX` file but with the `lbl` extension.
+  the `XEX` / `ROM` file but with the `lbl` extension.
 
 - `O` file, the assembled "object" files. Each source file is
   assembled/compiled to one object file, with the same name and the `o`
@@ -69,13 +79,8 @@ The compilation is a three step process:
 
 - The compiler calls the `CA65` assembler to produce an object file.
 
-- The compiler calls the `LD65` linker to join the object file with the runtime library, generating the `XEX`.
+- The compiler calls the `LD65` linker to join the object file with the runtime library, generating the `XEX` or `ROM`.
 
-You can execute the three steps separately by telling the compiler to stop after generating the assembly, with the `-c` option:
-
-      fb -c -o myprog.asm myprog.bas
-      ca65 -t atari -g -I /maht/to/asminc myprog.asm -o myprog.o
-      ld65 -C /path/to/fastbasic.cfg myprog.o -o myprog.xex /path/to/fastbasic-fp.lib
 
 Advanced Usage
 ==============
@@ -85,6 +90,10 @@ Passing options to the compiler
 
 The compiler accepts the following options, options taking an argument can use
 an `:` or an `=` to separate the option from the argument.
+
+- **-t**:*target*  
+  Selects the compilation target. The target definitions are searched in the
+  compiler installation folder, with an `.tgt` extension.
 
 - **-v**  
   Shows the compiler version.
@@ -111,7 +120,7 @@ an `:` or an `=` to separate the option from the argument.
 - **-h**  
   Shows available compiler options.
 
-- **-C**:*linker-file.cfg*
+- **-C**:*linker-file.cfg*  
   Use a different linker configuration file than the default.
 
 - **-S**:*address*  
@@ -119,7 +128,7 @@ an `:` or an `=` to separate the option from the argument.
   set in the configuration file `fastbasic.cfg`. You can specify a different
   address to allow for a bigger DOS, or to have more memory available if you
   don't use a DOS. The address can be specified as decimal or hexadecimal with
-  `0x` at front.
+  `0x` at front. This option is ignored when producing cartridge images.
 
 - **-X**:*ca65-option*  
   Passes the given option to the CA65 assembler. See the CA65 documentation for
@@ -141,13 +150,21 @@ an `:` or an `=` to separate the option from the argument.
   code. The default segment is `BYTECODE`, if you change the segment you must
   ensure that there is a segment with that name in the linker configuration.
 
+- **-target-path**:*path*  
+  Sets the path where the target definition files are searched. The default is
+  to search in the same folder as the compiler executable.
+
+- **-syntax-path**:*path*  
+  Sets the path where the syntax grammar files are searched.
+
+
 Linking other assembly files
 ----------------------------
 
 The compiler support linking to external assembly modules, you can pass them to
-the `fb` command line:
+the `fastbasic` command line:
 
-    fb myprog.bas myasm.asm
+    fastbasic myprog.bas myasm.asm
 
 This will compile `myprog.bas` to `myprog.asm` and then assemble the two files
 together using CA65 and LD65. You can pass multiple `.asm` (or `.o`) files to the
@@ -179,4 +196,209 @@ The ASM file must export the `ADD_10` (always uppercase) symbol, for example:
     .endproc
 
 You can also export ZP symbols, to import them use `@@name`.
+
+
+Extending the language
+----------------------
+
+The FastBasic compiler is extensible, the syntax is read at compilation time
+from various files with the grammar and compilation rules (the `.syn` files in
+the `syntax` folder).
+
+The following sections show how to add simple functions and statements to the
+language, you can look at the existing syntax files for more advanced usage.
+
+
+### Adding new functions
+
+Suppose you want to add new functions to the language, to check if a console
+key is pressed:
+
+- `CSTART()`  : Returns 1 if the *START* key is pressed,
+- `CSELECT()` : Returns 1 if the *SELECT* key is pressed,
+- `COPTION()` : Returns 1 if the *OPTION* key is pressed,
+
+To implement the functions above, the following FastBasic code could be used:
+
+|Function| Equivalent Code           |
+| ------ | ------------------------- |
+| CSTART | `NOT (PEEK(53279) & 1)` |
+| CSELECT| `NOT (PEEK(53279) & 4)` |
+| COPTION| `NOT (PEEK(53279) & 4)` |
+
+#### 1. Create a new target
+
+First, you need to create a new target, let's call it `atari-extra`. Create a
+file in the FastBasic compiler folder named `atari-extra.tgt`, with the
+following contents:
+
+    include atari-fp
+    syntax console.syn
+
+The first line simply reads the `atari-fp` target, so the new target will have
+all the definitions already in the standard target.
+
+The second line, adds a new syntax, from the file `console.syn`, this will be
+appended to the syntax in the standard `atari-fp`.
+
+#### 2. Create a new syntax file
+
+Now, create a `console.syn` file inside the syntax folder, with the following
+content inside:
+
+    INT_FUNCTIONS:
+         "CSTART()"
+         "CSELECT()"
+         "COPTION()"
+
+This defines three new functions, without parameters, and without any coed
+generated. You could now compile a simple program, but the resulting executable
+will not run because the code for the functions is missing.
+
+To add the code, you need to use the `emit` keyword, and inspect the code
+generated for our test examples.
+
+#### 3. Adding code for the new functions
+
+Compile to assembler a simple basic source:
+
+    PRINT NOT (PEEK(53279) & 1)
+
+Using `fastbasic -c simple.bas`, and examine the generated assembly file, you
+will see the following bytecode at the end:
+
+    TOK_NUM
+    53279
+    TOK_PEEK
+    TOK_PUSH_1
+    TOK_BIT_AND
+    TOK_COMP_0
+    TOK_L_NOT
+    TOK_INT_STR
+    TOK_PRINT_STR
+
+You can see that the code is similar to the basic source:
+
+- Load number `53279`
+- `PEEK` from that location
+- Load number `1`
+- Perform the `&` operation
+- Compare the result with `0`
+- Negate the result.
+- Convert to string and `PRINT`.
+
+We need to generate similar code for the `CSTART()` function. To do that, edit
+the `console.syn` file, and add the emitted code:
+
+    INT_FUNCTIONS:
+         "CSTART()"   emit { TOK_NUM, &53279, TOK_PEEK, TOK_PUSH_1, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
+         "CSELECT()"  emit { TOK_NUM, &53279, TOK_PEEK, TOK_PUSH, TOK_BYTE, 2, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
+         "COPTION()"  emit { TOK_NUM, &53279, TOK_PEEK, TOK_PUSH, TOK_BYTE, 4, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
+
+Note that the `emit` code needs to be in one line, and the `&` symbol before
+the `53279` indicates a word value (two bytes) instead of a simple byte.
+
+#### 4. Testing the new language extensions
+
+Now, you can compile this simple test program:
+
+    ? "Press console keys,"
+    ? "or any other key to exit:"
+    REPEAT
+     MSG$=""
+     IF CSTART()  THEN MSG$=+"START "
+     IF CSELECT() THEN MSG$=+"SELECT "
+     IF COPTION() THEN MSG$=+"OPTION"
+     IF MSG$ <> "" THEN ? MSG$
+    UNTIL KEY()
+
+Compile with:
+
+    fastbasic -t:atari-extra myprog.bas
+
+#### 5. Factorizing the code
+
+Instead of writing the full code for each function, you can rearrange the code
+to make the syntax smaller, and use constants to make it more generic, by
+defining a new syntax table:
+
+
+    READ_CONSOLE:
+         "()" emit { TOK_PUSH, TOK_NUM, &CONSOL, TOK_PEEK, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
+
+    INT_FUNCTIONS:
+         "CSTART"   emit { TOK_1 }       READ_CONSOLE
+         "CSELECT"  emit { TOK_BYTE, 2 } READ_CONSOLE
+         "COPTION"  emit { TOK_BYTE, 4 } READ_CONSOLE
+
+Note the use of the assembly constant `CONSOL` instead of the number, and the
+rearranging of the code to allow factorization.
+
+
+### Adding new statements
+
+To add new statements, instead of expanding the table `INT_FUNCTIONS`, you need
+to expand the table `STATEMENT`, but the logic is the same.
+
+Also, to interface the interpreter with new assembly functions, you can emit
+code similar to an `USR()` call, and process the parameters in the assembly.
+
+Let's implement a new statement, `WAIT` that can wait for a vertical line in
+the screen.
+
+The simple assembly version of this statement would be:
+
+    .export DO_WAIT
+    .include "atari.inc"
+
+    DO_WAIT:
+        ; Line number is in accumulator already
+    loop:
+        cmp VCOUNT
+        bcc loop
+        rts
+
+Save this file as `wait.asm`.
+
+Now, we can edit our `atari-extra.tgt` target file, and add a new syntax file
+to it:
+
+    include atari-fp
+    syntax console.syn wait.syn
+
+And same as the first example, just add a new syntax file, `wait.syn`, with
+this content:
+
+    STATEMENT:
+        "WAit" emit { TOK_NUM, &DO_WAIT, TOK_USR_ADDR} EXPR emit { TOK_USR_CALL }
+
+Now, you can compile this simple example:
+
+    DO
+      WAIT 40
+      POKE $D018, $36
+      WAIT 80
+      POKE $D018, $C8
+    LOOP
+
+The command line to compile should be:
+
+    fastbasic -t:atari-extra testw.bas wait.asm
+
+Testing the resulting file, you should be three color zones in the screen.
+
+There some parts of the syntax file that needs explanation:
+
+- The `"WAit"` string is specified with mixed case. The lower-case characters
+  denote "optional" part of the name, so you can abbreviate this new statement
+  as "WA." or "WAI.".
+
+- We are loafing the `DO_WAIT` address into the `USR` calling address as the
+  first step in the generated code. This is needed to be able to call the
+  assembly code with out parameter in the accumulator.
+
+- Then, we are expecting an `EXPR`. This syntax specifies an integer
+  expression, the parser will parse any expresion that gives am integer number
+  here, and the result will be placed in the `A` and `X` registers.
+
 
