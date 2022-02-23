@@ -322,6 +322,9 @@ Instead of writing the full code for each function, you can rearrange the code
 to make the syntax smaller, and use constants to make it more generic, by
 defining a new syntax table:
 
+    SYMBOLS {
+        CONSOL = $D01F
+    }
 
     READ_CONSOLE:
          "()" emit { TOK_PUSH, TOK_NUM, &CONSOL, TOK_PEEK, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
@@ -331,8 +334,8 @@ defining a new syntax table:
          "CSELECT"  emit { TOK_BYTE, 2 } READ_CONSOLE
          "COPTION"  emit { TOK_BYTE, 4 } READ_CONSOLE
 
-Note the use of the assembly constant `CONSOL` instead of the number, and the
-rearranging of the code to allow factorization.
+Note the use of the symbol `CONSOL` instead of the number, and the rearranging
+of the code to allow factorization.
 
 
 ### Adding new statements
@@ -369,6 +372,10 @@ to it:
 And same as the first example, just add a new syntax file, `wait.syn`, with
 this content:
 
+    SYMBOLS {
+        DO_WAIT = import
+    }
+
     STATEMENT:
         "WAit" emit { TOK_NUM, &DO_WAIT, TOK_USR_ADDR} EXPR emit { TOK_USR_CALL }
 
@@ -396,6 +403,9 @@ There some parts of the syntax file that needs explanation:
 - We are loafing the `DO_WAIT` address into the `USR` calling address as the
   first step in the generated code. This is needed to be able to call the
   assembly code with out parameter in the accumulator.
+
+- To get the value of the symbol `DO_WAIT`, we need to specify `import` as the
+  symbol value, this means the value will be filled by the linker.
 
 - Then, we are expecting an `EXPR`. This syntax specifies an integer
   expression, the parser will parse any expresion that gives am integer number
