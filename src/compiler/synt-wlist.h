@@ -29,12 +29,11 @@ class wordlist
 {
   private:
     int n;
-    const char *name;
     std::map<std::string, int> list;
 
   public:
     // Constructor, with a parsing state, the wordlist name and the starting ID
-    wordlist(const char *name, int start) : n(start), name(name) {}
+    wordlist(int start) : n(start) {}
     // Returns next ID
     int next() const { return n; }
     // Access map from names to ID.

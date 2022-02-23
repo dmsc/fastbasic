@@ -34,7 +34,7 @@ class sm_list
       wordlist tok;
       wordlist ext;
       sm_list()
-          : tok("TOKENS", 0), ext("EXTERN", 128)
+          : tok(0), ext(128)
       {}
 };
 } // namespace syntax

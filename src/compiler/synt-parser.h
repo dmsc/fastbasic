@@ -29,7 +29,7 @@ class syntax_parser
   private:
     parse_state &p;
     sm_list &sl;
-    bool parse_sm_name(std::string &name);
+    bool parse_sm_name(const std::string &name);
 
   public:
     // Constructor, from a parser state

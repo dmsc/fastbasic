@@ -28,9 +28,8 @@ syntax_parser::syntax_parser(parse_state &p, sm_list &sl)
 {
 }
 
-bool syntax_parser::parse_sm_name(std::string &name)
+bool syntax_parser::parse_sm_name(const std::string &name)
 {
-    name = p.read_ident();
     if(name.empty())
         p.error("Table name must start in first column of file");
     else if(p.ch(':'))
@@ -42,53 +41,58 @@ bool syntax_parser::parse_sm_name(std::string &name)
 
 bool syntax_parser::parse_file()
 {
-    // Parse TOKENS
-    if(!sl.tok.parse(p))
-    {
-        p.error("missing TOKENS table");
-        return false;
-    }
-
-    // Parse EXTERN routines
-    if(!sl.ext.parse(p))
-    {
-        p.error("missing EXTERN table");
-        return false;
-    }
-
-    // Parse state machines
+    // Parse syntax file
     while(1)
     {
-        // Get state machine name:
+        // Get section machine name:
         p.skip_comments();
         if(p.eof())
             break;
 
-        std::string name;
-        if(!parse_sm_name(name))
+        std::string name = p.read_ident();
+        // Check if it is a syntax table or a word list
+        if( name == "TOKENS" )
         {
-            p.error("invalid table name '" + name + "'");
-            return false;
-        }
-
-        // Check if we already have this state-machine
-        auto smi = sl.sms.find(name);
-        if(smi != sl.sms.end())
-        {
-            if(!smi->second->parse_extra())
+            if(!sl.tok.parse(p))
+            {
+                p.error("error parsing TOKENS table");
                 return false;
+            }
+        }
+        else if( name == "EXTERN" )
+        {
+            if(!sl.ext.parse(p))
+            {
+                p.error("error parsing EXTERN table");
+                return false;
+            }
+        }
+        else if(!parse_sm_name(name))
+        {
+            p.error("invalid table '" + name + "'");
+            return false;
         }
         else
         {
-            auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext);
-            if(sm->parse())
+            // Check if we already have this state-machine
+            auto smi = sl.sms.find(name);
+            if(smi != sl.sms.end())
             {
-                sl.sms[name] = std::move(sm);
+                if(!smi->second->parse_extra())
+                    return false;
             }
             else
             {
-                p.error("invalid input");
-                return false;
+                auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext);
+                if(sm->parse())
+                {
+                    sl.sms[name] = std::move(sm);
+                }
+                else
+                {
+                    p.error("invalid input");
+                    return false;
+                }
             }
         }
     }

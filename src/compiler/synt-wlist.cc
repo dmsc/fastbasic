@@ -26,8 +26,7 @@ bool wordlist::parse(parse_state &p)
 {
     p.skip_comments();
     sentry s(p);
-    if(!s(p.space() && p.read_ident() == name))
-        return true; // Allow missing list
+
     while(p.end_line())
         ;
     if(!p.ch('{'))
