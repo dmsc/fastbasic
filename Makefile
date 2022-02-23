@@ -537,8 +537,8 @@ SYNTAX_INT=\
 	src/syntax/basic.syn\
 	src/syntax/dli.syn\
 	src/syntax/fileio.syn\
-	src/syntax/graphics.syn\
 	src/syntax/pm.syn\
+	src/syntax/graphics.syn\
 	src/syntax/sound.syn\
 
 # Syntax files for floating-point version

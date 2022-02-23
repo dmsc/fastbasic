@@ -106,15 +106,20 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
 {
     p.space();
     bool is_word = p.ch('&');
-    auto tok = p.read_ident();
-    if(tok.empty())
+    auto tk = p.read_ident();
+    if(tk.empty())
         return p.error("Expected token to EMIT");
     if(is_word)
-        emit.push_back({dcode::d_word, tok});
-    else if(tok.substr(0, 4) == "TOK_")
-        emit.push_back({dcode::d_token, tok});
+        emit.push_back({dcode::d_word, tk});
+    else if(tk.substr(0, 4) == "TOK_")
+    {
+        // Search in token list
+        if( tok.map().find(tk) == tok.map().end() )
+            return p.error("Unknown token to emit: " + tk);
+        emit.push_back({dcode::d_token, tk});
+    }
     else
-        emit.push_back({dcode::d_byte, tok});
+        emit.push_back({dcode::d_byte, tk});
     return true;
 }
 
