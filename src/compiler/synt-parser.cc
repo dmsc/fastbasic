@@ -31,12 +31,11 @@ syntax_parser::syntax_parser(parse_state &p, sm_list &sl)
 bool syntax_parser::parse_sm_name(const std::string &name)
 {
     if(name.empty())
-        p.error("Table name must start in first column of file");
+        return p.error("Table name must start in first column of file");
     else if(p.ch(':'))
         return true;
     else
-        p.error("Table name must end with colon");
-    return false;
+        return p.error("Table name must end with colon");
 }
 
 bool syntax_parser::parse_file()
@@ -54,31 +53,21 @@ bool syntax_parser::parse_file()
         if( name == "TOKENS" )
         {
             if(!sl.tok.parse(p))
-            {
-                p.error("error parsing TOKENS table");
-                return false;
-            }
+                return p.error("error parsing TOKENS table", false);
         }
         else if( name == "EXTERN" )
         {
             if(!sl.ext.parse(p))
-            {
-                p.error("error parsing EXTERN table");
-                return false;
-            }
+                return p.error("error parsing EXTERN table", false);
         }
         else if( name == "SYMBOLS" )
         {
             if(!sl.syms.parse(p))
-            {
-                p.error("error parsing SYMBOLS table");
-                return false;
-            }
+                return p.error("error parsing SYMBOLS table", false);
         }
         else if(!parse_sm_name(name))
         {
-            p.error("invalid table '" + name + "'");
-            return false;
+            return p.error("invalid table '" + name + "'", false);
         }
         else
         {
@@ -98,8 +87,7 @@ bool syntax_parser::parse_file()
                 }
                 else
                 {
-                    p.error("invalid input");
-                    return false;
+                    return p.error("invalid input");
                 }
             }
         }

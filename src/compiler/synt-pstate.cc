@@ -191,11 +191,18 @@ bool parse_state::end_line()
     return space() && (eof() || eol() || comment());
 }
 
-bool parse_state::error(std::string err)
+bool parse_state::error(std::string err, bool show)
 {
-    sentry s(*this);
-    all();
     std::cerr << file_name << ": error at " << line << ":" << col << ": " << err << "\n";
-    std::cerr << s.str();
+    if( show )
+    {
+        int ocol = col;
+        pos -= (col - 1);
+        col = 1;
+        sentry s(*this);
+        all();
+        std::cerr << s.str() << "\n";
+        std::cerr << std::string(ocol - 1, '-') << "^\n";
+    }
     return false;
 }

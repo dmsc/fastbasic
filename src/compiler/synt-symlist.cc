@@ -43,38 +43,33 @@ bool symlist::parse(parse_state &p)
         auto sym = p.read_ident();
         if(sym.empty())
         {
-            p.error("missing identifier");
-            return false;
+            return p.error("missing identifier");
         }
         else
         {
             if(list.end() != list.find(sym))
-                p.error("symbol already exists '" + sym + "'");
+                return p.error("symbol already exists '" + sym + "'");
         }
         p.space();
-        if( p.ch('=') )
+        if( !p.ch('=') )
+            return p.error("expected '=' after symbol name");
+        p.space();
+        auto val = p.read_number();
+        if( val == -1 )
         {
-            p.space();
-            auto val = p.read_number();
-            if( val == -1 )
-            {
-                auto s = p.read_ident();
-                if( s == "import" )
-                    val = sym_import;
-                else if( s == "importzp" )
-                    val = sym_importzp;
-                else
-                {
-                    p.error("invalid symbol value");
-                    return false;
-                }
-            }
-            list[sym] = val;
+            auto s = p.read_ident();
+            if( s == "import" )
+                val = sym_import;
+            else if( s == "importzp" )
+                val = sym_importzp;
+            else
+                return p.error("invalid symbol value");
         }
+        list[sym] = val;
+
         if(!p.end_line() && !(p.skip_comments() && p.ch(',')))
         {
-            p.error("expected a ',' or newline");
-            return false;
+            return p.error("expected a ',' or newline");
         }
     }
     return true;

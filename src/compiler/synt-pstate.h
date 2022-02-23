@@ -73,7 +73,7 @@ class parse_state
     // Reads one character
     std::string read_char();
     // Show parsing error at this position
-    bool error(std::string err);
+    bool error(std::string err, bool show = true);
     int get_line() const { return line; }
 };
 } // namespace syntax
