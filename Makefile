@@ -28,10 +28,6 @@ CC=gcc
 # Optimization flags, added to C and C++ compiler flags
 OPTFLAGS=-O2
 
-# Flags to the syntax generator
-SYNTFLAGS_CPP=-c -DEXTENDED
-SYNTFLAGS_ASM=-a
-
 # General flags for 6502 assembly files
 CA65_FLAGS=-g -tatari -I cc65/asminc -I src
 
@@ -528,7 +524,6 @@ AR65_SRC=\
 # Syntax file parser
 SYNTAX_PARSER_SRC=\
 	synt-emit-asm.cc\
-	synt-emit-cc.cc\
 	synt-optimize.cc\
 	synt-parser.cc\
 	synt-preproc.cc\

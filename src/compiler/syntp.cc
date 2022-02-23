@@ -18,7 +18,6 @@
 
 // syntax-processor: translates the syntax file to C++ or ASM files
 #include "synt-emit-asm.h"
-#include "synt-emit-cc.h"
 #include "synt-optimize.h"
 #include "synt-parser.h"
 #include "synt-preproc.h"
@@ -37,8 +36,6 @@ static void usage()
               << " [-options] [input_files...]\n"
                  "\n"
                  "Options:\n"
-                 "  -a       Generate assembly file with parsing bytecode.\n"
-                 "  -c       Generate C++ file with parsing source.\n"
                  "  -h       Show this help.\n"
                  "  -H       specify output header file extension.\n"
                  "  -D name  Define symbol 'name' to use in syntax.\n"
@@ -97,15 +94,9 @@ static std::istream &open_input(std::string name, std::ifstream &file)
 
 int main(int argc, const char **argv)
 {
-    std::string header_ext;
+    std::string header_ext = ".inc";
     std::string output_name;
     std::vector<std::string> input_names;
-    enum
-    {
-        gen_none,
-        gen_cpp,
-        gen_asm
-    } opt_generate = gen_none;
 
     prog_name = argv[0];
 
@@ -137,28 +128,6 @@ int main(int argc, const char **argv)
                 else
                     error("option '-o' needs argument");
             }
-            else if(x[1] == 'a')
-            {
-                if(x.size() > 2 || opt_generate != gen_none)
-                    error("use option '-a' alone");
-                else
-                {
-                    opt_generate = gen_asm;
-                    if(header_ext.empty())
-                        header_ext = ".inc";
-                }
-            }
-            else if(x[1] == 'c')
-            {
-                if(x.size() > 2 || opt_generate != gen_none)
-                    error("use option '-c' alone");
-                else
-                {
-                    opt_generate = gen_cpp;
-                    if(header_ext.empty())
-                        header_ext = ".h";
-                }
-            }
             else if(x[1] == 'H')
             {
                 if(x.size() > 2)
@@ -176,8 +145,6 @@ int main(int argc, const char **argv)
         else
             input_names.push_back(x);
     }
-    if(opt_generate == gen_none)
-        error("use ar least one generator option");
 
     // If no input files, add an empty name for standard input
     if(!input_names.size())
@@ -209,14 +176,7 @@ int main(int argc, const char **argv)
     syntax_optimize(sl, true);
 
     // And generate code
-    if(opt_generate == gen_cpp)
-    {
-        syntax_emit_cc(hstrm, ostrm, sl);
-    }
-    else if(opt_generate == gen_asm)
-    {
-        syntax_emit_asm(hstrm, ostrm, sl);
-    }
+    syntax_emit_asm(hstrm, ostrm, sl);
 
     return 0;
 }

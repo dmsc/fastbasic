@@ -132,12 +132,12 @@ endif
 # Generator for syntax file - 6502 version - FLOAT
 build/gen/fp/basic.asm: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
 	$(ECHO) "Creating FP parsing bytecode"
-	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_FP) -o $@
+	$(Q)$(SYNTP) $(SYNTAX_FP) -o $@
 
 # Generator for syntax file - 6502 version - INTEGER
 build/gen/int/basic.asm: $(SYNTAX_INT) $(SYNTP) | build/gen/int
 	$(ECHO) "Creating INT parsing bytecode"
-	$(Q)$(SYNTP) $(SYNTFLAGS_ASM) $(SYNTAX_INT) -o $@
+	$(Q)$(SYNTP) $(SYNTAX_INT) -o $@
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
