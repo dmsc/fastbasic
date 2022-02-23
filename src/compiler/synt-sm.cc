@@ -101,20 +101,31 @@ bool statemachine::parse_str(line &current)
     return true;
 }
 
+// Parses one emit token
+bool statemachine::read_emit_token(std::vector<dcode> &emit)
+{
+    p.space();
+    bool is_word = p.ch('&');
+    auto tok = p.read_ident();
+    if(tok.empty())
+        return p.error("Expected token to EMIT");
+    if(is_word)
+        emit.push_back({dcode::d_word, tok});
+    else if(tok.substr(0, 4) == "TOK_")
+        emit.push_back({dcode::d_token, tok});
+    else
+        emit.push_back({dcode::d_byte, tok});
+    return true;
+}
+
 // Parses a emit line "{" byte/token, &word, ... "}"
-bool statemachine::read_emit_line(std::vector<std::string> &emit)
+bool statemachine::read_emit_line(std::vector<dcode> &emit)
 {
     while(true)
     {
         p.space();
-        bool is_word = p.ch('&');
-        auto tok = p.read_ident();
-        if(tok.empty())
-            return p.error("Expected token to EMIT");
-        if(is_word)
-            emit.push_back('&' + tok);
-        else
-            emit.push_back(tok);
+        if( !read_emit_token(emit) )
+            return false;
         if(p.ch('}'))
             break;
         if(!p.ch(','))
@@ -160,7 +171,7 @@ bool statemachine::parse_line(line &current)
         p.space();
         if(cmd == "emit")
         {
-            std::vector<std::string> emit;
+            std::vector<dcode> emit;
             if(p.ch('{'))
             {
                 if(!read_emit_line(emit))
@@ -168,10 +179,8 @@ bool statemachine::parse_line(line &current)
             }
             else
             {
-                auto tok = p.read_ident();
-                if(tok.empty())
+                if( !read_emit_token(emit) )
                     return p.error("EMIT expects a token");
-                emit.push_back(tok);
             }
             current.pc.emplace_back(pcode{emit});
             continue;

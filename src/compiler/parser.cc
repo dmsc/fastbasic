@@ -22,6 +22,7 @@
 #include <stdexcept>
 
 using namespace syntax;
+using dcode = statemachine::dcode;
 
 static const syntax::statemachine &get(const sm_list &sl, std::string name)
 {
@@ -33,16 +34,16 @@ static const syntax::statemachine &get(const sm_list &sl, std::string name)
 
 static bool parse_table(parse &s, const sm_list &sl, std::string name);
 
-static void emit_bytes(parse &s, const std::vector<std::string> &data)
+static void emit_bytes(parse &s, const std::vector<dcode> &data)
 {
     for(auto &c : data)
     {
-        if(c.size() && c[0] == '&')
-            s.emit_word(c.substr(1));
-        else if(c.substr(0, 4) == "TOK_")
-            s.emit_tok(c);
+        if(c.type == dcode::d_word)
+            s.emit_word(c.val);
+        else if(c.type == dcode::d_token)
+            s.emit_tok(c.val);
         else
-            s.emit_byte(c);
+            s.emit_byte(c.val);
     }
 }
 

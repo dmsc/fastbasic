@@ -24,6 +24,7 @@
 #include <vector>
 
 using namespace syntax;
+using dcode = statemachine::dcode;
 
 namespace
 {
@@ -33,19 +34,19 @@ class asm_emit
     std::ostream &os;
     const statemachine &sm;
 
-    std::vector<std::string> transform_bytes(const std::vector<std::string> &data)
+    std::vector<std::string> transform_bytes(const std::vector<dcode> &data)
     {
         // Transform word constants to low/high:
         std::vector<std::string> ret;
         for(auto &c : data)
         {
-            if(c.size() && c[0] == '&')
+            if(c.type == dcode::d_word)
             {
-                ret.push_back('<' + c.substr(1, c.npos));
-                ret.push_back('>' + c.substr(1, c.npos));
+                ret.push_back('<' + c.val);
+                ret.push_back('>' + c.val);
             }
             else
-                ret.push_back(c);
+                ret.push_back(c.val);
         }
         return ret;
     }
@@ -58,7 +59,7 @@ class asm_emit
             os << ", " << data[i];
         os << "\n";
     }
-    void print_bytes_ret(const std::vector<std::string> &data)
+    void print_bytes_ret(const std::vector<dcode> &data)
     {
         auto x = transform_bytes(data);
         if(!x.size())
@@ -69,7 +70,7 @@ class asm_emit
             os << "\t.byte SM_ERET, " << x.back() << "\n";
         }
     }
-    void print_bytes(const std::vector<std::string> &data)
+    void print_bytes(const std::vector<dcode> &data)
     {
         auto x = transform_bytes(data);
         print_bytes_n(x, x.size());

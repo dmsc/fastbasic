@@ -30,6 +30,21 @@ class wordlist;
 class statemachine
 {
   public:
+    // Data to emit into code
+    class dcode
+    {
+      public:
+        enum dtype
+        {
+            // A token
+            d_token,
+            // A byte
+            d_byte,
+            // A word
+            d_word
+        } type;
+        std::string val;
+    };
     // A parsing code:
     class pcode
     {
@@ -51,13 +66,13 @@ class statemachine
         } type;
         // Store a vector of bytes to emit, stored as strings
         // to allow emitting constants
-        std::vector<std::string> data;
+        std::vector<dcode> data;
         // Stores the name for the call or the literal characters
         std::string str;
         // Creates a literal or call:
         pcode(enum ctype t, std::string &s) : type(t), str(s) {}
         // Creates an emit:
-        pcode(std::vector<std::string> &s) : type(c_emit), data(s) {}
+        pcode(std::vector<dcode> &s) : type(c_emit), data(s) {}
         // Creates a return:
         pcode(enum ctype t) : type(t) {}
         // Test type
@@ -85,8 +100,10 @@ class statemachine
     bool parse_description();
     // Parse a string
     bool parse_str(line &current);
+    // Parses one emit byte, token or &word
+    bool read_emit_token(std::vector<dcode> &emit);
     // Parses a emit line "{" byte/token, &word, ... "}"
-    bool read_emit_line(std::vector<std::string> &emit);
+    bool read_emit_line(std::vector<dcode> &emit);
     // Parse one line of the table
     bool parse_line(line &current);
 
