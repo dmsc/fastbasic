@@ -38,12 +38,24 @@ static void emit_bytes(parse &s, const std::vector<dcode> &data)
 {
     for(auto &c : data)
     {
-        if(c.type == dcode::d_word)
-            s.emit_word(c.val);
-        else if(c.type == dcode::d_token)
-            s.emit_tok(c.val);
-        else
-            s.emit_byte(c.val);
+        switch(c.type)
+        {
+            case dcode::d_word_sym:
+                s.emit_word(c.str);
+                break;
+            case dcode::d_word_val:
+                s.emit_word(c.num);
+                break;
+            case dcode::d_byte_sym:
+                s.emit_byte(c.str);
+                break;
+            case dcode::d_byte_val:
+                s.emit_byte(c.num);
+                break;
+            case dcode::d_token:
+                s.emit_tok(c.str);
+                break;
+        }
     }
 }
 

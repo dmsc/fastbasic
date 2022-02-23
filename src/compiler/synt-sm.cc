@@ -119,16 +119,16 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
             if( s == syms.map().end() )
                 return p.error("Unknown symbol to emit: " + tk);
             if( s->second > 65535 )
-                emit.push_back({dcode::d_word, s->first});
+                emit.push_back({dcode::d_word_sym, s->first, 0});
             else
-                emit.push_back({dcode::d_word, std::to_string(s->second)});
+                emit.push_back({dcode::d_word_val, std::string(), s->second});
         }
         else if(tk.substr(0, 4) == "TOK_")
         {
             // Search in token list
             if( tok.map().find(tk) == tok.map().end() )
                 return p.error("Unknown token to emit: " + tk);
-            emit.push_back({dcode::d_token, tk});
+            emit.push_back({dcode::d_token, tk, 0});
         }
         else
         {
@@ -138,17 +138,17 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
             if( (s->second & 0xFFFFFF) > 255 || s->second == symlist::sym_import )
                 return p.error("Invalid symbol value for a byte: " + tk);
             if( s->second > 255 )
-                emit.push_back({dcode::d_byte, s->first});
+                emit.push_back({dcode::d_byte_sym, s->first, 0});
             else
-                emit.push_back({dcode::d_byte, std::to_string(s->second)});
+                emit.push_back({dcode::d_byte_val, std::string(), s->second});
         }
     }
     else
     {
         if(is_word)
-            emit.push_back({dcode::d_word, std::to_string(n)});
+            emit.push_back({dcode::d_word_val, std::string(), n});
         else
-            emit.push_back({dcode::d_byte, std::to_string(n)});
+            emit.push_back({dcode::d_byte_val, std::string(), n});
     }
     return true;
 }

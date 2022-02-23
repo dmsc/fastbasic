@@ -40,13 +40,24 @@ class asm_emit
         std::vector<std::string> ret;
         for(auto &c : data)
         {
-            if(c.type == dcode::d_word)
+            switch(c.type)
             {
-                ret.push_back('<' + c.val);
-                ret.push_back('>' + c.val);
+                case dcode::d_word_sym:
+                    ret.push_back('<' + c.str);
+                    ret.push_back('>' + c.str);
+                    break;
+                case dcode::d_word_val:
+                    ret.push_back(std::to_string(c.num & 0xFF));
+                    ret.push_back(std::to_string(c.num >> 8));
+                    break;
+                case dcode::d_byte_val:
+                    ret.push_back(std::to_string(c.num & 0xFF));
+                    break;
+                case dcode::d_byte_sym:
+                case dcode::d_token:
+                    ret.push_back(c.str);
+                    break;
             }
-            else
-                ret.push_back(c.val);
         }
         return ret;
     }

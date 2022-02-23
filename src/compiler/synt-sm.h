@@ -39,12 +39,17 @@ class statemachine
         {
             // A token
             d_token,
-            // A byte
-            d_byte,
-            // A word
-            d_word
+            // A byte symbol
+            d_byte_sym,
+            // A word symbol
+            d_word_sym,
+            // A byte value
+            d_byte_val,
+            // A word value
+            d_word_val
         } type;
-        std::string val;
+        std::string str;
+        int num;
     };
     // A parsing code:
     class pcode
