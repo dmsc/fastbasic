@@ -18,6 +18,7 @@
 
 // synt-sm.cc: Parse and write the syntax state machine
 #include "synt-sm.h"
+#include "synt-symlist.h"
 #include "synt-pstate.h"
 #include "synt-wlist.h"
 #include <algorithm>
@@ -106,20 +107,49 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
 {
     p.space();
     bool is_word = p.ch('&');
-    auto tk = p.read_ident();
-    if(tk.empty())
-        return p.error("Expected token to EMIT");
-    if(is_word)
-        emit.push_back({dcode::d_word, tk});
-    else if(tk.substr(0, 4) == "TOK_")
+    int n = p.read_number();
+    if( n < 0 )
     {
-        // Search in token list
-        if( tok.map().find(tk) == tok.map().end() )
-            return p.error("Unknown token to emit: " + tk);
-        emit.push_back({dcode::d_token, tk});
+        auto tk = p.read_ident();
+        if(tk.empty())
+            return p.error("Expected token to EMIT");
+        if(is_word)
+        {
+            auto s = syms.map().find(tk);
+            if( s == syms.map().end() )
+                return p.error("Unknown symbol to emit: " + tk);
+            if( s->second > 65535 )
+                emit.push_back({dcode::d_word, s->first});
+            else
+                emit.push_back({dcode::d_word, std::to_string(s->second)});
+        }
+        else if(tk.substr(0, 4) == "TOK_")
+        {
+            // Search in token list
+            if( tok.map().find(tk) == tok.map().end() )
+                return p.error("Unknown token to emit: " + tk);
+            emit.push_back({dcode::d_token, tk});
+        }
+        else
+        {
+            auto s = syms.map().find(tk);
+            if( s == syms.map().end() )
+                return p.error("Unknown symbol to emit: " + tk);
+            if( (s->second & 0xFFFFFF) > 255 || s->second == symlist::sym_import )
+                return p.error("Invalid symbol value for a byte: " + tk);
+            if( s->second > 255 )
+                emit.push_back({dcode::d_byte, s->first});
+            else
+                emit.push_back({dcode::d_byte, std::to_string(s->second)});
+        }
     }
     else
-        emit.push_back({dcode::d_byte, tk});
+    {
+        if(is_word)
+            emit.push_back({dcode::d_word, std::to_string(n)});
+        else
+            emit.push_back({dcode::d_byte, std::to_string(n)});
+    }
     return true;
 }
 

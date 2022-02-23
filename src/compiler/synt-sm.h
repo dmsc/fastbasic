@@ -26,6 +26,7 @@ namespace syntax
 {
 class parse_state;
 class wordlist;
+class symlist;
 
 class statemachine
 {
@@ -94,6 +95,7 @@ class statemachine
     std::string _name;      // Table name
     const wordlist &tok;    // Token list
     const wordlist &ext;    // Externals list
+    const symlist &syms;    // Symbols
     std::vector<line> code; // Parsing code lines
     std::string _desc;      // Table description
     // Parse table description
@@ -108,8 +110,8 @@ class statemachine
     bool parse_line(line &current);
 
   public:
-    statemachine(parse_state &p, std::string name, const wordlist &tok, const wordlist &ext)
-        : p(p), complete(false), lnum(-1), _name(name), tok(tok), ext(ext)
+    statemachine(parse_state &p, std::string name, const wordlist &tok, const wordlist &ext, const symlist &syms)
+        : p(p), complete(false), lnum(-1), _name(name), tok(tok), ext(ext), syms(syms)
     {
     }
     std::string name() const { return _name; }

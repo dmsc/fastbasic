@@ -25,6 +25,10 @@ TOKENS {
  TOK_IOCHN
 }
 
+SYMBOLS {
+ OPEN = 3
+}
+
 # I/O channel expressions
 IO_CHAN: I/O channel number
         "#" EXPR

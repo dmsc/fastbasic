@@ -67,6 +67,14 @@ bool syntax_parser::parse_file()
                 return false;
             }
         }
+        else if( name == "SYMBOLS" )
+        {
+            if(!sl.syms.parse(p))
+            {
+                p.error("error parsing SYMBOLS table");
+                return false;
+            }
+        }
         else if(!parse_sm_name(name))
         {
             p.error("invalid table '" + name + "'");
@@ -83,7 +91,7 @@ bool syntax_parser::parse_file()
             }
             else
             {
-                auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext);
+                auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext, sl.syms);
                 if(sm->parse())
                 {
                     sl.sms[name] = std::move(sm);

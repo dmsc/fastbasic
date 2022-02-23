@@ -360,6 +360,7 @@ COMPILER_SRC=\
 	synt-preproc.cc\
 	synt-pstate.cc\
 	synt-sm.cc\
+	synt-symlist.cc\
 	synt-wlist.cc\
 
 # CC65 sources
@@ -529,6 +530,7 @@ SYNTAX_PARSER_SRC=\
 	synt-preproc.cc\
 	synt-pstate.cc\
 	synt-sm.cc\
+	synt-symlist.cc\
 	synt-wlist.cc\
 	syntp.cc\
 

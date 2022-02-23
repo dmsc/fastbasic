@@ -213,20 +213,6 @@ class peephole
                 {
                     set_tok(0, "TOK_NUM"); ins_w(1, 0); i++;
                 }
-                //   TOK_NUM / non numeric constant
-                else if( mtok(0,"TOK_NUM") )
-                {
-                    if( mcword(1, "AUDF1") )       set_w(1, 0xD200);
-                    else if( mcword(1, "AUDCTL") ) set_w(1, 0xD208);
-                    else if( mcword(1, "SKCTL") )  set_w(1, 0xD20F);
-                    else if( mcword(1, "COLOR0") ) set_w(1, 0x02C4);
-                    else if( mcword(1, "PADDL0") ) set_w(1, 0x0270);
-                    else if( mcword(1, "STICK0") ) set_w(1, 0x0278);
-                    else if( mcword(1, "PTRIG0") ) set_w(1, 0x027C);
-                    else if( mcword(1, "STRIG0") ) set_w(1, 0x0284);
-                    else if( mcword(1, "CH") )     set_w(1, 0x02FC);
-                    else if( mcword(1, "FILDAT") ) set_w(1, 0x02FD);
-                }
             }
         }
         // Transforms small "numeric" tokens to TOK_BYTE, TOK_1 and TOK_0

@@ -33,6 +33,12 @@ EXTERN {
  E_NUMBER_FP
 }
 
+SYMBOLS {
+ VT_ARRAY_FLOAT = importzp
+ VT_FLOAT       = importzp
+ DEGFLAG = importzp
+}
+
 # Floating point expressions
 FP_EXPR:
         FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE

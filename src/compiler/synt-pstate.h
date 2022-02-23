@@ -68,6 +68,8 @@ class parse_state
     bool skip_comments();    // Skip comments and blank lines
     // Reads an identifier, skips spaces before and after
     std::string read_ident();
+    // Reads a positive number, returns -1 if not possible
+    int read_number();
     // Reads one character
     std::string read_char();
     // Show parsing error at this position

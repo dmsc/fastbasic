@@ -79,6 +79,38 @@ EXTERN {
  E_PUSH_VAR, E_POP_VAR
 }
 
+SYMBOLS {
+ LT_DO_LOOP      = importzp
+ LT_ELIF         = importzp
+ LT_ELSE         = importzp
+ LT_FOR_1        = importzp
+ LT_FOR_2        = importzp
+ LT_IF           = importzp
+ LT_PROC_2       = importzp
+ LT_REPEAT       = importzp
+ LT_WHILE_1      = importzp
+ LT_WHILE_2      = importzp
+ VT_ARRAY_BYTE   = importzp
+ VT_ARRAY_STRING = importzp
+ VT_ARRAY_WORD   = importzp
+ VT_STRING       = importzp
+ VT_WORD         = importzp
+
+ BASIC_TOP = importzp
+ IOERROR = importzp
+ MEMTOP = import
+ CH = $2FC
+ PADDL0 = $0270
+ PTRIG0 = $027C
+ STICK0 = $0278
+ STRIG0 = $0284
+ CLEAR_DATA = import
+ ATEOL = 155
+ RTCLOK1 = 19
+ RTCLOK2 = 20
+ CLS = $7D
+}
+
 # Normal expressions
 INT_EXPR: integer expression
         T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
@@ -264,7 +296,7 @@ PRINT_SEP_EOL:
         "Tab" T_EXPR emit TOK_PRINT_TAB
         "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
-        E_EOL emit { TOK_BYTE_PUT, 155 }
+        E_EOL emit { TOK_BYTE_PUT, ATEOL }
 
 # - One item to print, followed by a separator:
 PRINT_ONE:
@@ -495,7 +527,7 @@ STATEMENT: statement
         EXEC_CALL E_LABEL_CREATE OPT_EXEC_PARAM emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END
-        "Timer" emit { TOK_0, TOK_BYTE_POKE, 20, TOK_0, TOK_BYTE_POKE, 19 }
+        "Timer" emit { TOK_0, TOK_BYTE_POKE, RTCLOK1, TOK_0, TOK_BYTE_POKE, RTCLOK2 }
         "CLR" emit { TOK_NUM, &CLEAR_DATA, TOK_USR_ADDR, TOK_USR_CALL }
 
 LINE_ASSIGNMENT:

@@ -16,6 +16,12 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
+SYMBOLS {
+ WSYNC = $D40A
+ NMIEN = $D40E
+ VDSLST = $200
+ COLRSH = $4F
+}
 
 # DLI support - builds a machine code routine and store the address to
 # display list interrupt handler:

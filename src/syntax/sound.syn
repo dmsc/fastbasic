@@ -16,6 +16,13 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
+SYMBOLS {
+  SOUND_OFF = import
+  AUDCTL = $D208
+  SKCTL = $D20F
+  AUDF1 = $D200
+}
+
 # SOUND statement, three possibilities:
 #  SOUND voice, freq, distort, vol
 #  SOUND voice

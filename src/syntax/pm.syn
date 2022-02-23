@@ -21,6 +21,12 @@ TOKENS {
  TOK_PMGRAPHICS
 }
 
+SYMBOLS {
+ PMGMODE = import
+ PMGBASE = import
+ HPOSP0 = $D000
+}
+
 INT_FUNCTIONS:
         "PMadr"  T_EXPR emit { TOK_PUSH_BYTE, 4, TOK_ADD, TOK_PUSH_NUM, &PMGMODE, \
                                  TOK_PEEK, TOK_USHL, TOK_MUL, TOK_PUSH_NUM, &PMGBASE, \

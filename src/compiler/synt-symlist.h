@@ -16,27 +16,28 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// synt-sm-list.h: List of parsing tables, tokens and externals
+// synt-symlist.h: Parse a list of symbols
 #pragma once
-#include "synt-sm.h"
-#include "synt-wlist.h"
-#include "synt-symlist.h"
 #include <map>
-#include <memory>
+#include <string>
 
 namespace syntax
 {
-class wordlist;
-// List of syntax tables
-class sm_list
+class parse_state;
+
+class symlist
 {
+  private:
+    std::map<std::string, int> list;
+
   public:
-      std::map<std::string, std::unique_ptr<statemachine>> sms;
-      wordlist tok;
-      wordlist ext;
-      symlist syms;
-      sm_list()
-          : tok(0), ext(128)
-      {}
+    static const int sym_import = 1<<24;
+    static const int sym_importzp = 2<<24;
+    // Constructor, with a parsing state, the wordlist name and the starting ID
+    symlist() {}
+    // Access map from names to values.
+    const std::map<std::string, int> &map() const { return list; }
+    // Parse from parse_state
+    bool parse(parse_state &p);
 };
 } // namespace syntax

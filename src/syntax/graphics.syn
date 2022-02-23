@@ -23,6 +23,13 @@ TOKENS {
  TOK_GRAPHICS, TOK_DRAWTO
 }
 
+SYMBOLS {
+ FILDAT = import
+ COLOR0 = $02C4
+ COLOR = importzp
+ DRAWLN = $11
+ FILLIN = $12
+}
 
 STATEMENT:
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS, TOK_BYTE, 6, TOK_CLOSE } EXPR emit TOK_GRAPHICS
