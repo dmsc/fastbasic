@@ -26,33 +26,33 @@ static std::string get_path(std::string fname)
     // Get's path to file. This understands either '/' or '\' as path
     // separators, to be compatible between Unix and Windows.
     auto p = fname.find_last_of("/\\");
-    if( p != fname.npos )
+    if(p != fname.npos)
         return fname.substr(0, p);
     else
         return std::string();
 }
 
-
-std::unique_ptr<std::istream> open_include_file(std::string current_file, std::string fname)
+std::unique_ptr<std::istream> open_include_file(std::string current_file,
+                                                std::string fname)
 {
     auto f = std::make_unique<std::ifstream>();
 
     // Get path of current file
     std::string path = get_path(current_file);
 
-    if( !path.empty() )
+    if(!path.empty())
         path = path + "/" + fname;
     else
         path = fname;
 
     // Tries to open
     f->open(path, std::ios::binary);
-    if( f->is_open() )
+    if(f->is_open())
         return f;
 
     // Try again without path
     f->open(fname, std::ios::binary);
-    if( f->is_open() )
+    if(f->is_open())
         return f;
 
     f.reset();

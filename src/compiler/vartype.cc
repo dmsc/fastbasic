@@ -23,62 +23,64 @@
 
 VarType get_vartype(std::string t)
 {
-    if( t == "VT_UNDEF" )
+    if(t == "VT_UNDEF")
         return VT_UNDEF;
-    if( t == "VT_WORD" )
+    if(t == "VT_WORD")
         return VT_WORD;
-    if( t == "VT_ARRAY_WORD" )
+    if(t == "VT_ARRAY_WORD")
         return VT_ARRAY_WORD;
-    if( t == "VT_ARRAY_BYTE" )
+    if(t == "VT_ARRAY_BYTE")
         return VT_ARRAY_BYTE;
-    if( t == "VT_ARRAY_STRING" )
+    if(t == "VT_ARRAY_STRING")
         return VT_ARRAY_STRING;
-    if( t == "VT_ARRAY_FLOAT" )
+    if(t == "VT_ARRAY_FLOAT")
         return VT_ARRAY_FLOAT;
-    if( t == "VT_STRING" )
+    if(t == "VT_STRING")
         return VT_STRING;
-    if( t == "VT_FLOAT" )
+    if(t == "VT_FLOAT")
         return VT_FLOAT;
     return VT_UNDEF;
 }
 
 std::string get_vt_name(enum VarType t)
 {
-    switch(t) {
-        case VT_ARRAY_WORD:
-            return "Word Array";
-        case VT_ARRAY_BYTE:
-            return "Byte Array";
-        case VT_ARRAY_STRING:
-            return "String Array";
-        case VT_ARRAY_FLOAT:
-            return "Float Array";
-        case VT_WORD:
-            return "Word";
-        case VT_STRING:
-            return "String";
-        case VT_FLOAT:
-            return "Float";
-        case VT_UNDEF:
-            break;
+    switch(t)
+    {
+    case VT_ARRAY_WORD:
+        return "Word Array";
+    case VT_ARRAY_BYTE:
+        return "Byte Array";
+    case VT_ARRAY_STRING:
+        return "String Array";
+    case VT_ARRAY_FLOAT:
+        return "Float Array";
+    case VT_WORD:
+        return "Word";
+    case VT_STRING:
+        return "String";
+    case VT_FLOAT:
+        return "Float";
+    case VT_UNDEF:
+        break;
     }
     return "UNDEFINED";
 }
 
 int get_vt_size(enum VarType t)
 {
-    switch(t) {
-        case VT_ARRAY_WORD:
-        case VT_ARRAY_BYTE:
-        case VT_ARRAY_STRING:
-        case VT_ARRAY_FLOAT:
-        case VT_WORD:
-        case VT_STRING:
-            return 2;
-        case VT_FLOAT:
-            return 6;
-        case VT_UNDEF:
-            return 0;
+    switch(t)
+    {
+    case VT_ARRAY_WORD:
+    case VT_ARRAY_BYTE:
+    case VT_ARRAY_STRING:
+    case VT_ARRAY_FLOAT:
+    case VT_WORD:
+    case VT_STRING:
+        return 2;
+    case VT_FLOAT:
+        return 6;
+    case VT_UNDEF:
+        return 0;
     }
     return 0;
 }
@@ -86,22 +88,23 @@ int get_vt_size(enum VarType t)
 // Properties of variable types:
 bool var_type_is_array(enum VarType t)
 {
-    switch(t) {
-        case VT_ARRAY_WORD:
-        case VT_ARRAY_BYTE:
-        case VT_ARRAY_STRING:
-        case VT_ARRAY_FLOAT:
-            return true;
-        case VT_UNDEF:
-        case VT_WORD:
-        case VT_STRING:
-        case VT_FLOAT:
-            return false;
+    switch(t)
+    {
+    case VT_ARRAY_WORD:
+    case VT_ARRAY_BYTE:
+    case VT_ARRAY_STRING:
+    case VT_ARRAY_FLOAT:
+        return true;
+    case VT_UNDEF:
+    case VT_WORD:
+    case VT_STRING:
+    case VT_FLOAT:
+        return false;
     }
     return false;
 }
 
-labelType::labelType(): type(0) {}
+labelType::labelType() : type(0) {}
 
 labelType::labelType(std::string str)
 {
@@ -110,9 +113,9 @@ labelType::labelType(std::string str)
 
 void labelType::set_type(std::string str)
 {
-    if( str == "VT_ARRAY_WORD" )
+    if(str == "VT_ARRAY_WORD")
         type = 128;
-    else if( str == "VT_ARRAY_BYTE" )
+    else if(str == "VT_ARRAY_BYTE")
         type = 129;
     else
         throw std::runtime_error("invalid label type " + str);
@@ -130,7 +133,7 @@ bool labelType::is_proc()
 
 bool labelType::add_proc_params(int params)
 {
-    if( !type )
+    if(!type)
         type = params + 1;
 
     return num_params() == params;

@@ -19,8 +19,8 @@
 // synt-sm-list.h: List of parsing tables, tokens and externals
 #pragma once
 #include "synt-sm.h"
-#include "synt-wlist.h"
 #include "synt-symlist.h"
+#include "synt-wlist.h"
 #include <map>
 #include <memory>
 
@@ -31,12 +31,10 @@ class wordlist;
 class sm_list
 {
   public:
-      std::map<std::string, std::unique_ptr<statemachine>> sms;
-      wordlist tok;
-      wordlist ext;
-      symlist syms;
-      sm_list()
-          : tok(0), ext(128)
-      {}
+    std::map<std::string, std::unique_ptr<statemachine>> sms;
+    wordlist tok;
+    wordlist ext;
+    symlist syms;
+    sm_list() : tok(0), ext(128) {}
 };
 } // namespace syntax

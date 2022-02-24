@@ -156,15 +156,17 @@ int parse_state::read_number()
     sentry s(*this);
 
     // Hex numbers start with '$' or '0x'
-    if( ch('$') || ( ch('0') && (ch('x') || ch('X')) ) )
+    if(ch('$') || (ch('0') && (ch('x') || ch('X'))))
     {
         sentry r(*this);
         // Read hex digits
-        while( ch('a', 'f') || ch('A', 'F') || ch('0', '9') );
+        while(ch('a', 'f') || ch('A', 'F') || ch('0', '9'))
             ;
+        ;
         auto str = r.str();
         space();
-        try {
+        try
+        {
             return std::stoi(str, nullptr, 16);
         }
         catch(...)
@@ -173,11 +175,12 @@ int parse_state::read_number()
         return -1;
     }
     // Decimal numbers
-    while( ch('0', '9') )
+    while(ch('0', '9'))
         ;
     auto str = s.str();
     space();
-    try {
+    try
+    {
         return std::stoi(str, nullptr, 10);
     }
     catch(...)
@@ -194,7 +197,7 @@ bool parse_state::end_line()
 bool parse_state::error(std::string err, bool show)
 {
     std::cerr << file_name << ": error at " << line << ":" << col << ": " << err << "\n";
-    if( show )
+    if(show)
     {
         int ocol = col;
         pos -= (col - 1);

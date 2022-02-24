@@ -31,8 +31,8 @@ class symlist
     std::map<std::string, int> list;
 
   public:
-    static const int sym_import = 1<<24;
-    static const int sym_importzp = 2<<24;
+    static const int sym_import = 1 << 24;
+    static const int sym_importzp = 2 << 24;
     // Constructor, with a parsing state, the wordlist name and the starting ID
     symlist() {}
     // Access map from names to values.

@@ -23,84 +23,83 @@
 
 std::string get_loop_name(enum LoopType l)
 {
-    switch( l )
+    switch(l)
     {
-        case LT_PROC_2:
-            return "PROC";
-        case LT_PROC_DATA:
-            return "PROC/DATA";
-        case LT_EXIT:
-            return "EXIT";
-        case LT_DO_LOOP:
-            return "DO loop";
-        case LT_REPEAT:
-            return "REPEAT loop";
-        case LT_WHILE_1:
-        case LT_WHILE_2:
-            return "WHILE loop";
-        case LT_FOR_1:
-        case LT_FOR_2:
-            return "FOR loop";
-        case LT_IF:
-            return "IF";
-        case LT_ELSE:
-            return "ELSE";
-        case LT_ELIF:
-            return "ELIF";
-        default:
-            return "unknown loop";
+    case LT_PROC_2:
+        return "PROC";
+    case LT_PROC_DATA:
+        return "PROC/DATA";
+    case LT_EXIT:
+        return "EXIT";
+    case LT_DO_LOOP:
+        return "DO loop";
+    case LT_REPEAT:
+        return "REPEAT loop";
+    case LT_WHILE_1:
+    case LT_WHILE_2:
+        return "WHILE loop";
+    case LT_FOR_1:
+    case LT_FOR_2:
+        return "FOR loop";
+    case LT_IF:
+        return "IF";
+    case LT_ELSE:
+        return "ELSE";
+    case LT_ELIF:
+        return "ELIF";
+    default:
+        return "unknown loop";
     }
 }
 
 LoopType get_looptype(std::string t)
 {
-    if( t == "LT_PROC_DATA" )
+    if(t == "LT_PROC_DATA")
         return LT_PROC_DATA;
-    if( t == "LT_PROC_2" )
+    if(t == "LT_PROC_2")
         return LT_PROC_2;
-    if( t == "LT_DO_LOOP" )
+    if(t == "LT_DO_LOOP")
         return LT_DO_LOOP;
-    if( t == "LT_REPEAT" )
+    if(t == "LT_REPEAT")
         return LT_REPEAT;
-    if( t == "LT_WHILE_1" )
+    if(t == "LT_WHILE_1")
         return LT_WHILE_1;
-    if( t == "LT_WHILE_2" )
+    if(t == "LT_WHILE_2")
         return LT_WHILE_2;
-    if( t == "LT_FOR_1" )
+    if(t == "LT_FOR_1")
         return LT_FOR_1;
-    if( t == "LT_FOR_2" )
+    if(t == "LT_FOR_2")
         return LT_FOR_2;
-    if( t == "LT_EXIT" )
+    if(t == "LT_EXIT")
         return LT_EXIT;
-    if( t == "LT_IF" )
+    if(t == "LT_IF")
         return LT_IF;
-    if( t == "LT_ELSE" )
+    if(t == "LT_ELSE")
         return LT_ELSE;
-    if( t == "LT_ELIF" )
+    if(t == "LT_ELIF")
         return LT_ELIF;
     throw std::runtime_error("invalid loop type");
 }
 
 bool loop_add_indent(enum LoopType l)
 {
-    switch( l )
+    switch(l)
     {
-        case LT_PROC_2:
-        case LT_DO_LOOP:
-        case LT_REPEAT:
-        case LT_WHILE_1:
-        case LT_FOR_1:
-        case LT_IF:
-        case LT_ELSE:
-            return true;
-        case LT_ELIF:
-        case LT_PROC_DATA:
-        case LT_EXIT:
-        case LT_WHILE_2:
-        case LT_FOR_2:
-            return false;
-        default:
-            return false;
+    case LT_PROC_2:
+    case LT_DO_LOOP:
+    case LT_REPEAT:
+    case LT_WHILE_1:
+    case LT_FOR_1:
+    case LT_IF:
+    case LT_ELSE:
+        return true;
+    case LT_ELIF:
+    case LT_PROC_DATA:
+    case LT_EXIT:
+    case LT_WHILE_2:
+    case LT_FOR_2:
+        return false;
+    default:
+        return false;
     }
 }
-

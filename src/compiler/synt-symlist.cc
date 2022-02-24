@@ -51,16 +51,16 @@ bool symlist::parse(parse_state &p)
                 return p.error("symbol already exists '" + sym + "'");
         }
         p.space();
-        if( !p.ch('=') )
+        if(!p.ch('='))
             return p.error("expected '=' after symbol name");
         p.space();
         auto val = p.read_number();
-        if( val == -1 )
+        if(val == -1)
         {
             auto s = p.read_ident();
-            if( s == "import" )
+            if(s == "import")
                 val = sym_import;
-            else if( s == "importzp" )
+            else if(s == "importzp")
                 val = sym_importzp;
             else
                 return p.error("invalid symbol value");

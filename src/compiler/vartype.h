@@ -22,15 +22,16 @@
 #include <string>
 
 // Variable types
-enum VarType {
-        VT_UNDEF = 0,
-        VT_WORD,
-        VT_ARRAY_WORD,
-        VT_ARRAY_BYTE,
-        VT_ARRAY_STRING,
-        VT_ARRAY_FLOAT,
-        VT_STRING,
-        VT_FLOAT
+enum VarType
+{
+    VT_UNDEF = 0,
+    VT_WORD,
+    VT_ARRAY_WORD,
+    VT_ARRAY_BYTE,
+    VT_ARRAY_STRING,
+    VT_ARRAY_FLOAT,
+    VT_STRING,
+    VT_FLOAT
 };
 
 // Returns VarType from the type name
@@ -43,21 +44,20 @@ int get_vt_size(enum VarType t);
 bool var_type_is_array(enum VarType t);
 
 // Label types
-class labelType {
-    public:
-        // Create from string in parser file
-        labelType(std::string t);
-        labelType();
-        bool is_defined();
-        bool is_proc();
-        bool add_proc_params(int params);
-        int  num_params();
-        void define();
-        void set_type(std::string);
-        bool operator !=(const labelType &l) const { return type != l.type; }
-    private:
-        int type;
+class labelType
+{
+  public:
+    // Create from string in parser file
+    labelType(std::string t);
+    labelType();
+    bool is_defined();
+    bool is_proc();
+    bool add_proc_params(int params);
+    int num_params();
+    void define();
+    void set_type(std::string);
+    bool operator!=(const labelType &l) const { return type != l.type; }
+
+  private:
+    int type;
 };
-
-
-

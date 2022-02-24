@@ -19,8 +19,8 @@
 // target.h: read target definitions
 #pragma once
 #include "synt-sm-list.h"
-#include <string>
 #include <memory>
+#include <string>
 
 namespace syntax
 {
@@ -29,16 +29,17 @@ class sm_list;
 
 class target
 {
-    private:
-        syntax::sm_list s;
-        std::string lib_name;
-        std::string cfg_name;
-        std::string bin_extension;
-    public:
-        target();
-        void load(std::string target_folder, std::string syntax_folder, std::string fname);
-        const syntax::sm_list &sl() const { return s; }
-        std::string lib() const { return lib_name; }
-        std::string cfg() const { return cfg_name; }
-        std::string bin_ext() const { return bin_extension; }
+  private:
+    syntax::sm_list s;
+    std::string lib_name;
+    std::string cfg_name;
+    std::string bin_extension;
+
+  public:
+    target();
+    void load(std::string target_folder, std::string syntax_folder, std::string fname);
+    const syntax::sm_list &sl() const { return s; }
+    std::string lib() const { return lib_name; }
+    std::string cfg() const { return cfg_name; }
+    std::string bin_ext() const { return bin_extension; }
 };

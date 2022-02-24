@@ -22,7 +22,8 @@
 
 #include <string>
 
-enum LoopType {
+enum LoopType
+{
     // First entries can't use "EXIT"
     LT_PROC_DATA = 0,
     LT_EXIT,

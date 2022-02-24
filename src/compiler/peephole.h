@@ -24,5 +24,3 @@
 #include <vector>
 
 void do_peephole(std::vector<codew> &code);
-
-

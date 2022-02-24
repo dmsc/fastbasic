@@ -51,7 +51,7 @@ bool syntax::syntax_optimize(sm_list &sl, bool verbose)
                 if(sm2.second->end_call(n))
                 {
                     // Perform optimization:
-                    if( verbose )
+                    if(verbose)
                         std::cerr << "syntax: optimizing table '" << n << "' into '"
                                   << sm2.second->name() << "'.\n";
                     if(!sm2.second->tail_call(*sm.second))
@@ -78,7 +78,8 @@ bool syntax::syntax_optimize(sm_list &sl, bool verbose)
             auto n = sm.second->name();
 
             if(verbose)
-                std::cerr << "syntax: optimizing table '" << n << "' empty, will delete.\n";
+                std::cerr << "syntax: optimizing table '" << n
+                          << "' empty, will delete.\n";
             // Ok, delete this table
             to_delete.push_back(n);
 

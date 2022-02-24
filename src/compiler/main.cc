@@ -18,12 +18,12 @@
 
 // main.cc: Main compiler file
 
-#include <iostream>
-#include <vector>
-#include <tuple>
 #include "compile.h"
 #include "os.h"
 #include "target.h"
+#include <iostream>
+#include <tuple>
+#include <vector>
 
 static int show_version()
 {
@@ -51,7 +51,8 @@ static int show_help()
                  " -v\t\tshow version and exit\n"
                  " -h\t\tshow this help\n"
                  "\n"
-                 "You can pass multiple basic, assembly and object files to be linked together\n";
+                 "You can pass multiple basic, assembly and object files to be linked "
+                 "together\n";
     return 0;
 }
 
@@ -68,7 +69,7 @@ static std::string default_target(const std::string &prog)
     auto base = os::file_name(prog);
 
     // Check if contains the word "-int":
-    if( base.rfind("-int") != base.npos )
+    if(base.rfind("-int") != base.npos)
         return "atari-int";
     else
         return "default";
@@ -81,121 +82,121 @@ int main(int argc, char **argv)
     auto install_folder = os::dir_name(program_name);
     auto syntax_folder = os::full_path(install_folder, "syntax");
     auto target_folder = install_folder;
-    std::vector<std::string> args(argv+1, argv+argc);
+    std::vector<std::string> args(argv + 1, argv + argc);
     std::string out_name;
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
     std::string target_name = default_target(program_name);
     std::string cfg_file_def;
     compiler comp;
-    std::vector<std::string> asm_opts = {"-tatari","-g"};
+    std::vector<std::string> asm_opts = {"-tatari", "-g"};
     std::vector<std::string> link_opts;
     // BAS files, compile INPUT(BAS) to OUTPUT(ASM)
-    std::vector<std::tuple<std::string,std::string>> bas_files;
+    std::vector<std::tuple<std::string, std::string>> bas_files;
     // ASM files, assemble INPUT(ASM) to OUTPUT(OBJ) producing a listing
-    std::vector<std::tuple<std::string,std::string>> asm_files;
+    std::vector<std::tuple<std::string, std::string>> asm_files;
     // OBJ files, link INPUT(OBJ) to output executable
     std::vector<std::string> link_files;
 
     // Process command line options
-    for(auto &arg: args)
+    for(auto &arg : args)
     {
         // Process delayed options
-        if( next_is_output )
+        if(next_is_output)
         {
             out_name = arg;
-            if( exe_name.empty() )
+            if(exe_name.empty())
                 exe_name = out_name;
             next_is_output = false;
             continue;
         }
         // Process options
-        if( arg == "-d" )
+        if(arg == "-d")
             comp.do_debug = true;
-        else if( arg == "-n" )
+        else if(arg == "-n")
             comp.optimize = false;
-        else if( arg == "-prof" )
+        else if(arg == "-prof")
             comp.show_stats = true;
-        else if( arg == "-v" )
+        else if(arg == "-v")
             return show_version();
-        else if( arg == "-c" )
+        else if(arg == "-c")
         {
             one_step = true;
         }
-        else if( arg == "-l" )
+        else if(arg == "-l")
             comp.show_text = true;
-        else if( arg == "-h" )
+        else if(arg == "-h")
             return show_help();
-        else if( arg.empty() )
+        else if(arg.empty())
             return show_error("invalid argument, try -h for help");
-        else if( arg.rfind("-o", 0) == 0)
+        else if(arg.rfind("-o", 0) == 0)
         {
-            if( got_outname )
+            if(got_outname)
                 return show_error("multiple '-o' option for the same file");
             got_outname = true;
-            if( arg.size() > 2 )
+            if(arg.size() > 2)
             {
                 out_name = arg.substr(2);
-                if( exe_name.empty() )
+                if(exe_name.empty())
                     exe_name = out_name;
             }
             else
                 next_is_output = true;
         }
-        else if( arg.rfind("-s:", 0) == 0 || arg.rfind("-s=", 0) == 0 )
+        else if(arg.rfind("-s:", 0) == 0 || arg.rfind("-s=", 0) == 0)
         {
             auto seg = arg.substr(3);
-            if( !seg.size() || (seg.find('"') != std::string::npos) )
+            if(!seg.size() || (seg.find('"') != std::string::npos))
                 return show_error("invalid segment name");
             comp.segname = seg;
         }
-        else if( arg.rfind("-t:", 0) == 0 || arg.rfind("-t=", 0) == 0 )
+        else if(arg.rfind("-t:", 0) == 0 || arg.rfind("-t=", 0) == 0)
         {
             auto tgt = arg.substr(3);
-            if( !tgt.size() || (tgt.find('"') != std::string::npos) )
+            if(!tgt.size() || (tgt.find('"') != std::string::npos))
                 return show_error("invalid compiler target name");
             target_name = tgt;
         }
-        else if( arg.rfind("-C:", 0) == 0 || arg.rfind("-C=", 0) == 0 )
+        else if(arg.rfind("-C:", 0) == 0 || arg.rfind("-C=", 0) == 0)
         {
             cfg_file_def = arg.substr(3);
         }
-        else if( arg.rfind("-X:", 0) == 0 || arg.rfind("-X=", 0) == 0 )
+        else if(arg.rfind("-X:", 0) == 0 || arg.rfind("-X=", 0) == 0)
         {
             asm_opts.push_back(arg.substr(3));
         }
-        else if( arg.rfind("-S:", 0) == 0 || arg.rfind("-S=", 0) == 0 )
+        else if(arg.rfind("-S:", 0) == 0 || arg.rfind("-S=", 0) == 0)
         {
             link_opts.push_back("--start-addr");
             link_opts.push_back(arg.substr(3));
         }
-        else if( arg.rfind("-syntax-path:", 0) == 0 || arg.rfind("-syntax-path=", 0) == 0 )
+        else if(arg.rfind("-syntax-path:", 0) == 0 || arg.rfind("-syntax-path=", 0) == 0)
         {
             syntax_folder = arg.substr(13);
         }
-        else if( arg.rfind("-target-path:", 0) == 0 || arg.rfind("-target-path=", 0) == 0 )
+        else if(arg.rfind("-target-path:", 0) == 0 || arg.rfind("-target-path=", 0) == 0)
         {
             target_folder = arg.substr(13);
         }
-        else if( arg[0] == '-' )
+        else if(arg[0] == '-')
             return show_error("invalid option '" + arg + "', try -h for help");
-        else if( arg.rfind(".o") == arg.size() - 2 || arg.rfind(".obj") == arg.size() - 4 )
+        else if(arg.rfind(".o") == arg.size() - 2 || arg.rfind(".obj") == arg.size() - 4)
         {
             // An object file, pass to the linker
             link_files.push_back(arg);
         }
-        else if( arg.rfind(".s") == arg.size() - 2 || arg.rfind(".asm") == arg.size() - 4 )
+        else if(arg.rfind(".s") == arg.size() - 2 || arg.rfind(".asm") == arg.size() - 4)
         {
             // An assembly file, pass to the assembler and linker
             std::string obj_name = os::add_extension(arg, ".o");
-            if( got_outname )
+            if(got_outname)
             {
                 obj_name = os::add_extension(out_name, ".o");
                 got_outname = false;
             }
 
             asm_files.emplace_back(arg, obj_name);
-            if( !one_step )
+            if(!one_step)
                 link_files.push_back(obj_name);
         }
         else
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
             // Other files are assumed to be BASIC sources
             std::string asm_name = os::add_extension(arg, ".asm");
             std::string obj_name = os::add_extension(arg, ".o");
-            if( got_outname )
+            if(got_outname)
             {
                 asm_name = os::add_extension(out_name, ".asm");
                 obj_name = os::add_extension(out_name, ".o");
@@ -211,22 +212,23 @@ int main(int argc, char **argv)
             }
 
             bas_files.emplace_back(arg, asm_name);
-            if( !one_step )
+            if(!one_step)
             {
                 asm_files.emplace_back(asm_name, obj_name);
                 link_files.push_back(obj_name);
             }
         }
     }
-    if( !bas_files.size() && !asm_files.size() && !link_files.size() )
+    if(!bas_files.size() && !asm_files.size() && !link_files.size())
         return show_error("missing input file name");
-    if( next_is_output )
+    if(next_is_output)
         return show_error("option '-o' must supply a file name");
 
     // Read target definition
     target tgt;
 
-    try {
+    try
+    {
         tgt.load(target_folder, syntax_folder, target_name);
     }
     catch(std::exception &e)
@@ -235,55 +237,57 @@ int main(int argc, char **argv)
         return 1;
     }
     std::string lib_name = os::full_path(install_folder, tgt.lib());
-    std::string cfg_file = cfg_file_def.size() ? cfg_file_def : os::full_path(install_folder, tgt.cfg());
+    std::string cfg_file =
+        cfg_file_def.size() ? cfg_file_def : os::full_path(install_folder, tgt.cfg());
 
     // Guess final exe file name
-    if( link_files.size() && exe_name.empty() )
+    if(link_files.size() && exe_name.empty())
         exe_name = os::add_extension(link_files[0], tgt.bin_ext());
 
-    for(auto &f: bas_files)
+    for(auto &f : bas_files)
     {
         auto bas_name = std::get<0>(f), asm_name = std::get<1>(f);
         std::cerr << "BAS compile '" << bas_name << "' to '" << asm_name << "'\n";
         auto e = comp.compile_file(bas_name, asm_name, tgt.sl());
-        if( e )
+        if(e)
             return e;
     }
-    for(auto &f: asm_files)
+    for(auto &f : asm_files)
     {
         auto ca65 = os::full_path(install_folder, "ca65");
         auto asm_name = std::get<0>(f), obj_name = std::get<1>(f);
         auto lst_name = os::add_extension(obj_name, ".lst");
 
         std::cerr << "ASM assemble '" << asm_name << "' to '" << obj_name << "'\n";
-        std::vector<std::string> args {
-            "ca65", "-I", os::full_path(install_folder, "asminc"), "-o",
-            obj_name, "-l", lst_name
-        };
-        for(auto &o: asm_opts)
+        std::vector<std::string> args{
+            "ca65", "-I",    os::full_path(install_folder, "asminc"), "-o", obj_name,
+            "-l",   lst_name};
+        for(auto &o : asm_opts)
             args.push_back(o);
         args.push_back(asm_name);
         auto e = os::prog_exec(ca65, args);
-        if( e )
+        if(e)
             return show_error("can't assemble file\n");
     }
-    if( link_files.size() )
+    if(link_files.size())
     {
         auto ld65 = os::full_path(install_folder, "ld65");
         //$LD65" -C "$CFGFILE" "$@" -o "$XEX" -Ln "$LBL" "$FB.lib"
         std::cerr << "LINK " << exe_name << "\n";
-        std::vector<std::string> args {
-            "ld65", "-C", cfg_file, "-o", exe_name,
-            "-Ln", os::add_extension(exe_name, ".lbl")
-        };
-        for(auto &f: link_files)
+        std::vector<std::string> args{"ld65",
+                                      "-C",
+                                      cfg_file,
+                                      "-o",
+                                      exe_name,
+                                      "-Ln",
+                                      os::add_extension(exe_name, ".lbl")};
+        for(auto &f : link_files)
             args.push_back(f);
         args.push_back(lib_name);
         auto e = os::prog_exec(ld65, args);
-        if( e )
+        if(e)
             return show_error("can't assemble file\n");
     }
-
 
     return 0;
 }

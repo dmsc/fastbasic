@@ -42,21 +42,21 @@ class asm_emit
         {
             switch(c.type)
             {
-                case dcode::d_word_sym:
-                    ret.push_back('<' + c.str);
-                    ret.push_back('>' + c.str);
-                    break;
-                case dcode::d_word_val:
-                    ret.push_back(std::to_string(c.num & 0xFF));
-                    ret.push_back(std::to_string(c.num >> 8));
-                    break;
-                case dcode::d_byte_val:
-                    ret.push_back(std::to_string(c.num & 0xFF));
-                    break;
-                case dcode::d_byte_sym:
-                case dcode::d_token:
-                    ret.push_back(c.str);
-                    break;
+            case dcode::d_word_sym:
+                ret.push_back('<' + c.str);
+                ret.push_back('>' + c.str);
+                break;
+            case dcode::d_word_val:
+                ret.push_back(std::to_string(c.num & 0xFF));
+                ret.push_back(std::to_string(c.num >> 8));
+                break;
+            case dcode::d_byte_val:
+                ret.push_back(std::to_string(c.num & 0xFF));
+                break;
+            case dcode::d_byte_sym:
+            case dcode::d_token:
+                ret.push_back(c.str);
+                break;
             }
         }
         return ret;

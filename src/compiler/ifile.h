@@ -24,4 +24,5 @@
 #include <memory>
 
 // Opens "fname" searching first in the same path as the current file
-std::unique_ptr<std::istream> open_include_file(std::string current_file, std::string fname);
+std::unique_ptr<std::istream> open_include_file(std::string current_file,
+                                                std::string fname);

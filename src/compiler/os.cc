@@ -21,23 +21,23 @@
 #include <memory>
 
 #ifdef _WIN32
-# include <windows.h>
-# define HAVE_DRIVE 1
+#include <windows.h>
+#define HAVE_DRIVE 1
 static const char *path_sep = "\\/";
 #else
-# include <unistd.h>
-# include <signal.h>
-# include <sys/wait.h>
-# define HAVE_DRIVE 0
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#define HAVE_DRIVE 0
 static const char *path_sep = "/";
 #endif
 
 bool os::path_absolute(const std::string &path)
 {
-    if( path.find_first_of(path_sep) == 0 )
+    if(path.find_first_of(path_sep) == 0)
         return true;
     // On windows, detect if we have a drive letter
-    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+    else if(HAVE_DRIVE && path.size() > 2 && path[1] == ':')
         return true;
     else
         return false;
@@ -46,10 +46,10 @@ bool os::path_absolute(const std::string &path)
 std::string os::full_path(const std::string &path, const std::string &filename)
 {
     // Join a path with a filename
-    if( path.empty() )
+    if(path.empty())
         return std::string(".") + path_sep[0] + filename;
     auto pos = path.find_last_of(path_sep);
-    if( pos == path.npos || (pos + 1) < path.size() )
+    if(pos == path.npos || (pos + 1) < path.size())
         return path + path_sep[0] + filename;
     else
         return path + filename;
@@ -58,9 +58,9 @@ std::string os::full_path(const std::string &path, const std::string &filename)
 std::string os::file_name(const std::string &path)
 {
     auto p = path.find_last_of(path_sep);
-    if( p != path.npos )
+    if(p != path.npos)
         return path.substr(p);
-    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+    else if(HAVE_DRIVE && path.size() > 2 && path[1] == ':')
         return path.substr(2);
     else
         return path;
@@ -69,11 +69,11 @@ std::string os::file_name(const std::string &path)
 std::string os::dir_name(const std::string &path)
 {
     auto p = path.find_last_of(path_sep);
-    if( p && p != path.npos )
+    if(p && p != path.npos)
         return path.substr(0, p);
-    else if( !p && path.size() )
+    else if(!p && path.size())
         return path.substr(0, 1);
-    else if( HAVE_DRIVE && path.size() > 2 && path[1] == ':' )
+    else if(HAVE_DRIVE && path.size() > 2 && path[1] == ':')
         return path.substr(0, 2);
     else
         return ".";
@@ -82,7 +82,7 @@ std::string os::dir_name(const std::string &path)
 std::string os::add_extension(std::string name, std::string ext)
 {
     auto pos = name.find_last_of(".");
-    if( pos == name.npos || pos == 0 )
+    if(pos == name.npos || pos == 0)
         return name + ext;
     else
         return name.substr(0, pos) + ext;
@@ -92,7 +92,7 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
 {
     // Create a vector with C pointers
     std::vector<const char *> pargs;
-    for(const auto &s: args)
+    for(const auto &s : args)
         pargs.push_back(s.c_str());
     pargs.push_back(nullptr);
 
@@ -100,13 +100,13 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
 #ifdef _WIN32
     // win32 has the "spawn" function that calls the program and waits
     // for termination:
-    return _spawnv( _P_WAIT, exe.c_str(), (char **)pargs.data());
+    return _spawnv(_P_WAIT, exe.c_str(), (char **)pargs.data());
 #else
     // We reimplement "system" to allow passing arguments without escaping:
 
     // Ignore INT and QUIT signals in the parent process:
     sigset_t oldmask, newmask;
-    struct sigaction sa = { SIG_IGN, 0 }, oldint, oldquit;
+    struct sigaction sa = {SIG_IGN, 0}, oldint, oldquit;
     sigaction(SIGINT, &sa, &oldint);
     sigaction(SIGQUIT, &sa, &oldquit);
 
@@ -117,10 +117,10 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
 
     int status = -1;
     auto pid = fork();
-    if( pid == 0 )
+    if(pid == 0)
     {
         // Child, reset INT, QUIT and CHLD signals to default
-        struct sigaction sa = { SIG_DFL, 0 };
+        struct sigaction sa = {SIG_DFL, 0};
         sigaction(SIGINT, &sa, nullptr);
         sigaction(SIGQUIT, &sa, nullptr);
         sigprocmask(SIG_SETMASK, &oldmask, nullptr);
@@ -129,10 +129,11 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
         // If we got here, it is an error
         _exit(127);
     }
-    else if( pid != -1 )
+    else if(pid != -1)
     {
         // Wait until child returns
-        while( (waitpid(pid, &status, 0) == -1) && (errno == EINTR) );
+        while((waitpid(pid, &status, 0) == -1) && (errno == EINTR))
+            ;
     }
 
     // Restore signals
@@ -143,4 +144,3 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
     return status;
 #endif
 }
-

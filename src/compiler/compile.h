@@ -27,17 +27,16 @@ namespace syntax
 class sm_list;
 }
 
-class compiler {
-    public:
-        std::string segname;
-        bool do_debug;
-        bool optimize;
-        bool show_stats;
-        bool show_text;
+class compiler
+{
+  public:
+    std::string segname;
+    bool do_debug;
+    bool optimize;
+    bool show_stats;
+    bool show_text;
 
-        compiler();
-        int compile_file(std::string input_filename, std::string output_filename,
-                         const syntax::sm_list &sl);
-
+    compiler();
+    int compile_file(std::string input_filename, std::string output_filename,
+                     const syntax::sm_list &sl);
 };
-

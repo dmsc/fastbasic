@@ -19,32 +19,32 @@
 // target.cc: read target definitions
 #include "target.h"
 #include "os.h"
-#include "synt-sm-list.h"
 #include "synt-optimize.h"
 #include "synt-parser.h"
 #include "synt-preproc.h"
 #include "synt-pstate.h"
-#include <vector>
+#include "synt-sm-list.h"
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 class target_file
 {
-    public:
-        std::string install_folder;
-        std::vector<std::string> slist;
-        std::string lib_name;
-        std::string cfg_name;
-        std::string bin_ext;
-        target_file(std::string install_folder): install_folder(install_folder) {}
-        void read_file(std::string fname);
+  public:
+    std::string install_folder;
+    std::vector<std::string> slist;
+    std::string lib_name;
+    std::string cfg_name;
+    std::string bin_ext;
+    target_file(std::string install_folder) : install_folder(install_folder) {}
+    void read_file(std::string fname);
 };
 
 static std::string sub(std::string inp, size_t s, size_t e)
 {
-    if( s >= inp.size() || s >= e )
+    if(s >= inp.size() || s >= e)
         return std::string();
-    else if( e >= inp.size() )
+    else if(e >= inp.size())
         return inp.substr(s);
     else
         return inp.substr(s, e - s);
@@ -52,55 +52,55 @@ static std::string sub(std::string inp, size_t s, size_t e)
 
 void target_file::read_file(std::string fname)
 {
-    if( !fname.size() )
+    if(!fname.size())
         fname = "default";
 
     // Add extension if missing
-    if( fname.find('.') == fname.npos )
+    if(fname.find('.') == fname.npos)
         fname = os::add_extension(fname, ".tgt");
 
-    if( !os::path_absolute(fname) )
+    if(!os::path_absolute(fname))
         fname = os::full_path(install_folder, fname);
 
     std::ifstream f;
     f.open(fname);
-    if( !f.is_open() )
+    if(!f.is_open())
         throw std::runtime_error("Can't open target definition file '" + fname + "'");
 
     // Read:
     std::string line;
-    while( std::getline(f, line).good() )
+    while(std::getline(f, line).good())
     {
         // Parse line:
         auto s = line.find_first_not_of(" \t\r\n");
         // Skip blank lines and comments
-        if( s != line.npos && line[s] != '#' )
+        if(s != line.npos && line[s] != '#')
         {
             // split line into "key" and "args":
             auto e = line.find_first_of(" \t\r\n", s);
             auto a = line.find_first_not_of(" \t\r\n", e);
             auto key = sub(line, s, e);
             auto args = sub(line, a, line.npos);
-            if( key == "include" )
+            if(key == "include")
             {
                 read_file(args);
             }
-            else if( key == "library" )
+            else if(key == "library")
             {
                 lib_name = args;
             }
-            else if( key == "config" )
+            else if(key == "config")
             {
                 cfg_name = args;
             }
-            else if( key == "extension" )
+            else if(key == "extension")
             {
                 bin_ext = args;
             }
-            else if( key == "syntax" )
+            else if(key == "syntax")
             {
                 size_t i = 0;
-                while( i < args.size() )
+                while(i < args.size())
                 {
                     auto e = args.find_first_of(" \t\r\n", i);
                     slist.push_back(sub(args, i, e));
@@ -108,15 +108,13 @@ void target_file::read_file(std::string fname)
                 }
             }
             else
-                throw std::runtime_error("Bad key '" + key + "' in target file '" + fname + "'");
-
+                throw std::runtime_error("Bad key '" + key + "' in target file '" +
+                                         fname + "'");
         }
     }
 }
 
-target::target()
-{
-}
+target::target() {}
 
 void target::load(std::string target_folder, std::string syntax_folder, std::string fname)
 {

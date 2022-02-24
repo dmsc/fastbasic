@@ -18,8 +18,8 @@
 
 // synt-sm.cc: Parse and write the syntax state machine
 #include "synt-sm.h"
-#include "synt-symlist.h"
 #include "synt-pstate.h"
+#include "synt-symlist.h"
 #include "synt-wlist.h"
 #include <algorithm>
 #include <iostream>
@@ -108,7 +108,7 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
     p.space();
     bool is_word = p.ch('&');
     int n = p.read_number();
-    if( n < 0 )
+    if(n < 0)
     {
         auto tk = p.read_ident();
         if(tk.empty())
@@ -116,9 +116,9 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
         if(is_word)
         {
             auto s = syms.map().find(tk);
-            if( s == syms.map().end() )
+            if(s == syms.map().end())
                 return p.error("Unknown symbol to emit: " + tk);
-            if( s->second > 65535 )
+            if(s->second > 65535)
                 emit.push_back({dcode::d_word_sym, s->first, 0});
             else
                 emit.push_back({dcode::d_word_val, std::string(), s->second});
@@ -126,18 +126,18 @@ bool statemachine::read_emit_token(std::vector<dcode> &emit)
         else if(tk.substr(0, 4) == "TOK_")
         {
             // Search in token list
-            if( tok.map().find(tk) == tok.map().end() )
+            if(tok.map().find(tk) == tok.map().end())
                 return p.error("Unknown token to emit: " + tk);
             emit.push_back({dcode::d_token, tk, 0});
         }
         else
         {
             auto s = syms.map().find(tk);
-            if( s == syms.map().end() )
+            if(s == syms.map().end())
                 return p.error("Unknown symbol to emit: " + tk);
-            if( (s->second & 0xFFFFFF) > 255 || s->second == symlist::sym_import )
+            if((s->second & 0xFFFFFF) > 255 || s->second == symlist::sym_import)
                 return p.error("Invalid symbol value for a byte: " + tk);
-            if( s->second > 255 )
+            if(s->second > 255)
                 emit.push_back({dcode::d_byte_sym, s->first, 0});
             else
                 emit.push_back({dcode::d_byte_val, std::string(), s->second});
@@ -159,7 +159,7 @@ bool statemachine::read_emit_line(std::vector<dcode> &emit)
     while(true)
     {
         p.space();
-        if( !read_emit_token(emit) )
+        if(!read_emit_token(emit))
             return false;
         if(p.ch('}'))
             break;
@@ -214,7 +214,7 @@ bool statemachine::parse_line(line &current)
             }
             else
             {
-                if( !read_emit_token(emit) )
+                if(!read_emit_token(emit))
                     return p.error("EMIT expects a token");
             }
             current.pc.emplace_back(pcode{emit});
@@ -233,7 +233,7 @@ bool statemachine::parse_line(line &current)
         else if(!cmd.empty())
         {
             canFail = true;
-            if( ext.map().count(cmd) )
+            if(ext.map().count(cmd))
                 current.pc.emplace_back(pcode{pcode::c_call_ext, cmd});
             else
                 current.pc.emplace_back(pcode{pcode::c_call_table, cmd});
@@ -266,8 +266,9 @@ void statemachine::delete_call(std::string tab)
     {
         auto &v = l.pc;
         v.erase(std::remove_if(v.begin(), v.end(),
-                               [&](pcode &x)
-                               { return (x.type == pcode::c_call_table && x.str == tab); }),
+                               [&](pcode &x) {
+                                   return (x.type == pcode::c_call_table && x.str == tab);
+                               }),
                 v.end());
     }
 }

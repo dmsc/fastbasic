@@ -24,61 +24,60 @@
 
 class opstat
 {
-    private:
-        std::map<std::string, int> c1;
-        std::map<std::pair<std::string, std::string>, int> c2;
-        std::map<std::pair<std::string, int>, int> c3;
-    public:
-        opstat(const std::vector<codew> &code)
+  private:
+    std::map<std::string, int> c1;
+    std::map<std::pair<std::string, std::string>, int> c2;
+    std::map<std::pair<std::string, int>, int> c3;
+
+  public:
+    opstat(const std::vector<codew> &code)
+    {
+        std::string old;
+        for(auto &c : code)
         {
-            std::string old;
-            for(auto &c: code)
+            if(c.is_tok())
             {
-                if( c.is_tok() )
-                {
-                    auto t = c.get_tok();
-                    c1[t] ++;
-                    if( !old.empty() )
-                        c2[{t, old}]++;
-                    old = c.get_tok();
-                }
-                else
-                {
-                    if( c.is_byte() && old == "TOK_BYTE" )
-                        c3[{old,c.get_val()}] ++;
-                    else if( c.is_sbyte() && old == "TOK_BYTE" )
-                        continue;
-                    else if( c.is_sbyte() && old == "TOK_BYTE_POKE" )
-                        continue;
-                    else if( c.is_word() && old == "TOK_NUM" )
-                        c3[{old,c.get_val()}] ++;
-                    else if( c.is_sword() && old == "TOK_NUM" )
-                        continue;
-                    else if( c.is_sword() && old == "TOK_NUM_POKE" )
-                        continue;
-                    else if( c.is_byte() && old == "TOK_VAR_LOAD" )
-                        continue;
-                    else if( c.is_byte() && old == "TOK_VAR_ADDR" )
-                        continue;
-                    else
-                        old.clear();
-                }
+                auto t = c.get_tok();
+                c1[t]++;
+                if(!old.empty())
+                    c2[{t, old}]++;
+                old = c.get_tok();
             }
-            // Show results
-            for(auto &c: c1)
-                std::cerr << "\t" << c.second << "\t" << c.first << "\n";
-            for(auto &c: c2)
-                std::cerr << "\t" << c.second << "\t"
-                          << c.first.second << "\t"
-                          << c.first.first << "\n";
-            for(auto &c: c3)
-                std::cerr << "\t" << c.second << "\t" << c.first.first
-                          << " " << c.first.second << "\n";
+            else
+            {
+                if(c.is_byte() && old == "TOK_BYTE")
+                    c3[{old, c.get_val()}]++;
+                else if(c.is_sbyte() && old == "TOK_BYTE")
+                    continue;
+                else if(c.is_sbyte() && old == "TOK_BYTE_POKE")
+                    continue;
+                else if(c.is_word() && old == "TOK_NUM")
+                    c3[{old, c.get_val()}]++;
+                else if(c.is_sword() && old == "TOK_NUM")
+                    continue;
+                else if(c.is_sword() && old == "TOK_NUM_POKE")
+                    continue;
+                else if(c.is_byte() && old == "TOK_VAR_LOAD")
+                    continue;
+                else if(c.is_byte() && old == "TOK_VAR_ADDR")
+                    continue;
+                else
+                    old.clear();
+            }
         }
+        // Show results
+        for(auto &c : c1)
+            std::cerr << "\t" << c.second << "\t" << c.first << "\n";
+        for(auto &c : c2)
+            std::cerr << "\t" << c.second << "\t" << c.first.second << "\t"
+                      << c.first.first << "\n";
+        for(auto &c : c3)
+            std::cerr << "\t" << c.second << "\t" << c.first.first << " "
+                      << c.first.second << "\n";
+    }
 };
 
 void do_opstat(std::vector<codew> &code)
 {
     opstat op(code);
 }
-

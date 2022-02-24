@@ -27,7 +27,7 @@ using dcode = statemachine::dcode;
 static const syntax::statemachine &get(const sm_list &sl, std::string name)
 {
     auto smi = sl.sms.find(name);
-    if( smi == sl.sms.end() )
+    if(smi == sl.sms.end())
         throw std::runtime_error("missing syntax table for '" + name + "'");
     return *(smi->second);
 }
@@ -40,30 +40,30 @@ static void emit_bytes(parse &s, const std::vector<dcode> &data)
     {
         switch(c.type)
         {
-            case dcode::d_word_sym:
-                s.emit_word(c.str);
-                break;
-            case dcode::d_word_val:
-                s.emit_word(c.num);
-                break;
-            case dcode::d_byte_sym:
-                s.emit_byte(c.str);
-                break;
-            case dcode::d_byte_val:
-                s.emit_byte(c.num);
-                break;
-            case dcode::d_token:
-                s.emit_tok(c.str);
-                break;
+        case dcode::d_word_sym:
+            s.emit_word(c.str);
+            break;
+        case dcode::d_word_val:
+            s.emit_word(c.num);
+            break;
+        case dcode::d_byte_sym:
+            s.emit_byte(c.str);
+            break;
+        case dcode::d_byte_val:
+            s.emit_byte(c.num);
+            break;
+        case dcode::d_token:
+            s.emit_tok(c.str);
+            break;
         }
     }
 }
 
 static std::string ucase(std::string s)
 {
-    for(auto &c: s)
+    for(auto &c : s)
     {
-        if( c >= 'a' && c <= 'z' )
+        if(c >= 'a' && c <= 'z')
             c = c - 'a' + 'A';
     }
     return s;
@@ -76,15 +76,15 @@ static bool parse_literal(parse &s, std::string lit)
         if(ch >= 'a' && ch <= 'z')
         {
             ch = ch - 'a' + 'A';
-            if( !s.expect(ch) )
+            if(!s.expect(ch))
             {
-                if( !s.expect('.') )
+                if(!s.expect('.'))
                     return false;
                 else
                     break;
             }
         }
-        else if( !s.expect(ch) )
+        else if(!s.expect(ch))
             return false;
     }
     s.debug("GOT '" + lit + "'");
@@ -92,14 +92,15 @@ static bool parse_literal(parse &s, std::string lit)
     return true;
 }
 
-static bool parse_line(parse &s, const sm_list &sl, const syntax::statemachine::line &line)
+static bool parse_line(parse &s, const sm_list &sl,
+                       const syntax::statemachine::line &line)
 {
     for(const auto &c : line.pc)
     {
         switch(c.type)
         {
         case statemachine::pcode::c_literal:
-            if( !parse_literal(s, c.str) )
+            if(!parse_literal(s, c.str))
                 return false;
             break;
         case statemachine::pcode::c_emit:
@@ -109,11 +110,11 @@ static bool parse_line(parse &s, const sm_list &sl, const syntax::statemachine::
             emit_bytes(s, c.data);
             return true;
         case statemachine::pcode::c_call_ext:
-            if( !call_parsing_action(c.str, s) )
+            if(!call_parsing_action(c.str, s))
                 return false;
             break;
         case statemachine::pcode::c_call_table:
-            if( !parse_table(s, sl, c.str) )
+            if(!parse_table(s, sl, c.str))
                 return false;
             break;
         case statemachine::pcode::c_return:
@@ -135,10 +136,10 @@ static bool parse_table(parse &s, const sm_list &sl, std::string name)
 
     for(const auto &line : current.get_code())
     {
-        if( parse_line(s, sl, line) )
+        if(parse_line(s, sl, line))
         {
             s.debug("<-- OK (" + std::to_string(line.lnum) + ")");
-            s.lvl --;
+            s.lvl--;
             return true;
         }
         s.debug("-! " + std::to_string(line.lnum));

@@ -23,10 +23,7 @@
 
 using namespace syntax;
 
-syntax_parser::syntax_parser(parse_state &p, sm_list &sl)
-    : p(p), sl(sl)
-{
-}
+syntax_parser::syntax_parser(parse_state &p, sm_list &sl) : p(p), sl(sl) {}
 
 bool syntax_parser::parse_sm_name(const std::string &name)
 {
@@ -50,17 +47,17 @@ bool syntax_parser::parse_file()
 
         std::string name = p.read_ident();
         // Check if it is a syntax table or a word list
-        if( name == "TOKENS" )
+        if(name == "TOKENS")
         {
             if(!sl.tok.parse(p))
                 return p.error("error parsing TOKENS table", false);
         }
-        else if( name == "EXTERN" )
+        else if(name == "EXTERN")
         {
             if(!sl.ext.parse(p))
                 return p.error("error parsing EXTERN table", false);
         }
-        else if( name == "SYMBOLS" )
+        else if(name == "SYMBOLS")
         {
             if(!sl.syms.parse(p))
                 return p.error("error parsing SYMBOLS table", false);
@@ -80,7 +77,8 @@ bool syntax_parser::parse_file()
             }
             else
             {
-                auto sm = std::make_unique<statemachine>(p, name, sl.tok, sl.ext, sl.syms);
+                auto sm =
+                    std::make_unique<statemachine>(p, name, sl.tok, sl.ext, sl.syms);
                 if(sm->parse())
                 {
                     sl.sms[name] = std::move(sm);

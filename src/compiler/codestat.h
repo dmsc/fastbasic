@@ -22,4 +22,3 @@
 #include <vector>
 
 void do_opstat(std::vector<codew> &code);
-

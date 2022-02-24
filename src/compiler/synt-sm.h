@@ -115,7 +115,8 @@ class statemachine
     bool parse_line(line &current);
 
   public:
-    statemachine(parse_state &p, std::string name, const wordlist &tok, const wordlist &ext, const symlist &syms)
+    statemachine(parse_state &p, std::string name, const wordlist &tok,
+                 const wordlist &ext, const symlist &syms)
         : p(p), complete(false), lnum(-1), _name(name), tok(tok), ext(ext), syms(syms)
     {
     }
