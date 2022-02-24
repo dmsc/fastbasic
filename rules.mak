@@ -187,7 +187,7 @@ build/gen/int/%.asm: samples/int/%.bas $(FASTBASIC_HOST) | build/gen/int
 	$(Q)$(FASTBASIC_HOST) $(FB_INT_FLAGS) -o $@ -c $<
 
 # Object file rules
-build/obj/fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/fp/%) $(CA65_HOST)
+build/obj/fp/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/fp%) $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
@@ -195,11 +195,11 @@ build/obj/fp/%.o: build/gen/fp/%.asm | build/obj/fp $(CA65_HOST)
 	$(ECHO) "Assembly FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/rom-fp/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/rom-fp/%) $(CA65_HOST)
+build/obj/rom-fp/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/rom-fp%) $(CA65_HOST)
 	$(ECHO) "Assembly Cart FP $<"
 	$(Q)$(CA65_HOST) $(CA65_FP_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/int/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/int/%) $(CA65_HOST)
+build/obj/int/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/int%) $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
@@ -207,7 +207,7 @@ build/obj/int/%.o: build/gen/int/%.asm | build/obj/int $(CA65_HOST)
 	$(ECHO) "Assembly INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) -l $(@:.o=.lst) -o $@ $<
 
-build/obj/rom-int/%.o: src/%.asm | $(AS_FOLDERS:src/%=build/obj/rom-int/%) $(CA65_HOST)
+build/obj/rom-int/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/rom-int%) $(CA65_HOST)
 	$(ECHO) "Assembly Cart INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
