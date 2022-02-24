@@ -33,6 +33,7 @@ class target_file
   public:
     std::string install_folder;
     std::vector<std::string> slist;
+    std::vector<std::string> ca65_args;
     std::string lib_name;
     std::string cfg_name;
     std::string bin_ext;
@@ -97,6 +98,16 @@ void target_file::read_file(std::string fname)
             {
                 bin_ext = args;
             }
+            else if(key == "ca65")
+            {
+                size_t i = 0;
+                while(i < args.size())
+                {
+                    auto e = args.find_first_of(" \t\r\n", i);
+                    ca65_args.push_back(sub(args, i, e));
+                    i = args.find_first_not_of(" \t\r\n", e);
+                }
+            }
             else if(key == "syntax")
             {
                 size_t i = 0;
@@ -124,6 +135,7 @@ void target::load(std::string target_folder, std::string syntax_folder, std::str
     lib_name = f.lib_name;
     cfg_name = f.cfg_name;
     bin_extension = f.bin_ext;
+    ca65_args_ = f.ca65_args;
     // Process all syntax files:
     syntax::preproc pre;
     syntax::parse_state p;

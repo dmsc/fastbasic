@@ -89,8 +89,8 @@ int main(int argc, char **argv)
     std::string target_name = default_target(program_name);
     std::string cfg_file_def;
     compiler comp;
-    std::vector<std::string> asm_opts = {"-tatari", "-g"};
     std::vector<std::string> link_opts;
+    std::vector<std::string> asm_opts = {"-g"};
     // BAS files, compile INPUT(BAS) to OUTPUT(ASM)
     std::vector<std::tuple<std::string, std::string>> bas_files;
     // ASM files, assemble INPUT(ASM) to OUTPUT(OBJ) producing a listing
@@ -239,6 +239,7 @@ int main(int argc, char **argv)
     std::string lib_name = os::full_path(install_folder, tgt.lib());
     std::string cfg_file =
         cfg_file_def.size() ? cfg_file_def : os::full_path(install_folder, tgt.cfg());
+    asm_opts.insert(asm_opts.end(), tgt.ca65_args().begin(), tgt.ca65_args().end());
 
     // Guess final exe file name
     if(link_files.size() && exe_name.empty())

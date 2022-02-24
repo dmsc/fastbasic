@@ -21,6 +21,7 @@
 #include "synt-sm-list.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace syntax
 {
@@ -34,6 +35,7 @@ class target
     std::string lib_name;
     std::string cfg_name;
     std::string bin_extension;
+    std::vector<std::string> ca65_args_;
 
   public:
     target();
@@ -42,4 +44,5 @@ class target
     std::string lib() const { return lib_name; }
     std::string cfg() const { return cfg_name; }
     std::string bin_ext() const { return bin_extension; }
+    const std::vector<std::string> &ca65_args() const { return ca65_args_; }
 };
