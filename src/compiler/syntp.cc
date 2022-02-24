@@ -150,11 +150,6 @@ int main(int argc, const char **argv)
     if(!input_names.size())
         input_names.push_back(std::string());
 
-    // Open output file:
-    std::ofstream ofile, hfile;
-    auto &ostrm = open_output(output_name, ofile);
-    auto &hstrm = open_output_header(output_name, header_ext, hfile);
-
     // Process all input files:
     sm_list sl;
     parse_state p;
@@ -175,8 +170,11 @@ int main(int argc, const char **argv)
     // Optimize
     syntax_optimize(sl, true);
 
-    // And generate code
-    syntax_emit_asm(hstrm, ostrm, sl);
+    // Open output files:
+    std::ofstream ofile, hfile;
+    auto &ostrm = open_output(output_name, ofile);
+    auto &hstrm = open_output_header(output_name, header_ext, hfile);
 
-    return 0;
+    // And generate code
+    return syntax_emit_asm(hstrm, ostrm, sl) ? 0 : 1;
 }
