@@ -16,26 +16,33 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
+# Constants used in Atari 8-bit target
+# ------------------------------------
+
 SYMBOLS {
-  SOUND_OFF = import
+  # Used in SOUND
+  AUDF1   = $D200
+  AUDCTL  = $D208
+  SKCTL   = $D20F
+  # Used in GRAPHICS
+  COLOR0  = $02C4
+  FILDAT  = $02FD
+  # Used in base file
+  PADDL0  = $0270
+  STICK0  = $0278
+  PTRIG0  = $027C
+  STRIG0  = $0284
+  CH      = $02FC
+  # Used in TIME function:
+  RTCLOK1 = 19
+  RTCLOK2 = 20
+  # Used in DLI
+  WSYNC   = $D40A
+  NMIEN   = $D40E
+  VDSLST  = $200
+  COLRSH  = $4F
+  # Used in P/M
+  HPOSP0 = $D000
 }
-
-# SOUND statement, three possibilities:
-#  SOUND voice, freq, distort, vol
-#  SOUND voice
-#  SOUND
-SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB \
-              emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
-                     TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
-        SOUND_S1 emit { TOK_0, TOK_DPOKE }
-        emit { TOK_NUM, &SOUND_OFF, TOK_USR_ADDR, TOK_USR_CALL }
-
-SOUND_S1:
-        EXPR emit { TOK_USHL, TOK_PUSH_NUM, &AUDF1, TOK_ADD, TOK_SADDR }
-
-
-STATEMENT:
-        "Sound" SOUND
 
 # vi:syntax=perl

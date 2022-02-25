@@ -31,7 +31,7 @@
         .import         err_nomem
         .importzp       array_ptr, next_instruction
 
-        .include "atari.inc"
+        .include        "target.inc"
 
         .segment        "RUNTIME"
 

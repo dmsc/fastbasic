@@ -30,7 +30,7 @@
         .import         putc, stack_l
         .importzp       sptr, next_instruction, tmp1
 
-        .include "atari.inc"
+        .include "target.inc"
 
         .segment        "RUNTIME"
 

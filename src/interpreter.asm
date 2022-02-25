@@ -44,7 +44,7 @@
         ; From soundoff.asm
         .import         SOUND_OFF
 
-        .include "atari.inc"
+        .include "target.inc"
 
         .zeropage
 tmp1:   .res    2
@@ -62,9 +62,18 @@ IOERROR:.res    1
 
         ; Integer stack, 40 * 2 = 80 bytes
 .define STACK_SIZE      40
+
+        ; TODO: this should be in a header or configuration file:
+.ifdef __ATARI5200__
+        .data
+        .import stack_start
+.else
+stack_start = $480
+.endif
+
         ; Our execution stack 64 words max, aligned for maximum speed
-stack_l =       $480
-stack_h =       $480 + STACK_SIZE
+stack_l =       stack_start
+stack_h =       stack_start + STACK_SIZE
 stack_end =     stack_h + STACK_SIZE
 
 ;----------------------------------------------------------------------
@@ -121,6 +130,10 @@ interpreter_cptr        =       cptr
         ; Get memory for all variables and clear the values
         jsr     clear_data
 
+.ifdef __ATARI5200__
+        lda     #0
+        sta     0
+.else
         ; Close al I/O channels
         lda     #$70
 :       tax
@@ -140,6 +153,8 @@ interpreter_cptr        =       cptr
         sta     IOCHN
         sta     IOERROR
         sta     0
+.endif
+
 .ifdef FASTBASIC_FP
         .importzp       DEGFLAG
         sta     DEGFLAG

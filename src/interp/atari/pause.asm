@@ -29,7 +29,7 @@
 
         .importzp       next_instruction
 
-        .include "atari.inc"
+        .include        "target.inc"
 
         .segment        "RUNTIME"
 
@@ -37,8 +37,8 @@
         tay
         iny
         inx
-wait:   lda     RTCLOK+2
-:       cmp     RTCLOK+2
+wait:   lda     RTCLOK2
+:       cmp     RTCLOK2
         beq     :-
         dey
         bne     wait

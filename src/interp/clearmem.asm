@@ -27,18 +27,18 @@
 ; Clear Memory
 ; ------------
 
-        .export         clear_data, alloc_array, mem_set, err_nomem
+        .export         clear_data, alloc_array, mem_set, err_nomem, mem_set_0
         .export         compiled_num_vars, compiled_var_page, CLEAR_DATA
         .exportzp       saved_cpu_stack
 
         .import         putc, var_page, __HEAP_RUN__, __HEAP_SIZE__
         .importzp       tmp1, tmp2, array_ptr
 
+        .include        "target.inc"
+
         ; Start of HEAP - aligned to 256 bytes
         .assert (<__HEAP_RUN__) = 0, error, "Heap must be page aligned"
 
-        ; Top of available memory
-MEMTOP=         $2E5
         ; Allocation size
 alloc_size=     tmp1
 
@@ -109,6 +109,7 @@ saved_cpu_stack:
         bcs     err_nomem
 
         ; Clears memory from (tmp2) of (alloc_size) size
+::mem_set_0:
         ldy     #0      ; Value to set
 
 ::mem_set:

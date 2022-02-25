@@ -29,14 +29,14 @@
 
         .importzp       next_instruction
 
+        .include        "target.inc"
+
         .segment        "RUNTIME"
 
-        .include        "atari.inc"
-
 .proc   EXE_TIME
-retry:  ldx     RTCLOK+1
-        lda     RTCLOK+2
-        cpx     RTCLOK+1
+retry:  ldx     RTCLOK1
+        lda     RTCLOK2
+        cpx     RTCLOK1
         bne     retry
         jmp     next_instruction
 .endproc

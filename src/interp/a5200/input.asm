@@ -24,23 +24,66 @@
 ; linked into a combine executable.)
 
 
-; Silence all sound channels (SOUND without parameters)
-; -----------------------------------------------------
+; INPUT string
+; ------------
 
-        .export         SOUND_OFF
-        .importzp       next_instruction
+        .importzp       next_instruction, COLCRS
+        .import         get_key, putc, line_buf
+        .export         INPUT_WIDTH
 
-        .include        "target.inc"
+.data
+        ; Limit maximum input characters, can be adjusted from code:
+INPUT_WIDTH:
+        .byte   30
 
         .segment        "RUNTIME"
 
-.proc   SOUND_OFF
-        ldy     #7
-        lda     #0
-:       sta     AUDF1, y
+.proc   EXE_INPUT_STR   ; INPUT to string buffer
+
+again:
+        ldy     #0
+
+key:
+        ; Show a cursor:
+        lda     #'_' + 128
+        jsr     putc
+        dec     COLCRS
+
+        jsr     get_key
+        and     #$0F    ; Ignore other controllers
+        tax
+        lda     trans, x
+        beq     ret
+        bpl     ok
+
+del:
         dey
-        bpl     :-
-        rts
+        bmi     again
+        dec     COLCRS
+        bpl     key
+
+ok:
+        sta     line_buf, y
+        jsr     putc
+        iny
+        bmi     del
+        cpy     INPUT_WIDTH
+        bne     key
+        beq     del
+
+ret:
+        sta     line_buf
+
+        lda     #<line_buf
+        ldx     #>line_buf
+        jmp     next_instruction
 .endproc
+
+trans:
+        .byte   '0', '1', '2', '3', '4', '5', '6', '7'
+        .byte   '8', '9', '*', '#',   0,   0, $80
+
+        .include "deftok.inc"
+        deftoken "INPUT_STR"
 
 ; vi:syntax=asm_ca65

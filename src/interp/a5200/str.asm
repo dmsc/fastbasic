@@ -24,23 +24,72 @@
 ; linked into a combine executable.)
 
 
-; Silence all sound channels (SOUND without parameters)
-; -----------------------------------------------------
+; Print 16bit number
+; ------------------
 
-        .export         SOUND_OFF
-        .importzp       next_instruction
+        .import         neg_AX, line_buf
+        .importzp       next_instruction, tmp1
 
-        .include        "target.inc"
 
         .segment        "RUNTIME"
 
-.proc   SOUND_OFF
+
+.proc EXE_INT_STR       ; AX = STRING( AX )
+
+        ; Store sign and make positive:
+        cpx     #$80
+        php                     ; Store sign in C
+        bcc     positive
+        jsr     neg_AX
+positive:
+        ; Now, convert into local buffer
+        sta     tmp1
+        stx     tmp1+1
+
         ldy     #7
+L1:
         lda     #0
-:       sta     AUDF1, y
+        clv
+        ldx     #16
+L2:
+        cmp     #5
+        bcc     L3
+        sbc     #$85
+        sec
+L3:
+        rol     tmp1
+        rol     tmp1+1
+        rol
+        dex
+        bne     L2
+        ora     #'0'
+        sta     line_buf, y
         dey
-        bpl     :-
-        rts
+        bvs     L1
+
+        ; Ok, see if we need to store sign
+        plp
+        bcc     ok
+
+        lda     #'-'
+        sta     line_buf, y
+        dey
+ok:
+        tya
+        eor     #7
+        sta     line_buf, y
+
+        ldx     #>line_buf
+        tya
+        clc
+        adc     #<line_buf
+        bcc     ret
+        inx
+ret:
+        jmp     next_instruction
 .endproc
+
+        .include "deftok.inc"
+        deftoken "INT_STR"
 
 ; vi:syntax=asm_ca65

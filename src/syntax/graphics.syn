@@ -16,7 +16,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
-# Graphic support statements
+# Graphic support statements specific to the Atari 8-bit computers
 # NOTE: in the Atari 8-bit this depends on file I/O, as uses I/O channel 6.
 
 TOKENS {
@@ -24,8 +24,6 @@ TOKENS {
 }
 
 SYMBOLS {
- FILDAT = import
- COLOR0 = $02C4
  COLOR = importzp
  DRAWLN = $11
  FILLIN = $12

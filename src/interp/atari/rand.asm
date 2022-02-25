@@ -29,7 +29,7 @@
 
         .importzp       tmp1, tmp2, next_instruction
 
-        .include "atari.inc"
+        .include        "target.inc"
 
         .segment        "RUNTIME"
 

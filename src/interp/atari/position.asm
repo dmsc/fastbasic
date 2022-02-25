@@ -24,23 +24,29 @@
 ; linked into a combine executable.)
 
 
-; Silence all sound channels (SOUND without parameters)
-; -----------------------------------------------------
+; POSITION: setup ROW and COLUMN for PLOT/PRINT
+; ---------------------------------------------
 
-        .export         SOUND_OFF
-        .importzp       next_instruction
+        .import         stack_l, stack_h
+        .importzp       next_ins_incsp
 
-        .include        "target.inc"
+        .include "target.inc"
 
         .segment        "RUNTIME"
 
-.proc   SOUND_OFF
-        ldy     #7
-        lda     #0
-:       sta     AUDF1, y
-        dey
-        bpl     :-
-        rts
+.proc   EXE_POSITION
+
+        sta     ROWCRS
+
+        ldx     stack_l, y
+        stx     COLCRS
+        ldx     stack_h, y
+        stx     COLCRS+1
+
+        jmp     next_ins_incsp
 .endproc
+
+        .include "deftok.inc"
+        deftoken "POSITION"
 
 ; vi:syntax=asm_ca65

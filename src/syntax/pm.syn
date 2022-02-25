@@ -24,7 +24,6 @@ TOKENS {
 SYMBOLS {
  PMGMODE = import
  PMGBASE = import
- HPOSP0 = $D000
 }
 
 INT_FUNCTIONS:

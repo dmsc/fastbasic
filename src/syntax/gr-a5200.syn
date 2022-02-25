@@ -16,26 +16,22 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
-SYMBOLS {
-  SOUND_OFF = import
+# Graphic support statements for the Atari 5200
+
+TOKENS {
+ TOK_GRAPHICS, TOK_DRAWTO
 }
 
-# SOUND statement, three possibilities:
-#  SOUND voice, freq, distort, vol
-#  SOUND voice
-#  SOUND
-SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB \
-              emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
-                     TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
-        SOUND_S1 emit { TOK_0, TOK_DPOKE }
-        emit { TOK_NUM, &SOUND_OFF, TOK_USR_ADDR, TOK_USR_CALL }
-
-SOUND_S1:
-        EXPR emit { TOK_USHL, TOK_PUSH_NUM, &AUDF1, TOK_ADD, TOK_SADDR }
+SYMBOLS {
+ COLOR = importzp
+}
 
 
 STATEMENT:
-        "Sound" SOUND
+        "Graphics" emit { TOK_0, TOK_PMGRAPHICS } EXPR emit TOK_GRAPHICS
+        "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
+        "PLot" POSITION emit { TOK_BYTE_PEEK, COLOR, TOK_PUT }
+        "DRawto" POSITION emit { TOK_DRAWTO }
+        "SEtcolor" EXPR emit { TOK_PUSH_NUM, &COLOR0, TOK_ADD, TOK_SADDR } EXPR_AB emit TOK_POKE
 
 # vi:syntax=perl

@@ -24,29 +24,33 @@
 ; linked into a combine executable.)
 
 
-; POSITION: setup ROW and COLUMN for PLOT/PRINT
-; ---------------------------------------------
+; GET from keyboard
+; -----------------
 
-        .import         stack_l, stack_h
-        .importzp       next_ins_incsp
-
-        .include "atari.inc"
+        .importzp       next_instruction
+        .import         CH
+        .export         get_key
 
         .segment        "RUNTIME"
 
-.proc   EXE_POSITION
+.proc   EXE_GETKEY
+        jsr     get_key
+        jmp     next_instruction
+.endproc
 
-        sta     ROWCRS
+.proc   get_key
+        lda     CH
+        cmp     #$FF
+        beq     get_key
 
-        ldx     stack_l, y
-        stx     COLCRS
-        ldx     stack_h, y
-        stx     COLCRS+1
-
-        jmp     next_ins_incsp
+        ldx     #$FF
+        stx     CH
+        inx
+        rts
 .endproc
 
         .include "deftok.inc"
-        deftoken "POSITION"
+        deftoken "GETKEY"
 
 ; vi:syntax=asm_ca65
+

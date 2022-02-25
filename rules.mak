@@ -211,6 +211,10 @@ build/obj/rom-int/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/rom-int%) $(CA65_
 	$(ECHO) "Assembly Cart INT $<"
 	$(Q)$(CA65_HOST) $(CA65_INT_FLAGS) $(CA65_ROM) -l $(@:.o=.lst) -o $@ $<
 
+build/obj/a5200/%.o: src/%.asm | $(AS_FOLDERS:src%=build/obj/a5200%) $(CA65_HOST)
+	$(ECHO) "Assembly Atari-5200 INT $<"
+	$(Q)$(CA65_HOST) $(CA65_A5200_FLAGS) -l $(@:.o=.lst) -o $@ $<
+
 # Rule to build all folders
 $(BUILD_FOLDERS):
 	$(Q)mkdir -p $@
@@ -233,6 +237,11 @@ $(LIB_INT): $(RT_OBJS_INT) $(A800_OBJS) | build/compiler $(AR65_HOST)
 
 $(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(A800_ROM_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating Cart INT library $@"
+	$(Q)rm -f $@
+	$(Q)$(AR65_HOST) a $@ $^
+
+$(LIB_A5200): $(RT_OBJS_INT) $(A5200_OBJS) | build/compiler $(AR65_HOST)
+	$(ECHO) "Creating Atari-5200 INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 

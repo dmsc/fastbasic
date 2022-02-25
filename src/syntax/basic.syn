@@ -62,7 +62,7 @@ TOKENS {
  # Strings
  TOK_COPY_STR, TOK_VAL, TOK_CMP_STR, TOK_INT_STR, TOK_STR_IDX, TOK_CAT_STR, TOK_CHR
  TOK_PAUSE
- # USR, calls ML routinr
+ # USR, calls ML routine
  TOK_USR_ADDR, TOK_USR_PARAM, TOK_USR_CALL
 
 }
@@ -99,16 +99,9 @@ SYMBOLS {
  BASIC_TOP = importzp
  IOERROR = importzp
  MEMTOP = import
- CH = $2FC
- PADDL0 = $0270
- PTRIG0 = $027C
- STICK0 = $0278
- STRIG0 = $0284
  CLEAR_DATA = import
  ATEOL = 155
- RTCLOK1 = 19
- RTCLOK2 = 20
- CLS = $7D
+ ATCLS = $7D
 }
 
 # Normal expressions
@@ -496,7 +489,7 @@ STATEMENT: statement
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
-        "CLS" IO_CHAN_OPT_NOCOMMA emit { TOK_BYTE_PUT, CLS } IO_CHAN0
+        "CLS" IO_CHAN_OPT_NOCOMMA emit { TOK_BYTE_PUT, ATCLS } IO_CHAN0
         "Poke"  EXPR emit TOK_SADDR "," EXPR emit TOK_POKE
         "Dpoke" EXPR emit TOK_SADDR "," EXPR emit TOK_DPOKE
         "MSet"  EXPR C_EXPR C_EXPR emit TOK_MSET

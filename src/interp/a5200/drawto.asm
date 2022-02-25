@@ -24,23 +24,16 @@
 ; linked into a combine executable.)
 
 
-; Silence all sound channels (SOUND without parameters)
-; -----------------------------------------------------
+; Line drawing
+; ------------
 
-        .export         SOUND_OFF
-        .importzp       next_instruction
+; TODO: implement line drawing for all graphic modes
 
-        .include        "target.inc"
-
-        .segment        "RUNTIME"
-
-.proc   SOUND_OFF
-        ldy     #7
-        lda     #0
-:       sta     AUDF1, y
-        dey
-        bpl     :-
+.proc   EXE_DRAWTO      ; Draw line from last position to current
         rts
 .endproc
+
+        .include "deftok.inc"
+        deftoken "DRAWTO"
 
 ; vi:syntax=asm_ca65

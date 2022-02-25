@@ -37,6 +37,7 @@ CA65_ROM=-DNO_SMCODE
 # Flags added to assembly sources for Floating Point / Integer compilers:
 CA65_FP_FLAGS=-D FASTBASIC_FP -I build/gen/fp $(CA65_FLAGS)
 CA65_INT_FLAGS=-I build/gen/int $(CA65_FLAGS)
+CA65_A5200_FLAGS=-g -t atari5200 -I cc65/asminc -I src -DNO_SMCODE
 
 # Flags for the LD65 linker
 LD65_FLAGS=-Ccompiler/fastbasic.cfg
@@ -100,6 +101,7 @@ LIB_INT=build/compiler/fastbasic-int.lib
 LIB_FP=build/compiler/fastbasic-fp.lib
 LIB_ROM_INT=build/compiler/fastbasic-cart-int.lib
 LIB_ROM_FP=build/compiler/fastbasic-cart-fp.lib
+LIB_A5200=build/compiler/fastbasic-5200.lib
 
 # Sample programs
 SAMPLE_FP_BAS=\
@@ -146,6 +148,7 @@ AS_FOLDERS=\
     src/interp/a800\
     src/interp/atari\
     src/interp/atarifp\
+    src/interp/a5200\
 
 # ASM files used in the RUNTIME
 RT_AS_SRC=\
@@ -211,6 +214,8 @@ BASE_AS_SRC=\
     src/interp/pop.asm\
     src/interp/print_str.asm\
     src/interp/push.asm\
+    src/interp/put.asm\
+    src/interp/putbyte.asm\
     src/interp/return.asm\
     src/interp/saddr.asm\
     src/interp/sgn.asm\
@@ -218,7 +223,6 @@ BASE_AS_SRC=\
     src/interp/strindex.asm\
     src/interp/ushl.asm\
     src/interp/usr.asm\
-    src/interp/val.asm\
     src/interp/varadd.asm\
     src/interp/varaddr.asm\
     src/interp/varstore.asm\
@@ -228,6 +232,8 @@ ATARI_AS_SRC=\
     src/interp/atari/color.asm\
     src/interp/atari/pause.asm\
     src/interp/atari/pmgraphics.asm\
+    src/interp/atari/position.asm\
+    src/interp/atari/print_tab.asm\
     src/interp/atari/rand.asm\
     src/interp/atari/soundoff.asm\
     src/interp/atari/time.asm\
@@ -241,13 +247,10 @@ A800_AS_SRC=\
     src/interp/a800/graphics.asm\
     src/interp/a800/input.asm\
     src/interp/a800/iochn.asm\
-    src/interp/a800/position.asm\
-    src/interp/a800/print_tab.asm\
-    src/interp/a800/put.asm\
-    src/interp/a800/putbyte.asm\
     src/interp/a800/putchar.asm\
     src/interp/a800/str.asm\
     src/interp/a800/streol.asm\
+    src/interp/a800/val.asm\
     src/interp/a800/xio.asm\
 
 # FP Interpreter ASM files
@@ -283,6 +286,19 @@ A800_FP_AS_SRC=\
     src/interp/atarifp/fpmain.asm\
     src/interp/atarifp/mul6.asm\
 
+# Atari 5200 specific code
+A5200_AS_SRC=\
+    $(BASE_AS_SRC)\
+    $(ATARI_AS_SRC)\
+    src/a5200cart.asm\
+    src/interp/a5200/drawto.asm\
+    src/interp/a5200/getkey.asm\
+    src/interp/a5200/graphics.asm\
+    src/interp/a5200/input.asm\
+    src/interp/a5200/putchar.asm\
+    src/interp/a5200/str.asm\
+    src/interp/a5200/val.asm\
+
 # BAS editor source
 IDE_BAS_SRC=\
     src/editor.bas\
@@ -304,6 +320,7 @@ A800_FP_ROM_OBJS=$(A800_FP_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
 RT_OBJS_INT=$(RT_AS_SRC:src/%.asm=build/obj/int/%.o)
 IDE_OBJS_INT=$(IDE_AS_SRC:src/%.asm=build/obj/int/%.o)
 A800_OBJS=$(A800_AS_SRC:src/%.asm=build/obj/int/%.o)
+A5200_OBJS=$(A5200_AS_SRC:src/%.asm=build/obj/a5200/%.o)
 IDE_BAS_OBJS_INT=$(IDE_BAS_SRC:src/%.bas=build/obj/int/%.o)
 SAMP_OBJS=$(SAMPLE_BAS:%.bas=build/obj/%.o)
 RT_OBJS_ROM_INT=$(RT_AS_SRC:src/%.asm=build/obj/rom-int/%.o)
@@ -315,7 +332,9 @@ COMPILER_COMMON=\
 	 $(LIB_FP)\
 	 $(LIB_ROM_INT)\
 	 $(LIB_ROM_FP)\
+	 $(LIB_A5200)\
 	 build/compiler/fastbasic.cfg\
+	 build/compiler/fastbasic-a5200.cfg\
 	 build/compiler/fastbasic-cart.cfg\
 	 build/compiler/fb$(EXT)\
 	 build/compiler/fb-int$(EXT)\
@@ -325,16 +344,23 @@ COMPILER_COMMON=\
 	 build/compiler/asminc/atari_antic.inc\
 	 build/compiler/asminc/atari_gtia.inc\
 	 build/compiler/asminc/atari.inc\
+	 build/compiler/asminc/atari5200.inc\
 	 build/compiler/asminc/atari_pokey.inc\
+	 build/compiler/asminc/target.inc\
+	 build/compiler/syntax/a5200.syn\
+	 build/compiler/syntax/a800.syn\
 	 build/compiler/syntax/basic.syn\
 	 build/compiler/syntax/dli.syn\
 	 build/compiler/syntax/extended.syn\
 	 build/compiler/syntax/fileio.syn\
 	 build/compiler/syntax/float.syn\
 	 build/compiler/syntax/graphics.syn\
+	 build/compiler/syntax/gr-a5200.syn\
 	 build/compiler/syntax/pm.syn\
 	 build/compiler/syntax/sound.syn\
+	 build/compiler/a5200.tgt\
 	 build/compiler/a800.tgt\
+	 build/compiler/atari-5200.tgt\
 	 build/compiler/atari-cart-fp.tgt\
 	 build/compiler/atari-cart-int.tgt\
 	 build/compiler/atari-fp.tgt\
@@ -536,6 +562,7 @@ SYNTAX_PARSER_SRC=\
 
 # Syntax files for integer version
 SYNTAX_INT=\
+	src/syntax/a800.syn\
 	src/syntax/basic.syn\
 	src/syntax/dli.syn\
 	src/syntax/fileio.syn\
@@ -596,6 +623,7 @@ BUILD_FOLDERS=\
  $(AS_FOLDERS:src%=build/obj/int%)\
  $(AS_FOLDERS:src%=build/obj/rom-fp%)\
  $(AS_FOLDERS:src%=build/obj/rom-int%)\
+ $(AS_FOLDERS:src%=build/obj/a5200%)\
  build/bin\
  build/compiler/asminc\
  build/compiler/syntax\

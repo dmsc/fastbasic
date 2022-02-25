@@ -1,0 +1,7 @@
+# Atari 5200 console
+syntax a5200.syn basic.syn dli.syn pm.syn gr-a5200.syn sound.syn extended.syn
+config fastbasic-a5200.cfg
+ca65 -tatari5200
+library fastbasic-5200.lib
+extension .bin
+

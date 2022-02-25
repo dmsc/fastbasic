@@ -229,7 +229,7 @@ int compiler::compile_file(std::string iname, std::string output_filename,
     ofile << "\n"
              "; Exported symbols\n"
              "\t.export bytecode_start\n"
-             "\n\t.include \"atari.inc\"\n\n";
+             "\n\t.include \"target.inc\"\n\n";
 
     // Write tokens
     ofile << "; TOKENS:\n";
