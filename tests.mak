@@ -38,16 +38,7 @@ TESTS_DEPS=\
 	build/bin/fastbasic\
 	build/bin/ca65\
 	build/bin/ld65\
-	build/compiler/fastbasic-fp.lib\
-	build/compiler/fastbasic-int.lib\
-	build/compiler/fastbasic.cfg\
-	build/compiler/fastbasic-cart-fp.lib\
-	build/compiler/fastbasic-cart-int.lib\
-	build/compiler/fastbasic-cart.cfg\
-	build/compiler/asminc/atari_antic.inc\
-	build/compiler/asminc/atari_gtia.inc\
-	build/compiler/asminc/atari.inc\
-	build/compiler/asminc/atari_pokey.inc\
+        $(COMPILER_COMMON)\
 
 TESTS_XEX=$(TESTS:testsuite/%.chk=build/%.xex)
 TESTS_ROM=$(TESTS:testsuite/%.chk=build/%.rom)
