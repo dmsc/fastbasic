@@ -58,16 +58,14 @@ no_eol:
 
         ; Convert character from ATASCII to screen codes
         asl
-        tax     ; X holds the value without high bit
-        ror
-        cpx     #$C0     ; chars >= $60 don't need conversion
-        bcs     conv_ok
-        cpx     #$40     ; chars >= $20 needs -$20 (upper case and numbers)
-        bcs     normal_char
-        adc     #$61    ; Chars from $00 to $1F, add $40 (+$21, subtracted bellow)
-normal_char:
-        sbc     #$20    ; Chars from $20 to $5F, subtract $20
+        php
+        sbc     #$3F
+        bpl     conv_ok
+        eor     #$40
 conv_ok:
+        plp
+        ror
+
         pha             ; Store A
 
         ; Calculate coordinates - only valid for text modes
