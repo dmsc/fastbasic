@@ -30,7 +30,7 @@
         .export         set_grmode
         .importzp       tmp1, tmp2, next_instruction
         .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC, COLOR
-        .import         mem_set_0, MEMTOP
+        .import         mem_set_0, MEMTOP, GPRIOR
 
         .segment        "RUNTIME"
         .include        "atari5200.inc"
@@ -79,10 +79,19 @@
         sty     DMACTL
 
         tay
-        lda     dl_mode, y
-        pha
+
         ldx     dl_type, y
         stx     DINDEX
+
+        lda     GPRIOR          ; Mask bits 6-7 of GPRIOR, and set from table
+        eor     dl_mode, y
+        and     #$C0
+        eor     GPRIOR
+        sta     GPRIOR
+
+        lda     dl_mode, y
+        and     #$0F
+        pha
 
         lda     mem_adr_l, x
         sta     SAVMSC
@@ -132,7 +141,7 @@ lp1:    sta     (SDLSTL), y
         pla
 setr:
         iny
-        cpy     #100
+        cpy     #95
         bne     no_4k
         ; Patch crossing of 4K segment
         pha
@@ -145,6 +154,7 @@ setr:
         lda     #>$3000
         sta     (SDLSTL), y
         iny
+        dec     ROWCRS
         pla
 
 no_4k:
@@ -186,7 +196,8 @@ setp:
 palette:        .byte   $28,$CA,$94,$46,$00
 
 dl_type:        .byte   2, 0, 1, 2, 2, 2, 2, 4, 5, 6, 6, 6, 2, 3, 2, 7
-dl_mode:        .byte   2, 6, 7, 2, 2, 2, 2,13,15,15,15,15, 4, 5, 2,14
+        ; Encode ANTIC mode and GPRIOR values
+dl_mode:        .byte   $02,$06,$07,$02,$02,$02,$02,$0D,$0F,$4F,$8F,$CF,$04,$05,$02,$0E
 
 mem_adr_l:      .lobytes $3E20, $3F10, $3C40, $3E20, $3100, $21F0, $21F0, $21F0
 mem_adr_h:      .hibytes $3E20, $3F10, $3C40, $3E20, $3100, $21F0, $21F0, $21F0
