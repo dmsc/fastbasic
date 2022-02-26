@@ -78,9 +78,8 @@ conv_ok:
         asl             ; x 10 = 230
         asl             ; x 20 = 460
         rol     tmp4+1
-        ldx     DINDEX
-        cmp     #2
-        bcc     m20
+        bit     DINDEX
+        bvs     m20
         asl             ; x 40 = 920
         rol     tmp4+1
 m20:

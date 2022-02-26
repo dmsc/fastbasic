@@ -45,17 +45,17 @@
         ;  #   size     type  bytes  RAM      DL      DINDEX
         ;                     /line           size
         ;  -----------------------------------------------
-        ;  0 : 40x24    TEXT   40     1k       32      2
-        ;  1 : 20x24    TEXT   20     0.5k     32      0
-        ;  2 : 20x12    TEXT   20     0.25k    20      1
-        ;  7 : 160x96   2bpp   40     4k      104      4
-        ;  8 : 320x192  1bpp   40     8k      202      5
-        ;  9 : 80x192   4bpp   40     8k      202      6
-        ; 10 : 80x192   4bpp   40     8k      202      6
-        ; 11 : 80x192   4bpp   40     8k      202      6
-        ; 12 : 40x24    TEXT   40     1k       32      2
-        ; 13 : 40x12    TEXT   40     0.5k     20      3
-        ; 15 : 160x192  2bpp   40     8k      202      7
+        ;  0 : 40x24    TEXT   40     1k       32      6 +      128
+        ;  1 : 20x24    TEXT   20     0.5k     32      4 + 64 + 128
+        ;  2 : 20x12    TEXT   20     0.25k    20      5 + 64 + 128
+        ;  7 : 160x96   2bpp   40     4k      104      0
+        ;  8 : 320x192  1bpp   40     8k      202      1
+        ;  9 : 80x192   4bpp   40     8k      202      2
+        ; 10 : 80x192   4bpp   40     8k      202      2
+        ; 11 : 80x192   4bpp   40     8k      202      2
+        ; 12 : 40x24    TEXT   40     1k       32      6       + 128
+        ; 13 : 40x12    TEXT   40     0.5k     20      6       + 128
+        ; 15 : 160x192  2bpp   40     8k      202      3
         ;
         ; DL Types specs:
         ;
@@ -80,8 +80,10 @@
 
         tay
 
-        ldx     dl_type, y
-        stx     DINDEX
+        lda     dl_type, y
+        sta     DINDEX
+        and     #7
+        tax
 
         lda     GPRIOR          ; Mask bits 6-7 of GPRIOR, and set from table
         eor     dl_mode, y
@@ -195,15 +197,17 @@ setp:
 
 palette:        .byte   $28,$CA,$94,$46,$00
 
-dl_type:        .byte   2, 0, 1, 2, 2, 2, 2, 4, 5, 6, 6, 6, 2, 3, 2, 7
+;dl_type:        .byte   2, 0, 1, 2, 2, 2, 2, 4, 5, 6, 6, 6, 2, 3, 2, 7
+        ; Byte copied to DINDEX
+dl_type:        .byte   $86,$C4,$C5,$86,$86,$86,$86,$00,$01,$02,$02,$02,$86,$87,$86,$03
         ; Encode ANTIC mode and GPRIOR values
 dl_mode:        .byte   $02,$06,$07,$02,$02,$02,$02,$0D,$0F,$4F,$8F,$CF,$04,$05,$02,$0E
 
-mem_adr_l:      .lobytes $3E20, $3F10, $3C40, $3E20, $3100, $21F0, $21F0, $21F0
-mem_adr_h:      .hibytes $3E20, $3F10, $3C40, $3E20, $3100, $21F0, $21F0, $21F0
-dl_adr_l:       .lobytes $3E00, $3EF0, $3C20, $3E00, $3098, $2126, $2126, $2126
-dl_adr_h:       .hibytes $3E00, $3EF0, $3C20, $3E00, $3098, $2126, $2126, $2126
-rows:           .byte    24, 12, 24, 12, 96, 192, 192, 192
+mem_adr_l:      .lobytes $3100, $21F0, $21F0, $21F0, $3E20, $3F10, $3C40, $3E20
+mem_adr_h:      .hibytes $3100, $21F0, $21F0, $21F0, $3E20, $3F10, $3C40, $3E20
+dl_adr_l:       .lobytes $3098, $2126, $2126, $2126, $3E00, $3EF0, $3C20, $3E00
+dl_adr_h:       .hibytes $3098, $2126, $2126, $2126, $3E00, $3EF0, $3C20, $3E00
+rows:           .byte       96,   192,   192,   192,    24,    12,    24,    12
 
         .include "deftok.inc"
         deftoken "GRAPHICS"
