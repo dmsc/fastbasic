@@ -240,7 +240,7 @@ $(LIB_ROM_INT): $(RT_OBJS_ROM_INT) $(A800_ROM_OBJS) | build/compiler $(AR65_HOST
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^
 
-$(LIB_A5200): $(RT_OBJS_INT) $(A5200_OBJS) | build/compiler $(AR65_HOST)
+$(LIB_A5200): $(A5200_OBJS) | build/compiler $(AR65_HOST)
 	$(ECHO) "Creating Atari-5200 INT library $@"
 	$(Q)rm -f $@
 	$(Q)$(AR65_HOST) a $@ $^

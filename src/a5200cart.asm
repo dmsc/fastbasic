@@ -27,7 +27,7 @@
 ; Startup and support code for the Atari 5200 port
 ; ------------------------------------------------
 
-        .import         start, set_grmode
+        .import         interpreter_run, set_grmode, bytecode_start, get_key
         ; Linker vars
         .import         __CART_PAL__
         .import         __BSS_RUN__, __BSS_SIZE__
@@ -38,6 +38,7 @@
         .importzp       move_dwn_src, move_dwn_dst
 
         .exportzp       COLRSH, DINDEX, COLCRS, ROWCRS, SAVMSC
+        .exportzp       BASIC_TOP, array_ptr
         .export         STICK0, STICK1, STICK2, STICK3
         .export         STRIG0, STRIG1, STRIG2, STRIG3
         .export         PTRIG0
@@ -54,6 +55,10 @@ DINDEX: .res 1  ; Display mode index
 SAVMSC: .res 2
 COLCRS: .res 2
 ROWCRS: .res 1
+
+        ; ZP locations used by FastBasic:
+array_ptr:      .res    2       ; Top of array memory
+BASIC_TOP=      array_ptr
 
         .data
         ; Emulate Atari 8-bit locations
@@ -165,13 +170,22 @@ copy_interpreter:
         lda     #2
         sta     SKCTL       ;Enable keyboard scanning circuit (without debounce)
         cli
-        ; Set initial graphics mode
+
+        ; Sets initial graphics mode
         lda     #0
         jsr     set_grmode
 
-        jsr     start
-end_loop:
-        jmp     end_loop
+        ; Starts interpreter
+        lda     #<bytecode_start
+        ldx     #>bytecode_start
+        jsr     interpreter_run
+
+        ; Waits for key press
+        jsr     get_key
+
+        ; RESET
+        jmp     ($FFFC)
+
 
     .proc vbi_deferred
 
