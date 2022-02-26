@@ -27,7 +27,7 @@
 ; Atari 5200 GRAPHICS statement
 ; -----------------------------
 
-        .export         set_grmode
+        .export         set_grmode, gr_mask_p, gr_shift_x
         .importzp       tmp1, tmp2, next_instruction
         .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC, COLOR
         .import         mem_set_0, MEMTOP, GPRIOR
@@ -208,6 +208,10 @@ mem_adr_h:      .hibytes $3100, $21F0, $21F0, $21F0, $3E20, $3F10, $3C40, $3E20
 dl_adr_l:       .lobytes $3098, $2126, $2126, $2126, $3E00, $3EF0, $3C20, $3E00
 dl_adr_h:       .hibytes $3098, $2126, $2126, $2126, $3E00, $3EF0, $3C20, $3E00
 rows:           .byte       96,   192,   192,   192,    24,    12,    24,    12
+
+                ;       2bpp    1bpp    4bpp    2bpp
+gr_mask_p:      .byte   3,      1,     15,      3
+gr_shift_x:     .byte   2,      3,      1,      2
 
         .include "deftok.inc"
         deftoken "GRAPHICS"

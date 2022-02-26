@@ -19,7 +19,7 @@
 # Graphic support statements for the Atari 5200
 
 TOKENS {
- TOK_GRAPHICS, TOK_DRAWTO
+ TOK_GRAPHICS, TOK_DRAWTO, TOK_PLOT
 }
 
 SYMBOLS {
@@ -30,7 +30,7 @@ SYMBOLS {
 STATEMENT:
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS } EXPR emit TOK_GRAPHICS
         "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
-        "PLot" POSITION emit { TOK_BYTE_PEEK, COLOR, TOK_PUT }
+        "PLot" POSITION emit { TOK_PLOT }
         "DRawto" POSITION emit { TOK_DRAWTO }
         "SEtcolor" EXPR emit { TOK_PUSH_NUM, &COLOR0, TOK_ADD, TOK_SADDR } EXPR_AB emit TOK_POKE
 
