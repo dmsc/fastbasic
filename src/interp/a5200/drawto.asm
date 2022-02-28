@@ -28,12 +28,26 @@
 ; ------------
 
         .importzp       DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
-        .importzp       SAVMSC, next_instruction, tmp1
+        .importzp       SAVMSC, next_instruction, tmp1, tmp2, tmp3
         .import         gr_mask_p, gr_shift_x, gr_mask_s, EXE_PUT
 
         .zeropage
 mask:   .res 1
 color_s:.res 1
+colpos = tmp1
+
+OLDROW: .res 1
+OLDCOL: .res 2
+
+comp:   .res 2
+error:  .res 2
+
+row_add:.res 1
+col_add:.res 2
+
+delta_x = tmp2
+delta_y = tmp3
+old_err = tmp1 + 1
 
 
 ; TODO: implement line drawing for all graphic modes
@@ -46,6 +60,13 @@ color_s:.res 1
         lda     COLOR
         jmp     EXE_PUT
 do_plot:
+
+        ldx     #2
+cp_pos: lda     ROWCRS, x
+        sta     OLDROW, x
+        dex
+        bpl     cp_pos
+
         jsr     get_addr
         lda     mask
         eor     #$FF
@@ -55,13 +76,183 @@ do_plot:
         jmp     next_instruction
 .endproc
 
+
 .proc   EXE_DRAWTO      ; Draw line from last position to current
+
+        ; Fast Bresenham line implementation, updating memory pointers
+
+        ; Get DY - easy as it is only 8 bits
+        ldy     #1
+
+        lda     ROWCRS
+        sec
+        sbc     OLDROW
+        bcs     dr_ypos
+
+        ; Y direction negative
+        eor     #$FF    ; This is cheaper than lda/sbc again
+        adc     #$01
+
+        ldy     #255
+dr_ypos:
+        sta     delta_y
+        sty     row_add
+
+        ; Get DX
+        lda     #0
+        sta     col_add+1
+        ldx     #1
+
+        lda     COLCRS
+        sec
+        sbc     OLDCOL
+        tay
+        lda     COLCRS+1
+        sbc     OLDCOL+1
+        bcs     dr_xpos
+
+        ; X direction negative
+        eor     #$FF
+        pha
+        tya
+        eor     #$FF
+        adc     #$01
+        tay
+        pla
+        adc     #0
+
+        dec     col_add+1
+        ldx     #$FF
+
+dr_xpos:
+        sta     delta_x+1
+        sty     delta_x
+        stx     col_add
+
+        ; Pseudo-code for this line-drawing algorithm:
+        ;
+        ; dx = ABS(x1-x0)
+        ; dy = ABS(y1-y0)
+        ; sx = SGN(x1-x0)
+        ; sy = SGN(y1-y0)
+        ;
+        ; error = dx - (dy / 2)
+        ; comp = (dx + dy) / 2
+        ;
+        ; DO
+        ;     orig_error = error;
+        ;     IF error < comp
+        ;
+        ;         IF y0 = y1
+        ;             EXIT
+        ;
+        ;         error = error + dx
+        ;         y0 = y0 + sy
+        ;
+        ;     If orig_error >= 0
+        ;
+        ;         IF x0 = x1
+        ;             EXIT
+        ;
+        ;         error = error - dy
+        ;         x0 = x0 + sx
+        ;
+        ;     PLOT x0, y0
+        ; LOOP
+
+        ; Get's comp
+        lda     delta_x
+        adc     delta_y
+        sta     comp
+        lda     delta_x+1
+        adc     #0
+        lsr
+        sta     comp+1
+        ror     comp
+
+        ; Get's error
+        lda     delta_y
+        lsr
+        eor     #$FF
+        sec     ; Can be avoided - only ads slight round error
+        adc     delta_x
+        sta     error
+        lda     delta_x+1
+        adc     #$FF
+        sta     error+1
+
+        ; Now, begin loop:
+        jmp     line_start
+
+no_inc_x:
+        ; Plots current pixel
+        jsr     get_addr
+        lda     mask
+        eor     #$FF
+        and     (tmp4), y
+        ora     color_s
+        sta     (tmp4), y
+
+line_start:
+        ; Compare with "comp"
+        lda     error
+        cmp     comp
+        lda     error+1
+        sta     old_err         ; Store old error
+        sbc     comp+1
+        bpl     no_inc_y
+
+        clc
+        lda     error
+        adc     delta_x
+        sta     error
+        lda     error+1
+        adc     delta_x+1
+        sta     error+1
+
+        lda     OLDROW
+        cmp     ROWCRS
+        beq     end_line
+
+        clc
+        adc     row_add
+        sta     OLDROW
+
+no_inc_y:
+        ; Compare old error with 0
+        bit     old_err
+        bmi     no_inc_x
+
+        sec
+        lda     error
+        sbc     delta_y
+        sta     error
+        lda     error+1
+        adc     #$FF
+        sta     error+1
+
+        lda     OLDCOL
+        ldx     OLDCOL+1
+        cmp     COLCRS
+        bne     no_eol
+        cpx     COLCRS+1
+        beq     end_line
+no_eol:
+        clc
+        adc     col_add
+        sta     OLDCOL
+        txa
+        adc     col_add+1
+        sta     OLDCOL+1
+        jmp     no_inc_x
+
+end_line:
         jmp     next_instruction
 .endproc
 
 
 .proc   get_addr
-        lda     ROWCRS
+        lda     OLDROW
 
         ; Multiply A by 4, overflowing to X
         ldx     #0
@@ -74,7 +265,7 @@ L1:     asl
         clc
 
         ; Add to original, multiply by 5
-L2:     adc     ROWCRS
+L2:     adc     OLDROW
         bcc     :+
         inx
 :
@@ -104,13 +295,13 @@ L2:     adc     ROWCRS
         ldy     gr_shift_x, x
 
         ; First shift is 16 bits
-        lda     COLCRS+1
+        lda     OLDCOL+1
         lsr
-        lda     COLCRS
-        sta     tmp1
+        lda     OLDCOL
+        sta     colpos
         lda     #192
         ; Next shifts are 8 bits
-shift:  ror     tmp1    ; Shift column position
+shift:  ror     colpos  ; Shift column position
         ror             ; Shift bit position
         dey
         bne     shift
@@ -137,7 +328,7 @@ rol_mask:
 ok_mask:
         sta     color_s
 
-        ldy     tmp1
+        ldy     colpos
         rts
 .endproc
 

@@ -53,8 +53,8 @@ COLRSH: .res 1  ; Used as DLI pointer
 DINDEX: .res 1  ; Display mode index
 
 SAVMSC: .res 2
-COLCRS: .res 2
 ROWCRS: .res 1
+COLCRS: .res 2
 
         ; ZP locations used by FastBasic:
 array_ptr:      .res    2       ; Top of array memory
