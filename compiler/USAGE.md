@@ -49,7 +49,11 @@ following:
 - `atari-cart-int`: Compile to an Atari 8-bit cartridge image (`.rom`), with
   only integer support.
 
-This example produces a cartridge image:
+- `atari-5200`: Compile to an Atari 5200 cartridge image (`.bin`), with only
+  integer support. Note that not all statements are supported in the Atari
+  5200, as the console lacks any file I/O.
+
+This example produces a cartridge image for the Atari 8-bit computers:
 
      fastbasic -t:atari-cart-fp myprog.bas
 
@@ -61,6 +65,8 @@ The compiler generates various files from the basic source:
   removing the original extension.
 
 - `ROM` file, standard Atari 8-bit cartridge image.
+
+- `BIN` file, standard Atari 5200 cartridge image.
 
 - `LBL` file, a list of labels, useful for debugging. This file includes a
   label for each line number in the basic source, and the name is the same as
@@ -79,7 +85,7 @@ The compilation is a three step process:
 
 - The compiler calls the `CA65` assembler to produce an object file.
 
-- The compiler calls the `LD65` linker to join the object file with the runtime library, generating the `XEX` or `ROM`.
+- The compiler calls the `LD65` linker to join the object file with the runtime library, generating the `XEX`, `ROM` or `BIN` depending on the target.
 
 
 Advanced Usage
@@ -94,6 +100,9 @@ an `:` or an `=` to separate the option from the argument.
 - **-t**:*target*  
   Selects the compilation target. The target definitions are searched in the
   compiler installation folder, with an `.tgt` extension.
+
+  If this option is not given, the `default.tgt` file is loaded, currently this
+  file simply includes the `atari-fp.tgt` file.
 
 - **-v**  
   Shows the compiler version.
