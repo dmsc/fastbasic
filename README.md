@@ -1,7 +1,8 @@
 FastBasic - Fast BASIC interpreter for the Atari 8-bit computers
 ----------------------------------------------------------------
 
-This is a fast interpreter for the BASIC language on the Atari 8-bit computers.
+This is a fast interpreter for the BASIC language on the Atari 8-bit computers
+and the Atari 5200 console.
 
 The current features are:
 - Support for Atari floating point and 16bit integer variables;
