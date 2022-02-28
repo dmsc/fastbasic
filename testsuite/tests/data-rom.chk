@@ -1,0 +1,7 @@
+Name: Test DATA ROM
+Test: run-int
+Output:
+Start
+1         2
+1         129
+1

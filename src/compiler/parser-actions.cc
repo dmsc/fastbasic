@@ -675,6 +675,32 @@ static bool SMB_E_LABEL_SET_TYPE(parse &s)
     return true;
 }
 
+static bool SMB_E_DATA_SET_ROM_SEG(parse &s)
+{
+    s.debug("E_DATA_SET_ROM_SEG");
+    s.skipws();
+    s.labels[s.last_label].set_segment("CODE");
+    return true;
+}
+
+static bool SMB_E_DATA_SET_SEGMENT(parse &s)
+{
+    s.debug("E_DATA_SET_SEGMENT");
+    s.skipws();
+    // Get segment name
+    std::string seg;
+    if(s.get_ident(seg))
+    {
+        s.labels[s.last_label].set_segment(seg);
+        return true;
+    }
+    else
+    {
+        s.error("segment name");
+        return false;
+    }
+}
+
 // Reads a DATA array from a file
 static bool SMB_E_DATA_FILE(parse &s)
 {
@@ -714,6 +740,8 @@ static std::map<std::string, bool (*)(parse &s)> actions = {
     {"E_LABEL_CREATE", SMB_E_LABEL_CREATE},
     {"E_LABEL_DEF", SMB_E_LABEL_DEF},
     {"E_LABEL_SET_TYPE", SMB_E_LABEL_SET_TYPE},
+    {"E_DATA_SET_ROM_SEG", SMB_E_DATA_SET_ROM_SEG},
+    {"E_DATA_SET_SEGMENT", SMB_E_DATA_SET_SEGMENT},
     {"E_NUMBER_BYTE", SMB_E_NUMBER_BYTE},
     {"E_NUMBER_FP", SMB_E_NUMBER_FP},
     {"E_NUMBER_WORD", SMB_E_NUMBER_WORD},

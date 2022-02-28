@@ -1644,6 +1644,22 @@ General Statements
   the same folder than the current
   basic source.
 
+  *Storing data into ROM*
+
+  In addition to the above, the cross
+  compiler allows to specify that the
+  data should be stored in ROM, instead
+  of the default in RAM. This means
+  that the data can't be modified in
+  targets that use ROM (cartridges),
+  but will lower RAM usage.
+
+  To specify this, simply add the `ROM`
+  word after the type:
+
+      DATA img() ROM 1234,5678
+      DATA pos() BYTE ROM 1,2,3,4
+
 
 **Decrements variable by 1**  
 **DEC _var_ / DE.**

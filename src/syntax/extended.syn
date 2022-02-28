@@ -20,14 +20,25 @@
 
 EXTERN {
  E_DATA_FILE
+ E_DATA_SET_ROM_SEG
+ E_DATA_SET_SEGMENT
  E_COUNT_PARAM
  E_PROC_CHECK
 }
 
 # Reda DATA statements from a file:
+DATA_FILE:
+        "File" DATA_EXT_TYPE E_LABEL_SET_TYPE "\"" E_DATA_FILE
+
+# Expands data types with "file" data
 DATA_TYPE:
-        TYPE_BYTE "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
-        TYPE_WORD "File" E_LABEL_SET_TYPE "\"" E_DATA_FILE
+        TYPE_BYTE DATA_FILE
+        TYPE_WORD DATA_FILE
+
+# Reda DATA statements location (ROM or RAM):
+DATA_EXT_TYPE:
+        "ROM" E_DATA_SET_ROM_SEG
+        "["   E_DATA_SET_SEGMENT "]"
 
 # In the cross-compiler, we count parameters to detect program errors:
 #  Count parameters before EXEC

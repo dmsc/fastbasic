@@ -56,8 +56,11 @@ class labelType
     int num_params();
     void define();
     void set_type(std::string);
+    void set_segment(std::string);
+    std::string get_segment();
     bool operator!=(const labelType &l) const { return type != l.type; }
 
   private:
+    std::string segment;
     int type;
 };

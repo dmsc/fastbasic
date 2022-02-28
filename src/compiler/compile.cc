@@ -299,7 +299,11 @@ int compiler::compile_file(std::string iname, std::string output_filename,
                     std::cerr << "internal error: unknown label type '" << name << "'\n";
                 else
                 {
-                    if(it->second.is_proc())
+                    auto lbl = it->second;
+                    auto seg = lbl.get_segment();
+                    if(seg.size())
+                        ofile << "\t.segment \"" << seg << "\"\n";
+                    else if(lbl.is_proc())
                         ofile << "\t.segment \"" << segname << "\"\n";
                     else
                         ofile << "\t.segment \"DATA\"\n";

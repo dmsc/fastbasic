@@ -121,6 +121,16 @@ void labelType::set_type(std::string str)
         throw std::runtime_error("invalid label type " + str);
 }
 
+void labelType::set_segment(std::string str)
+{
+    segment = str;
+}
+
+std::string labelType::get_segment()
+{
+    return segment;
+}
+
 bool labelType::is_defined()
 {
     return type >= 64;
