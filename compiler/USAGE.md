@@ -421,3 +421,155 @@ There some parts of the syntax file that needs explanation:
   here, and the result will be placed in the `A` and `X` registers.
 
 
+### Syntax of the Target files
+
+The target files (with `.tgt` extension) allows changing many aspects of the
+compilation process.
+
+The syntax of the files is line oriented, with one command per line. The list
+of commands is the following:
+
+- `#`: A line that starts with a sharp symbol is a comment. The rest of the
+       line is ignored.
+
+- `include`: Includes all the target definitions for the named file. If the
+             file name given does not have an extension, `.tgt` is added.
+
+- `library`: Gives the name of the library to link with a compiled FastBasic
+             program for this target. Only one library file is alowed, the last
+             one read takes precendence.
+
+- `config`: Gives the name of the linker configuration file used for this
+            target.
+
+- `extension`: Gives the extension of the compiled file for this target.
+
+- `ca65`: Gives a list of options to pass to the `CA65` assembler. Multiple
+          options are simply added after the previous.
+
+- `syntax`: Gives a list of syntax files to read, defining the syntax of all
+            the language. Multiple files are read in the order given, and
+            all definitions are merged together.
+
+
+### Understanding the Syntax files
+
+The syntax files (with `.syn` extension) define the full parsing rules of the
+FastBasic language - there are no predefined rules in the parser, all the
+language is defined in the included `.syn` files.
+
+In the top level, the syntax files are composed of *tokens*, *symbols*,
+*external routines* and *rules*.
+
+The *tokens* are a list of bytecode language instructions available to the
+parser for the compiled code. The FastBasic interpreter supports up to 128
+tokens, mos implements core functionality (like adding two numbers, or loading
+the value of a variable, etc.). The tokens are listed in a special `TOKENS`
+section:
+
+    TOKENS {
+       token-1, token-2
+       token-3
+       ...
+    }
+
+The *external routines* are routines that can be called from the parser to
+parse special constructs, or modify compiler state outside the parser, examples
+are adding a variable to the list of variables, checking if a variable name is
+already defined, parsing a number or string, etc. The external routines are
+listed in a special `EXTERN` section:
+
+    EXTERN {
+       name_1, name_2
+       name-4
+       ...
+    }
+
+There is an important external rule `E_EOL` that matches at the end of the
+input line.
+
+All external routines used in the parser needs to be implemented in the
+compiler in C++ and in the 6502 compiler in assembly, or the parser will fail.
+
+The *symbols* are a list of symbols available to the parser to use for the
+compiled code, this allows the parser to include names instead of numeric
+constants for the compiled code, and allows using symbols from the library.
+
+The named *rules* define a part of the syntax that the parser understand, and
+are defined using a name followed by a colon:
+
+    NAME: rule description
+        pattern-1
+        pattern-2
+        ...
+
+The *NAME* of the rule must start with a letter, and can contain any number of
+letters, numbers or underscores, on the other hand the *rule description* is
+one line of any text that is shown when the parser encounters a syntax error
+when expecting this rule.
+
+Each *pattern* define a posible parsing for this rule. Each pattern is tried
+from the first to the last, and the first pattern that matches allows the rule
+to match. If after trying all the patterns, the last one does not match, the
+rule fails to match.
+
+The patterns must be in one line, and must begin with at least one space to
+differentiate from a rule definition.
+
+The patterns can contain the following:
+
+- Text enclosed in double quotes (`"`). The rule matches if all the text in the
+  quotes matches the input, ignoring case - the parser is case insensitive.
+
+  The FastBasic parser also supports abbreviations: Any lower-case letter in the
+  quoted text is optional, if in that place of the input is a dot, the rest of
+  the quoted text is skipped.
+
+  For example, the pattern `"HEllo!!"` matches the text `HELLO!!`, `HE.`,
+  `HEL.` or `HELL.`.
+
+- The name of a rule. This matches if the rule matches here.
+
+- The name of an external rule. This matches if called code returns true.
+
+- The word `emit` followed by a token, symbol or number. This instructs the
+  parser to output the given token, symbol or number to the compiler. The
+  symbols and numbers produces one byte in the output, except when the symbol
+  is prepended with an ampersand (`&`) that produces two bytes (a `word`).
+
+  You can also follow the `emit` with a list of symbols enclosed in curly
+  braces ( `{` and `}` ).
+
+The last pattern in a rule can also be the special word `pass`, this makes the
+parser to accept the rule even if no other pattern matched, effectively making
+the rule optional.
+
+Finally, there is a special rule named `PARSE_START` that the parser calls for
+each line in the input.
+
+The parsing rules are based in the PEG grammar syntax, but simplified to make
+the 6502 parser simpler and faster. You can convert PEG rules to FastBasic
+syntax rules by simple replacing:
+
+- An optional rule `RULE ?`:
+
+      RULE_OPT:
+        RULE
+        pass
+
+- An optional and repeatable rule `RULE *`:
+
+      RULE_OPT_REP:
+        RULE RULE_OPT_REP
+        pass
+
+- A repeatable rule `RULE +`:
+
+      RULE_REP:
+        RULE RULE_MORE
+
+      RULE_MORE:
+        RULE RULE_MORE
+        pass
+
+
