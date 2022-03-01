@@ -593,6 +593,7 @@ COMPILER_TARGET=\
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \
      $(A800_FP_OBJS) \
+     $(A5200_OBJS) \
      $(RT_OBJS_ROM_FP) $(A800_FP_ROM_OBJS) \
      $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
      $(RT_OBJS_INT) \
