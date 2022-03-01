@@ -246,8 +246,8 @@ $(LIB_A5200): $(A5200_OBJS) | build/compiler $(AR65_HOST)
 	$(Q)$(AR65_HOST) a $@ $^
 
 # Copy manual to compiler changing the version string.
-build/compiler/MANUAL.md: manual.md version.mk | build/compiler
-	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+build/compiler/MANUAL.md: manual.md a5200.md | version.mk build/compiler
+	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' $(filter %.md,$^) > $@
 
 # Copy other files to compiler folder
 build/compiler/%: compiler/% | build/compiler
