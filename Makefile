@@ -336,8 +336,6 @@ COMPILER_COMMON=\
 	 build/compiler/fastbasic.cfg\
 	 build/compiler/fastbasic-a5200.cfg\
 	 build/compiler/fastbasic-cart.cfg\
-	 build/compiler/fb$(EXT)\
-	 build/compiler/fb-int$(EXT)\
 	 build/compiler/USAGE.md\
 	 build/compiler/LICENSE\
 	 build/compiler/MANUAL.md\
@@ -581,6 +579,7 @@ COMPILER_HOST=\
 	 $(LD65_HOST)\
 	 $(AR65_HOST)\
 	 $(FASTBASIC_HOST)\
+	 build/bin/fb$(EXT)\
 
 # Target compiler
 COMPILER_TARGET=\
@@ -588,6 +587,7 @@ COMPILER_TARGET=\
 	 $(LD65_TARGET)\
 	 $(AR65_TARGET)\
 	 $(FASTBASIC_TARGET)\
+	 build/compiler/fb$(EXT)\
 
 # All ASM Output files
 OBJS=$(RT_OBJS_FP) \

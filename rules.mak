@@ -127,6 +127,10 @@ $(LD65_TARGET): $(LD65_SRC) | build/compiler
 $(AR65_TARGET): $(AR65_SRC) | build/compiler
 	$(ECHO) "Compile target AR65"
 	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
+
+# Copy compatibility binaries
+build/compiler/fb$(EXT): build/compiler/fastbasic$(EXT)
+	$(Q)cp -f $< $@
 endif
 
 # Generator for syntax file - 6502 version - FLOAT
@@ -254,11 +258,7 @@ build/compiler/%: compiler/% | build/compiler
 	$(Q)cp -f $< $@
 
 # Copy compatibility binaries
-build/compiler/fb$(EXT): build/compiler/fastbasic$(EXT)
-	$(Q)cp -f $< $@
-
-# Copy compatibility binaries
-build/compiler/fb-int$(EXT): build/compiler/fastbasic$(EXT)
+build/bin/fb$(EXT): build/bin/fastbasic$(EXT)
 	$(Q)cp -f $< $@
 
 # Copy syntax files to compiler folder

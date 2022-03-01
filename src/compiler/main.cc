@@ -62,19 +62,6 @@ static int show_error(std::string msg)
     return 1;
 }
 
-// Selects a default target based on compiler name
-static std::string default_target(const std::string &prog)
-{
-    // Get program filename
-    auto base = os::file_name(prog);
-
-    // Check if contains the word "-int":
-    if(base.rfind("-int") != base.npos)
-        return "atari-int";
-    else
-        return "default";
-}
-
 int main(int argc, char **argv)
 {
     auto program_name = std::string(argv[0]);
@@ -86,7 +73,7 @@ int main(int argc, char **argv)
     std::string out_name;
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
-    std::string target_name = default_target(program_name);
+    std::string target_name = "default";
     std::string cfg_file_def;
     compiler comp;
     std::vector<std::string> link_opts;
