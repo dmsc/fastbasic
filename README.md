@@ -27,7 +27,7 @@ There is a full manual with all the supported syntax in the file [manual.md](man
 
 To use the cross-compiler, download from the releases and see [compiler/USAGE.md](compiler/USAGE.md) for instructions.
 
-For the Atari 5200 support, read the [a5200.md](Atari 5200 manual appendix).
+For the Atari 5200 support, read the [Atari 5200 manual appendix](a5200.md).
 
 Sample files
 ------------
