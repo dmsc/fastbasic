@@ -109,10 +109,10 @@ line to advance to the next:
     ?
     ? "HELLO", NAME$
 
-The parser will let you made any
-mistakes.  To make corrections move
-back using the cursor keys, this is
-`CONTROL` and `-`, `=`, `+` or `*`,
+The parser will let you know if you 
+made any mistakes.  To make corrections 
+move back using the cursor keys, this 
+is `CONTROL` and `-`, `=`, `+` or `*`,
 then press `BACKSPACE` key to delete
 the character before the cursor or
 press `DELETE` (`CONTROL` and
