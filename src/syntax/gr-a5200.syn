@@ -26,6 +26,19 @@ SYMBOLS {
  COLOR = importzp
 }
 
+# Compatibility: Allows I/O channel number 6 in PRINT
+IO_CHAN_N6:
+        "6"
+
+IO_CHAN: I/O channel number
+        "#" IO_CHAN_N6
+
+IO_CHAN_OPT:
+        IO_CHAN ","
+
+# Used only for CLS #6
+IO_CHAN_OPT_NOCOMMA:
+        IO_CHAN
 
 STATEMENT:
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS } EXPR emit TOK_GRAPHICS
