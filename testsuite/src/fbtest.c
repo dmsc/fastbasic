@@ -120,7 +120,7 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     // Return the current value of FastBasic stack, used to check for stack errors
     // TODO: this should depend on actual compiled value, we currently expect the
     //       value to be constant.
-    int x = 0x28 != (sim65_get_byte(s, 0x90) & 0xFF);
+    int x = 0x28 != (sim65_get_byte(s, 0x8E) & 0xFF);
     // Update output length
     *output_len = str_out_pos;
     free(s);

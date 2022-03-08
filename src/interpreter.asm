@@ -33,6 +33,9 @@
         .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
         .exportzp       IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
+        .exportzp       move_source
+        .exportzp       move_dest
+        .exportzp       move_ins, move_loop
 
         ; From clearmem.asm
         .import         clear_data
@@ -112,6 +115,21 @@ cptr                    =       interpreter::cload+1
 next_instruction        =       interpreter::nxtins
 next_ins_incsp          =       interpreter::nxt_incsp
 interpreter_cptr        =       cptr
+
+        ; MOVE routine - in ZP to make code smaller
+        ; at preparing pointers
+.proc   move_loop
+        ; 14/15 cycles / iteration:
+src:    lda     $FF00,y
+dst:    sta     $FF00,y
+ins:    dey
+        bne     move_loop
+        rts
+.endproc
+move_source     =       move_loop::src+1
+move_dest       =       move_loop::dst+1
+move_ins        =       move_loop::ins
+
 
         ; Define our data segment, so it is always present
         .data

@@ -29,28 +29,24 @@
 
         .export         move_dwn
         .import         stack_l, stack_h, next_ins_incsp_2
-        .importzp       divmod_sign
 
         .exportzp       move_dwn_src, move_dwn_dst
-        .importzp       tmp3, saddr
-move_dwn_src= saddr
-move_dwn_dst= tmp3
-
-        ; Used as a temporary value
-tmp5=divmod_sign
+        .importzp       tmp3, move_source, move_dest, move_ins, move_loop
+move_dwn_src= move_source
+move_dwn_dst= move_dest
 
         .segment        "RUNTIME"
 
 .proc   EXE_NMOVE  ; move memory down
         pha
         lda     stack_l, y
-        sta     move_dwn_dst
+        sta     move_dest
         lda     stack_h, y
-        sta     move_dwn_dst+1
+        sta     move_dest+1
         lda     stack_l+1, y
-        sta     move_dwn_src
+        sta     move_source
         lda     stack_h+1, y
-        sta     move_dwn_src+1
+        sta     move_source+1
         pla
         jsr     move_dwn
         jmp     next_ins_incsp_2
@@ -58,11 +54,6 @@ tmp5=divmod_sign
 
         ; Note: this is used from alloc.asm, so can't be inlined above
 .proc   move_dwn
-
-.ifdef NO_SMCODE
-src     = move_dwn_src
-dst     = move_dwn_dst
-.endif
 
         ; On input:
         ;    Length:            AX
@@ -86,9 +77,9 @@ dst     = move_dwn_dst
         ; the expression: Length + Length/256 to calculate our X and Y:
         ;
         clc
-        sta     tmp5
+        sta     tmp3
         txa
-        adc     tmp5
+        adc     tmp3
         tay
         bcc     :+
         inx     ; On carry, we need to add 1 to X and Y (because we are
@@ -101,52 +92,43 @@ dst     = move_dwn_dst
         ; to start the copy from the end of the block.
         ; This simplifies to adding:
         ;    256 * (X-1) + (255-X) = 255 * X - 1
-        stx     tmp5
+        stx     tmp3
         dex
 
         clc
-        lda     move_dwn_src
-        sbc     tmp5
-        sta     src
+        lda     move_source
+        sbc     tmp3
+        sta     move_source
         txa
-        adc     move_dwn_src+1
-        sta     src+1
+        adc     move_source+1
+        sta     move_source+1
 
         clc
-        lda     move_dwn_dst
-        sbc     tmp5
-        sta     dst
+        lda     move_dest
+        sbc     tmp3
+        sta     move_dest
         txa
-        adc     move_dwn_dst+1
-        sta     dst+1
+        adc     move_dest+1
+        sta     move_dest+1
+
+        lda     #$88    ; DEY
+        sta     move_ins
 
         inx     ; Restore X
         inx     ; Add 1, now value is from 1 to 255
 
         ; Copy Y bytes down in the first iteration, 255 in the following
 cloop:
-.ifdef NO_SMCODE
-        ; 17 cycles / iteration
-        lda     (src),y
-        sta     (dst),y
-.else
-        ; 15 cycles / iteration, plus 14 cycles more at preparation
-src = * + 1
-        lda     $FF00,y
-dst = * + 1
-        sta     $FF00,y
-.endif
-        dey
-        bne     cloop
+        jsr     move_loop
 
         ; We need to decrease the pointers by 255
 next_page:
-        inc     src
+        inc     move_source
         beq     :+
-        dec     src+1
-:       inc     dst
+        dec     move_source+1
+:       inc     move_dest
         beq     :+
-        dec     dst+1
+        dec     move_dest+1
 :
         ; And copy 255 bytes more!
         dey

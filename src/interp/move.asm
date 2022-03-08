@@ -28,24 +28,25 @@
 ; -------------------------
 
         .import         stack_l, stack_h, next_ins_incsp_2
-        .importzp       tmp3, saddr
+        .importzp       tmp3, move_source, move_dest, move_ins, move_loop
 
-.ifdef NO_SMCODE
-src = tmp3
-dst = saddr
-.endif
+src = move_source
+dst = move_dest
         .segment        "RUNTIME"
 
 .proc   EXE_MOVE  ; move memory up
         pha
         lda     stack_l, y
-        sta     saddr
+        sta     dst
         lda     stack_h, y
         sta     dst+1
         lda     stack_l+1, y
-        sta     tmp3
+        sta     src
         lda     stack_h+1, y
         sta     src+1
+
+        lda     #$C8    ; INY
+        sta     move_ins
         pla
 
         ; copy first bytes by adjusting the pointer *down* just the correct
@@ -54,13 +55,13 @@ dst = saddr
         inx
         tay
         clc
-        adc     tmp3
+        adc     src
         sta     src
         bcs     :+
         dec     src+1
 :       tya
         clc
-        adc     saddr
+        adc     dst
         sta     dst
         bcs     :+
         dec     dst+1
@@ -71,19 +72,7 @@ dst = saddr
         tay
         iny
 cloop:
-.ifdef NO_SMCODE
-        ; 16/17 cycles / iteration
-        lda     (src),y       ; 5/6
-        sta     (dst),y       ; 6
-.else
-        ; 14/15 cycles / iteration, plus 10 cycles more at preparation
-src = * + 1
-        lda     $FF00,y         ; 5/4
-dst = * + 1
-        sta     $FF00,y         ; 5
-.endif
-        iny
-        bne     cloop
+        jsr     move_loop
 cpage:
         ; From now-on we copy full pages!
         inc     src+1
