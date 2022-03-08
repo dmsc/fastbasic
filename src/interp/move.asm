@@ -27,27 +27,15 @@
 ; MOVE: copy memory upwards
 ; -------------------------
 
-        .import         stack_l, stack_h, next_ins_incsp_2
-        .importzp       tmp3, move_source, move_dest, move_ins, move_loop
+        .import         stack_l, stack_h, next_ins_incsp_2, move_get_ptr
+        .importzp       move_source, move_dest, move_ins, move_loop
 
 src = move_source
 dst = move_dest
         .segment        "RUNTIME"
 
 .proc   EXE_MOVE  ; move memory up
-        pha
-        lda     stack_l, y
-        sta     dst
-        lda     stack_h, y
-        sta     dst+1
-        lda     stack_l+1, y
-        sta     src
-        lda     stack_h+1, y
-        sta     src+1
-
-        lda     #$C8    ; INY
-        sta     move_ins
-        pla
+        jsr     move_get_ptr
 
         ; copy first bytes by adjusting the pointer *down* just the correct
         ; amount: from  "(ptr-(256-len)) + (256-len)" to "(ptr+len-256) + 256"
@@ -66,11 +54,16 @@ dst = move_dest
         bcs     :+
         dec     dst+1
 :
+
+        lda     #$C8    ; INY
+        sta     move_ins
+
         tya
         beq     cpage
         eor     #$ff
         tay
         iny
+
 cloop:
         jsr     move_loop
 cpage:
@@ -80,7 +73,11 @@ cpage:
         dex
         bne     cloop
 
-xit:    jmp     next_ins_incsp_2
+        ; Restore DEY in loop
+        lda     #$88    ; DEY
+        sta     move_ins
+
+        jmp     next_ins_incsp_2
 
 .endproc
 

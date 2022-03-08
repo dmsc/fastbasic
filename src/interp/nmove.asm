@@ -27,7 +27,7 @@
 ; -MOVE: copy memory downwards
 ; ----------------------------
 
-        .export         move_dwn
+        .export         move_dwn, move_get_ptr
         .import         stack_l, stack_h, next_ins_incsp_2
 
         .exportzp       move_dwn_src, move_dwn_dst
@@ -38,6 +38,12 @@ move_dwn_dst= move_dest
         .segment        "RUNTIME"
 
 .proc   EXE_NMOVE  ; move memory down
+        jsr     move_get_ptr
+        jsr     move_dwn
+        jmp     next_ins_incsp_2
+.endproc
+
+.proc   move_get_ptr
         pha
         lda     stack_l, y
         sta     move_dest
@@ -48,8 +54,7 @@ move_dwn_dst= move_dest
         lda     stack_h+1, y
         sta     move_source+1
         pla
-        jsr     move_dwn
-        jmp     next_ins_incsp_2
+        rts
 .endproc
 
         ; Note: this is used from alloc.asm, so can't be inlined above
@@ -110,9 +115,6 @@ move_dwn_dst= move_dest
         txa
         adc     move_dest+1
         sta     move_dest+1
-
-        lda     #$88    ; DEY
-        sta     move_ins
 
         inx     ; Restore X
         inx     ; Add 1, now value is from 1 to 255
