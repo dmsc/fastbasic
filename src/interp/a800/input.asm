@@ -28,6 +28,7 @@
 ; ------------
 
         .importzp       IOCHN, IOERROR, next_instruction
+        .export         line_buf
 
         .include "atari.inc"
 

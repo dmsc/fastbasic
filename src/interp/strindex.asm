@@ -28,9 +28,7 @@
 ; ---------------
 
         .importzp       tmp1, tmp3
-        .import         stack_l, stack_h, next_ins_incsp_2
-
-        .include "atari.inc"
+        .import         stack_l, stack_h, next_ins_incsp_2, line_buf
 
         .segment        "RUNTIME"
 
@@ -69,7 +67,7 @@ ok1:
 copy_str:
         inx
         lda     (tmp1), y
-        sta     LBUFF-1, x
+        sta     line_buf-1, x
         cpy     tmp3
         bcs     xit
         iny
@@ -77,11 +75,11 @@ copy_str:
         bcc     copy_str
 
 xit:
-        stx     LBUFF-1         ; Set string length
+        stx     line_buf-1      ; Set string length
 
         ; Return new string position
-        lda     #<(LBUFF-1)
-        ldx     #>(LBUFF-1)
+        lda     #<(line_buf-1)
+        ldx     #>(line_buf-1)
         jmp     next_ins_incsp_2
 
 zero:

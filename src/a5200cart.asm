@@ -84,7 +84,8 @@ STRIG2B = $226
 STRIG3B = $227
 
 stack_start = $228      ; Stack is from $228 to $277
-line_buf = $280         ; This is the same as "LBUFF" in the A800 version:
+line_buf = $280         ; This is the same as "LBUFF" in the A800 version,
+                        ; so it's used from $27F and up to $37F.
 
         ; Keyboard handling
         .data
