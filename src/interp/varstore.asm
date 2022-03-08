@@ -28,7 +28,7 @@
 ; -------------------------
 
         .import         get_op_var, alloc_array
-        .importzp       next_instruction, tmp2
+        .importzp       next_instruction, tmp2, move_dest
 
         .segment        "RUNTIME"
 
@@ -40,8 +40,8 @@
 
 .proc   EXE_DIM         ; AX = array size, SADDR = variable address
         jsr     alloc_array
-        lda     tmp2
-        ldx     tmp2+1
+        lda     move_dest
+        ldx     move_dest+1
 .endproc        ;  Fall through
 
 .proc   EXE_VAR_STORE  ; DPOKE (VAR), AX

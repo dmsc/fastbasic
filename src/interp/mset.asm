@@ -28,16 +28,16 @@
 ; ---------------------------------------
 
         .import         stack_l, stack_h, next_ins_incsp_2, mem_set
-        .importzp       tmp1, tmp2
+        .importzp       tmp1, move_dest
 
         .segment        "RUNTIME"
 
 .proc   EXE_MSET
 
         ldx     stack_l+1, y
-        stx     tmp2
+        stx     move_dest
         ldx     stack_h+1, y
-        stx     tmp2+1
+        stx     move_dest+1
 
         ldx     stack_l, y
         stx     tmp1

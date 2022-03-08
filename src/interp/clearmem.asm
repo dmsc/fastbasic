@@ -32,7 +32,7 @@
         .exportzp       saved_cpu_stack
 
         .import         putc, var_page, __HEAP_RUN__, __HEAP_SIZE__
-        .importzp       tmp1, tmp2, array_ptr
+        .importzp       tmp1, array_ptr, move_dest
 
         .include        "target.inc"
 
@@ -83,7 +83,7 @@ saved_cpu_stack:
 .endproc        ; Fall through
 
         ; Allocate space for a new array AX = SIZE
-        ; Returns: pointer to allocated memory in TMP2
+        ; Returns: pointer to allocated memory in MOVE_DEST
         ;          size of allocated memory in ALLOC_SIZE
         ;          X=0 and Y=0
 .proc alloc_array
@@ -92,14 +92,14 @@ saved_cpu_stack:
         stx     alloc_size + 1
 
         lda     array_ptr
-        sta     tmp2
+        sta     move_dest
         clc
         adc     alloc_size
         sta     array_ptr
         tay
 
         lda     array_ptr+1
-        sta     tmp2+1
+        sta     move_dest+1
         adc     alloc_size+1
         sta     array_ptr+1
         bcs     err_nomem
@@ -108,15 +108,15 @@ saved_cpu_stack:
         sbc     MEMTOP+1
         bcs     err_nomem
 
-        ; Clears memory from (tmp2) of (alloc_size) size
+        ; Clears memory from (move_dest) of (alloc_size) size
 ::mem_set_0:
         ldy     #0      ; Value to set
 
 ::mem_set:
         txa     ; X = (alloc_size+1)
         clc
-        adc     tmp2+1
-        sta     tmp2+1
+        adc     move_dest+1
+        sta     move_dest+1
         tya
         inx
         ldy     alloc_size
@@ -124,9 +124,9 @@ saved_cpu_stack:
 ;        .byte   $2C   ; Skip 2 bytes over next "DEC"
         bne     loop    ; Prefer branch, is faster
 
-pgloop: dec     tmp2+1
+pgloop: dec     move_dest+1
 loop:   dey
-        sta     (tmp2), y
+        sta     (move_dest), y
         bne     loop
 
 nxt:    dex

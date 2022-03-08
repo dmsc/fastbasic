@@ -28,7 +28,7 @@
 ; -----------------------------
 
         .export         set_grmode, gr_mask_p, gr_shift_x
-        .importzp       tmp1, tmp2, next_instruction
+        .importzp       tmp1, move_dest, next_instruction
         .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC, COLOR
         .import         mem_set_0, MEMTOP, GPRIOR
 
@@ -97,10 +97,10 @@
 
         lda     mem_adr_l, x
         sta     SAVMSC
-        sta     tmp2
+        sta     move_dest
         lda     mem_adr_h, x
         sta     SAVMSC + 1
-        sta     tmp2+1
+        sta     move_dest+1
         lda     dl_adr_l, x
         sta     SDLSTL
         sta     MEMTOP
@@ -114,10 +114,10 @@
         ; Clear memory
         lda     #$00
         sec
-        sbc     tmp2
+        sbc     move_dest
         sta     tmp1
         lda     #$40
-        sbc     tmp2+1
+        sbc     move_dest+1
         tax
         jsr     mem_set_0
 

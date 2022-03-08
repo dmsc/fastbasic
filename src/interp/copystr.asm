@@ -28,7 +28,8 @@
 ; ------------------------------------
 
         .import         alloc_array
-        .importzp       array_ptr, tmp1, tmp2, tmp3, saddr, next_instruction
+        .importzp       array_ptr, tmp1, saddr, next_instruction
+        .importzp       move_source, move_dest, move_loop
 
         .segment        "RUNTIME"
 
@@ -36,17 +37,17 @@
 ; Returns Y=0
 .proc   get_pointers
         ; Store source pointer
-        sta     tmp3
-        stx     tmp3+1
+        sta     move_source
+        stx     move_source+1
         ; Get destination pointer - allocate if 0
         ldy     #1
         lda     (saddr), y
         beq     alloc
 
-        sta     tmp2+1
+        sta     move_dest+1
         dey
         lda     (saddr), y
-        sta     tmp2
+        sta     move_dest
         rts
 
 alloc:
@@ -67,16 +68,13 @@ alloc:
         jsr     get_pointers
 
         ; Copy length
-        lda     (tmp3), y
-        sta     (tmp2), y
+        lda     (move_source), y
+        sta     (move_dest), y
         tay
         beq     xit
 
         ; Copy data
-cloop:  lda     (tmp3), y
-        sta     (tmp2), y
-        dey
-        bne     cloop
+cloop:  jsr     move_loop
 xit:    jmp     next_instruction
 .endproc
 
@@ -84,15 +82,15 @@ xit:    jmp     next_instruction
 .proc   EXE_CAT_STR    ; AX: source string   (SP): destination *variable* address
         jsr     get_pointers
 
-        lda     (tmp2), y       ; Destination length
+        lda     (move_dest), y  ; Destination length
         sta     tmp1
 
         clc
-        adc     (tmp3), y       ; Source length
+        adc     (move_source), y; Source length
         bcc     ok_len
         lda     #255            ; String length overflow, fix at maximum
 ok_len:
-        sta     (tmp2), y       ; Store new length
+        sta     (move_dest), y  ; Store new length
 
         ; Get ending source position into Y
         sec
@@ -103,10 +101,10 @@ ok_len:
         ; Fix destination pointer and jump to copy loop
         lda     tmp1
         clc
-        adc     tmp2
-        sta     tmp2
+        adc     move_dest
+        sta     move_dest
         bcc     EXE_COPY_STR::cloop
-        inc     tmp2+1
+        inc     move_dest+1
         bcs     EXE_COPY_STR::cloop
 .endproc
 
