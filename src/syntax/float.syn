@@ -113,7 +113,7 @@ NOT_EXPR:
 
 # Print & Input
 PRINT_ONE:
-        FP_EXPR emit { TOK_FP_STR, TOK_PRINT_STR }
+        FP_EXPR emit { TOK_FP_STR }
 
 INPUT_VAR:
         VAR_FP_LVALUE_SADDR    emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }

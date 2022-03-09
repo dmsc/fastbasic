@@ -29,12 +29,14 @@
 
         .import         putc
         .importzp       tmp1, tmp2, next_instruction
+        .export         print_str_tmp1
 
         .segment        "RUNTIME"
 
-.proc   EXE_PRINT_STR   ; PRINT string
+.proc   EXE_PRINT_STR   ; PRINT string in AX
         sta     tmp1
         stx     tmp1+1
+ptmp:                   ; Prints string in TMP1
         ldy     #0
         lda     (tmp1), y       ; LENGTH
         beq     nil
@@ -46,6 +48,8 @@ loop:   iny
         bne     loop
 nil:    jmp     next_instruction
 .endproc
+
+print_str_tmp1 = EXE_PRINT_STR::ptmp
 
         .include "deftok.inc"
         deftoken "PRINT_STR"

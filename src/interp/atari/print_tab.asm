@@ -27,21 +27,19 @@
 ; Print a tabulation (comma separator in print)
 ; ---------------------------------------------
 
-        .import         putc, stack_l
-        .importzp       sptr, next_instruction, tmp1
+        .import         putc, stack_l, print_str_tmp1
+        .importzp       sptr, next_instruction, tmp1, tmp2
 
         .include "target.inc"
 
         .segment        "RUNTIME"
 
-
-.proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
-        sta     tmp1
+.proc   do_tab          ; Print spaces to advance:
         clc
         sbc     COLCRS
         bcs     ok
 rep:
-        adc     tmp1
+        adc     tmp2
         bcc     rep
 
 ok:
@@ -50,10 +48,34 @@ ok:
         jsr     putc
         dey
         bpl     :-
+        rts
+.endproc
+
+.proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
+        sta     tmp2
+        jsr     do_tab
         jmp     next_instruction
+.endproc
+
+.proc   EXE_PRINT_RTAB  ; PRINT RTAB, next string aligned to column N
+        sta     tmp1    ; Save AX (string address)
+        stx     tmp1+1
+
+        lda     stack_l, y      ; Get TAB position
+        sta     tmp2
+
+        ldy     #0
+        sec
+        sbc     (tmp1), y       ; subtract string length
+
+        jsr     do_tab
+
+        inc     sptr
+        jmp     print_str_tmp1  ; Print string in tmp1
 .endproc
 
         .include "deftok.inc"
         deftoken "PRINT_TAB"
+        deftoken "PRINT_RTAB"
 
 ; vi:syntax=asm_ca65

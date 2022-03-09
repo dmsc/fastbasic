@@ -28,7 +28,7 @@
 ; -----------------
 
         .export         putc
-        .importzp       IOCHN, IOERROR, tmp2
+        .importzp       IOCHN, IOERROR, tmp3
 
         .include "atari.inc"
 
@@ -48,10 +48,10 @@
 .endproc
 
 .proc   putc
-        sty     tmp2+1
+        sty     tmp3+1
         jsr     putc_direct
         sty     IOERROR
-save_y: ldy     tmp2+1
+save_y: ldy     tmp3+1
         rts
 .endproc
 

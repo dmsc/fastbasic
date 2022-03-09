@@ -997,6 +997,7 @@ Console Print and Input Statements
 **Print Strings And Numbers**  
 **PRINT _expr_, ... / ?**  
 **PRINT _expr_ TAB(_expr_) ...**  
+**PRINT _expr_ RTAB(_expr_) ...**  
 **PRINT _expr_ ; ...**
 
   Outputs strings and numbers to the
@@ -1025,24 +1026,57 @@ Console Print and Input Statements
   same as using a comma to separate
   arguments. This is abbreviated `T.`.
 
-  Note that the `,` and `TAB` always
-  print at least one space, and that to
-  separate `TAB` and the previous and
-  next arguments you can use a `;` or
-  simply a space.
+  The `RTAB` function advances the
+  position so that the next argument to
+  print ends just before a column
+  multiple of the argument, right
+  aligning the printing of the data.
+  This is abbreviated `RT.`.
+
+  Note that `,`, `TAB` and `RTAB`
+  always print at least one space, and
+  that to separate `TAB` or `RTAB` and
+  the previous and next arguments you
+  can use a `;` or simply a space.
 
   See the _Device Input and Output
   Statements_ section for the `PRINT #`
   usage.
 
+  This example shows the usage of `TAB`
+  and `RTAB`, note that the columns
+  will be left and right aligned
+  respectively:
+
+      FOR i=0 TO 10
+        n = i*(9-2*i)*134
+        ? TAB(8) "Val:" RTAB(20) n
+      NEXT
+
+   The output is:
+
+      Val:0         0
+      Val:1       938
+      Val:2      1340
+      Val:3      1206
+      Val:4       536
+      Val:5      -670
+      Val:6     -2412
+      Val:7     -4690
+      Val:8     -7504
+      Val:9    -10854
+      Val:10   -14740
+
   *Advanced:* To implement the spacing
-  on `,` and `TAB`, FastBasic uses the
-  current column in the OS, so that
-  `POSITION` and printing to a graphics
-  screen will work ok, unlike Atari
-  BASIC; but when printing to a file or
-  other devices the number of spaces
-  will not be the same.
+  on `,`, `TAB` and `RTAB`, FastBasic
+  uses the current column in the OS, so
+  that `POSITION` and printing to a
+  graphics screen will work ok, unlike
+  Atari BASIC; but when printing to a
+  file or other devices the number of
+  spaces will not be correct. Avoid
+  using the functions to print to any
+  device except the screen.
 
 
 **Writes A Character To Screen**  

@@ -50,7 +50,7 @@ TOKENS {
  # Position (used also in graphics)
  TOK_POSITION
  # Print statements
- TOK_PRINT_STR, TOK_PRINT_TAB
+ TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_RTAB
  # Simple console input and output
  TOK_GETKEY, TOK_INPUT_STR, TOK_PUT, TOK_BYTE_PUT
  # Jumps
@@ -287,15 +287,23 @@ STRING_FUNCTIONS:
 # - PRINT separator or an end-of-line if not given:
 PRINT_SEP_EOL:
         "Tab" T_EXPR emit TOK_PRINT_TAB
+        # Right-TAB is complicated because we need to apply it to the *next*
+        # parameter, so we read that parameter and the next optional separator:
+        "RTab" T_EXPR emit TOK_PUSH \
+               PRINT_ONE emit { TOK_PRINT_RTAB } PRINT_SEP_EOL
         "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
         E_EOL emit { TOK_BYTE_PUT, ATEOL }
 
+# - One item to print, converted to string:
+PRINT_ONE_STR:
+        PRINT_ONE emit TOK_PRINT_STR
+        pass
+
 # - One item to print, followed by a separator:
 PRINT_ONE:
-        EXPR emit { TOK_INT_STR, TOK_PRINT_STR }
-        STR_EXPR emit TOK_PRINT_STR
-        pass
+        EXPR emit { TOK_INT_STR }
+        STR_EXPR
 
 # - PRINT expression, including the optional I/O channel
 PRINT_EXPR:
@@ -304,7 +312,7 @@ PRINT_EXPR:
 
 PRINT_MORE:
         E_EOL IO_CHAN0
-        PRINT_ONE PRINT_SEP_EOL PRINT_MORE
+        PRINT_ONE_STR PRINT_SEP_EOL PRINT_MORE
 
 # Parse multi-line IF
 THEN_OR_MULTILINE: 'THEN'
