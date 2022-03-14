@@ -59,11 +59,14 @@ key:
 del:
         dey
         bmi     again
+        lda     #' '
+        jsr     putc
+        dec     COLCRS
         dec     COLCRS
         bpl     key
 
 ok:
-        sta     line_buf, y
+        sta     line_buf + 1, y
         jsr     putc
         iny
         bmi     del
@@ -72,7 +75,7 @@ ok:
         beq     del
 
 ret:
-        sta     line_buf
+        sty     line_buf
 
         lda     #<line_buf
         ldx     #>line_buf
