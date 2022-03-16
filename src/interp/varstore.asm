@@ -38,7 +38,7 @@
         beq     EXE_VAR_STORE
 .endproc
 
-.proc   EXE_DIM         ; AX = array size, SADDR = variable address
+.proc   EXE_DIM         ; AX = array size, variable in opcode
         jsr     alloc_array
         lda     move_dest
         ldx     move_dest+1
