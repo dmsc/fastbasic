@@ -104,7 +104,7 @@ $(AR65_HOST): $(AR65_SRC) | build/bin
 # Target compiler build
 ifeq ($(CROSS),)
 # No cross-compilation, just copy host tools to target tools:
-$(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/% | build/compiler
+$(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/%$(EXT) | build/compiler
 	$(Q)cp -f $< $@
 else
 # Cross-compilation: compile for target
