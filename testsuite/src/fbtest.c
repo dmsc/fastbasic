@@ -27,13 +27,26 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+# define PATH_SEP "\\"
+// Implement missing "strndup"
+static char *strndup(const char *s, size_t n)
+{
+    char *ret = malloc(n + 1);
+    strncpy(ret, s, n);
+    ret[n] = 0;
+    return ret;
+};
+#else
+# define PATH_SEP "/"
+#endif
 
 // Flags
 static int verbose;
 static const char *fb_atari_compiler = "build/bin/fbc.xex";
-static const char *fb_compiler       = "build/bin/fastbasic";
-static const char *ca65_path         = "build/bin/ca65";
-static const char *ld65_path         = "build/bin/ld65";
+static const char *fb_compiler       = "build" PATH_SEP "bin" PATH_SEP "fastbasic";
+static const char *ca65_path         = "build" PATH_SEP "bin" PATH_SEP "ca65";
+static const char *ld65_path         = "build" PATH_SEP "bin" PATH_SEP "ld65";
 static const char *fb_lib_path       = "build/compiler";
 static const char *output_dir        = "build/tests";
 
