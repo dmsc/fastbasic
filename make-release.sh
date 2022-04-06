@@ -29,17 +29,17 @@ echo ""
 
 compile_lin64() {
     # Full compile for 64bit Linux (and ATR)
-    make $ncpu CROSS= EXT= SHEXT= OPTFLAGS="$LIN64_FLAGS" dist
+    make $ncpu CROSS= OPTFLAGS="$LIN64_FLAGS" dist
     mv -f build/fastbasic.zip "${out}-linux64.zip"
     mv -f build/fastbasic.atr "${out}.atr"
-    make CROSS= EXT= SHEXT= distclean
+    make CROSS= distclean
 }
 
 compile_win32() {
     # Compile with mingw-w64 cross compiler to 32bit:
-    make $ncpu CROSS=i686-w64-mingw32- EXT=.exe SHEXT=.bat TARGET_OPTFLAGS="$WIN_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS=i686-w64-mingw32- TARGET_OPTFLAGS="$WIN_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-win32.zip"
-    make EXT=.exe SHEXT=.bat distclean
+    make CROSS=i686-w64-mingw32- distclean
 }
 
 compile_osx() {
@@ -48,9 +48,9 @@ compile_osx() {
     # Compile FAT binary for OSX.
     # Note that this is simpler with CLANG, but it produces a binary slower and twice the size!
     #  First compile to 64bit:
-    make $ncpu CROSS=x86_64-apple-darwin20.2- CC=cc CXX=c++ SHEXT= EXT= TARGET_OPTFLAGS="$OSX64_FLAGS" build/fastbasic.zip
+    make $ncpu CROSS=x86_64-apple-darwin20.2- CC=cc CXX=c++ TARGET_OPTFLAGS="$OSX64_FLAGS" build/fastbasic.zip
     mv build/fastbasic.zip "${out}-macosx.zip"
-    make SHEXT= EXT= distclean
+    make CROSS=x86_64-apple-darwin20.2- CC=cc CXX=c++ distclean
     PATH="$OPATH"
 }
 
