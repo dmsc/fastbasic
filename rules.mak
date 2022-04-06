@@ -104,7 +104,7 @@ $(AR65_HOST): $(AR65_SRC) | build/bin
 # Target compiler build
 ifeq ($(CROSS),)
 # No cross-compilation, just copy host tools to target tools:
-$(COMPILER_TARGET): build/compiler/%$(EXT): build/bin/%$(EXT) | build/compiler
+$(COMPILER_TARGET): build/compiler/%$(TGT_EXT): build/bin/%$(HOST_EXT) | build/compiler
 	$(Q)cp -f $< $@
 else
 # Cross-compilation: compile for target
@@ -129,7 +129,7 @@ $(AR65_TARGET): $(AR65_SRC) | build/compiler
 	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
 # Copy compatibility binaries
-build/compiler/fb$(EXT): build/compiler/fastbasic$(EXT)
+build/compiler/fb$(TGT_EXT): build/compiler/fastbasic$(TGT_EXT)
 	$(Q)cp -f $< $@
 endif
 
@@ -258,7 +258,7 @@ build/compiler/%: compiler/% | build/compiler
 	$(Q)cp -f $< $@
 
 # Copy compatibility binaries
-build/bin/fb$(EXT): build/bin/fastbasic$(EXT)
+build/bin/fb$(HOST_EXT): build/bin/fastbasic$(HOST_EXT)
 	$(Q)cp -f $< $@
 
 # Copy syntax files to compiler folder

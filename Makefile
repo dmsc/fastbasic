@@ -66,13 +66,22 @@ TARGET_CFLAGS=-Wall $(TARGET_OPTFLAGS)
 Q=@
 ECHO=@printf "\e[0;32m%s\e[0m\n"
 
-# Detect Windows OS and set file extensions:
+# Detect target Windows OS and set target file extensions:
 ifeq ($(strip $(shell echo '_WIN32' | $(CROSS)$(CXX) -E - | grep  "_WIN32")),_WIN32)
     # Linux / OS-X
-    EXT=
+    TGT_EXT=
 else
     # Windows:
-    EXT=.exe
+    TGT_EXT=.exe
+endif
+
+# Detect host Windows OS and set host file extensions:
+ifeq ($(strip $(shell echo '_WIN32' | $(CXX) -E - | grep  "_WIN32")),_WIN32)
+    # Linux / OS-X
+    HOST_EXT=
+else
+    # Windows:
+    HOST_EXT=.exe
 endif
 
 # Get version string
@@ -87,15 +96,15 @@ PROGS=build/bin/fb.xex build/bin/fbi.xex build/bin/fbc.xex
 
 # To allow cross-compilation (ie, from Linux to Windows), we build two versions
 # of the compiler, one for the host (build machine) and one for the target.
-FASTBASIC_HOST=build/bin/fastbasic
-CA65_HOST=build/bin/ca65
-LD65_HOST=build/bin/ld65
-AR65_HOST=build/bin/ar65
+FASTBASIC_HOST=build/bin/fastbasic$(HOST_EXT)
+CA65_HOST=build/bin/ca65$(HOST_EXT)
+LD65_HOST=build/bin/ld65$(HOST_EXT)
+AR65_HOST=build/bin/ar65$(HOST_EXT)
 
-FASTBASIC_TARGET=build/compiler/fastbasic$(EXT)
-CA65_TARGET=build/compiler/ca65$(EXT)
-LD65_TARGET=build/compiler/ld65$(EXT)
-AR65_TARGET=build/compiler/ar65$(EXT)
+FASTBASIC_TARGET=build/compiler/fastbasic$(TGT_EXT)
+CA65_TARGET=build/compiler/ca65$(TGT_EXT)
+LD65_TARGET=build/compiler/ld65$(TGT_EXT)
+AR65_TARGET=build/compiler/ar65$(TGT_EXT)
 
 LIB_INT=build/compiler/fastbasic-int.lib
 LIB_FP=build/compiler/fastbasic-fp.lib
@@ -579,7 +588,7 @@ COMPILER_HOST=\
 	 $(LD65_HOST)\
 	 $(AR65_HOST)\
 	 $(FASTBASIC_HOST)\
-	 build/bin/fb$(EXT)\
+	 build/bin/fb$(HOST_EXT)\
 
 # Target compiler
 COMPILER_TARGET=\
@@ -587,7 +596,7 @@ COMPILER_TARGET=\
 	 $(LD65_TARGET)\
 	 $(AR65_TARGET)\
 	 $(FASTBASIC_TARGET)\
-	 build/compiler/fb$(EXT)\
+	 build/compiler/fb$(TGT_EXT)\
 
 # All ASM Output files
 OBJS=$(RT_OBJS_FP) \
