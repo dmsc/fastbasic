@@ -193,9 +193,10 @@ copy_interpreter:
 center  =   228/2
 range   =   80/2
 
-        lda     #0
-        sta     COLRSH          ; Reset ATRACT COLOR SHIFTER, used by FB's DLI
-        sta     SKCTL           ; Disable keyboard processing, to avoid spurious interrupts
+        ldy     #0
+        sty     COLRSH          ; Reset ATRACT COLOR SHIFTER, used by FB's DLI
+        iny
+        sty     SKCTL           ; Disable keyboard processing, to avoid spurious interrupts
 
         ldy     #6
         ;Read analog sticks and make it look like a digital stick
