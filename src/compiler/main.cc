@@ -269,6 +269,8 @@ int main(int argc, char **argv)
                                       exe_name,
                                       "-Ln",
                                       os::add_extension(exe_name, ".lbl")};
+        for(auto &l : link_opts)
+            args.push_back(l);
         for(auto &f : link_files)
             args.push_back(f);
         args.push_back(lib_name);
