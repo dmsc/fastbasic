@@ -22,5 +22,5 @@
 
 namespace syntax
 {
-bool syntax_optimize(sm_list &sml, bool verbose);
+bool syntax_optimize(sm_list &sml, bool verbose, bool merge);
 } // namespace syntax

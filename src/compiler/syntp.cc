@@ -168,7 +168,7 @@ int main(int argc, const char **argv)
     pf.show_summary();
 
     // Optimize
-    syntax_optimize(sl, true);
+    syntax_optimize(sl, true, true);
 
     // Open output files:
     std::ofstream ofile, hfile;

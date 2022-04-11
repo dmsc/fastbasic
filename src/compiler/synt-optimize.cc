@@ -21,12 +21,15 @@
 
 using namespace syntax;
 
-bool syntax::syntax_optimize(sm_list &sl, bool verbose)
+static bool syntax_merge(sm_list &sl, bool verbose)
 {
-    // Optimize parsing tables:
+    // Merge parsing tables:
     //
     //   If a table ends with a call to another table, and that table
     //   is only referenced once, just join the two tables.
+    //
+    //   If a table line is just a call to another table, and is only
+    //   referenced once, inline the table to the calling one.
     //
     // This is needed to allow floating-point syntax to alter integer
     // syntax without making the integer parser bigger.
@@ -73,15 +76,25 @@ bool syntax::syntax_optimize(sm_list &sl, bool verbose)
             }
         }
     }
-
     // Delete unused tables
     for(auto &n : to_delete)
         sl.sms.erase(n);
-    to_delete.clear();
 
-    //
-    //   If a table is empty, remove all references to it.
-    //
+    return true;
+}
+
+bool syntax::syntax_optimize(sm_list &sl, bool verbose, bool merge)
+{
+    // Optimize parsing tables:
+    // - Merge tables:
+    if(merge)
+    {
+        if(!syntax_merge(sl, verbose))
+            return false;
+    }
+
+    // - If a table is empty, remove all references to it.
+    std::vector<std::string> to_delete;
     for(const auto &sm : sl.sms)
     {
         if(sm.second->is_empty())
