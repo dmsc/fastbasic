@@ -27,7 +27,7 @@ SYMBOLS {
 }
 
 # Compatibility: Allows I/O channel number 6 in PRINT
-IO_CHAN_N6:
+IO_CHAN_N6: (only I/O channel 6 supported)
         "6"
 
 IO_CHAN: I/O channel number
