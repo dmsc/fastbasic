@@ -285,6 +285,18 @@ bool statemachine::end_call(std::string tab) const
     return false;
 }
 
+bool statemachine::just_call(std::string tab) const
+{
+    for(const auto &lc: code)
+    {
+        auto &l = lc.pc;
+        if(l.size() == 2 && l[0].type == pcode::c_call_table && l[0].str == tab &&
+           l[1].type == pcode::c_return)
+            return true;
+    }
+    return false;
+}
+
 bool statemachine::parse()
 {
     lnum = p.get_line();
@@ -341,6 +353,30 @@ bool statemachine::tail_call(const statemachine &from)
     for(auto &l : from.code)
         code.push_back(l);
     complete = from.complete;
+    return true;
+}
+
+bool statemachine::inline_call(std::string tab, const statemachine &from)
+{
+    if(complete)
+        return p.error("table '" + _name + "' was already completed");
+    if(from.complete)
+        return p.error("table '" + from._name + "' was already completed");
+
+    auto new_code = std::vector<line>();
+
+    for(const auto &l : code)
+    {
+        if(l.pc.size() == 2 && l.pc[0].type == pcode::c_call_table &&
+           l.pc[0].str == tab && l.pc[1].type == pcode::c_return)
+        {
+            for(auto &t : from.code)
+                new_code.push_back(t);
+        }
+        else
+            new_code.push_back(l);
+    }
+    code = new_code;
     return true;
 }
 

@@ -125,6 +125,7 @@ class statemachine
     int is_empty() const;
     void delete_call(std::string tab);
     bool end_call(std::string tab) const;
+    bool just_call(std::string tab) const;
     const std::vector<line> &get_code() const { return code; };
     int line_num() const { return lnum; }
     bool is_complete() const { return complete; }
@@ -134,6 +135,8 @@ class statemachine
     bool parse_extra();
     // Do a tail-call from one statemachine to another
     bool tail_call(const statemachine &from);
+    // Inline another table into this
+    bool inline_call(std::string tab, const statemachine &from);
     // Optimize state machine code
     void optimize();
     std::string error_text() const { return _desc; }

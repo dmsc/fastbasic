@@ -45,7 +45,7 @@ bool syntax::syntax_optimize(sm_list &sl, bool verbose)
         }
         if(used == 1)
         {
-            // This table was used only once, see if we can do a tail call
+            // This table was used only once, see if we can inline it
             for(const auto &sm2 : sl.sms)
             {
                 if(sm2.second->end_call(n))
@@ -55,6 +55,17 @@ bool syntax::syntax_optimize(sm_list &sl, bool verbose)
                         std::cerr << "syntax: optimizing table '" << n << "' into '"
                                   << sm2.second->name() << "'.\n";
                     if(!sm2.second->tail_call(*sm.second))
+                        return false;
+                    // Add name to tables to delete
+                    to_delete.push_back(n);
+                }
+                else if(sm2.second->just_call(n))
+                {
+                    // Perform optimization:
+                    if(verbose)
+                        std::cerr << "syntax: inline table '" << n << "' into '"
+                                  << sm2.second->name() << "'.\n";
+                    if(!sm2.second->inline_call(n, *sm.second))
                         return false;
                     // Add name to tables to delete
                     to_delete.push_back(n);
