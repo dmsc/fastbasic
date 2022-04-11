@@ -151,6 +151,4 @@ void target::load(std::string target_folder, std::string syntax_folder, std::str
         if(!pf.parse_file())
             throw std::runtime_error("error parsing syntax file: '" + name + "'");
     }
-    // Optimize
-    syntax_optimize(s, false);
 }
