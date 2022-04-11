@@ -159,6 +159,13 @@ an `:` or an `=` to separate the option from the argument.
   code. The default segment is `BYTECODE`, if you change the segment you must
   ensure that there is a segment with that name in the linker configuration.
 
+- **-DL:***symbol=value*  
+  Defines the linker symbol with the given value. This is used to pass options
+  to the linker that alter the configuration.
+
+  For example, passing `-DL:__CARTSIZE__=0x4000` when using the Atari 5200
+  target will produce a 16kB cartridge binary instead of the 32kB default.
+
 - **-target-path**:*path*  
   Sets the path where the target definition files are searched. The default is
   to search in the same folder as the compiler executable.

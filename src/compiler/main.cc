@@ -47,6 +47,7 @@ static int show_help()
                  " -C:<name>\tselect linker config file name\n"
                  " -S:<addr>\tselect binary starting address\n"
                  " -X:<opt>\tpass option to the assembler\n"
+                 " -DL:<sym=val>\tdefine linker symbol with given value\n"
                  " -o <name>\tselect output file name\n"
                  " -v\t\tshow version and exit\n"
                  " -h\t\tshow this help\n"
@@ -156,6 +157,11 @@ int main(int argc, char **argv)
         {
             link_opts.push_back("--start-addr");
             link_opts.push_back(arg.substr(3));
+        }
+        else if(arg.rfind("-DL:", 0) == 0 || arg.rfind("-DL=", 0) == 0)
+        {
+            link_opts.push_back("--define");
+            link_opts.push_back(arg.substr(4));
         }
         else if(arg.rfind("-syntax-path:", 0) == 0 || arg.rfind("-syntax-path=", 0) == 0)
         {
