@@ -108,25 +108,25 @@ SYMBOLS {
 INT_EXPR: integer expression
         T_EXPR BIT_EXPR_MORE M_EXPR_MORE INT_EXPR_MORE
 
-PUSH_T_EXPR:
+PUSH_T_EXPR: integer expression
         # Those produce about 1% faster code in the IDE for 12 extra bytes.
 #        emit TOK_PUSH_BYTE E_NUMBER_BYTE
 #        emit TOK_PUSH_NUM E_NUMBER_WORD
 #        emit TOK_PUSH_VAR_LOAD E_VAR_WORD
         emit TOK_PUSH T_EXPR
 
-INT_EXPR_MORE: '+', '-'
+INT_EXPR_MORE:
         "+" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_ADD INT_EXPR_MORE
         "-" PUSH_T_EXPR BIT_EXPR_MORE M_EXPR_MORE emit TOK_SUB INT_EXPR_MORE
         pass
 
-M_EXPR_MORE: '*', '/', 'MOD'
+M_EXPR_MORE:
         "*"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MUL M_EXPR_MORE
         "/"   PUSH_T_EXPR BIT_EXPR_MORE emit TOK_DIV M_EXPR_MORE
         "Mod" PUSH_T_EXPR BIT_EXPR_MORE emit TOK_MOD M_EXPR_MORE
         pass
 
-BIT_EXPR_MORE: '&', '!', 'EXOR'
+BIT_EXPR_MORE:
         "&"    PUSH_T_EXPR emit TOK_BIT_AND  BIT_EXPR_MORE
         "!"    PUSH_T_EXPR emit TOK_BIT_OR   BIT_EXPR_MORE
         "Exor" PUSH_T_EXPR emit TOK_BIT_EXOR BIT_EXPR_MORE
@@ -145,7 +145,7 @@ USR_EXPR_MORE:
         "," EXPR emit TOK_USR_PARAM USR_EXPR_MORE
         pass
 
-T_EXPR: integer constant
+T_EXPR: integer constant, variable or function
         emit TOK_BYTE E_NUMBER_BYTE
         emit TOK_NUM E_NUMBER_WORD
         "-" T_EXPR emit TOK_NEG

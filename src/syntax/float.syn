@@ -40,20 +40,20 @@ SYMBOLS {
 }
 
 # Floating point expressions
-FP_EXPR:
+FP_EXPR: floaring point expression
         FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
 
-FP_EXPR_MORE: '+', '-'
+FP_EXPR_MORE:
         "+" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_ADD FP_EXPR_MORE
         "-" FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE emit TOK_FP_SUB FP_EXPR_MORE
         pass
 
-FP_M_EXPR_MORE: '*', '/'
+FP_M_EXPR_MORE:
         "*" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_MUL FP_M_EXPR_MORE
         "/" FP_T_EXPR FP_E_EXPR_MORE emit TOK_FP_DIV FP_M_EXPR_MORE
         pass
 
-FP_E_EXPR_MORE: '^'
+FP_E_EXPR_MORE:
         "^" T_EXPR emit TOK_FP_IPOW FP_E_EXPR_MORE
         "^" emit TOK_FP_LOG10 FP_T_EXPR emit { TOK_FP_MUL, TOK_FP_EXP10 } FP_E_EXPR_MORE
         pass

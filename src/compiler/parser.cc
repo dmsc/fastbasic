@@ -71,6 +71,7 @@ static std::string ucase(std::string s)
 
 static bool parse_literal(parse &s, std::string lit)
 {
+    s.error("'" + ucase(lit) + "'");
     for(auto &ch : lit)
     {
         if(ch >= 'a' && ch <= 'z')
