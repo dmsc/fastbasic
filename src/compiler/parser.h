@@ -47,6 +47,17 @@ class parse
 
   public:
     static constexpr auto label_prefix = "fb_lbl_";
+    class saved_error
+    {
+      public:
+        int lvl;
+        std::string msg;
+        saved_error(int lvl, std::string msg) : lvl(lvl), msg(msg) {}
+        bool operator<(const saved_error &b) const
+        {
+            return lvl < b.lvl || (lvl == b.lvl && msg < b.msg);
+        }
+    };
     class saved_pos
     {
       public:
@@ -68,7 +79,7 @@ class parse
     std::string str;
     size_t pos;
     size_t max_pos;
-    std::vector<std::string> saved_errors;
+    std::set<saved_error> saved_errors;
     int linenum;
     std::map<std::string, std::vector<codew>> procs;
     std::vector<std::string> proc_stack;
@@ -238,13 +249,8 @@ class parse
         {
             if(pos >= max_pos)
             {
-                debug("Set error='" + str +
-                      "' "
-                      "at pos='" +
-                      std::to_string(pos) +
-                      "' "
-                      "mp='" +
-                      std::to_string(max_pos) + "'");
+                debug("Set error='" + str + "' @ pos=" + std::to_string(pos) +
+                      " mp=" + std::to_string(max_pos) + " lvl=" + std::to_string(lvl));
                 if(pos > max_pos)
                 {
                     debug("ERROR SAVED");
@@ -252,9 +258,7 @@ class parse
                 }
                 else
                     debug("ERROR ADDED");
-                if(saved_errors.end() ==
-                   std::find(saved_errors.begin(), saved_errors.end(), str))
-                    saved_errors.push_back(str);
+                saved_errors.emplace(lvl, str);
                 max_pos = pos;
             }
         }
@@ -264,7 +268,7 @@ class parse
     {
         // Loop error takes precedence over all other errors
         saved_errors.clear();
-        saved_errors.push_back(str);
+        saved_errors.emplace(lvl, str);
         debug("Set loop error='" + str + "'");
         return false;
     }

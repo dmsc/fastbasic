@@ -96,14 +96,21 @@ static bool parse_line(std::string line, int ln, parse &s, bool show_text,
             std::string msg = "parse error";
             if(!s.saved_errors.empty())
             {
+                // Get min level
+                auto ml =
+                    std::min_element(s.saved_errors.begin(), s.saved_errors.end(),
+                                     [](auto &a, auto &b) { return a.lvl < b.lvl; });
                 msg += ", expected: ";
                 bool first = true;
                 for(const auto &i : s.saved_errors)
                 {
-                    if(!first)
-                        msg += ", ";
-                    msg += i;
-                    first = false;
+                    if(i.lvl == ml->lvl)
+                    {
+                        if(!first)
+                            msg += ", ";
+                        msg += i.msg;
+                        first = false;
+                    }
                 }
             }
             throw parse_error(msg, s.max_pos);
