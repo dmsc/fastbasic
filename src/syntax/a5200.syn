@@ -29,9 +29,9 @@ SYMBOLS {
   # Used in base file
   PADDL0  = $11
   STICK0  = $21C
-  PTRIG0  = $220
   STRIG0  = $220
   STRIG0B = $224
+  PTRIG0  = $224
   CH      = import
   # Used in TIME function:
   RTCLOK1 = 1

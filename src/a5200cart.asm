@@ -76,12 +76,13 @@ STRIG1 = $221
 STRIG2 = $222
 STRIG3 = $223
 
-PTRIG0 = STRIG0
-
 STRIG0B = $224
 STRIG1B = $225
 STRIG2B = $226
 STRIG3B = $227
+
+        ; Make PTRIG() return the state of the secondary joystick button
+PTRIG0 = STRIG0B
 
 stack_start = $228      ; Stack is from $228 to $277
 line_buf = $280         ; This is the same as "LBUFF" in the A800 version,
