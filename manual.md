@@ -2100,17 +2100,17 @@ statement:
 | $D002 | Player 2 horizontal pos.  |
 | $D003 | Player 3 horizontal pos.  |
 | $D004 | Missile 0 horizontal pos. |
-| $D005 | Missile 0 horizontal pos. |
-| $D006 | Missile 0 horizontal pos. |
-| $D007 | Missile 0 horizontal pos. |
-| $D012 | Color of Player 0         |
-| $D013 | Color of Player 0         |
-| $D014 | Color of Player 0         |
-| $D015 | Color of Player 0         |
+| $D005 | Missile 1 horizontal pos. |
+| $D006 | Missile 2 horizontal pos. |
+| $D007 | Missile 3 horizontal pos. |
+| $D012 | Color of player/missile 0 |
+| $D013 | Color of player/missile 1 |
+| $D014 | Color of player/missile 2 |
+| $D015 | Color of player/missile 3 |
 | $D016 | Color register 0          |
 | $D017 | Color register 1          |
 | $D018 | Color register 2          |
 | $D019 | Color register 3          |
-| $D01A | Color of Background       |
+| $D01A | Color of background       |
 
 
