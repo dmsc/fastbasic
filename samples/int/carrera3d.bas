@@ -2,33 +2,26 @@
 ' ----------- by DMSC - 2015 -------------
 '
 ' Modified to run under FastBasic - 2017
-'
- ' Try reserving BASIC memory first, this catches low-memory
- ' situations instead of simply crashing.
- graphics 7
- dim memory(28672) byte
 
- ' Reserve 112 pages of memory for graphics and set 160x96 mode
- ' dlist = display lists pointer.
- '         150 bytes per display list, total of 11*6 = 66 display lists,
- '         but can't cross 1k boundary => 11KBytes, 44 pages
- ' gbase = graphic data pointer
- '         40 bytes per line, total of 48*4*2 = 384 lines => 15KBytes, 60 pages
- ' pmadr = Player 0 graphics pointer (plus 8 to pack over last graphics data).
- '         There are 256 bytes for each player, total 1k, 4 pages.
-  mem = peek(106)-112
-  poke 106,mem
-  dlist = mem * 256
+' Reserve memory for graphics and set 160x96 mode
+' dlist = display lists pointer.
+'         150 bytes per display list, total of 11*6 = 66 display lists,
+'         but can't cross 1k boundary => 11KBytes, 44 pages
+' gbase = graphic data pointer
+'         40 bytes per line, total of 48*4*2 = 384 lines => 15KBytes, 60 pages
+  dim memory(27647) byte
+
+  ' display list must be aligned to 1024 bytes:
+  dlist = (adr(memory)+1023)/1024 * 1024
   gbase = dlist + $2C00
-  pmadr = gbase + $4008
 
   ' Sets graphics mode, 160x96, 4 colors.
   graphics 7
+  pmgraphics 1
 
   ' Sets the start of the image to 255, (full color 3),
   ' we then use a "move" to copy to all the line.
   img = dpeek(88)
-  poke img, 255
 
   ' Make display-lists and graphics data
   ' Size of display list
@@ -43,7 +36,7 @@
     ' Loop over the 4 possible X values
     for x=0 to 3
       ' Clean the screen
-      move img, img+1, 80
+      mset img, 80, 255
       ' Draws the road with color 1 borders
       color 1
       plot x,1
@@ -82,7 +75,7 @@
     ' Advance the pointer to the graphics data
     gbase=gbase+320
     ' Fixes crossing over 4KB - this depends on the initial address!!
-    if gbase&960 = 960
+    if gbase&4095 > $EFF
       gbase = gbase+256
     endif
   next y
@@ -106,15 +99,15 @@
   next curvature
 
   ' Clears PM data
-  mset pmadr, 999, 0
+  mset pmadr(0), 1024, 0
 
   ' Our car bitmap data for the PM 0 and 1
   data pm1() byte = $18,$18,$18,$3C,$3C,$24,$24,$3C,$00,$18,$18,$3C,$7E,$7E,$00,$FF,$00,$7E,$7E
   data pm0() byte = $24,$24,$24,$3C,$3C,$00,$7E,$18,$DB,$C3,$C3,$C3,$FF,$FF,$FF,$C3,$C3,$C3,$C3
 
   ' Move to PM
-  move adr(pm1), pmadr+345, 19
-  move adr(pm0), pmadr+91, 19
+  move adr(pm1), pmadr(1)+97, 19
+  move adr(pm0), pmadr(0)+99, 19
 
   ' P/M over playfield and P0+P1 / P2+P3 blends
   poke 623,33
@@ -127,22 +120,17 @@
   dpoke 708, $EE52
   dpoke 706, $8640
 
-  ' Set P/M data address
-  poke $D407, mem+104
-
-  ' Enable P/M
-  poke $d01d, 2
   ' P0 quad width, P1 double width
   dpoke $d008, 259
 
   ' P2 shows distance traveled, set a basic shape
-  dpoke pmadr+635, 511
+  dpoke pmadr(2)+131, 511
 
   ' Enable ANTIC P/M DMA
   poke 559, 58
 
   ' Start of game loop
-  pmadr = 3000
+  spos = 3000
   do
 
     '# Current "drag"
@@ -161,18 +149,20 @@
     '# Position of car
     x = 1920
 
-    ' Main game loop, starts from "pmadr", on first run has a value bigger
-    ' than the end, so the race goes straight to the end screen.
-    ' This is a tricky optimization!!
-    for z=pmadr to 3000
+    ' Main game loop, starts from "spos".
+    ' On first run has a value bigger than the end,
+    ' so the race goes straight to the end screen.
+    for z=spos to 3000
       ' Waits for VBLANK, read collision register
       pause
       tmp = peek($d004)
 
-      ' Clear collision register and sets player position
+      ' Clear collision register
       poke $d01e, 0
+
       ' Set PM0 and PM1 x coordinates
-      dpoke $d000, (x/16) * 257 - 8
+      pmhpos 0, x/16 - 8
+      pmhpos 1, x/16
 
       ' Sets DL (for next frame)
       dpoke 560, dlist + curvature * 1024 + dlsize * (trackPos mod 6)
@@ -217,7 +207,7 @@
       endif
 
       ' Sets the Player 2 position to current track position
-      poke $d002, 48 + trackPos / 32
+      pmhpos 2, 48 + trackPos / 32
     next z
 
     ' End of game, shows score, turns of sound and waits for keystroke
@@ -226,5 +216,5 @@
     get tmp
 
     ' Next race starts at time 0 (a full race)
-    pmadr=0
+    spos=0
   loop
