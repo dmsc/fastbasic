@@ -630,7 +630,10 @@ static bool SMB_E_LABEL_CREATE(parse &s)
     auto &v = s.labels[name];
     // Check type
     if(!v.is_proc())
+    {
+        s.error("new label, got label already defined '" + name + "'");
         return false;
+    }
     // Store variable name
     s.add_text(name);
     s.last_label = name;

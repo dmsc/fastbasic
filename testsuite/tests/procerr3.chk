@@ -1,4 +1,4 @@
 Name: Check detection of PROC / DATA clash
 Test: compile-error
 Error: parse error at line 5 column 10
-Error-pos: 5:5
+Error-pos: 5:10
