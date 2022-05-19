@@ -111,6 +111,10 @@ var_stk         =       $480
         .zeropage
         ; Relocation amount
 reloc_addr:     .res    2
+last_label_num: .res    1
+laddr_search_num: .res  1
+loop_exit_comp = laddr_search_num
+
 
         .code
 
@@ -448,7 +452,7 @@ comp:
 
         ldy     #0
         lda     (tmp1), y       ; Read label number and compare
-cpnum:  eor     #$00
+        eor     laddr_search_num
         bne     loop            ; Not our label, retry
         iny
         lda     (tmp1), y       ; Read label address type
@@ -461,10 +465,8 @@ cpnum:  eor     #$00
         plp                     ; And type in P
 xit:    rts
 
-::laddr_search_num = cpnum + 1
 ::laddr_search_start:
-::last_label_num = *+1
-        ldx     #0
+        ldx     last_label_num
         lda     laddr_buf
         ldy     laddr_buf+1
         sty     tmp1+1
@@ -740,7 +742,7 @@ retry:  dey
         bcc     loop_error
 ok:
         ; Store slot
-        sty     comp_y+1
+        sty     loop_exit_comp
         ; Check if enough stack
         ldx     loop_sp
         inx
@@ -757,7 +759,7 @@ move:
         dex
         lda     loop_stk-3, x
         sta     loop_stk, x
-comp_y: cpx     #$FC
+        cpx     loop_exit_comp
         bne     move
 
         ; Store our new stack entry

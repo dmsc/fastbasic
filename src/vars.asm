@@ -44,6 +44,8 @@ INBUFF  = $F3
 name:   .res 2
 var:    .res 2
 len:    .res 1
+search_count:
+        .res 1
 
 ; Use a longer name for external references
 var_namelen=    len
@@ -147,8 +149,7 @@ no_float:
 :
 search_start:
         inx
-::search_count=   * + 1
-        cpx     #0
+        cpx     search_count
         bne     search_loop
 
         ; Variable name not found, exit with C=1

@@ -68,6 +68,9 @@
         .import         move_dwn, err_nomem
         .importzp       move_dwn_src, move_dwn_dst
 
+.zeropage
+save_x:  .res 1
+
 mem_start = prog_ptr
 prog_end  = var_buf
 
@@ -103,7 +106,7 @@ mem_ok:
         ; Move memory up.
         ;  X          : index to pointer to move from
         ;  alloc_size : amount to move up
-        stx     save_x+1
+        stx     save_x
 
         ;clc    ; C cleared from BCS above
 
@@ -129,7 +132,7 @@ mem_ok:
         jsr     move_dwn
 
         ; Adjust pointers
-save_x: ldx     #0
+        ldx     save_x
 
         ; Increase all pointers from "Y" to the last by AX
 loop:   clc
