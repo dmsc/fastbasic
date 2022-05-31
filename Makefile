@@ -174,9 +174,9 @@ COMPILER_AS_SRC=\
 
 # ASM files used in the IDE
 IDE_AS_SRC=$(COMPILER_AS_SRC)\
-    src/menu.asm\
-    src/countlines.asm\
     src/comp_header.asm\
+    src/compile.asm\
+    src/countlines.asm\
 
 # ASM files used in the Command Line compiler
 CMD_AS_SRC=$(COMPILER_AS_SRC)\

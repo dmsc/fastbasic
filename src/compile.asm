@@ -16,8 +16,8 @@
 ; with this program.  If not, see <http://www.gnu.org/licenses/>
 ;
 
-; Main menu system
-; ----------------
+; Calls the compiler from the editor
+; ----------------------------------
 
         ; Export and imports from editor.bas
         .export COMPILE_BUFFER, BMAX, LINENUM
@@ -50,9 +50,10 @@ LINENUM=linenum
         .exportzp RELOC_OFFSET
 RELOC_OFFSET = reloc_addr
 
-        .code
 
-        ; Our BREAK key handler
+        ; Our BREAK key handler, placed in DATA segment, as it is modified
+        ; during runtime.
+        .data
 break_irq:
         ; Force exit from interpreter - stop at next JUMP
         lda     #$2C    ; BIT abs (skips)
@@ -64,7 +65,8 @@ brkky_save = *+1
 new_brkky:
         .word   break_irq
 
-        ; Called from editor
+        ; Compile current buffer, called from the editor
+        .code
 COMPILE_BUFFER:
 
         ; Buffer end pointer
