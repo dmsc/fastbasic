@@ -19,7 +19,7 @@
 # Graphic support statements for the Atari 5200
 
 TOKENS {
- TOK_GRAPHICS, TOK_DRAWTO, TOK_PLOT
+ TOK_GRAPHICS, TOK_DRAWTO, TOK_PLOT, TOK_LOCATE
 }
 
 SYMBOLS {
@@ -40,10 +40,16 @@ IO_CHAN_OPT:
 IO_CHAN_OPT_NOCOMMA:
         IO_CHAN
 
+# Third parameter to LOCATE needs an address to store the value
+LOC_VAR: comma
+        "," ARRAY_BYTE_ADDR        emit { TOK_SADDR, TOK_LOCATE, TOK_POKE }
+        "," VAR_WORD_LVALUE_SADDR  emit { TOK_LOCATE, TOK_DPOKE }
+
 STATEMENT:
         "Graphics" emit { TOK_0, TOK_PMGRAPHICS } EXPR emit TOK_GRAPHICS
         "Color"  EXPR emit { TOK_BYTE_POKE, COLOR }
         "PLot" POSITION emit { TOK_PLOT }
+        "LOCate" POSITION LOC_VAR
         "DRawto" POSITION emit { TOK_DRAWTO }
         "SEtcolor" EXPR emit { TOK_PUSH_NUM, &COLOR0, TOK_ADD, TOK_SADDR } EXPR_AB emit TOK_POKE
 

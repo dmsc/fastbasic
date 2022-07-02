@@ -31,8 +31,11 @@
         .importzp       SAVMSC, next_instruction, tmp1, tmp2, tmp3
         .import         gr_mask_p, gr_shift_x, gr_mask_s, EXE_PUT
 
+        .export         get_pixel_addr, plot_rcount
+        .exportzp       plot_mask
+
         .zeropage
-mask:   .res 1
+plot_mask:      .res 1
 color_s:.res 1
 colpos = tmp1
 
@@ -44,6 +47,9 @@ error:  .res 2
 
 row_add:.res 1
 col_add:.res 2
+
+        .data
+plot_rcount: .res 1
 
 delta_x = tmp2
 delta_y = tmp3
@@ -61,21 +67,14 @@ old_err = tmp1 + 1
         jmp     EXE_PUT
 do_plot:
 
-        ldx     #2
-cp_pos: lda     ROWCRS, x
-        sta     OLDROW, x
-        dex
-        bpl     cp_pos
-
-        jsr     get_addr
-        lda     mask
+        jsr     get_pixel_addr
+        lda     plot_mask
         eor     #$FF
         and     (tmp4), y
         ora     color_s
         sta     (tmp4), y
         jmp     next_instruction
 .endproc
-
 
 .proc   EXE_DRAWTO      ; Draw line from last position to current
 
@@ -187,7 +186,7 @@ dr_xpos:
 no_inc_x:
         ; Plots current pixel
         jsr     get_addr
-        lda     mask
+        lda     plot_mask
         eor     #$FF
         and     (tmp4), y
         ora     color_s
@@ -251,6 +250,14 @@ end_line:
 .endproc
 
 
+.proc   get_pixel_addr
+        ldx     #2
+cp_pos: lda     ROWCRS, x
+        sta     OLDROW, x
+        dex
+        bpl     cp_pos
+.endproc        ; Fall through to get_addr
+
 .proc   get_addr
         lda     OLDROW
 
@@ -290,7 +297,7 @@ L2:     adc     OLDROW
         ; Get mask and shift amounts
         ldx     DINDEX
         lda     gr_mask_p, x
-        sta     mask
+        sta     plot_mask
 
         ldy     gr_shift_x, x
 
@@ -316,13 +323,14 @@ shift:  ror     colpos  ; Shift column position
 
         ; Generate bit pattern and mask
         lda     COLOR
-        and     mask
+        and     plot_mask
 
+        stx     plot_rcount
         dex
         bmi     ok_mask
 rol_mask:
         asl
-        asl     mask
+        asl     plot_mask
         dex
         bpl     rol_mask
 ok_mask:

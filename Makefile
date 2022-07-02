@@ -304,6 +304,7 @@ A5200_AS_SRC=\
     src/interp/a5200/getkey.asm\
     src/interp/a5200/graphics.asm\
     src/interp/a5200/input.asm\
+    src/interp/a5200/locate.asm\
     src/interp/a5200/putchar.asm\
     src/interp/a5200/str.asm\
     src/interp/a5200/val.asm\
