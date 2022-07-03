@@ -54,19 +54,19 @@
         ; 10 : 80x192   4bpp   40     8k      202      2
         ; 11 : 80x192   4bpp   40     8k      202      2
         ; 12 : 40x24    TEXT   40     1k       32      6       + 128
-        ; 13 : 40x12    TEXT   40     0.5k     20      6       + 128
+        ; 13 : 40x12    TEXT   40     0.5k     20      7       + 128
         ; 15 : 160x192  2bpp   40     8k      202      3
         ;
         ; DL Types specs:
         ;
-        ;  0 : 20x24    TEXT   3E20
-        ;  1 : 20x12    TEXT   3F10
-        ;  2 : 40x24    TEXT   3C40
-        ;  3 : 40x12    TEXT   3E20
-        ;  4 : 40x96    2bpp   3100
-        ;  5 : 40x192   1bpp   21F0
-        ;  6 : 40x192   2bpp   21F0
-        ;  7 : 40x192   4bpp   21F0
+        ;  0 : 40x96    2bpp   3100
+        ;  1 : 40x192   1bpp   21F0
+        ;  2 : 40x192   2bpp   21F0
+        ;  3 : 40x192   4bpp   21F0
+        ;  4 : 20x24    TEXT   3E20
+        ;  5 : 20x12    TEXT   3F10
+        ;  6 : 40x24    TEXT   3C40
+        ;  7 : 40x12    TEXT   3E20
         ;
         ; All modes use a fixed memory layout, so the display list is always at
         ; the same location:
@@ -145,6 +145,9 @@ setr:
         iny
         cpy     #95
         bne     no_4k
+
+        cmp     #$0E    ; only in modes 8, 9, 10, 11, 15
+        bcc     no_4k
         ; Patch crossing of 4K segment
         pha
         ora     #$40
@@ -197,7 +200,6 @@ setp:
 
 palette:        .byte   $28,$CA,$94,$46,$00
 
-;dl_type:        .byte   2, 0, 1, 2, 2, 2, 2, 4, 5, 6, 6, 6, 2, 3, 2, 7
         ; Byte copied to DINDEX
 dl_type:        .byte   $86,$C4,$C5,$86,$86,$86,$86,$00,$01,$02,$02,$02,$86,$87,$86,$03
         ; Encode ANTIC mode and GPRIOR values
