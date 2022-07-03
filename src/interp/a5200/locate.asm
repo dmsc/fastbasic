@@ -29,11 +29,15 @@
 
         .importzp       DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
         .importzp       next_instruction, plot_mask
-        .import         plot_rcount, get_pixel_addr
+        .import         plot_rcount, get_pixel_addr, get_text_addr
 
         .segment        "RUNTIME"
 
 .proc   EXE_LOCATE      ; Get's color of pixel at current position
+        bit     DINDEX
+        bmi     locate_text
+        jsr     get_pixel_addr
+
         lda     (tmp4), y
         and     plot_mask
         ldx     plot_rcount
@@ -44,6 +48,24 @@ rol_pix:
         bne     rol_pix
 ok_ret:
         ; X already 0 from loop above
+        jmp     next_instruction
+.endproc
+
+.proc   locate_text
+        jsr     get_text_addr
+
+        ldx     #0
+        lda     (tmp4, x)
+
+        ; Convert character from screen code to ATASCII
+        asl
+        php
+        bpl     conv_ok
+        eor     #$40
+conv_ok:
+        adc     #$40
+        plp
+        ror
         jmp     next_instruction
 .endproc
 

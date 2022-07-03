@@ -27,7 +27,7 @@
 ; Put character to screen
 ; -----------------------
 
-        .export         putc
+        .export         putc, get_text_addr
         .importzp       tmp3, tmp4
         .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC
 
@@ -68,6 +68,19 @@ conv_ok:
 
         pha             ; Store A
 
+        jsr     get_text_addr
+
+        ; Write character to screen
+        pla
+        ldx     #0
+        sta     (tmp4, x)
+
+        ; Update cursor position - do not handle screen wrap
+        inc     COLCRS
+        rts
+.endproc
+
+.proc   get_text_addr
         ; Calculate coordinates - only valid for text modes
         lda     #0
         sta     tmp4+1
@@ -93,14 +106,6 @@ m20:
         lda     tmp4+1
         adc     SAVMSC+1
         sta     tmp4+1
-
-        ; Write character to screen
-        pla
-        ldx     #0
-        sta     (tmp4, x)
-
-        ; Update cursor position - do not handle screen wrap
-        inc     COLCRS
         rts
 .endproc
 
