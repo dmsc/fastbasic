@@ -71,6 +71,7 @@ ok:
         jsr     do_tab
 
         inc     sptr
+        ldy     #0              ; Print color = 0
         jmp     print_str_tmp1  ; Print string in tmp1
 .endproc
 

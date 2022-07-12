@@ -39,16 +39,14 @@
         inc     sptr
         tay
         pla
-        .byte   $2C   ; Skip 2 bytes over next "LDY"
+        .byte   $2C     ; Skip 2 bytes over next "LDY"
 .endproc
-
 .proc   EXE_PRINT_STR   ; PRINT string in AX
         ldy     #0
-print_cont:
-        sty     tmp3
         sta     tmp1
         stx     tmp1+1
 ptmp:                   ; Prints string in TMP1
+        sty     tmp3
         ldy     #0
         lda     (tmp1), y       ; LENGTH
         beq     nil

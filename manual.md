@@ -1037,6 +1037,10 @@ Console Print and Input Statements
       S = 1234
       ? #6, "SCORE: "; COLOR(32) S
 
+  Note that the color only applies to
+  one argument, and it is reset to 0
+  after a `;`, `,` or `TAB`.
+
   The `TAB` function advances the
   position to a column multiple of the
   argument, so that `TAB(10)` is the
