@@ -21,6 +21,9 @@ all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
 
 dist: $(ATR) $(ZIPFILE)
 
+# Make sure that failed targets are deleted
+.DELETE_ON_ERROR:
+
 .PHONY: clean
 clean:
 	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
