@@ -36,7 +36,7 @@
         ; From vars.asm
         .exportzp       var_count, label_count
         ; From runtime.asm
-        .importzp       IOCHN, COLOR, IOERROR
+        .importzp       IOCHN, COLOR, IOERROR, PRINT_ARG
         .import         putc
         ; From interpreter.asm
         .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD, saved_cpu_stack

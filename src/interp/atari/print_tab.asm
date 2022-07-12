@@ -28,7 +28,7 @@
 ; ---------------------------------------------
 
         .import         putc, stack_l, print_str_tmp1
-        .importzp       sptr, next_instruction, tmp1, tmp2
+        .importzp       sptr, next_instruction, tmp1, tmp2, PRINT_ARG
 
         .include "target.inc"
 
@@ -72,6 +72,7 @@ ok:
 
         inc     sptr
         ldy     #0              ; Print color = 0
+        sty     PRINT_ARG
         jmp     print_str_tmp1  ; Print string in tmp1
 .endproc
 

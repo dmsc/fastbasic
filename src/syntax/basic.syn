@@ -98,6 +98,7 @@ SYMBOLS {
 
  BASIC_TOP = importzp
  IOERROR = importzp
+ PRINT_ARG = importzp
  MEMTOP = import
  CLEAR_DATA = import
  ATEOL = 155
@@ -297,7 +298,7 @@ PRINT_SEP_EOL:
 
 # - One item to print, converted to string:
 PRINT_ONE_STR:
-        "Color" T_EXPR emit { TOK_PUSH } PRINT_ONE emit TOK_PRINT_COLOR_STR
+        "Color" T_EXPR emit { TOK_BYTE_POKE, PRINT_ARG } PRINT_ONE emit TOK_PRINT_COLOR_STR
         PRINT_ONE emit TOK_PRINT_STR
         pass
 

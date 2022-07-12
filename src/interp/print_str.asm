@@ -29,31 +29,27 @@
 
         .import         putc, stack_l
         .importzp       tmp1, tmp2, tmp3, next_instruction, sptr
+        .exportzp       PRINT_ARG
         .export         print_str_tmp1
+
+PRINT_ARG = tmp3
 
         .segment        "RUNTIME"
 
-.proc   EXE_PRINT_COLOR_STR   ; PRINT string in AX
-        pha
-        lda     stack_l, y
-        inc     sptr
-        tay
-        pla
-        .byte   $2C     ; Skip 2 bytes over next "LDY"
-.endproc
-.proc   EXE_PRINT_STR   ; PRINT string in AX
+.proc   EXE_PRINT_STR   ; PRINT string in AX, with color 0
         ldy     #0
+        sty     PRINT_ARG
+::EXE_PRINT_COLOR_STR:  ; PRINT string in AX with given color
         sta     tmp1
         stx     tmp1+1
 ptmp:                   ; Prints string in TMP1
-        sty     tmp3
         ldy     #0
         lda     (tmp1), y       ; LENGTH
         beq     nil
         sta     tmp2
 loop:   iny
         lda     (tmp1), y
-        eor     tmp3
+        eor     PRINT_ARG
         jsr     putc
         cpy     tmp2
         bne     loop
