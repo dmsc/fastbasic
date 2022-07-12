@@ -1956,6 +1956,10 @@ statement:
   allows one DLI to modify multiple
   lines at the screen.
 
+  Multiple `INTO` words can be used to
+  write more than one register with the
+  same value.
+
   `INTO` can be abbreviated to `I.` and
   `WSYNC` to `W.`.
 
@@ -2066,7 +2070,7 @@ statement:
       DATA c2() BYTE = $2E,$80,$CE,$06
       ' Our DLI writes the position and
       ' colors to Player 1 and Player 2
-      DLI SET d3 = pos INTO $D000, pos INTO $D001,
+      DLI SET d3 = pos INTO $D000 INTO $D001,
       DLI        = c1 INTO $D012, c2 INTO $D013
       GRAPHICS 0 : PMGRAPHICS 2
       ' Setup our 4 DLI and Players

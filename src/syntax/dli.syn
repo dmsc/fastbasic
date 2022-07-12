@@ -36,6 +36,7 @@ DLI_COMMAND: 'SET', label
         emit { TOK_BYTE, 64, TOK_NUM_POKE, &NMIEN }
 
 DLI_CODES:
+        DLI_STA
         "," DLI_LDA DLI_STA
         ","
         emit { 230, COLRSH, 104, 170, 104, 64 } E_POP_PROC_DATA
