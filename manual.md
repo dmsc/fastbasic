@@ -998,7 +998,8 @@ Console Print and Input Statements
 **PRINT _expr_, ... / ?**  
 **PRINT _expr_ TAB(_expr_) ...**  
 **PRINT _expr_ RTAB(_expr_) ...**  
-**PRINT _expr_ ; ...**
+**PRINT COLOR(_expr_) _expr_ ; ...**
+**PRINT _expr_ ; ...**  
 
   Outputs strings and numbers to the
   screen.
@@ -1019,6 +1020,22 @@ Console Print and Input Statements
   advance the printing column to the
   next multiple of 10, allowing easy
   printing of tabulated data.
+
+  The `COLOR` function alters the color
+  the text that follows, depending on
+  the graphics mode. This is abbreviated
+  `C.`.  Use 0 or 128 in graphics 0, for
+  normal or inverse video.  Use 0, 32,
+  128 or 160 in graphics mode 1 and 2
+  for the four available text colors,
+  see the two examples bellow:
+
+      ' In GRAPHICS 0:
+      ? "NORMAL"; COLOR(128) "INVERSE"
+
+      ' In GRAPHICS 2:
+      S = 1234
+      ? #6, "SCORE: "; COLOR(32) S
 
   The `TAB` function advances the
   position to a column multiple of the
@@ -1077,6 +1094,12 @@ Console Print and Input Statements
   spaces will not be correct. Avoid
   using the functions to print to any
   device except the screen.
+
+  *Advanced:* The `COLOR` function does
+  an *exclusive or* of the given value
+  with the value of each character in
+  the original string before printing.
+
 
 
 **Writes A Character To Screen**  

@@ -50,7 +50,7 @@ TOKENS {
  # Position (used also in graphics)
  TOK_POSITION
  # Print statements
- TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_RTAB
+ TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_RTAB, TOK_PRINT_COLOR_STR
  # Simple console input and output
  TOK_GETKEY, TOK_INPUT_STR, TOK_PUT, TOK_BYTE_PUT
  # Jumps
@@ -297,6 +297,7 @@ PRINT_SEP_EOL:
 
 # - One item to print, converted to string:
 PRINT_ONE_STR:
+        "Color" T_EXPR emit { TOK_PUSH } PRINT_ONE emit TOK_PRINT_COLOR_STR
         PRINT_ONE emit TOK_PRINT_STR
         pass
 

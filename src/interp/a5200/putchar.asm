@@ -28,7 +28,7 @@
 ; -----------------------
 
         .export         putc, get_text_addr
-        .importzp       tmp3, tmp4
+        .importzp       tmp4
         .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC
 
         .segment        "RUNTIME"

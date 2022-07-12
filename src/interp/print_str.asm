@@ -27,13 +27,25 @@
 ; Print string
 ; ------------
 
-        .import         putc
-        .importzp       tmp1, tmp2, next_instruction
+        .import         putc, stack_l
+        .importzp       tmp1, tmp2, tmp3, next_instruction, sptr
         .export         print_str_tmp1
 
         .segment        "RUNTIME"
 
+.proc   EXE_PRINT_COLOR_STR   ; PRINT string in AX
+        pha
+        lda     stack_l, y
+        inc     sptr
+        tay
+        pla
+        .byte   $2C   ; Skip 2 bytes over next "LDY"
+.endproc
+
 .proc   EXE_PRINT_STR   ; PRINT string in AX
+        ldy     #0
+print_cont:
+        sty     tmp3
         sta     tmp1
         stx     tmp1+1
 ptmp:                   ; Prints string in TMP1
@@ -43,6 +55,7 @@ ptmp:                   ; Prints string in TMP1
         sta     tmp2
 loop:   iny
         lda     (tmp1), y
+        eor     tmp3
         jsr     putc
         cpy     tmp2
         bne     loop
@@ -53,5 +66,6 @@ print_str_tmp1 = EXE_PRINT_STR::ptmp
 
         .include "deftok.inc"
         deftoken "PRINT_STR"
+        deftoken "PRINT_COLOR_STR"
 
 ; vi:syntax=asm_ca65

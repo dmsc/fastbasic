@@ -354,11 +354,11 @@ ENDPROC
 '
 PROC ShowInfo
   ' Print two "-", then filename, then complete with '-' until right margin
-  pos. 0, 0 : ? "";
-  ? FileName$;
-  repeat : put $12 : until peek(@@RMARGN) = peek(@@COLCRS)
+  pos. 0, 0 : ? ""$92$92;
+  ? color(128) FileName$;
+  repeat : put $92 : until peek(@@RMARGN) = peek(@@COLCRS)
   ' Fill last character
-  poke @@OLDCHR, $52
+  poke @@OLDCHR, $D2
   ' Go to cursor position
   pos. scrColumn, scrLine
   put 29
@@ -633,8 +633,8 @@ PROC ChgLine
   exec CopyToEdit
 
   ' Print status
-  pos. 32, 0 : ? 1 + topLine + scrLine;
-  put $12
+  pos. 32, 0 : ? color(128) 1 + topLine + scrLine;
+  put $92
 
   ' Redraw line
   hDraw = 0
