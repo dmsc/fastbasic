@@ -39,7 +39,7 @@
         sbc     COLCRS
         bcs     ok
 rep:
-        adc     tmp2
+        adc     PRINT_ARG
         bcc     rep
 
 ok:
@@ -52,7 +52,7 @@ ok:
 .endproc
 
 .proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
-        sta     tmp2
+        sta     PRINT_ARG
         jsr     do_tab
         jmp     next_instruction
 .endproc
@@ -61,16 +61,13 @@ ok:
         sta     tmp1    ; Save AX (string address)
         stx     tmp1+1
 
-        lda     stack_l, y      ; Get TAB position
-        sta     tmp2
-
         ldy     #0
         sec
+        lda     PRINT_ARG       ; Get TAB position
         sbc     (tmp1), y       ; subtract string length
 
         jsr     do_tab
 
-        inc     sptr
         ldy     #0              ; Print color = 0
         sty     PRINT_ARG
         jmp     print_str_tmp1  ; Print string in tmp1
