@@ -17,6 +17,8 @@ ABSA = 10
 ? 1 T. 5 3  ' This is parsed as ? 1 ; TAB(5) ; 3
 ? 1 T.5+3   ' This is parsed as ? 1 ; TAB(5) ; +3
 ? 1 T.(5+3) ' This is parsed as ? 1 ; TAB(5+3)
+? 1 C.1+1   ' This is parsed as ? 1 ; COLOR(1) +1
+? R.1+1     ' This is parsed as ? RTAB(1) +1
 ? "X"
 
 ' Test all abbreviations:
