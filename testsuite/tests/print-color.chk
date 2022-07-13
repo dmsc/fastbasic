@@ -1,0 +1,41 @@
+Name: Test color in "PRINT"
+Test: run
+Output:
+SCREEN: set graphics 1 with text window
+SCREEN: plot 0,0  color 49
+SCREEN: plot 0,0  color 50
+SCREEN: plot 0,0  color 51
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 17
+SCREEN: plot 0,0  color 18
+SCREEN: plot 0,0  color 19
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 177
+SCREEN: plot 0,0  color 178
+SCREEN: plot 0,0  color 179
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 145
+SCREEN: plot 0,0  color 146
+SCREEN: plot 0,0  color 147
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 72
+SCREEN: plot 0,0  color 79
+SCREEN: plot 0,0  color 76
+SCREEN: plot 0,0  color 65
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 104
+SCREEN: plot 0,0  color 111
+SCREEN: plot 0,0  color 108
+SCREEN: plot 0,0  color 97
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 200
+SCREEN: plot 0,0  color 207
+SCREEN: plot 0,0  color 204
+SCREEN: plot 0,0  color 193
+SCREEN: plot 0,0  color 155
+SCREEN: plot 0,0  color 232
+SCREEN: plot 0,0  color 239
+SCREEN: plot 0,0  color 236
+SCREEN: plot 0,0  color 225
+SCREEN: plot 0,0  color 155
+NORMAL  инжерсе.
