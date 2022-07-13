@@ -288,16 +288,16 @@ STRING_FUNCTIONS:
 # - PRINT separator or an end-of-line if not given:
 PRINT_SEP_EOL:
         "Tab" T_EXPR emit TOK_PRINT_TAB
-        # Right-TAB is complicated because we need to apply it to the *next*
+        # Right-TAB and COLOR are complicated because we need to apply it to the *next*
         # parameter, so we read that parameter and the next optional separator:
         "RTab" T_EXPR emit { TOK_BYTE_POKE, PRINT_ARG } PRINT_ONE emit { TOK_PRINT_RTAB } PRINT_SEP_EOL
+        "Color" T_EXPR emit { TOK_BYTE_POKE, PRINT_ARG } PRINT_ONE emit { TOK_PRINT_COLOR_STR } PRINT_SEP_EOL
         "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
         E_EOL emit { TOK_BYTE_PUT, ATEOL }
 
 # - One item to print, converted to string:
 PRINT_ONE_STR:
-        "Color" T_EXPR emit { TOK_BYTE_POKE, PRINT_ARG } PRINT_ONE emit TOK_PRINT_COLOR_STR
         PRINT_ONE emit TOK_PRINT_STR
         pass
 
