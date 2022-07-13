@@ -40,7 +40,7 @@ SYMBOLS {
 }
 
 # Floating point expressions
-FP_EXPR: floaring point expression
+FP_EXPR: floating point expression
         FP_T_EXPR FP_E_EXPR_MORE FP_M_EXPR_MORE FP_EXPR_MORE
 
 FP_EXPR_MORE:
