@@ -381,7 +381,7 @@ DIM_MORE: comma
 # INPUT
 INPUT_STR:
         "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP_EOL # Prints a given string
-        PRINT_SEP_EOL                                                         # If starts with ',' or ';', don't print anyting
+        ";"                                         # If starts with ';' don't print anyting
         emit { TOK_BYTE_PUT, 63 }                   # Prints a '?' by default
 
 INPUT_VAR_LIST:

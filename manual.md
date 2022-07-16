@@ -955,6 +955,7 @@ Console Print and Input Statements
 **INPUT _var_ / I.**  
 **INPUT "prompt"; _var_**  
 **INPUT "prompt", _var_**
+**INPUT ; _var_**
 
   Reads from keyboard/screen and stores
   the value in _var_.
@@ -965,7 +966,9 @@ Console Print and Input Statements
   after the prompt, spaces are printed
   to align to a column multiple of 10
   (similar to how a comma works in
-  PRINT).
+  `PRINT`).  In the case you don't want
+  any prompt, you can use a semicolon
+  alone.
 
   If the value can't be read because
   input errors, the error is stored in
