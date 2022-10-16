@@ -40,5 +40,7 @@ std::string add_extension(std::string name, std::string ext);
 std::string get_extension_lower(std::string name);
 // Execute external program, waiting for the result
 int prog_exec(std::string exe, std::vector<std::string> &args);
+// OS specific initializations
+void init();
 
 } // namespace os

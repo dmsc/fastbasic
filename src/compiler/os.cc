@@ -99,6 +99,16 @@ std::string os::get_extension_lower(std::string name)
     return ret;
 }
 
+void os::init()
+{
+#ifdef _WIN32
+    // On windows, we need to set console output to UTF-8:
+    SetConsoleOutputCP(CP_UTF8);
+#else
+    // No init needed.
+#endif
+}
+
 int os::prog_exec(std::string exe, std::vector<std::string> &args)
 {
     // Create a vector with C pointers

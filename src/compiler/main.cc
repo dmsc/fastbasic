@@ -65,6 +65,9 @@ static int show_error(std::string msg)
 
 int main(int argc, char **argv)
 {
+    // OS specific initializations
+    os::init();
+
     auto program_name = std::string(argv[0]);
     // Tries to guess install folder given the program name
     auto install_folder = os::dir_name(program_name);
