@@ -599,6 +599,9 @@ COMPILER_TARGET=\
 	 $(FASTBASIC_TARGET)\
 	 build/compiler/fb$(TGT_EXT)\
 
+# On Windows, add manifests
+COMPILER_MANIFESTS=$(filter %.manifest, $(COMPILER_TARGET:.exe=.exe.manifest))
+
 # All ASM Output files
 OBJS=$(RT_OBJS_FP) \
      $(IDE_OBJS_FP) $(IDE_BAS_OBJS_FP) \

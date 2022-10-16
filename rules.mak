@@ -17,7 +17,7 @@
 #
 
 # Main compilation rules
-all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET)
+all: $(ATR) $(COMPILER_COMMON) $(COMPILER_TARGET) $(COMPILER_MANIFESTS)
 
 dist: $(ATR) $(ZIPFILE)
 
@@ -40,7 +40,8 @@ distclean: clean
 	    build/gen/int/editor.asm build/gen/fp/editor.asm \
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
-	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON)
+	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON) \
+	    $(COMPILER_MANIFESTS)
 	$(Q)printf "%s\n" $(BUILD_FOLDERS) | sort -r | while read folder; do \
 		test -d $$folder && rmdir $$folder || true ; done
 
@@ -50,12 +51,12 @@ $(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
 	$(Q)mkatr $@ $(DOSDIR) -b $^
 
 # Build compiler ZIP file.
-$(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) | build
+$(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) $(COMPILER_MANIFESTS) | build
 	$(CROSS)strip $(COMPILER_TARGET)
 	# This rule is complicated because we want to store only the paths
 	# relative to the compiler directory, not the full path of the build
 	# directory.
-	(cd build/compiler ; zip -9v ../../$@ $(COMPILER_COMMON:build/compiler/%=%) $(COMPILER_TARGET:build/compiler/%=%) )
+	(cd build/compiler ; zip -9v ../../$@ $(COMPILER_COMMON:build/compiler/%=%) $(COMPILER_TARGET:build/compiler/%=%) $(COMPILER_MANIFESTS:build/compiler/%=%) )
 
 # BAS sources also transformed to ATASCII (replace $0A with $9B)
 build/disk/%.bas: samples/fp/%.bas | build/disk
@@ -135,6 +136,10 @@ $(AR65_TARGET): $(AR65_SRC) | build/compiler
 build/compiler/fb$(TGT_EXT): build/compiler/fastbasic$(TGT_EXT)
 	$(Q)cp -f $< $@
 endif
+
+# Windows manifests
+build/%.manifest: compiler/utf8.manifest
+	$(Q)cp -f $< $@
 
 # Generator for syntax file - 6502 version - FLOAT
 build/gen/fp/basic.asm: $(SYNTAX_FP) $(SYNTP) | build/gen/fp
