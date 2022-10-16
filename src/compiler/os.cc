@@ -88,6 +88,17 @@ std::string os::add_extension(std::string name, std::string ext)
         return name.substr(0, pos) + ext;
 }
 
+std::string os::get_extension_lower(std::string name)
+{
+    auto pos = name.find_last_of(".");
+    if(pos == name.npos || pos == 0)
+        return std::string();
+    auto ret = name.substr(pos + 1);
+    for(auto &c: ret)
+        c = std::tolower(c);
+    return ret;
+}
+
 int os::prog_exec(std::string exe, std::vector<std::string> &args)
 {
     // Create a vector with C pointers

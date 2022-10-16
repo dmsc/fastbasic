@@ -98,6 +98,8 @@ int main(int argc, char **argv)
             next_is_output = false;
             continue;
         }
+        // Get possible file extension:
+        auto lext = os::get_extension_lower(arg);
         // Process options
         if(arg == "-d")
             comp.do_debug = true;
@@ -173,12 +175,12 @@ int main(int argc, char **argv)
         }
         else if(arg[0] == '-')
             return show_error("invalid option '" + arg + "', try -h for help");
-        else if(arg.rfind(".o") == arg.size() - 2 || arg.rfind(".obj") == arg.size() - 4)
+        else if(lext == "o" || lext == "obj")
         {
             // An object file, pass to the linker
             link_files.push_back(arg);
         }
-        else if(arg.rfind(".s") == arg.size() - 2 || arg.rfind(".asm") == arg.size() - 4)
+        else if(lext == "s" || lext == "asm")
         {
             // An assembly file, pass to the assembler and linker
             std::string obj_name = os::add_extension(arg, ".o");

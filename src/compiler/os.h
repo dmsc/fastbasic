@@ -34,6 +34,10 @@ std::string dir_name(const std::string &path);
 bool path_absolute(const std::string &path);
 // Changes the filename "extension" to given one.
 std::string add_extension(std::string name, std::string ext);
+// Gets filename extension, normalized to lower-case.
+// NOTE: this only works on ASCII characters - it is expected that standard
+//        file extensions are ASCII only (like "asm" and "bas").
+std::string get_extension_lower(std::string name);
 // Execute external program, waiting for the result
 int prog_exec(std::string exe, std::vector<std::string> &args);
 
