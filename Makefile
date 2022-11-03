@@ -28,6 +28,9 @@ CC=gcc
 # Optimization flags, added to C and C++ compiler flags
 OPTFLAGS=-O2
 
+# General options for C++ compiler
+CXXFLAG=-Wall -std=c++14
+
 # General flags for 6502 assembly files
 CA65_FLAGS=-g -tatari -I cc65/asminc -I src
 
@@ -54,12 +57,12 @@ CC65_CFLAGS=-Icc65/common -DBUILD_ID="fastbasic-$(VERSION)"
 
 # Flags for local tools needed to generate target files
 HOST_OPTFLAGS=$(OPTFLAGS)
-HOST_CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(HOST_OPTFLAGS)
+HOST_CXXFLAGS=$(CXXFLAGS) -DVERSION=\"$(VERSION)\" $(HOST_OPTFLAGS)
 HOST_CFLAGS=-Wall $(HOST_OPTFLAGS)
 
 # Flags for cross-compilation, could differ from host tools:
 TARGET_OPTFLAGS=$(OPTFLAGS)
-TARGET_CXXFLAGS=-Wall -DVERSION=\"$(VERSION)\" $(TARGET_OPTFLAGS)
+TARGET_CXXFLAGS=$(CXXFLAGS) -DVERSION=\"$(VERSION)\" $(TARGET_OPTFLAGS)
 TARGET_CFLAGS=-Wall $(TARGET_OPTFLAGS)
 
 # By default use quiet build
