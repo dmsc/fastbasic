@@ -1,0 +1,32 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2022 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+STATEMENT:
+        "SIo" EXPR emit { TOK_NUM_POKE, &$300 } \
+          "," EXPR  emit { TOK_NUM_POKE, &$301 } \
+          "," EXPR  emit { TOK_NUM_POKE, &$302 } \
+          "," EXPR  emit { TOK_NUM_POKE, &$303 } \
+          "," emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+          "," EXPR  emit { TOK_NUM_POKE, &$306 } \
+          "," emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+          "," EXPR  emit { TOK_NUM_POKE, &$30A } \
+          "," EXPR  emit { TOK_NUM_POKE, &$30B } \
+          emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
+
+INT_FUNCTIONS:
+          "SErr()" emit { TOK_NUM, &$303, TOK_PEEK }

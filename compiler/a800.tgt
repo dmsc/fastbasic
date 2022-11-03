@@ -1,5 +1,5 @@
 # Atari 8-bit computers, base file
-syntax a800.syn basic.syn dli.syn fileio.syn pm.syn graphics.syn sound.syn extended.syn
+syntax a800.syn basic.syn dli.syn fileio.syn pm.syn graphics.syn sound.syn extended.syn sio.syn
 config fastbasic.cfg
 ca65 -tatari
 library fastbasic-int.lib

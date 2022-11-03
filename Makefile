@@ -368,6 +368,7 @@ COMPILER_COMMON=\
 	 build/compiler/syntax/graphics.syn\
 	 build/compiler/syntax/gr-a5200.syn\
 	 build/compiler/syntax/pm.syn\
+	 build/compiler/syntax/sio.syn\
 	 build/compiler/syntax/sound.syn\
 	 build/compiler/a5200.tgt\
 	 build/compiler/a800.tgt\
@@ -577,8 +578,9 @@ SYNTAX_INT=\
 	src/syntax/basic.syn\
 	src/syntax/dli.syn\
 	src/syntax/fileio.syn\
-	src/syntax/pm.syn\
 	src/syntax/graphics.syn\
+	src/syntax/pm.syn\
+	src/syntax/sio.syn\
 	src/syntax/sound.syn\
 
 # Syntax files for floating-point version
