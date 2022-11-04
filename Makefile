@@ -369,6 +369,7 @@ COMPILER_COMMON=\
 	 build/compiler/syntax/gr-a5200.syn\
 	 build/compiler/syntax/pm.syn\
 	 build/compiler/syntax/sound.syn\
+	 build/compiler/syntax/a800.syn\
 	 build/compiler/a5200.tgt\
 	 build/compiler/a800.tgt\
 	 build/compiler/atari-5200.tgt\
