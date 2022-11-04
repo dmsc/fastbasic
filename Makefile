@@ -580,6 +580,7 @@ SYNTAX_INT=\
 	src/syntax/pm.syn\
 	src/syntax/graphics.syn\
 	src/syntax/sound.syn\
+	src/syntax/sio.syn\
 
 # Syntax files for floating-point version
 SYNTAX_FP=\
