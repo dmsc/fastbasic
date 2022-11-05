@@ -370,6 +370,8 @@ COMPILER_COMMON=\
 	 build/compiler/syntax/pm.syn\
 	 build/compiler/syntax/sound.syn\
 	 build/compiler/syntax/a800.syn\
+	 build/compiler/syntax/sio.syn\
+	 build/compiler/syntax/fujinet.syn\
 	 build/compiler/a5200.tgt\
 	 build/compiler/a800.tgt\
 	 build/compiler/atari-5200.tgt\
@@ -582,6 +584,7 @@ SYNTAX_INT=\
 	src/syntax/graphics.syn\
 	src/syntax/sound.syn\
 	src/syntax/sio.syn\
+	src/syntax/fujinet.syn\
 
 # Syntax files for floating-point version
 SYNTAX_FP=\
