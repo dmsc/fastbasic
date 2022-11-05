@@ -120,6 +120,7 @@ SAMPLE_FP_BAS=\
     fp/ahlbench.bas \
     fp/draw.bas \
     fp/fedora.bas \
+    fp/nc.bas \
 
 SAMPLE_INT_BAS=\
     int/carrera3d.bas \
