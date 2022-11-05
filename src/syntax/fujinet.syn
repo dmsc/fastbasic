@@ -54,7 +54,7 @@ STATEMENT:
          "NGet" EXPR emit { TOK_NUM_POKE, &$301 } \
 	    ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
 	    ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
-	             emit { TOK_NUM, &$30A, TOK_SADDR TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
+	             emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
 	             emit { TOK_BYTE, $71, TOK_NUM_POKE, &$0300 } \
 		     emit { TOK_BYTE, $52, TOK_NUM_POKE, &$0302 } \
 		     emit { TOK_BYTE, $40, TOK_NUM_POKE, &$0303 } \
@@ -64,7 +64,7 @@ STATEMENT:
          "NPut" EXPR emit { TOK_NUM_POKE, &$301 } \
 	    ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
 	    ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
-	             emit { TOK_NUM, &$30A, TOK_SADDR TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
+	             emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
 	             emit { TOK_BYTE, $71, TOK_NUM_POKE, &$0300 } \
 		     emit { TOK_BYTE, $57, TOK_NUM_POKE, &$0302 } \
 		     emit { TOK_BYTE, $80, TOK_NUM_POKE, &$0303 } \
