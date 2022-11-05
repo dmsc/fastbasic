@@ -129,6 +129,7 @@ SAMPLE_INT_BAS=\
     int/pi.bas \
     int/pmtest.bas \
     int/sieve.bas \
+    int/nc.bas \
 
 SAMPLE_BAS=$(SAMPLE_INT_BAS) $(SAMPLE_FP_BAS)
 SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
