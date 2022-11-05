@@ -365,6 +365,7 @@ COMPILER_COMMON=\
 	 build/compiler/syntax/extended.syn\
 	 build/compiler/syntax/fileio.syn\
 	 build/compiler/syntax/float.syn\
+	 build/compiler/syntax/fujinet.syn\
 	 build/compiler/syntax/graphics.syn\
 	 build/compiler/syntax/gr-a5200.syn\
 	 build/compiler/syntax/pm.syn\
@@ -587,6 +588,7 @@ SYNTAX_INT=\
 SYNTAX_FP=\
 	$(SYNTAX_INT)\
 	src/syntax/float.syn\
+	src/syntax/fujinet.syn\
 
 # Host compiler
 COMPILER_HOST=\

@@ -1,0 +1,72 @@
+#
+# FastBasic - Fast basic interpreter for the Atari 8-bit computers
+# Copyright (C) 2017-2022 Daniel Serpell
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+#
+# FujiNet syntax additions by Thomas Cherryhomes
+# <thom dot cherryhomes at gmail dot com>
+#
+
+STATEMENT:
+        "NOpen" EXPR emit { TOK_NUM_POKE, &$301 } \
+            "," EXPR emit { TOK_NUM_POKE, &$30A } \
+            "," EXPR emit { TOK_NUM_POKE, &$30B } \
+            ","      emit { TOK_NUM, &$304, TOK_SADDR } STR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_DPOKE } \
+                     emit { TOK_BYTE, $71, TOK_NUM_POKE, &$300 } \
+                     emit { TOK_BYTE, $4F, TOK_NUM_POKE, &$302 } \
+                     emit { TOK_BYTE, $80, TOK_NUM_POKE, &$303 } \
+                     emit { TOK_BYTE, $1F, TOK_NUM_POKE, &$306 } \
+                     emit { TOK_NUM, &$308, TOK_SADDR, TOK_NUM, &$100, TOK_DPOKE } \
+                     emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
+
+       "NClose" EXPR emit { TOK_NUM_POKE, &$301 } \
+                     emit { TOK_BYTE, $71, TOK_NUM_POKE, &$300 } \
+                     emit { TOK_BYTE, $43, TOK_NUM_POKE, &$302 } \
+                     emit { TOK_BYTE, $00, TOK_NUM_POKE, &$303 } \
+                     emit { TOK_BYTE, $1F, TOK_NUM_POKE, &$306 } \
+                     emit { TOK_NUM, &$308, TOK_SADDR, TOK_0, TOK_DPOKE } \
+                     emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
+
+      "NStatus" EXPR emit { TOK_NUM_POKE, &$301 } \
+                     emit { TOK_BYTE, $71, TOK_NUM_POKE, &$300 } \
+                     emit { TOK_BYTE, $53, TOK_NUM_POKE, &$302 } \
+                     emit { TOK_BYTE, $40, TOK_NUM_POKE, &$303 } \
+                     emit { TOK_BYTE, $1F, TOK_NUM_POKE, &$306 } \
+                     emit { TOK_NUM, &$304, TOK_SADDR, TOK_NUM, &$2EA, TOK_DPOKE } \
+                     emit { TOK_BYTE, $04, TOK_NUM_POKE, &$308 } \
+                     emit { TOK_BYTE, $00, TOK_NUM_POKE, &$309 } \
+                     emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
+
+         "NGet" EXPR emit { TOK_NUM_POKE, &$301 } \
+            ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+            ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+                     emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
+                     emit { TOK_BYTE, $71, TOK_NUM_POKE, &$0300 } \
+                     emit { TOK_BYTE, $52, TOK_NUM_POKE, &$0302 } \
+                     emit { TOK_BYTE, $40, TOK_NUM_POKE, &$0303 } \
+                     emit { TOK_BYTE, $1F, TOK_NUM_POKE, &$0306 } \
+                     emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
+
+         "NPut" EXPR emit { TOK_NUM_POKE, &$301 } \
+            ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+            ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
+                     emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
+                     emit { TOK_BYTE, $71, TOK_NUM_POKE, &$0300 } \
+                     emit { TOK_BYTE, $57, TOK_NUM_POKE, &$0302 } \
+                     emit { TOK_BYTE, $80, TOK_NUM_POKE, &$0303 } \
+                     emit { TOK_BYTE, $1F, TOK_NUM_POKE, &$0306 } \
+                     emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
