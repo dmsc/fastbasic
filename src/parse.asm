@@ -97,8 +97,19 @@ SM_EMIT_13=     15
 SM_EMIT_14=     16
 SM_EMIT_15=     17
 SM_EMIT_16=     18
-SM_EMIT_N=      SM_EMIT_16 + 1
-SM_EMIT=        SM_EMIT_1
+SM_EMIT_17=     19
+SM_EMIT_18=     20
+SM_EMIT_19=     21
+SM_EMIT_20=     22
+SM_EMIT_21=     23
+SM_EMIT_22=     24
+SM_EMIT_23=     25
+SM_EMIT_24=     26
+SM_EMIT_25=     27
+SM_EMIT_26=     28
+SM_EMIT_27=     29
+SM_EMIT_28=     30
+SM_EMIT_N=      SM_EMIT_28 + 1
 
         .include "basic.inc"
         .include "basic.asm"
