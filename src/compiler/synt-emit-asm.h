@@ -22,5 +22,6 @@
 
 namespace syntax
 {
+const int max_emit_bytes = 28;
 bool syntax_emit_asm(std::ostream &hdr, std::ostream &out, sm_list &sml);
 } // namespace syntax

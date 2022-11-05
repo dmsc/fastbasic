@@ -61,14 +61,23 @@ class asm_emit
         }
         return ret;
     }
-    void print_bytes_n(const std::vector<std::string> &data, size_t n)
+    void print_bytes_n(std::vector<std::string>::const_iterator data, size_t n)
     {
         if(!n)
             return;
-        os << "\t.byte SM_EMIT_" << n;
-        for(size_t i = 0; i < n; i++)
-            os << ", " << data[i];
-        os << "\n";
+        if(n > max_emit_bytes)
+        {
+            // Can't emit more than max bytes, split
+            print_bytes_n(data, max_emit_bytes);
+            print_bytes_n(data + max_emit_bytes, n - max_emit_bytes);
+        }
+        else
+        {
+            os << "\t.byte SM_EMIT_" << n;
+            for(size_t i = 0; i < n; i++, data++)
+                os << ", " << *data;
+            os << "\n";
+        }
     }
     void print_bytes_ret(const std::vector<dcode> &data)
     {
@@ -77,14 +86,14 @@ class asm_emit
             print_return();
         else
         {
-            print_bytes_n(x, x.size() - 1);
+            print_bytes_n(x.begin(), x.size() - 1);
             os << "\t.byte SM_ERET, " << x.back() << "\n";
         }
     }
     void print_bytes(const std::vector<dcode> &data)
     {
         auto x = transform_bytes(data);
-        print_bytes_n(x, x.size());
+        print_bytes_n(x.begin(), x.size());
     }
     void print_literal(std::string str)
     {
