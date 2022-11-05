@@ -2193,3 +2193,105 @@ can be used, along with `DVSTAT+4` to
 determine any error from a network
 operation.
 
+
+FujiNet Statements
+------------------
+
+These are statements that talk to the
+FujiNet network adapter, and can be
+used to open network connections, using
+any protocol supported.
+
+Each of these statements require a
+_unit_ number, of which 8 are
+available, numbered 1-8.
+
+The general flow of use is:
+
+* `NOPEN` a connection
+* In a loop
+  * Check for any traffic with `NSTATUS`
+  * `NGET` if needed
+  * Send any traffic with `NPUT`
+* When done, `NCLOSE`.
+
+**Open a Network Connection**  
+**NOPEN _unit_, _mode_, _trans_, _url_ / NO.**
+
+  Uses `N:` _unit_ to open a connection
+  to _url_ using the desired _mode_ and
+  _trans_ settings.
+
+  Example URLs might be:
+  `N:HTTPS://www.gnu.org/licenses/gpl-3.0.txt`
+
+  Common _modes_:
+
+  - 4: READ, mapped e.g. to GET in HTTP
+  - 6: DIRECTORY, e.g. PROPFIND in HTTP
+  - 8: WRITE, mapped e.g. to PUT in HTTP
+  - 12: READ/WRITE, e.g. for TCP
+  - 13: Mapped to POST in HTTP
+
+  Common _trans_:
+
+  - 0: No translation of characters.
+  - 1: Change CR to ATASCII EOL.
+  - 2: Change LF to ATASCII EOL.
+  - 3: Change CR and LF to EOL.
+
+**Close a Network Connection**  
+**NCLOSE _unit_ / NC.**
+
+  Closes a network connection _unit_
+  previously opened by `NOPEN`.
+
+**Get Network Connection Status**  
+**NSTATUS _unit_ / NS.**
+
+  Queries the status of specified
+  network _unit_. The result is stored
+  in `DVSTAT` starting at `$02EA`, and
+  has the format:
+
+  | Address | Description             |
+  | ------- | ----------------------- |
+  |  $02EA  | # of bytes waiting (LO) |
+  |  $02EB  | # of bytes waiting (HI) |
+  |  $02EC  | Connected? (0 or 1)     |
+  |  $02ED  | Most recent error #     |
+
+  You can easily get the # of bytes
+  waiting by doing the following:
+
+    NSTATUS 1
+    BW = DPEEK($02EA)
+
+**Read Bytes from Network to _addr_**  
+**NGET _unit_, _addr_, _len_ / NG.**
+
+**Write bytes to Network from _addr_**  
+**NPUT _unit_, _addr_, _len_ / NG.**
+
+  These two functions are complements
+  of each other, reading and writing
+  _len_ bytes to and from _addr_ as
+  needed.
+
+  When reading, _len_ must be less
+  than, or equal to the number of bytes
+  waiting to be received, or an SIO
+  error will result. Therefore, it is a
+  good idea to figure out how many
+  bytes are waiting using the `NSTATUS`
+  command.
+
+  Conversely, when writing, _len_ must
+  be less than, or equal to the number
+  of bytes in the source buffer.
+
+  For example all of the available SIO
+  commands for FujiNet Network at this
+  link:
+  [SIO Commands for FujiNet Devices](https://github.com/FujiNetWIFI/fujinet-platformio/wiki/SIO-Commands-for-Device-IDs-%2471-to-%2478)
+
