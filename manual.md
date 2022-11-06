@@ -2147,4 +2147,49 @@ statement:
 | $D019 | Color register 3          |
 | $D01A | Color of background       |
 
+Atari SIO Statements
+--------------------
+
+The Atari Serial Input Output interface
+is the low-level interface between the
+Atari 8-bit computers and the serial
+peripherals, like disk-drives and
+modems.
+
+**Send any command over SIO**  
+**SIO _ddevic_, _dunit_, _dcomnd_, _dstats_, _dbuf_, _dtimlo_, _dbyt_, _daux1_, _daux2_**
+
+This function can be used to send any
+SIO command to any SIO device.  For
+example, this command is used to read
+or write one sector in a floppy disk,
+or send special commands to a FujiNet
+network device.
+
+| Parameter | Description            |
+| --------- | ---------------------- |
+| DDEVIC    | Device # (e.g. $71)    |
+| DUNIT     | Unit #                 |
+| DCOMND    | Command # ($00-$FF)    |
+| DSTATS    | Read($40) / Write($80) |
+| DBUF      | Target buffer address  |
+| DTIMLO    | Timeout value          |
+| DBYT      | # of bytes in payload  |
+| DAUX1     | First Aux parameter    |
+| DAUX2     | Second Aux parameter   |
+
+The meanings of each of these is high-
+ly dependent on the target device.
+
+**Get last SIO error function**  
+**SERR() / SE.**
+
+This function returns the value in
+`DSTATS`, which contains the error of
+the last SIO operation from the device.
+
+In the context of the FujiNet device,
+can be used, along with `DVSTAT+4` to
+determine any error from a network
+operation.
 
