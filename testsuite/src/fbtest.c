@@ -137,6 +137,9 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     // Update output length
     *output_len = str_out_pos;
     free(s);
+    if (x)
+        fprintf(stderr, "%s: simulator stack invalid at exit: %d.\n",
+                progname, x);
     return x;
 }
 
