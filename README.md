@@ -39,7 +39,7 @@ License
 -------
 
 FastBasic is free software under the terms of the GNU General Public License,
-either version 2 or lather, see the file [LICENSE](LICENSE) for the full text.
+either version 2 or later, see the file [LICENSE](LICENSE) for the full text.
 
 The runtime is also under the following linking exception:
 

@@ -32,10 +32,10 @@ Currently, FastBasic supports:
   including all standard arithmetic
   operators.
 - All graphic, sound, and color
-  commands from Atari Basic, plus some
-  extensions from Turbo Basic.
+  commands from Atari BASIC, plus some
+  extensions from TurboBASIC XL.
 - All control flow structures from
-  Atari Basic and Turbo Basic.
+  Atari BASIC and TurboBASIC XL.
 - Automatic string variables of up to
   255 characters.
 - Arrays of "word", "byte", floating
@@ -44,7 +44,7 @@ Currently, FastBasic supports:
   parameters.
 - Compilation to binary loadable files.
 - Available as a full version `FB.COM`,
-  as a smaller integer-only `FBI.COM`
+  as a smaller integer-only `FBI.COM`,
   and as a command-line compiler
   `FBC.COM`.
 
@@ -79,13 +79,14 @@ present you with a little help text:
     '- Press CONTROL-N to begin -
 
 You are now in the integrated editor.
-In the first line of the screen the
+On the first line of the screen the
 name of the currently edited file is
-shown, and at the right the line of the
-cursor.  Please note that lines that
-show an arrow pointing to the top-left
-are empty lines beyond the last line of
-the current file.
+shown, and at the right the line on
+which the cursor is located.  Please
+note that lines that show an arrow
+pointing to the top-left are empty
+lines beyond the last line of the
+current file.
 
 In this example, the cursor is in the
 first column of the first line of the
@@ -173,19 +174,23 @@ your compiled programs with an
 extension of ".COM" or ".XEX." With
 ".COM" extension files you don't need
 to type the extension in some versions
-of DOS.
+of DOS on the Atari.  The ".XEX" name is
+common in modern times to distinguish
+Atari executables from MSDOS/Windows
+programs (which are usually ".EXE" or
+sometimes ".COM")
 
 Compiled programs include the full
-runtime, so you can distribute them
-alone without the IDE.
+FastBasic runtime, so you can
+distribute them alone without the IDE.
 
 You can also compile a program directly
 from DOS by using the included command
 line compiler `FBC.COM`. The compiler
 prompts for the input file name, loads
 the BASIC source, compiles it, and
-prompts for a executable output
-filename to write the compiled program.
+prompts for a executable output filename
+to write the compiled program to.
 
 
 Advanced Editor Usage
@@ -214,7 +219,7 @@ above.
 
 - `CONTROL-C`
   Sets the current line as the source
-  for the copy operations.
+  for a copy operation.
 
 - `CONTROL-V`
   Copy one line from the source marked
@@ -226,8 +231,8 @@ above.
   consecutive lines.
 
 - `CONTROL-L` and `CONTROL-S`
-  Loads or Saves the file being edited,
-  respectively.
+  Loads a file, or Saves the file being
+  edited, respectively.
 
 - `CONTROL-Q`
   Returns to DOS, abandoning the
@@ -252,7 +257,7 @@ expansions available.
 
 As the original screen handler in the
 Atari OS is slow, there is a screen
-accelerator included in the FastBasic
+accelerator included on the FastBasic
 disk.
 
 To use the accelerator, just type
@@ -286,7 +291,7 @@ the following main rules:
    language is case insensitive.
 
 3. Statements can be abbreviated to
-   reduce typing, each statement has a
+   reduce typing; each statement has a
    different abbreviation.
 
 4. Multiple statements can be put on
@@ -319,7 +324,7 @@ There are numeric expressions (integer
 and floating point), boolean
 expressions, and string expressions.
 
-In FastBasic, standard  numeric
+In FastBasic, standard numeric
 expressions are evaluated as integers
 from -32768 to 32767, this is called 16
 bit signed integer values.
@@ -327,22 +332,27 @@ bit signed integer values.
 Floating point expressions are used
 *only* if numbers have a decimal point.
 Floating point numbers are stored with
-standard Atari BCD representation, with
-a range from 1E-98 to 1E+98.
+standard Atari binary-coded decimal
+(BCD) representation, with a range from
+1E-98 to 1E+98.
 
 Boolean expressions are "true" or
-"false." represented as the numbers 1
-and 0.
+"false", represented as the numbers 1
+and 0, respectively.
 
 String expressions contain arbitrary
 text. In FastBasic strings can have up
-to 255 characters of length.
+to 255 characters of length. (This is
+similar to Microsoft BASICs found on
+other 8-bit microcomputers, and in
+contrast to the 32K limit found in
+Atari BASIC and TurboBASIC XL.)
 
 
 Numeric Values
 --------------
 
-Basic values can be written as decimal
+Integer values can be written as decimal
 numbers (like `123`, `1000`, etc.), as
 hexadecimal numbers with a $ sign
 before (like `$1C0`, `$A00`, etc.) or
@@ -350,7 +360,7 @@ by using the name of a variable.
 
 Floating point values are written with
 a decimal dot and an optional exponent
-(like `1.0E+10`, or `-3.2`)
+(like `3.14159`, `-3.2`, or `1.0E+10`).
 
 
 Numeric Variables
@@ -359,36 +369,39 @@ Numeric Variables
 Variable names must begin with a letter
 or the symbol `_`, and can contain any
 letter, number or the symbol `_`.
-Examples of valid variable names are
-`COUNTER`, `My_Var`, `num1`.
+Examples of valid integer variable names
+are `COUNTER`, `My_Var`, `num1`.
 
 Floating point variables have an `%` as
-last character in the name. Examples of
-valid names are `MyNum%`, `x1%`.
+last character in the name.  Examples of
+valid floating point variable names are
+`MyNum%`, `x1%`.
 
 In FastBasic, variables can't be used
 in an expression before being assigned
-a value, the first assignment declares
-the variable.
+a value; the first assignment declares
+the new variable.
 
 
 Numeric Operators
 -----------------
 
 There are various "operators" that
-perform calculation in expressions; the
+perform calculations in expressions. The
 operators with higher precedence always
-execute first. These are the *integer*
-operators in order of precedence:
+executed first.
+
+The order of precedence for *integer*
+operators are:
 
 - `+` `-`      : addition, subtraction,
                  from left to right.
 - `*` `/` `MOD`: multiplication,
                  division, modulus,
                  from left to right.
-- `&` `!` `EXOR`: binary AND, OR and
-                  EXOR, from left to
-                  right.
+- `&` `!` `EXOR`: binary 'and', 'or',
+                  'exclusive or',
+                  from left to right.
 - `+` `-`      : positive / negative.
 
 For example, an expression like:
@@ -408,8 +421,9 @@ the following order:
 So, in this example the result is 27.
 
 If there is a need to alter the
-precedence, you can put the expression
-between parenthesis.
+precedence, you can place expressions
+within parenthesis (e.g., "`(2+5)*10`",
+which results in `70`).
 
 Note that `MOD` and `EXOR` can be
 abbreviated `M.` and `E.` respectively.
@@ -517,9 +531,9 @@ Arrays can be of four types:
 - `WORD` arrays (the default if no type
   is given) use two bytes of memory for
   each element, and works like normal
-  numeric variables.
+  numeric integer variables.
 - `BYTE` arrays use only one byte for
-  each element, but the numeric range
+  each element, so the numeric range
   is reduced from 0 to 255.
 - Floating point arrays, works like any
   floating point variable, and use six
@@ -569,19 +583,19 @@ The bracket operator `[` `]` allows
 creating a string from a portion of
 another, and accepts two forms:
 
- - [ _num_ ]
+ - [ _start_ ]
    This form selects all characters
-   from _num_ up to the end of the
+   from _start_ up to the end of the
    string, counting from 1.
-   So, `A$[1]` selects all the string
-   and `A$[3]` selects from the third
-   character to the end, effectively
-   removing the leftmost two
+   So, `A$[1]` selects the entire
+   string, while `A$[3]` selects from
+   the third character to the end,
+   effectively removing the two leftmost
    characters.
 
- - [ _num1_ , _num2_ ]
-   This form selects at most _num2_
-   characters from _num1_, or up to the
+ - [ _start_ , _len_ ]
+   This form selects at most _len_
+   characters from _start_, or up to the
    end of the string if there is not
    enough characters.
 
@@ -601,36 +615,37 @@ Will print:
 Note that the bracket operator creates
 a new string and copies the characters
 from the original string to the new
-one. As the buffer used for the new
-string is always the same, you can't
-compare two values without first
-assigning them to a new variable.
+one. As the same buffer is always used
+for the new string, you can't compare
+two values without first assigning one
+of them to a new string variable.
 
 This will print "ERROR":
 
-    A$="Dont Work"
+    A$="Don't Work"
     IF A$[2,2] = A$[3,3] THEN ? "ERROR"
 
-But this will work:
+while this will print "GOOD"
 
     A$="Long string"
     B$=A$[2,2]
-    IF B$ = A$[3,3] THEN ? "ERROR"
+    IF B$ <> A$[3,3] THEN ? "GOOD"
 
 
 
 String Variables
 ---------------
 
-String variables are named the same as
-numeric variables but must end with a
-`$` symbol.  Valid variable names are
-`Text$`, `NAME1$`.
+The naming convention for string
+variables is the same as for numeric
+variables, but must end with a `$`
+symbol.  Examples of valid string
+variable names are `Text$`, `NAME1$`.
 
 String variables always use 256 bytes,
-the first byte stores the string length
-and the following bytes store up to 255
-characters.
+the first byte storing the string length
+and the following bytes storing up to
+255 ATASCII characters.
 
 There are two types of string
 assignments:
@@ -659,23 +674,25 @@ Functions
 ---------
 
 Functions take parameters (normally
-between parentheses) and produce a
-result. Functions can be abbreviated by
-using a shorter name ended in a dot,
-for example you can write `R.(10)`
-instead of `RAND(10)`.
+between parentheses) and produce and
+return a result. Functions can be
+abbreviated by using a shorter name
+ended in a dot, for example you can
+write `R.(10)` instead of `RAND(10)`.
 
 You can also omit parentheses on
 functions that take one numerical value
 as argument, for example, `RAND 10`.
-This is not possible when the argument
-is a string or in `ADR` and `USR`.
+Note: This is not possible when the
+argument is a string (as with `ADR`),
+or the function accepts a variable number
+of arguments (as with `USR`).
 
 Some functions don't take parameters,
 and you must provide a set of
-parentheses, like `KEY()`, in this case
-when abbreviated, you can omit the
-parenthesis, like `K.`.
+parentheses, like `KEY()`.
+However, when abbreviated, you can omit
+the parenthesis, like `K.` for `KEY()`.
 
 
 Standard Functions
@@ -686,7 +703,7 @@ purpose functions supported by
 FastBasic. Shown are the full syntax
 and the abbreviated syntax.
 
-- TIME / T. :
+- TIME() / T. :
   Returns the current time in
   "jiffies." This is about 60 times per
   second in NTSC systems or 50 times
@@ -694,9 +711,10 @@ and the abbreviated syntax.
   `TIMER` statement to reset to 0.
 
 - ABS(_num_) / A.(_num_) :
-  Returns the absolute value of _num_.
-  Can be used with integers and
-  floating point.
+  Returns the absolute value of _num_
+  (e.g., `ABS(5)` and `ABS(-5)` both
+  result in `5`).  Can be used with
+  integers and floating point.
 
 - SGN(_num_) / SG.(_num_) ;
   Returns the sign of _num_, this is 1
@@ -793,7 +811,7 @@ graphics.
 Floating Point Functions
 ------------------------
 
-This functions use floating point
+These functions use floating point
 values, and are only available in the
 floating point version.
 
@@ -872,7 +890,10 @@ with the hardware. Use with care!
   in memory.  The first memory location
   contains the length of the string,
   and following locations contain the
-  string characters.
+  string characters.  (This differs from
+  Atari BASIC and TurboBASIC XL, where
+  the address returned points to the
+  first character of the string.)
 
 - ADR(_var_) / &_var_ :
   Returns the address of the _variable_
@@ -882,6 +903,8 @@ with the hardware. Use with care!
   Returns the value of memory location
   _addr_ and _addr_+1 as a 16 bit
   integer.
+  This is the same as doing
+  PEEK(_addr_)+PEEK(_addr_+1)*256
 
 - PEEK(_address_) / P.(_address_) :
   Returns the value of memory location
@@ -1155,6 +1178,8 @@ Control Statements
 
   Instead of `EXEC` you can simply use
   a `@` in front of the procedure name.
+  (i.e., these are equivalent:
+  `EXEC GAMEOVER` and `@GAMEOVER`.)
 
 
 **Exits From Loop Or PROC**  
@@ -1195,7 +1220,7 @@ Control Statements
   loop and skips to the end.
 
   Note that if _step_ is positive, the
-  iteration ends and the if value of
+  iteration ends when the value of
   _var_ is bigger than _end_, but if
   _step_ is negative, the iteration
   ends if value of _var_ is less than
@@ -1236,9 +1261,21 @@ Control Statements
   one _statement_ if the condition is
   true.
 
+  This differs from Atari BASIC,
+  TurboBASIC XL, and others, which will
+  execute all statements after THEN until
+  the end of the line.  For example:
+
+      A=1
+      IF A=0 THEN ? "ZERO":? "THE END"
+
+  Results in "THE END" being printed in
+  FastBasic, whereas nothing would be
+  printed in Atari BASIC.
+
   The second form executes all
   statements following the IF (up until
-  an ELIF, ELSE, ENDIF) only if
+  an ELIF, ELSE, or ENDIF) only if
   condition is true.
 
   If the condition is false, optional
@@ -1265,7 +1302,7 @@ Control Statements
       ' _condition-3_ is true
     ELSE
       ' Executed if all of the above
-      ' are false
+      ' conditions are false
     ENDIF
 
 
@@ -1388,11 +1425,20 @@ Graphic and Sound Statements
 |GR. 8  | 320x192    |        1     |
 |GR. 9  | 80x192     | 16 shades of 1 color |
 |GR. 10 | 80x192     |        9     |
-|GR. 11 | 80x192     |       16     |
-|GR. 12 | Text 40x24 |        4     |
-|GR. 13 | Text 40x12 |        4     |
+|GR. 11 | 80x192     | 16 colors of 1 shade |
+|GR. 12 | Multicolor Text 40x24 |        5     |
+|GR. 13 | Multicolor Text 40x12 |        5     |
 |GR. 14 | 160x192    |        2     |
 |GR. 15 | 160x192    |        4     |
+
+  For bitmapped graphics modes which
+  include a text window at the bottom
+  (all but 9, 10, and 11), add 16 to the
+  mode number to disable the text
+  window.
+
+  Add 32 to the mode number to prevent
+  the graphics data from being cleared.
 
 
 **Get color of pixel**  
@@ -1422,7 +1468,8 @@ Graphic and Sound Statements
 
   Single line mode uses 256 bytes per
   player, while double line uses 128
-  bytes per player.
+  bytes per player.  (Note that all
+  four missiles share the same data.)
 
   For retrieving the memory address of
   the player or missile data use the
@@ -1443,6 +1490,14 @@ Graphic and Sound Statements
   This is the same as writing:
   `POKE $D000 + num , pos`
 
+  Note: Player/Missile graphics on the
+  Atari are strips that are as tall
+  as the screen, and therefore to move
+  a shape vertically its data must be
+  moved within their 128- or 256-byte
+  buffer (using the `MOVE` statement,
+  for example).
+
 **Sets Displayed Color**  
 **SETCOLOR _num_, _hue_, _lum_ / SE.**
 
@@ -1454,6 +1509,15 @@ Graphic and Sound Statements
   negative values of _num_, -4 for
   player 0, -3 for player 1, -2 for
   player 2, and -1 for player 3.
+
+  Missiles share the same color as
+  their player, unless you combine
+  them into a "5th Player" by setting
+  the 5th bit of the PRIOR register,
+  e.g.: `POKE 623,16`. (You must also
+  move them horizontally in unison if
+  you wish to use them as a true
+  5th Player.)
 
 **Adjust Voice Sound Parameters**  
 **SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  
@@ -1471,6 +1535,12 @@ Graphic and Sound Statements
   If no parameters are given, it clears
   all voices so that no sounds are
   produced.
+
+  Note: TurboBASIC XL offers a
+  `DSOUND` statement to pair sound
+  channels for increased (16-bit)
+  frequency range.  This is not
+  available in FastBasic.
 
 
 Device Input and Output Statements
@@ -1560,7 +1630,7 @@ Device Input and Output Statements
   _mode_ should be 4, _aux_ 0 and *dev*
   the file name as "D:name.ext".
 
-  See Atari Basic manual for more
+  See Atari BASIC manual for more
   documentation in the open modes, aux
   values, and device names.
 
@@ -1807,12 +1877,12 @@ General Statements
 **PAUSE _num_ / PA.**
 **PAUSE**
 
-  Stops the current execution until the
-  specified time.
+  Stops the current execution for the
+  specified amount of time.
 
   _num_ is the time to pause in
   "jiffies", this is the number of TV
-  scans in the system, 60 per second in
+  scans in the system; 60 per second in
   NTSC or 50 per second in PAL.
 
   Omitting _num_ is the same as giving
@@ -2178,8 +2248,8 @@ network device.
 | DAUX1     | First Aux parameter    |
 | DAUX2     | Second Aux parameter   |
 
-The meanings of each of these is high-
-ly dependent on the target device.
+The meanings of each of these is
+highly dependent on the target device.
 
 **Get last SIO error function**  
 **SERR() / SE.**
