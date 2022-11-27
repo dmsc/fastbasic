@@ -674,11 +674,11 @@ Functions
 ---------
 
 Functions take parameters (normally
-between parentheses) and produce and
-return a result. Functions can be
-abbreviated by using a shorter name
-ended in a dot, for example you can
-write `R.(10)` instead of `RAND(10)`.
+between parentheses) and return a
+result. Functions can be abbreviated by
+using a shorter name ended in a dot,
+for example you can write `R.(10)`
+instead of `RAND(10)`.
 
 You can also omit parentheses on
 functions that take one numerical value
@@ -703,12 +703,14 @@ purpose functions supported by
 FastBasic. Shown are the full syntax
 and the abbreviated syntax.
 
-- TIME() / T. :
+- TIME / T. :
   Returns the current time in
   "jiffies." This is about 60 times per
   second in NTSC systems or 50 times
   per second in PAL systems. Use
   `TIMER` statement to reset to 0.
+  Note: TIME is special, and does not
+  need parentheses.
 
 - ABS(_num_) / A.(_num_) :
   Returns the absolute value of _num_
