@@ -24,6 +24,8 @@ RUNTEST=build/bin/fbtest
 
 MINI65_SRC=\
   atari.c\
+  atcio.c\
+  atsio.c\
   dosfname.c\
   hw.c\
   mathpack.c\

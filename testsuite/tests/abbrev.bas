@@ -1,5 +1,6 @@
 ' Test for function abbreviations
 ? "Start"
+MEM=DPEEK($2E5) ' Get MEMTOP value
 DPOKE 1536, 1234
 ? DPEEK 1536 * 2
 ? SGN ABS DPEEK 1536
@@ -134,7 +135,7 @@ RA.               ' RAD
 
 ? "INT-FUN"
 ? N.N.N.1         ' NOT NOT NOT
-? F.<-20000       ' FRE()
+? MEM-F.>8192     ' FRE()
 ? E.              ' ERR()
 P.764,127
 ? K.              ' KEY()
@@ -148,7 +149,7 @@ P.$27A,15
 ? S.2             ' STICK
 P.$284,3
 ? STR.0           ' STRIG
-? PM.0            ' PMADR
+? MEM-PM.0        ' PMADR
 ? R.1             ' RAND
 ' ? USR()         ' USR (can't abbreviate)
 ? ADR(R1)-ADR(R)  ' ADR (can't abbreviate)
