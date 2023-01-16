@@ -62,7 +62,7 @@ present you with a little help text:
     '
     ' Editor Help
     ' -----------
-    '  Ctrl-A : Move to begining of line
+    '  Ctrl-A : Move to beginning of line
     '  Ctrl-E : Move to end of line
     '  Ctrl-U / Ctrl-I : Page up / down
     '  Ctrl-Z : Undo (only current line)
@@ -201,7 +201,7 @@ most of those are already explainded
 above.
 
 - `CONTROL-A` and `CONTROL-E`
-  Moves the cursor ro the beggining or
+  Moves the cursor ro the beginning or
   the end of the line respectively.
 
 - `CONTROL-U` and `CONTROL-I`
@@ -262,7 +262,7 @@ disk.
 
 To use the accelerator, just type
 `EFAST` in the DOS prompt, before
-loading the IDE, and enjoy editting
+loading the IDE, and enjoy editing
 programs faster.
 
 
@@ -1056,7 +1056,7 @@ Console Print and Input Statements
   normal or inverse video.  Use 0, 32,
   128 or 160 in graphics mode 1 and 2
   for the four available text colors,
-  see the two examples bellow:
+  see the two examples below:
 
       ' In GRAPHICS 0:
       ? "NORMAL"; COLOR(128) "INVERSE"
@@ -2194,7 +2194,7 @@ statement:
       DLI
 
 
-**Some usefull registers**
+**Some useful registers**
 
   This is a table of some useful
   registers to change during a DLI:
