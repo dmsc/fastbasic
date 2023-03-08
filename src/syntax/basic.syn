@@ -198,12 +198,12 @@ STR_PAR_EXPR: left parenthesis
 # Parses a continuation of an INT to BOOLean expression
 OR_AND_BOOL:
         OR_EXPR_RIGHT
-        AND_EXPR_RIGHT
+        AND_EXPR_RIGHT OR_EXPR_MORE
 
 # Test if an INT needs to be converted to BOOL
 TEST_BOOL_EXPR:
         emit TOK_COMP_0 OR_AND_BOOL
-        emit TOK_PUSH COMP_EXPR_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
+        emit TOK_PUSH COMP_EXPR_RIGHT AND_EXPR_MORE OR_EXPR_MORE COMP_EXPR_MORE
         pass
 
 # General Expression - Can be INT or BOOL
