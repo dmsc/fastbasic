@@ -1025,8 +1025,8 @@ Console Print and Input Statements
 **Print Strings And Numbers**  
 **PRINT _expr_, ... / ?**  
 **PRINT _expr_ TAB(_expr_) ...**  
-**PRINT _expr_ RTAB(_expr_) ...**  
-**PRINT COLOR(_expr_) _expr_ ; ...**
+**PRINT RTAB(_expr_) ...**  
+**PRINT COLOR(_expr_) ...**  
 **PRINT _expr_ ; ...**  
 
   Outputs strings and numbers to the
@@ -1050,8 +1050,9 @@ Console Print and Input Statements
   printing of tabulated data.
 
   The `COLOR` function alters the color
-  the text that follows, depending on
-  the graphics mode. This is abbreviated
+  the text that follows, until the end
+  of the statement, depending on the
+  graphics mode. This is abbreviated
   `C.`.  Use 0 or 128 in graphics 0, for
   normal or inverse video.  Use 0, 32,
   128 or 160 in graphics mode 1 and 2
@@ -1075,12 +1076,14 @@ Console Print and Input Statements
   same as using a comma to separate
   arguments. This is abbreviated `T.`.
 
-  The `RTAB` function advances the
-  position so that the next argument to
-  print ends just before a column
-  multiple of the argument, right
-  aligning the printing of the data.
-  This is abbreviated `RT.`.
+  The `RTAB` function, abbreviated
+  `RT.`, advances the position so that
+  the next argument to print ends just
+  before a column multiple of the
+  argument, right aligning the printing
+  of the data. This function must be
+  immediately followed by a variable or
+  a string to align.
 
   Note that `,`, `TAB` and `RTAB`
   always print at least one space, and
@@ -1131,7 +1134,6 @@ Console Print and Input Statements
   an *exclusive or* of the given value
   with the value of each character in
   the original string before printing.
-
 
 
 **Writes A Character To Screen**  

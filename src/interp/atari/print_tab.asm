@@ -28,7 +28,11 @@
 ; ---------------------------------------------
 
         .import         putc, stack_l, print_str_tmp1
-        .importzp       sptr, next_instruction, tmp1, tmp2, PRINT_ARG
+        .importzp       sptr, next_instruction, tmp1, tmp2, tmp3
+        .exportzp       PRINT_RTAB_ARG
+
+
+PRINT_RTAB_ARG = tmp3
 
         .include "target.inc"
 
@@ -39,7 +43,7 @@
         sbc     COLCRS
         bcs     ok
 rep:
-        adc     PRINT_ARG
+        adc     PRINT_RTAB_ARG
         bcc     rep
 
 ok:
@@ -52,7 +56,7 @@ ok:
 .endproc
 
 .proc   EXE_PRINT_TAB   ; PRINT TAB up to column N
-        sta     PRINT_ARG
+        sta     PRINT_RTAB_ARG
         jsr     do_tab
         jmp     next_instruction
 .endproc
@@ -63,13 +67,11 @@ ok:
 
         ldy     #0
         sec
-        lda     PRINT_ARG       ; Get TAB position
+        lda     PRINT_RTAB_ARG  ; Get TAB position
         sbc     (tmp1), y       ; subtract string length
 
         jsr     do_tab
 
-        ldy     #0              ; Print color = 0
-        sty     PRINT_ARG
         jmp     print_str_tmp1  ; Print string in tmp1
 .endproc
 

@@ -128,7 +128,7 @@ RA.               ' RAD
 ? EX.1            ' EXP10
 ? LO.10           ' LOG10
 ? SQ.4            ' SQR
-? CO.0            ' COS
+? COS0            ' COS
 ? 0.0 + V.("0.1") ' VAL FP
 ? RN.>=0.0        ' RND
 

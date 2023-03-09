@@ -33,6 +33,7 @@
         .exportzp       interpreter_cptr, sptr, cptr
         .exportzp       next_ins_incsp, next_instruction
         .exportzp       IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
+        .exportzp       PRINT_COLOR
         .exportzp       move_source
         .exportzp       move_dest
         .exportzp       move_ins, move_loop
@@ -61,6 +62,8 @@ divmod_sign:
         .res    1
 IOCHN:  .res    1
 IOERROR:.res    1
+PRINT_COLOR:
+        .res    1
 
 
         ; Integer stack, 40 * 2 = 80 bytes
@@ -150,7 +153,6 @@ move_ins        =       move_loop::ins
 
 .ifdef __ATARI5200__
         lda     #0
-        sta     0
 .else
         ; Close al I/O channels
         lda     #$70
@@ -164,14 +166,15 @@ move_ins        =       move_loop::ins
         bne     :-
 
         ; Clear TAB position, IO channel and IO error
-        ; Also clears location 0 to allow a null-pointer representation
-        ; for an empty string (length = 0).
         ;
         ; lda     #0  ; A == 0 from above
         sta     IOCHN
         sta     IOERROR
-        sta     0
 .endif
+        ; Clears PRINT_COLOR and location 0 to allow a null-pointer representation
+        ; for an empty string (length = 0).
+        sta     PRINT_COLOR
+        sta     0
 
 .ifdef FASTBASIC_FP
         .importzp       DEGFLAG

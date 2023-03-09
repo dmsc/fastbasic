@@ -500,10 +500,21 @@ class peephole
             remove_unused_labels();
             replace_label_targets();
             trace_iochn();
+            int print_color = 0;
 
             for(size_t i = 0; i < code.size(); i++)
             {
                 current = i;
+
+                // Track current print color
+                if(mtok(2, "TOK_BYTE_POKE") && mcbyte(3, "PRINT_COLOR"))
+                {
+                  if(mtok(0, "TOK_NUM") && mword(1))
+                      print_color = val(1);
+                  else
+                      print_color = -1;
+                }
+
                 // Sequences:
                 //   TOK_NUM / x / TOK_NEG  -> TOK_NUM / -x
                 if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_NEG"))
@@ -1413,12 +1424,13 @@ class peephole
                     del(1);
                     continue;
                 }
-                // Join print constant strings with a PUT
+                // Join print constant strings with a PUT, except if
+                // the color is non-zero.
                 // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_NUM / X / TOK_PUT
                 //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
                 if(mtok(0, "TOK_CSTRING") && mstring(1) < 255 &&
                    mtok(2, "TOK_PRINT_STR") && mtok(3, "TOK_NUM") && mword(4) &&
-                   mtok(5, "TOK_PUT"))
+                   mtok(5, "TOK_PUT") && print_color == 0)
                 {
                     set_string(1, str(1) + char(val(4)));
                     del(5);
@@ -1430,7 +1442,7 @@ class peephole
                 //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
                 if(mtok(0, "TOK_CSTRING") && mstring(1) < 255 &&
                    mtok(2, "TOK_PRINT_STR") && mtok(3, "TOK_BYTE_PUT") &&
-                   (mbyte(4) || mword(4)))
+                   (mbyte(4) || mword(4)) && print_color == 0)
                 {
                     set_string(1, str(1) + char(val(4)));
                     del(4);
