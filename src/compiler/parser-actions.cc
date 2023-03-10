@@ -586,7 +586,6 @@ static bool SMB_E_LABEL_DEF(parse &s)
     if(v[name].is_defined())
         return false;
     s.current_params = 0;
-    s.add_text(name);
     s.emit_label(s.label_prefix + name);
     return true;
 }
