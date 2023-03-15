@@ -78,7 +78,7 @@ bool syntax_parser::parse_file()
             else
             {
                 auto sm =
-                    std::make_unique<statemachine>(p, name, sl.tok, sl.ext, sl.syms);
+                    std::make_unique< statemachine >(p, name, sl.tok, sl.ext, sl.syms);
                 if(sm->parse())
                 {
                     sl.sms[name] = std::move(sm);

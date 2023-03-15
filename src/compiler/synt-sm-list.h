@@ -31,7 +31,7 @@ class wordlist;
 class sm_list
 {
   public:
-    std::map<std::string, std::unique_ptr<statemachine>> sms;
+    std::map < std::string, std::unique_ptr <statemachine> > sms;
     wordlist tok;
     wordlist ext;
     symlist syms;
