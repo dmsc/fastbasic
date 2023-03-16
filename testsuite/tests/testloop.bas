@@ -98,3 +98,31 @@ for i=1 to 10
 next i
 ? "="; a
 
+' Check "void" loop optimizations
+repeat
+ ? "repeat until 1"
+until 1
+
+while 0
+ ? "while 0"
+wend
+
+' Check "always" loop optimizations
+i = 0
+repeat
+ ? "repeat until 0"
+ inc i
+ if i > 4 then exit
+until 0
+
+i = 0
+while 1
+ ? "while 1"
+ inc i
+ if i > 4 then exit
+wend
+
+' Check IF/FOR special
+if 0 then ? "if 0"
+if 1 then ? "if 1"
+for I=1 to 0 : ? "for 0" : next

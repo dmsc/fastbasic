@@ -1313,6 +1313,49 @@ class peephole
                         del(3);
                     }
                 }
+                //   x == 0 -> 1 / 0
+                if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_COMP_0"))
+                {
+                    set_w(1, val(1) ? 1 : 0);
+                    del(2);
+                    continue;
+                }
+                //   x / TOK_CNJUMP -> remove or always jump
+                if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_CNJUMP"))
+                {
+                    if(!val(1))
+                    {
+                        del(3);
+                        del(2);
+                        del(1);
+                        del(0);
+                    }
+                    else
+                    {
+                        set_tok(2, "TOK_JUMP");
+                        del(1);
+                        del(0);
+                    }
+                    continue;
+                }
+                //   x / TOK_CJUMP -> remove or always jump
+                if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_CJUMP"))
+                {
+                    if(val(1))
+                    {
+                        del(3);
+                        del(2);
+                        del(1);
+                        del(0);
+                    }
+                    else
+                    {
+                        set_tok(2, "TOK_JUMP");
+                        del(1);
+                        del(0);
+                    }
+                    continue;
+                }
                 // CALL xxxxx / RETURN  ->  JUMP xxxxx
                 //   TOK_CALL / x / TOK_RET -> TOK_JUMP / x
                 if(mtok(0, "TOK_CALL") && mtok(2, "TOK_RET"))
