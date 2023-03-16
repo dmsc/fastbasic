@@ -29,7 +29,7 @@ CC=gcc
 OPTFLAGS=-O2
 
 # General options for C++ compiler
-CXXFLAG=-Wall -std=c++14
+CXXFLAGS=-Wall -std=c++14
 
 # General flags for 6502 assembly files
 CA65_FLAGS=-g -tatari -I cc65/asminc -I src
