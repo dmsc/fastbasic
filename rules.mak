@@ -70,10 +70,10 @@ build/disk/%.bas: tests/%.bas | build/disk
 
 # Transform a text file to ATASCII (replace $0A with $9B)
 build/disk/%: % version.mk | build/disk
-	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
+	$(Q)$(SED) 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C tr '\n' '\233' > $@
 
 build/disk/%.txt: %.md version.mk | build/disk
-	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
+	$(Q)$(SED) 's/%VERSION%/$(VERSION)/' < $< | LC_ALL=C awk 'BEGIN{for(n=0;n<127;n++)chg[sprintf("%c",n)]=128+n} {l=length($$0);for(i=1;i<=l;i++){c=substr($$0,i,1);if(c=="`"){x=1-x;if(x)c="\002";else c="\026";}else if(x)c=chg[c];printf "%c",c;}printf "\233";}' > $@
 
 # Copy ".XEX" as ".COM"
 build/disk/%.com: build/bin/%.xex | build/disk
@@ -153,20 +153,29 @@ build/gen/int/basic.asm: $(SYNTAX_INT) $(SYNTP) | build/gen/int
 
 # Sets the version inside command line compiler source
 build/gen/cmdline-vers.bas: src/cmdline.bas version.mk
-	$(Q)LC_ALL=C sed 's/%VERSION%/$(VERSION)/' < $< > $@
+	$(Q)$(SED) 's/%VERSION%/$(VERSION)/' < $< > $@
 
 # Main program file
 build/bin/fb.xex: $(IDE_OBJS_FP) $(A800_FP_OBJS) $(IDE_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking floating point IDE"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	@printf "\e[1;33mFP IDE HEAP START: "
+	@$(SED) -n -e 's/^[^ ]* 00\([0-9A-F]*\) .*HEAP_RUN.*/\1/p' $(@:.xex=.lbl)
+	@printf "\e[0m"
 
 build/bin/fbc.xex: $(CMD_OBJS_FP) $(A800_FP_OBJS) $(CMD_BAS_OBJS_FP) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking command line compiler"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	@printf "\e[1;33mCOMMAND LINE COMPILER HEAP START: "
+	@$(SED) -n -e 's/^[^ ]* 00\([0-9A-F]*\) .*HEAP_RUN.*/\1/p' $(@:.xex=.lbl)
+	@printf "\e[0m"
 
 build/bin/fbi.xex: $(IDE_OBJS_INT) $(A800_OBJS) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking integer IDE"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	@printf "\e[1;33mINTEGER IDE HEAP START: "
+	@$(SED) -n -e 's/^[^ ]* 00\([0-9A-F]*\) .*HEAP_RUN.*/\1/p' $(@:.xex=.lbl)
+	@printf "\e[0m"
 
 # Compiled program files
 build/bin/%.xex: build/obj/fp/%.o $(LIB_FP) | build/bin $(LD65_HOST)

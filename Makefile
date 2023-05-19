@@ -25,6 +25,9 @@ CROSS=
 CXX=g++
 CC=gcc
 
+# Runs SED without locale
+SED=LC_ALL=C sed
+
 # Optimization flags, added to C and C++ compiler flags
 OPTFLAGS=-O2
 
