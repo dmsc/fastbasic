@@ -192,8 +192,9 @@ xit_emit:
         ; Expected A = 0 on input, emits two bytes
 .proc   read_hex
         ; We have A==0 here
-        tax             ; X = low-part of result
-        stx     tmp1+1  ; tmp1+1: hi-part of result
+        sta     tmp1    ; tmp1 holds the result
+        sta     tmp1+1
+        tax             ; X=0 means no characters consumed yet
 
 nloop:
         ; Read next hex digit
@@ -203,41 +204,36 @@ nloop:
         cmp     #10
         bcc     digit
 
-        sbc     #'A'^'0'
-        cmp     #6
-        bcs     xit ; Not an hex number
-        adc     #10 ; set to range 10-15
+        sbc     #('A'^'0')+(256-250)
+        cmp     #$FA
+        bcc     xit ; Not an hex number
 
 digit:
-        sta     tmp1    ; and save digit
+        asl
+        asl
+        asl
+        asl
 
         ; Multiply tmp by 16
-        txa
-        ldx     #4
+        ldx     #3
 :       asl
+        rol     tmp1
         rol     tmp1+1
-        bcs     ret     ; Exit with C = 1 on overflow
+        bcs     E_EOL::xit ; Exit with C = 1 on overflow
         dex
-        bne     :-
+        bpl     :-
 
-        ; Add new digit
-        ora     tmp1
-        tax
-        bcc     nloop
-
-ret:
-        rts
+        ; X = 255 here, used to check that one character was consumed
+        bmi     nloop
 
 xit:
         ; Check that we consumed at least one character after the "$"
-        dey
-        cpy     bpos
-        beq     ret     ; Exit with C = 1 (if Y-1 == bpos, C = 1)
-        iny
+        inx
+        bne     E_EOL::xit ; Exit with C = 1 (if Y-1 == bpos, C = 1)
 
-        txa
+        lda     tmp1
         ldx     tmp1+1
-        bcs     E_NUMBER_WORD::xit_emit
+        bcc     E_NUMBER_WORD::xit_emit
 .endproc
 
 .proc   E_NUMBER_BYTE
