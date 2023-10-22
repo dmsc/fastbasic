@@ -65,37 +65,37 @@ copy_e: lda     EDITRV,x
         ; Patch new HATABS, stored in current MEMLO
         lda     MEMLO
         ldx     MEMLO+1
-        sta     hatabs_l+1
-        stx     hatabs_h+1
         sta     pntr
         stx     pntr+1
 
-        ; And store our new PUT
+        ; Store new DOSINI handler address
+        sta     DOSINI
+        stx     DOSINI+1
+
+        ; Address of new PUT is at start of handler
         ; (note, C is set here, so adds 1 less)
-        adc     #(handler_put-1 - handler_hatab) - 1
+        adc     #(handler_put - 1 - handler_start - 1)
         bcc     :+
         inx
 :       sta     handler_hatab+6
         stx     handler_hatab+7
 
-        ; Store new DOSINI handler address
-        sec
-        adc     #(handler_jdos - handler_put)
+        ; And store our new handler table
+        clc
+        adc     #(handler_hatab - handler_put + 1)
         bcc     :+
         inx
-:       sta     DOSINI
-        stx     DOSINI+1
+:       sta     hatabs_l+1
+        stx     hatabs_h+1
 
         ; And address of new MEMLO
         clc
-        adc     #(handler_end - handler_jdos)
+        adc     #(handler_end - handler_hatab)
         sta     sMEMLOL+1
 
         ; If we adjusted X it means that in the reload handler
         ; we also need to increment X, so keeps the "INX" in the code
         bcs     :+
-        cpx     pntr+1
-        bne     :+
         ; We did not increment X, replace the INX with a NOP.
         lda     #234    ; NOP
         sta     sMEMLOH
@@ -103,11 +103,10 @@ copy_e: lda     EDITRV,x
 
         ; Copy our handler code to new position
 copy_handler:
-        ldy     #(handler_end - handler_put + 15)
-cloop:  lda     handler_hatab,y
-        sta     (pntr),y
+        ldy     #(handler_end - handler_start)
+cloop:  lda     handler_start-1,y
         dey
-        cpy     #$FF
+        sta     (pntr),y
         bne     cloop
 
         ; Store new MEMLO / HATAB
@@ -140,67 +139,70 @@ call_cio:
         .assert (>install_msg) = (>error_msg), error, "messages must be in the same page"
         .assert (>install_msg) = (>dev_e), error, "e: must be in the same page"
 
-install_msg:
+dev_e:
+install_msg:    ; NOTE: message must begin with "E:"
         .byte   "E:Fast Installed", $9B
+
 error_msg:
         .byte   "Can't install", $FD, $9B
 
-dev_e:
-        .byte   "E:", $9B
 
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         ;
         ;       Installed handler
         ;
+handler_start:
 
-        ; File HEADER
-        .segment "HANDHDR"
-        .word   handler_put
-        .word   handler_end - 1
-        .segment "HANDLER"
+; Calls original DOSINI, adjust MEMLO and reinstall E: handler
+handler_jdos:
+        jsr     $FFFF
 
-        ; Handler device table
-handler_hatab = handler_put - 16
+        ; Load HATABS value:
+load_hatab:
+
+hatabs_l:
+        lda     #$00
+        sta     HATABS+1
+hatabs_h:
+        ldx     #$00
+        stx     HATABS+2
+
+        ; Loads MEMLO value
+sMEMLOL:lda     #$00
+sMEMLOH:inx     ; This is replaced by a NOP if possible
+
+        sta     MEMLO
+        stx     MEMLO+1
+        rts
 
         ; Handler PUT function
 handler_put:
+        ; Don't handle in graphics modes
+        ldx     DINDEX
+        bne     jhand
+
         ; Don't handle wrap at last column!
         ldx     COLCRS
         cpx     RMARGN
         bcs     jhand
 
-        ; And don't handle in graphics modes
-        ldx     DINDEX
-        bne     jhand
-
         ; Check for control character:
         ;  $1B, $1C, $1D, $1E, $1F, $7D, $7E, $7F
         ;  $9B, $9C, $9D, $9E, $9F, $FD, $FE, $FF
         ;
-        ; To ignore high bit, store in X the shifted character
-        asl
+        ; Store original in Y and shift A to remove high bit:
         tay
-        ; Restore full value in A
-        ror
-
-        cpy     #2*ATCLR ; chars >= $7D are special chars
-        bcs     jhand
-        cpy     #$C0     ; chars >= $60 don't need conversion
-        bcs     conv_ok
-        cpy     #$40     ; chars >= $20 needs -$20 (upper case and numbers)
-        bcs     normal_char
-        cpy     #2*ATESC ; chars <= $1B needs +$40 (control chars)
-        bcc     ctrl_char
-
-        ; Special character jump to old handler
-jhand:  jmp     $FFFF
-
-        ; Convert ATASCII to screen codes
-ctrl_char:
-        adc     #$61    ; Chars from $00 to $1F, add $40 (+$21, subtracted bellow)
-normal_char:
-        sbc     #$20    ; Chars from $20 to $5F, subtract $20
+        asl
+        cmp     #2*ATCLR
+        bcs     jhandy  ; Skip $7D-$7F and $FD-$FF
+        sbc     #$3F
+        bpl     conv_ok ; $20-$5F and $A0-$DF are ok
+        cmp     #$C0 + 2 * ATESC - 1
+        bcs     jhandy  ; Skip $1B-$1F and $9B-$9F
+        eor     #$40
 conv_ok:
+        cpy     #$80    ; Restore sign
+        ror
 
         ; Check break and stop on START/STOP flag
 wait_stop:
@@ -271,10 +273,9 @@ skip_adr:
 no_cursor:
 
         ; Update column
-        ldx     COLCRS
-        inx
-        stx     COLCRS
-        stx     OLDCOL
+        inc     COLCRS
+        lda     COLCRS
+        sta     OLDCOL
         inc     LOGCOL
 
         ; Reset ESC flag
@@ -283,29 +284,14 @@ no_cursor:
         iny
         rts
 
-; Calls original DOSINI, adjust MEMLO and reinstall E: handler
-handler_jdos:
-        jsr     $FFFF
+; Calls original E: put
+jhandy: tya
+jhand:  jmp     $FFFF
 
-        ; Load HATABS value:
-load_hatab:
-
-hatabs_l:
-        lda     #$00
-        sta     HATABS+1
-hatabs_h:
-        ldx     #$00
-        stx     HATABS+2
-
-        ; Loads MEMLO value
-sMEMLOL:lda     #$00
-sMEMLOH:inx     ; This is replaced by a NOP if possible
-
-        sta     MEMLO
-        stx     MEMLO+1
-        rts
+        ; Handler device table
+handler_hatab:
 
 ; End of resident handler
-handler_end:
+handler_end = handler_hatab + 16
 
 ; vi:syntax=asm_ca65
