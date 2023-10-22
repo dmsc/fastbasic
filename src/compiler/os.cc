@@ -28,6 +28,7 @@ static const char *path_sep = "\\/";
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cerrno>
 #define HAVE_DRIVE 0
 static const char *path_sep = "/";
 #endif
