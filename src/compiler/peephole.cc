@@ -506,6 +506,22 @@ class peephole
             {
                 current = i;
 
+                // Remove extra PRINT COLOR
+                if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_BYTE_POKE") &&
+                   mcbyte(3, "PRINT_COLOR"))
+                {
+                    // Remove if we are setting the same color as already set:
+                    if(val(1) == print_color)
+                    {
+                        del(3);
+                        del(2);
+                        del(1);
+                        del(0);
+                        i--;
+                        continue;
+                    }
+                }
+
                 // Track current print color
                 if(mtok(2, "TOK_BYTE_POKE") && mcbyte(3, "PRINT_COLOR"))
                 {
