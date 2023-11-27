@@ -82,6 +82,7 @@ FP_FUNCS:
         "COs"   FP_T_EXPR emit TOK_FP_COS
         "Val"   STR_PAR_EXPR emit TOK_FP_VAL
         "RNd()" emit TOK_FP_RND
+        "%"     PAR_EXPR emit TOK_FP_LOAD
 
 ADR_EXPR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"

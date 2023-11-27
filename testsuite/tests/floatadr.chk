@@ -1,0 +1,5 @@
+Name: Test for using address of floating point vars
+Test: run-fp
+Output:
+0.21875
+1234.5

@@ -955,6 +955,10 @@ with the hardware. Use with care!
       x = ADR("Hello")
       ? $( x )
 
+- %(_n_) :
+  This returns the floating-point
+  value stored at memory address _n_.
+
 
 List Of Statements
 ==================
