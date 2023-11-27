@@ -85,6 +85,7 @@ FP_FUNCS:
 
 ADR_EXPR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
+        emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"
 
 INT_FUNCTIONS:
         "Int"    FP_T_EXPR emit TOK_FP_INT
