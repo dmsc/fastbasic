@@ -129,6 +129,16 @@ static int show_error(std::string msg)
     return 1;
 }
 
+static char printable(char c)
+{
+    if(c < 32)
+        return '.';
+    else if(c < 127)
+        return c;
+    else
+        return '.';
+}
+
 compiler::compiler()
 {
     optimize = true;
@@ -171,18 +181,33 @@ int compiler::compile_file(std::string iname, std::string output_filename,
         }
         catch(parse_error &e)
         {
-            std::cerr << iname << ":" << ln << ":" << e.pos << ": " << e.what() << "\n";
+            // Get start/end of current line, removing last EOL
             size_t min = 0, max = s.str.length();
-            if(e.pos > 40)
-                min = e.pos - 40;
-            if(e.pos + 40 < max)
-                max = e.pos + 40;
+            if(max && s.str[max - 1] == '\n')
+                max--;
+            // Adjust error position to be inside the line
+            if(e.pos > max)
+                e.pos = max;
+            // Only show up to 76 characters total
+            if(max > 76)
+            {
+                if(e.pos > 50)
+                    min = e.pos - 50;
+                if(max - min > 76)
+                    max = min + 76;
+            }
+            // Show error position, line and marker
+            std::cerr << iname << ":" << ln << ":" << e.pos << ": " << e.what() << "\n  ";
             for(auto i = min; i < e.pos; i++)
-                std::cerr << s.str[i];
-            std::cerr << "<--- HERE -->";
+                std::cerr << printable(s.str[i]);
+            std::cerr << " ";
             for(auto i = e.pos; i < max; i++)
-                std::cerr << s.str[i];
-            std::cerr << "\n";
+                std::cerr << printable(s.str[i]);
+            std::cerr << "\n  ";
+            for(auto i = min; i < e.pos; i++)
+                std::cerr << "-";
+            std::cerr << "^\n";
+
             return 1;
         }
     }
