@@ -47,19 +47,19 @@ std::string get_vt_name(enum VarType t)
     switch(t)
     {
     case VT_ARRAY_WORD:
-        return "Word Array";
+        return "word array";
     case VT_ARRAY_BYTE:
-        return "Byte Array";
+        return "byte array";
     case VT_ARRAY_STRING:
-        return "String Array";
+        return "string array";
     case VT_ARRAY_FLOAT:
-        return "Float Array";
+        return "float array";
     case VT_WORD:
-        return "Word";
+        return "word";
     case VT_STRING:
-        return "String";
+        return "string";
     case VT_FLOAT:
-        return "Float";
+        return "float";
     case VT_UNDEF:
         break;
     }

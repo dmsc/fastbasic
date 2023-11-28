@@ -1,4 +1,4 @@
 Name: Check error reporting in cross-compiler.
 Test: compile-error
 Error: parse error at line 2 column 6
-Error-pos: 2:5
+Error-pos: 2:6

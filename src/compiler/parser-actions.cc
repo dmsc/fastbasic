@@ -467,16 +467,22 @@ static bool SMB_E_VAR_SET_TYPE(parse &s)
     return var_type_is_array(type);
 }
 
-static bool var_check(parse &s, int type)
+static bool var_check(parse &s, enum VarType type)
 {
     auto &v = s.vars;
     std::string name;
     if(!s.get_ident(name))
         return false;
     if(v.find(name) == v.end())
+    {
+        s.error("variable name but got '" + name + "'");
         return false;
+    }
     if((v[name] & 0xFF) != type)
+    {
+        s.error(get_vt_name(type) + " and got '" + name + "'");
         return false;
+    }
     s.add_text(name);
     s.emit_varn(name);
     return true;
