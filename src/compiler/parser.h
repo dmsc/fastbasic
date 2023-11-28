@@ -243,7 +243,7 @@ class parse
             throw parse_error("expression too complex for the compiler", pos);
         lvl++;
     }
-    void error(std::string str)
+    bool error(std::string str)
     {
         if(!str.empty())
         {
@@ -262,6 +262,7 @@ class parse
                 max_pos = pos;
             }
         }
+        return false;
     }
 
     bool loop_error(std::string str)
@@ -388,9 +389,9 @@ class parse
         }
         // Add left parenthesis as possible error, provides better messages
         if(c == ')')
-            error("right parenthesis");
+            return error("right parenthesis");
         else if(c == ']')
-            error("right bracket");
+            return error("right bracket");
         return false;
     }
     bool eol()

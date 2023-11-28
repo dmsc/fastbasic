@@ -474,15 +474,9 @@ static bool var_check(parse &s, enum VarType type)
     if(!s.get_ident(name))
         return false;
     if(v.find(name) == v.end())
-    {
-        s.error("variable name but got '" + name + "'");
-        return false;
-    }
+        return s.error("variable name but got '" + name + "'");
     if((v[name] & 0xFF) != type)
-    {
-        s.error(get_vt_name(type) + " and got '" + name + "'");
-        return false;
-    }
+        return s.error(get_vt_name(type) + " and got '" + name + "'");
     s.add_text(name);
     s.emit_varn(name);
     return true;
@@ -635,10 +629,7 @@ static bool SMB_E_LABEL_CREATE(parse &s)
     auto &v = s.labels[name];
     // Check type
     if(!v.is_proc())
-    {
-        s.error("new label, got label already defined '" + name + "'");
-        return false;
-    }
+        return s.error("new label, got label already defined '" + name + "'");
     // Store variable name
     s.add_text(name);
     s.last_label = name;
@@ -703,10 +694,7 @@ static bool SMB_E_DATA_SET_SEGMENT(parse &s)
         return true;
     }
     else
-    {
-        s.error("segment name");
-        return false;
-    }
+        return s.error("segment name");
 }
 
 // Reads a DATA array from a file
