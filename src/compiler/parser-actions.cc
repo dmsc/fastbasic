@@ -310,7 +310,7 @@ static bool SMB_E_POP_LOOP(parse &s)
     s.debug("E_POP_LOOP");
     auto l = s.pop_loop(LT_DO_LOOP);
     if(l.empty())
-        return false;
+        return s.loop_error("loop start missing");
     s.emit_word(l);
     s.emit_label(l + "_x");
     return true;
@@ -371,6 +371,8 @@ static bool SMB_E_EXIT_LOOP(parse &s)
         if(type == LT_ELIF || type == LT_IF || type == LT_ELSE || type == LT_FOR_2 ||
            type == LT_WHILE_2)
             continue;
+        else if(type <= LT_EXIT)
+            return s.loop_error("invalid EXIT");
         break;
     }
     s.emit_word(s.jumps[last].label + "_x");
@@ -584,7 +586,7 @@ static bool SMB_E_LABEL_DEF(parse &s)
     auto &v = s.labels;
     auto name = s.last_label;
     if(v[name].is_defined())
-        return false;
+        return s.loop_error("new label, got label already defined '" + name + "'");
     s.current_params = 0;
     s.emit_label(s.label_prefix + name);
     return true;
@@ -629,7 +631,7 @@ static bool SMB_E_LABEL_CREATE(parse &s)
     auto &v = s.labels[name];
     // Check type
     if(!v.is_proc())
-        return s.error("new label, got label already defined '" + name + "'");
+        return s.loop_error("new label, got label already defined '" + name + "'");
     // Store variable name
     s.add_text(name);
     s.last_label = name;

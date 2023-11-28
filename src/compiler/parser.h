@@ -270,6 +270,7 @@ class parse
         // Loop error takes precedence over all other errors
         saved_errors.clear();
         saved_errors.emplace(lvl, str);
+        max_pos = pos;
         debug("Set loop error='" + str + "'");
         return false;
     }
