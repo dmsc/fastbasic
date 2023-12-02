@@ -42,3 +42,9 @@ for a=15 to 17
   ? "Test 16"
  endif
 next a
+? "Test ";
+if a=17
+ ? "17"
+elif a=18
+ ? "18"
+endif
