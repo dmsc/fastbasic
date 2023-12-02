@@ -182,9 +182,9 @@ INT_FUNCTIONS: integer variable or function
         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
         "ADR("   ADR_EXPR ")"
         "&"      ADR_EXPR
-        "Len"    STR_PAR_EXPR emit TOK_PEEK # First byte of string is the length
-        "Val"    STR_PAR_EXPR emit TOK_VAL
-        "ASc"    STR_PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
+        "Len"    STR_EXPR emit TOK_PEEK # First byte of string is the length
+        "Val"    STR_EXPR emit TOK_VAL
+        "ASc"    STR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
 RD_PORT:
@@ -192,9 +192,6 @@ RD_PORT:
 
 PAR_EXPR: left parenthesis
         "(" EXPR ")"
-
-STR_PAR_EXPR: left parenthesis
-        "(" STR_EXPR ")"
 
 # Parses a continuation of an INT to BOOLean expression
 OR_AND_BOOL:
@@ -265,7 +262,9 @@ COMP_EXPR_MORE:
 
 # String expressions: base plus optional index
 STR_EXPR: string expression
+        "(" STR_EXPR ")"
         STRING_FUNCTIONS OPT_STR_INDEX
+
 
 OPT_STR_INDEX:
         "[" emit TOK_PUSH EXPR C_EXPR "]" emit TOK_STR_IDX OPT_STR_INDEX
@@ -530,7 +529,7 @@ STATEMENT: statement
         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
         "PRoc" E_LABEL_CREATE emit { TOK_JUMP } E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT OPT_PROC_VAR
-        "ENDProc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
+        "ENdproc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
         EXEC_CALL E_LABEL_CREATE OPT_EXEC_PARAM emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END

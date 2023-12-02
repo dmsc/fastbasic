@@ -129,7 +129,7 @@ RA.               ' RAD
 ? LO.10           ' LOG10
 ? SQ.4            ' SQR
 ? COS0            ' COS
-? 0.0 + V.("0.1") ' VAL FP
+? 0.0 + V."0.1"   ' VAL FP
 ? RN.>=0.0        ' RND
 
 
@@ -154,9 +154,9 @@ P.$284,3
 ' ? USR()         ' USR (can't abbreviate)
 ? ADR(R1)-ADR(R)  ' ADR (can't abbreviate)
 ? &R1-&R          ' ADR
-? L.("123")       ' LEN
-? V.("123")       ' VAL
-? AS.("123")      ' ASC
+? L."123"         ' LEN
+? V."123"         ' VAL
+? AS."123"        ' ASC
 
 ? "OPER"
 ? 1A.1;0A.1;0A.0  ' AND

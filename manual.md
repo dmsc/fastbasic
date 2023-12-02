@@ -681,12 +681,13 @@ for example you can write `R.(10)`
 instead of `RAND(10)`.
 
 You can also omit parentheses on
-functions that take one numerical value
-as argument, for example, `RAND 10`.
+functions that take only one argument,
+for example, `RAND 10`.
+
 Note: This is not possible when the
-argument is a string (as with `ADR`),
-or the function accepts a variable number
-of arguments (as with `USR`).
+function accepts a variable number of
+arguments (as with `USR`), or with the
+`ADR` function.
 
 Some functions don't take parameters,
 and you must provide a set of

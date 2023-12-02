@@ -80,7 +80,7 @@ FP_FUNCS:
         "SQr"   FP_T_EXPR emit TOK_FP_SQRT
         "SIn"   FP_T_EXPR emit TOK_FP_SIN
         "COs"   FP_T_EXPR emit TOK_FP_COS
-        "Val"   STR_PAR_EXPR emit TOK_FP_VAL
+        "Val"   STR_EXPR emit TOK_FP_VAL
         "RNd()" emit TOK_FP_RND
         "%"     PAR_EXPR emit TOK_FP_LOAD
 
