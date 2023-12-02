@@ -645,17 +645,19 @@ ret:    rts
 .proc   push_codep
         ; Saves current code position in loop stack
         ldy     loop_sp
-        sta     loop_stk, y
-        pha
-        jsr     get_codep
-        sta     loop_stk + 1, y
-        txa
-        sta     loop_stk + 2, y
+::push_codep_y:
         iny
         iny
         iny
         bmi     loop_error
         sty     loop_sp
+
+        sta     loop_stk - 3, y
+        pha
+        jsr     get_codep
+        sta     loop_stk - 2, y
+        txa
+        sta     loop_stk - 1, y
         pla
         asl     ; Check BIT 6
         bmi     xit
@@ -674,25 +676,22 @@ xit:    clc
 .proc   pop_codep
         ; Reads code position from loop stack
         ldy     loop_sp
-        dey
-        dey
-        dey
-        sty     loop_sp
-        bmi     loop_error
+        beq     loop_error
         ; Check if loop type is correct
-retry:  cmp     loop_stk, y
-        beq     ok
+retry:  cmp     loop_stk-3, y
+        beq     get
         ; If loop type is "ELSE", accept also "IF"
         cmp     #LT_ELSE
         bne     loop_error
         lda     #LT_IF
         bne     retry
-ok:     ; Get saved position
-        iny
-        iny
-        ldx     loop_stk, y
+get:     ; Get saved position
         dey
-        lda     loop_stk, y
+        dey
+        dey
+        sty     loop_sp
+        ldx     loop_stk+2, y
+        lda     loop_stk+1, y
 rtsclc: clc
         rts     ; C is cleared on exit!
 .endproc
@@ -705,20 +704,12 @@ rtsclc: clc
 .proc   check_loop_exit
         ; Checks if there is an "EXIT" in the stack, and adjust target pointer
         ldy     loop_sp
-        dey
-        dey
-        dey
-        bmi     pop_codep::rtsclc
-        lda     loop_stk, y
+        beq     pop_codep::rtsclc
+        lda     loop_stk-3, y
         .assert LT_EXIT = 0, error, "LT_EXIT must be 0"
         bne     pop_codep::rtsclc
         ; Yes, pop and patch
-        sty     loop_sp
-        iny
-        iny
-        ldx     loop_stk, y
-        dey
-        lda     loop_stk, y
+        jsr     pop_codep::get
         jsr     patch_codep
         ; And check for more possible EXIT's
         jmp     check_loop_exit
@@ -728,41 +719,37 @@ rtsclc: clc
         ; Search the loop stack for a loop (not "I"f nor "E"lse) and inserts a
         ; patching code before
         ldy     loop_sp
+        tya
 retry:  dey
         dey
         dey
         bmi     loop_error
-        lda     loop_stk, y
+        ldx     loop_stk, y
         bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
-        cmp     #LT_PROC_DATA+1 ; PROC(1)/DATA
+        cpx     #LT_PROC_DATA+1 ; PROC(1)/DATA
         bcc     loop_error
 ok:
         ; Store slot
         sty     loop_exit_comp
         ; Check if enough stack
-        ldx     loop_sp
-        inx
-        inx
-        inx
+        adc     #2
         bmi     loop_error
-
         ; Keep new loop_sp in stack
-        txa
         pha
+        tay
 
         ; Move all stack 3 positions up
 move:
-        dex
-        lda     loop_stk-3, x
-        sta     loop_stk, x
-        cpx     loop_exit_comp
+        dey
+        lda     loop_stk-3, y
+        sta     loop_stk, y
+        cpy     loop_exit_comp
         bne     move
 
         ; Store our new stack entry
-        ; X is the new slot
-        stx     loop_sp
+        ; Y is the new slot
         lda     #LT_EXIT
-        jsr     push_codep
+        jsr     push_codep_y
 
         ; Restore new loop_sp
         pla
@@ -822,12 +809,9 @@ check_elif:
         jsr     pop_patch_codep
         ; Check and remove all ELIF targets
         ldy     loop_sp
-        dey
-        dey
-        dey
-        bmi     no_elif
+        beq     no_elif
         lda     #LT_ELIF
-        cmp     loop_stk, y
+        cmp     loop_stk-3, y
         beq     check_elif
 no_elif:
         clc
@@ -864,12 +848,12 @@ no_elif:
         ; Pop the old position to patch (from IF)
         lda     #LT_IF
         jsr     pop_codep
-        sta     tmp1
+        pha
         stx     tmp1+1
         ; Emit a jump to a new position (loop type ELIF/ELSE from code)
         jsr     E_PUSH_LT
         ; Parch current position + 2 (over jump)
-        lda     tmp1
+        pla
         ldx     tmp1+1
         bne     patch_codep
 .endproc
