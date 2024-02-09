@@ -54,11 +54,10 @@ else
  se. 3,2,14
 endif
 
-' Memory area for the board
-mainBoard = $7000 + 19
-fullBoard = $7000 + 16
-' Clear board, needed to detect bad moves
-mset $7000, 192, 0
+' Array to hold the board, cleared on DIM
+dim board(192) byte
+mainBoard = adr(board) + 19
+fullBoard = adr(board) + 16
 
 hiScore = 0
 screen = dpeek(88)
@@ -144,32 +143,25 @@ endproc
 ' Make pieces fall in the board
 proc FallPieces
 
- ' Loop until there are holes in the board
- repeat
+ ' Move board to screen
+ move fullBoard, screen, 160
 
-  endFall = 1
-
-  ' Move board to screen
-  move fullBoard, screen, 160
-
-  ' Search for holes in the board
-  for A=mainBoard to mainBoard + 151 step 16
-   for P=A to A+9
-    if peek(P) & 63 = 9
-     ' If we found a hole, fall pieces!
-     i = P
-     while i > mainBoard + 15
-      poke i, peek(i-16)
-      i = i-16
-     wend
-     ' Set new piece and set A to exit outer loop
-     poke i, pieces(rand(6))
-     A = mainBoard + 152
-     endFall = 0
-    endif
-   next P
-  next A
- until endFall
+ ' Search for holes in the board
+ for A=mainBoard to mainBoard + 151 step 16
+  for P=A to A+9
+   if peek(P) & 63 = 9
+    ' If we found a hole, fall pieces!
+    i = P
+    while i > mainBoard + 15
+     poke i, peek(i-16)
+     i = i-16
+    wend
+    ' Set new piece and display current position
+    poke i, pieces(rand(6))
+    move fullBoard, screen, 160
+   endif
+  next P
+ next A
 
 endproc
 
