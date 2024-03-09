@@ -112,18 +112,30 @@ void os::init()
 
 int os::prog_exec(std::string exe, std::vector<std::string> &args)
 {
-    // Create a vector with C pointers
     std::vector<const char *> pargs;
+#ifdef _WIN32
+    // Escape any string with spaces in it:
+    std::vector<std::string> esc_args;
     for(const auto &s : args)
+    {
+        if(s.find(' ') != s.npos)
+            esc_args.push_back("\"" + s + "\"");
+        else
+            esc_args.push_back(s);
+    }
+    // Create a vector with C pointers
+    for(const auto &s : esc_args)
         pargs.push_back(s.c_str());
     pargs.push_back(nullptr);
-
-    // Execute the program
-#ifdef _WIN32
     // win32 has the "spawn" function that calls the program and waits
     // for termination:
     return _spawnv(_P_WAIT, exe.c_str(), (char **)pargs.data());
 #else
+    // Create a vector with C pointers
+    for(const auto &s : args)
+        pargs.push_back(s.c_str());
+    pargs.push_back(nullptr);
+
     // We reimplement "system" to allow passing arguments without escaping:
 
     // Ignore INT and QUIT signals in the parent process:
