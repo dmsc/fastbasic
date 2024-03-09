@@ -153,7 +153,7 @@ FILES=\
 # BW-DOS files to copy inside the ATR
 DOSDIR=disk/dos/
 DOS=\
-    xbw130.dos\
+    xbw14d.dos\
     copy.com\
     efast.com\
     pause.com\
