@@ -1043,7 +1043,7 @@ Console Print and Input Statements
   between each expression.
 
   If the first expression is a device
-  I/O channel (e.g., `PRINT #1;"HELLO"`)
+  I/O channel (e.g., `PRINT #1,"HELLO"`)
   the output will be sent to that
   device.  In `GRAPHICS` modes other
   than 0 (e.g., large text `GRAPHICS 2`,
@@ -1454,14 +1454,14 @@ Bitmapped graphics modes:[^5]
 
 [^1]: `GRAPHICS 0` and `GRAPHICS 8`
 offer two colors, where the "on"
-pixels may be a different shade of the
-background color, but not a different
-hue. (Television color artifacting
-effects can be utilized to simulate
-two additional colors.)
-Use `SETCOLOR 2,H,L1` and
-`SETCOLOR 1,0,L` (or `POKE 710,H*16+L1`
-and `POKE 709,L2`)
+pixels may be a different shade
+(luminence) of the background color's
+hue, but cannot have its own hue.
+(Television color artifacting effects
+can be utilized to simulate two
+additional colors.) Use
+`SETCOLOR 2,H,L1` and `SETCOLOR 1,0,L2`
+(or `POKE 710,H*16+L1` & `POKE 709,L2`).
 
 [^2]: Mode 0 (and the text window found
 at the bottom of most other modes) can
@@ -1482,15 +1482,16 @@ may normally be used.  See
 `PRINT COLOR()`.
 
 [^4]: Modes 12 and 13 are mutlicolor
-text modes, where ever pair of two bits
-in the character are used to represent
-one of four colors.  As with mode 0,
-128 characters may be used.  However,
-when the high bit is set (which produces
-an inverse-video effect in mode 0), the
-effect in these modes is to change which
-color palette register is used for the
-fourth color (with bits `11`); instead
+text modes, where every pair of
+two bits in a character's bitmap data
+are used to represent one of four
+colors.  As with mode 0, 128 characters
+may be used.  However, when the high bit
+is set (which produces an inverse-video
+effect in mode 0), the effect in these
+modes is to change which color palette
+register is used for the fourth color
+(pixels comprised of `11` bits); instead
 of `SETCOLOR 2` (aka `POKE 710`), the
 color from `SETCOLOR 3` (aka `POKE 711`)
 will be used.  See `PRINT COLOR()`.
@@ -1606,16 +1607,16 @@ respectively.
   Missiles share the same color as
   their player, unless you combine
   them into a "5th Player" by setting
-  the 5th bit of the `GPRIOR` register,
-  e.g.: `POKE 623,16`. (You must also
-  move them horizontally in unison if
-  you wish to use them as a true
-  5th Player.)
+  bit number 4 of the `GPRIOR`
+  register, e.g.: `POKE 623,16`. (You
+  must also move them horizontally in
+  unison if you wish to use them as a
+  true 5th Player.)
 
   It is possible to cause pixels of
   certain overlapping players to
   produce a third color (or black)
-  by setting the 5th bit of the
+  by setting bit number 5 of the
   `GPRIOR` register, e.g.
   `POKE 623,32`.
 
