@@ -1035,12 +1035,21 @@ Console Print and Input Statements
 **PRINT _expr_ ; ...**  
 
   Outputs strings and numbers to the
-  screen.
+  screen or other output device.
 
   Each _expr_ can be a constant string,
   a string variable or any complex
   expression, with commas or semicolons
   between each expression.
+
+  If the first expression is a device
+  I/O channel (e.g., `PRINT #1,"HELLO"`)
+  the output will be sent to that
+  device.  In `GRAPHICS` modes other
+  than 0 (e.g., large text `GRAPHICS 2`,
+  multicolor text `GRAPHICS 12`, or even
+  bitmapped graphics modes), use `#6` to
+  write to that part of the screen.
 
   After writing the last expression,
   the cursor advanced to a new line,
@@ -1415,36 +1424,116 @@ Graphic and Sound Statements
   operations. Below is a basic chart of
   GRAPHICS modes, their full screen
   resolution and number of available
-  colors.
+  colors.[^1]
 
-| Mode  | Resolution | # Of Colors  |
-| ----- | ---------- | ------------ |
-|GR. 0  | Text 40x24 |        1     |
-|GR. 1  | Text 20x24 |        5     |
-|GR. 2  | Text 20x12 |        5     |
-|GR. 3  | 40x24      |        4     |
-|GR. 4  | 80x48      |        2     |
-|GR. 5  | 80x48      |        4     |
-|GR. 6  | 160x96     |        2     |
-|GR. 7  | 160x96     |        4     |
-|GR. 8  | 320x192    |        1     |
-|GR. 9  | 80x192     | 16 shades of 1 color |
-|GR. 10 | 80x192     |        9     |
-|GR. 11 | 80x192     | 16 colors of 1 shade |
-|GR. 12 | Multicolor Text 40x24 |        5     |
-|GR. 13 | Multicolor Text 40x12 |        5     |
-|GR. 14 | 160x192    |        2     |
-|GR. 15 | 160x192    |        4     |
+Text modes[^2][^3][^4]:
 
-  For bitmapped graphics modes which
-  include a text window at the bottom
-  (all but 9, 10, and 11), add 16 to the
-  mode number to disable the text
-  window.
+|Mode   | Resolution | # Of Colors  |
+|------ | ---------- | ------------ |
+|GR. 0  | 40x24      |        2     |
+|GR. 1  | 20x24      |        5     |
+|GR. 2  | 20x12      |        5     |
+|GR. 12 | 40x24      |        5     |
+|GR. 13 | 40x12      |        5     |
+
+Bitmapped graphics modes:[^5]
+
+|Mode   | Resolution | # Of Colors   |
+|------ | ---------- | ------------- |
+|GR. 3  | 40x24      |        4      |
+|GR. 4  | 80x48      |        2      |
+|GR. 5  | 80x48      |        4      |
+|GR. 6  | 160x96     |        2      |
+|GR. 7  | 160x96     |        4      |
+|GR. 8  | 320x192    |        2      |
+|GR. 9  | 80x192     |   16 shades   |
+|GR. 10 | 80x192     |        9      |
+|GR. 11 | 80x192     |     16 hues   |
+|GR. 14 | 160x192    |        2      |
+|GR. 15 | 160x192    |        4      |
+
+[^1]: `GRAPHICS 0` and `GRAPHICS 8`
+offer two colors, where the "on"
+pixels may be a different shade
+(luminence) of the background color's
+hue, but cannot have its own hue.
+(Television color artifacting effects
+can be utilized to simulate two
+additional colors.) Use
+`SETCOLOR 2,H,L1` and `SETCOLOR 1,0,L2`
+(or `POKE 710,H*16+L1` & `POKE 709,L2`).
+
+[^2]: Mode 0 (and the text window found
+at the bottom of most other modes) can
+render 128 different characters (from
+a character set, aka font) in both
+normal video, and inverse video, based
+on whether the high bit of the character
+is set. See `PRINT COLOR()`.
+
+[^3]: Modes 1 and 2 are text modes that
+offer multiple colors, but only a single
+color (plus the background) may be used
+by any given character cell.  The colors
+are chosen by the two high bits of the
+character.  This means only half of
+a character set (font) -- 64 shapes --
+may normally be used.  See
+`PRINT COLOR()`.
+
+[^4]: Modes 12 and 13 are mutlicolor
+text modes, where every pair of
+two bits in a character's bitmap data
+are used to represent one of four
+colors.  As with mode 0, 128 characters
+may be used.  However, when the high bit
+is set (which produces an inverse-video
+effect in mode 0), the effect in these
+modes is to change which color palette
+register is used for the fourth color
+(pixels comprised of `11` bits); instead
+of `SETCOLOR 2` (aka `POKE 710`), the
+color from `SETCOLOR 3` (aka `POKE 711`)
+will be used.  See `PRINT COLOR()`.
+
+[^5]: The so-called "GTIA modes" -- 9,
+10, and 11 -- offer 16 shades of the
+given background color (use
+`SETCOLOR 4,H,0` or `POKE 712,H*16`),
+all nine color registers
+(`SECTOLOR N,H,L` or
+`POKE 704+N,H*16+L`), or 15 hues of a
+particular brightness (the background
+remains darkest; use `SETCOLOR 4,0,L`),
+respectively.
+
+  For graphics modes which include a
+  4-line `GRAPHICS 0` style text window
+  at the bottom (all but 0, 9, 10, and
+  11), add 16 to the mode number to
+  disable the text window. (e.g.,
+  `GRAPHICS 2+16`)
 
   Add 32 to the mode number to prevent
   the graphics data from being cleared.
+  (Note: Some graphics data may be
+  replaced when changing modes.)
 
+  *Advanced:* The Atari OS `S:` screen
+  device dictate which `GRAPHICS`
+  modes are available.  However (as
+  demonstrated by the text window), the
+  Atari can mix graphics modes via use
+  of Display Lists.  The ANTIC graphic
+  chip uses a different set of values
+  to reflect the different graphics
+  modes (and modes 9, 10 and 11 utilize
+  a feature managed by the GTIA chip),
+  as well as other features (blank
+  scanlines, fine scrolling, Display
+  List Interrupts, etc.) Consult
+  _De Re Atari_ chapter 2, "ANTIC and
+  the Display List" for more details.
 
 **Get color of pixel**  
 **LOCATE _x_, _y_, _var_ / LOC.**
@@ -1518,11 +1607,21 @@ Graphic and Sound Statements
   Missiles share the same color as
   their player, unless you combine
   them into a "5th Player" by setting
-  the 5th bit of the PRIOR register,
-  e.g.: `POKE 623,16`. (You must also
-  move them horizontally in unison if
-  you wish to use them as a true
-  5th Player.)
+  bit number 4 of the `GPRIOR`
+  register, e.g.: `POKE 623,16`. (You
+  must also move them horizontally in
+  unison if you wish to use them as a
+  true 5th Player.)
+
+  It is possible to cause pixels of
+  certain overlapping players to
+  produce a third color (or black)
+  by setting bit number 5 of the
+  `GPRIOR` register, e.g.
+  `POKE 623,32`.
+
+  Consult the `GPRIOR` section of
+  _Mapping the Atari_ for more details.
 
 **Adjust Voice Sound Parameters**  
 **SOUND _voice_, _pitch_, _dist_, _vol_ / S.**  

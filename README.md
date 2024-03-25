@@ -5,6 +5,7 @@ This is a fast interpreter for the BASIC language on the Atari 8-bit computers
 and the Atari 5200 console.
 
 The current features are:
+
 - Support for Atari floating point and 16bit integer variables;
 - Support for string arrays, substrings and concatenation;
 - Small size (currently the full floating point IDE is 9.3k, the integer IDE is 8k, and the runtime is less than 3k);
@@ -58,6 +59,7 @@ Compiling the sources
 ---------------------
 
 To compile the sources, you need:
+
 - Host build tools (make & gcc) to build the syntax generator
 - mkatr, from https://github.com/dmsc/mkatr to build the Atari disk image (ATR) file.
 
@@ -66,4 +68,14 @@ Then, type make to build all sources to a "fastbasic.xex" file and a "fastbasic.
 There is also a test-suite that tests various source files compiled with the
 Atari compiler and the cross compilers, you can run the test-suite by typing
 `make test`
+
+Building the docs
+-----------------
+
+To build the documentation, you need:
+
+- Pandoc (https://pandoc.org/)
+- LaTeX (https://www.latex-project.org/)
+- Sources Sans Pro typeface (https://www.ctan.org/tex-archive/fonts/sourcesanspro/)
+  (on Ubuntu, you can just install the package `texlive-fonts-extra`)
 
