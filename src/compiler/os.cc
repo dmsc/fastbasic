@@ -178,3 +178,12 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
     return status;
 #endif
 }
+
+void os::remove_file(const std::string &path)
+{
+#ifdef _WIN32
+    _unlink(path.c_str());
+#else
+    unlink(path.c_str());
+#endif
+}

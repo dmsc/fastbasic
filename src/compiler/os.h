@@ -42,5 +42,7 @@ std::string get_extension_lower(std::string name);
 int prog_exec(std::string exe, std::vector<std::string> &args);
 // OS specific initializations
 void init();
+// Remove a file
+void remove_file(const std::string &path);
 
 } // namespace os

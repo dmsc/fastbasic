@@ -68,9 +68,13 @@ The compiler generates various files from the basic source:
 
 - `BIN` file, standard Atari 5200 cartridge image.
 
-- `LBL` file, a list of labels, useful for debugging. This file includes a
-  label for each line number in the basic source, and the name is the same as
-  the `XEX` / `ROM` file but with the `lbl` extension.
+- `LBL` file (only if the `-g` option is enabled), a list of labels, useful for
+  debugging. This file includes a label for each line number in the basic
+  source, and the name is the same as the `XEX` / `ROM` file but with the `lbl`
+  extension.
+
+Also, the following files are generated but removed at the end of the
+compilation, except on errors or when the `-keep` options is enabled:
 
 - `O` file, the assembled "object" files. Each source file is
   assembled/compiled to one object file, with the same name and the `o`
@@ -115,6 +119,10 @@ an `:` or an `=` to separate the option from the argument.
 - **-prof**  
   Helps profiling the compiler generated code. Outputs statistics of the most
   used tokens and token pairs.
+
+- **-g**  
+  Generates a label file (`.lbl`) and an assembly listing for each source
+  (`BAS` or `ASM`).
 
 - **-d**  
   Enable parser debug options. This is only useful to debug parser, as it
@@ -173,6 +181,8 @@ an `:` or an `=` to separate the option from the argument.
 - **-syntax-path**:*path*  
   Sets the path where the syntax grammar files are searched.
 
+- **-keep**  
+  Do not remove the intermediate files on compilation.
 
 Linking other assembly files
 ----------------------------

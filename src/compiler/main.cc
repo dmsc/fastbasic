@@ -44,6 +44,8 @@ static int show_help()
                  " -t:<target>\tselect compiler target ('atari-fp', 'atari-int', etc.)\n"
                  " -l\t\tproduce a listing of the unabbreviated parsed source\n"
                  " -c\t\tonly compile to assembler, don't produce binary\n"
+                 " -keep\t\tkeep intermediate files on compilation\n"
+                 " -g\t\tsave listing and label files after compilation\n"
                  " -C:<name>\tselect linker config file name\n"
                  " -S:<addr>\tselect binary starting address\n"
                  " -X:<opt>\tpass option to the assembler\n"
@@ -77,6 +79,7 @@ int main(int argc, char **argv)
     std::string out_name;
     std::string exe_name;
     bool got_outname = false, one_step = false, next_is_output = false;
+    bool keep_temps = false, do_listing = false;
     std::string target_name = "default";
     std::string cfg_file_def;
     compiler comp;
@@ -88,6 +91,8 @@ int main(int argc, char **argv)
     std::vector<std::tuple<std::string, std::string>> asm_files;
     // OBJ files, link INPUT(OBJ) to output executable
     std::vector<std::string> link_files;
+    // Temporary files to remove
+    std::vector<std::string> temp_files;
 
     // Process command line options
     for(auto &arg : args)
@@ -120,6 +125,13 @@ int main(int argc, char **argv)
             comp.show_text = true;
         else if(arg == "-h")
             return show_help();
+        else if(arg == "-keep")
+        {
+            keep_temps = true;
+            do_listing = true;
+        }
+        else if(arg == "-g")
+            do_listing = true;
         else if(arg.empty())
             return show_error("invalid argument, try -h for help");
         else if(arg.rfind("-o", 0) == 0)
@@ -250,6 +262,8 @@ int main(int argc, char **argv)
         auto e = comp.compile_file(bas_name, asm_name, tgt.sl());
         if(e)
             return e;
+        if(!one_step)
+            temp_files.push_back(asm_name);
     }
     for(auto &f : asm_files)
     {
@@ -259,14 +273,17 @@ int main(int argc, char **argv)
 
         std::cerr << "ASM assemble '" << asm_name << "' to '" << obj_name << "'\n";
         std::vector<std::string> args{
-            "ca65", "-I",    os::full_path(install_folder, "asminc"), "-o", obj_name,
-            "-l",   lst_name};
+            "ca65", "-I",    os::full_path(install_folder, "asminc"), "-o", obj_name};
+        if(do_listing)
+            args.insert(args.end(), {"-l",   lst_name});
         for(auto &o : asm_opts)
             args.push_back(o);
         args.push_back(asm_name);
         auto e = os::prog_exec(ca65, args);
         if(e)
             return show_error("can't assemble file\n");
+        if(!one_step)
+            temp_files.push_back(obj_name);
     }
     if(link_files.size())
     {
@@ -277,9 +294,9 @@ int main(int argc, char **argv)
                                       "-C",
                                       cfg_file,
                                       "-o",
-                                      exe_name,
-                                      "-Ln",
-                                      os::add_extension(exe_name, ".lbl")};
+                                      exe_name};
+        if(do_listing)
+            args.insert(args.end(), {"-Ln", os::add_extension(exe_name, ".lbl")});
         for(auto &l : link_opts)
             args.push_back(l);
         for(auto &f : link_files)
@@ -289,6 +306,10 @@ int main(int argc, char **argv)
         if(e)
             return show_error("can't assemble file\n");
     }
+    // Remove all intermediate files
+    if(!keep_temps)
+        for(auto &name: temp_files)
+            os::remove_file(name);
 
     return 0;
 }
