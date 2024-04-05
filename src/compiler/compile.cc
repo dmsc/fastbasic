@@ -86,7 +86,8 @@ static int readLine(std::string &r, std::istream &is)
 
 // Parses one source line
 static bool parse_line(std::string line, int ln, parse &s, bool show_text,
-                       unsigned short_text, const syntax::sm_list &sl, std::string &short_line)
+                       unsigned short_text, const syntax::sm_list &sl,
+                       std::string &short_line, std::ostream &list_file)
 {
     s.new_line(line, ln);
     while(s.pos != line.length())
@@ -131,13 +132,13 @@ static bool parse_line(std::string line, int ln, parse &s, bool show_text,
                     }
                     else
                     {
-                        std::cout << short_line << '\x9B';
+                        list_file << short_line << '\x9B';
                         short_line = txt;
                     }
                 }
             }
             else if(show_text)
-                std::cout << s.expand.get() << "\n";
+                list_file << s.expand.get() << "\n";
         }
 
         s.expect(':');
@@ -172,10 +173,10 @@ compiler::compiler()
 }
 
 int compiler::compile_file(std::string iname, std::string output_filename,
-                           const syntax::sm_list &sl)
+                           const syntax::sm_list &sl, std::string listing_filename)
 {
     std::ifstream ifile;
-    std::ofstream ofile;
+    std::ofstream ofile, lstfile;
 
     ifile.open(iname, std::ios::binary);
     if(!ifile.is_open())
@@ -185,11 +186,18 @@ int compiler::compile_file(std::string iname, std::string output_filename,
     if(!ofile.is_open())
         return show_error("can't open output file '" + output_filename + "'");
 
+    if(show_text)
+    {
+        lstfile.open(listing_filename);
+        if(!lstfile.is_open())
+            return show_error("can't open listing file '" + listing_filename + "'");
+    }
+
     parse s(do_debug);
     s.set_input_file(iname);
 
     int ln = 1;
-    std::string sprog;
+    std::string list_prog;
     while(1)
     {
         try
@@ -200,7 +208,7 @@ int compiler::compile_file(std::string iname, std::string output_filename,
                 break;
             if(do_debug)
                 std::cout << iname << ": parsing line " << ln << "\n";
-            parse_line(line, ln, s, show_text, short_text, sl, sprog);
+            parse_line(line, ln, s, show_text, short_text, sl, list_prog, lstfile);
             ln += lines;
         }
         catch(parse_error &e)
@@ -240,9 +248,10 @@ int compiler::compile_file(std::string iname, std::string output_filename,
         std::cout << "parse end:\n";
         std::cout << "MAX LEVEL: " << s.maxlvl << "\n";
     }
+
     // Show short line
-    if(short_text && sprog.size())
-        std::cout << sprog << '\x9B';
+    if(short_text && list_prog.size())
+        lstfile << list_prog << '\x9B';
 
     // Check unclosed loops
     auto loop_error = s.check_loops();

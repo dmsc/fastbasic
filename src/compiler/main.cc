@@ -43,6 +43,7 @@ static int show_help()
                  " -s:<name>\tplace code into given segment\n"
                  " -t:<target>\tselect compiler target ('atari-fp', 'atari-int', etc.)\n"
                  " -l\t\twrite a long BASIC listing of the parsed source\n"
+                 " -l:<extension>\tspecify the extension of the BASIC listing\n"
                  " -ls:<num>\twrite a shortened/abbreviated BASIC listing with num columns\n"
                  " -c\t\tonly compile to assembler, don't produce binary\n"
                  " -keep\t\tkeep intermediate files on compilation\n"
@@ -66,6 +67,14 @@ static int show_error(std::string msg)
     return 1;
 }
 
+static std::string to_lower(std::string in)
+{
+    auto ret = in;
+    for(auto &c: ret)
+        c = std::tolower(c);
+    return ret;
+}
+
 int main(int argc, char **argv)
 {
     // OS specific initializations
@@ -83,6 +92,7 @@ int main(int argc, char **argv)
     bool keep_temps = false, do_listing = false;
     std::string target_name = "default";
     std::string cfg_file_def;
+    std::string listing_ext = ".list";
     compiler comp;
     std::vector<std::string> link_opts;
     std::vector<std::string> asm_opts = {"-g"};
@@ -124,6 +134,14 @@ int main(int argc, char **argv)
         }
         else if(arg == "-l")
             comp.show_text = true;
+        else if(arg.rfind("-l:", 0) == 0 || arg.rfind("-l=", 0) == 0)
+        {
+            std::string ext = arg.substr(3);
+            if(!ext.size() || to_lower(ext) == "bas")
+                return show_error("invalid BASIC listing extension");
+            comp.show_text = true;
+            listing_ext = "." + arg.substr(3);
+        }
         else if(arg == "-ls")
         {
             comp.show_text = true;
@@ -139,6 +157,7 @@ int main(int argc, char **argv)
             catch(...) { }
             if(pos != arg.size() - 4 || len < 1 || len > 256)
                 return show_error("'-ls' option needs line length from 1 to 256");
+            comp.show_text = true;
             comp.short_text = len;
         }
         else if(arg == "-h")
@@ -276,8 +295,12 @@ int main(int argc, char **argv)
     for(auto &f : bas_files)
     {
         auto bas_name = std::get<0>(f), asm_name = std::get<1>(f);
+        auto listing_name = os::add_extension(bas_name, listing_ext);
         std::cerr << "BAS compile '" << bas_name << "' to '" << asm_name << "'\n";
-        auto e = comp.compile_file(bas_name, asm_name, tgt.sl());
+        if(comp.show_text)
+            std::cerr <<"    with " << (comp.short_text ? "minimized" : "expanded")
+                      << " listing to '" << listing_name << "'\n";
+        auto e = comp.compile_file(bas_name, asm_name, tgt.sl(), listing_name);
         if(e)
             return e;
         if(!one_step)

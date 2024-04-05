@@ -39,5 +39,5 @@ class compiler
 
     compiler();
     int compile_file(std::string input_filename, std::string output_filename,
-                     const syntax::sm_list &sl);
+                     const syntax::sm_list &sl, std::string listing_filename);
 };
