@@ -35,7 +35,7 @@ class compiler
     bool optimize;
     bool show_stats;
     bool show_text;
-    bool short_text;
+    unsigned short_text;
 
     compiler();
     int compile_file(std::string input_filename, std::string output_filename,

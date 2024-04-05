@@ -86,7 +86,7 @@ static int readLine(std::string &r, std::istream &is)
 
 // Parses one source line
 static bool parse_line(std::string line, int ln, parse &s, bool show_text,
-                       bool short_text, const syntax::sm_list &sl, std::string &short_line)
+                       unsigned short_text, const syntax::sm_list &sl, std::string &short_line)
 {
     s.new_line(line, ln);
     while(s.pos != line.length())
@@ -117,14 +117,14 @@ static bool parse_line(std::string line, int ln, parse &s, bool show_text,
         }
         else
         {
-            if(short_text)
+            if(short_text > 0)
             {
                 auto txt = s.expand.get_short();
                 if(txt.size())
                 {
                     if(!short_line.size())
                         short_line = txt;
-                    else if(short_line.size() + 1 + txt.size() < 120)
+                    else if(short_line.size() + 1 + txt.size() < short_text)
                     {
                         short_line += ':';
                         short_line += txt;
@@ -167,7 +167,7 @@ compiler::compiler()
     segname = "BYTECODE";
     show_stats = false;
     show_text = false;
-    short_text = false;
+    short_text = 0;
     do_debug = false;
 }
 

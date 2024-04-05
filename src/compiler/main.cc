@@ -42,7 +42,8 @@ static int show_help()
                  " -prof\t\tshow token usage statistics\n"
                  " -s:<name>\tplace code into given segment\n"
                  " -t:<target>\tselect compiler target ('atari-fp', 'atari-int', etc.)\n"
-                 " -l\t\tproduce a listing of the unabbreviated parsed source\n"
+                 " -l\t\twrite a long BASIC listing of the parsed source\n"
+                 " -ls:<num>\twrite a shortened/abbreviated BASIC listing with num columns\n"
                  " -c\t\tonly compile to assembler, don't produce binary\n"
                  " -keep\t\tkeep intermediate files on compilation\n"
                  " -g\t\tsave listing and label files after compilation\n"
@@ -126,7 +127,19 @@ int main(int argc, char **argv)
         else if(arg == "-ls")
         {
             comp.show_text = true;
-            comp.short_text = true;
+            comp.short_text = 120;
+        }
+        else if(arg.rfind("-ls:", 0) == 0 || arg.rfind("-ls=", 0) == 0)
+        {
+            size_t pos = 0;
+            int len = -1;
+            try {
+                len = std::stoi(arg.substr(4), &pos, 0);
+            }
+            catch(...) { }
+            if(pos != arg.size() - 4 || len < 1 || len > 256)
+                return show_error("'-ls' option needs line length from 1 to 256");
+            comp.short_text = len;
         }
         else if(arg == "-h")
             return show_help();
