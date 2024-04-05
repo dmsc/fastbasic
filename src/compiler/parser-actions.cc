@@ -90,6 +90,7 @@ static unsigned long get_number(parse &s)
         sn += s.hexd(h >> 4);
         sn += s.hexd(h);
         s.add_text(sn);
+        s.add_s_int(h);
         return h;
     }
     else
@@ -109,6 +110,7 @@ static unsigned long get_number(parse &s)
         auto sn = std::to_string(sign ? -num : num);
         s.debug("(got '" + sn + "')");
         s.add_text(sn);
+        s.add_s_int(sign ? -num : num);
         if(sign)
             return 65536 - num;
         else
@@ -126,6 +128,7 @@ static bool get_asm_word_constant(parse &s)
         if(s.get_ident(name))
         {
             s.add_text("@" + name);
+            s.add_s_var("@" + name);
             s.emit_word(name);
             s.skipws();
             return true;
@@ -145,6 +148,7 @@ static bool get_asm_byte_constant(parse &s)
         if(s.get_ident(name))
         {
             s.add_text("@@" + name);
+            s.add_s_var("@@" + name);
             s.emit_byte(name);
             s.skipws();
             return true;
@@ -202,12 +206,14 @@ static bool get_const_string(parse &s, std::string &str)
                 if(!s.expect('"'))
                 {
                     s.add_text_str(str);
+                    s.add_s_str(str);
                     return true;
                 }
             }
             else
             {
                 s.add_text_str(str);
+                s.add_s_str(str);
                 return true;
             }
         }
@@ -443,6 +449,7 @@ static bool SMB_E_VAR_CREATE(parse &s)
     s.emit_varn(name);
     last_var_name = name;
     s.add_text(name);
+    s.add_s_var(name);
     return true;
 }
 
@@ -480,6 +487,7 @@ static bool var_check(parse &s, enum VarType type)
     if((v[name] & 0xFF) != type)
         return s.error(get_vt_name(type) + " and got '" + name + "'");
     s.add_text(name);
+    s.add_s_var(name);
     s.emit_varn(name);
     return true;
 }
@@ -561,6 +569,7 @@ static atari_fp get_fp_number(parse &s)
     auto sn = fp.to_string();
     s.debug("(got '" + sn + "')");
     s.add_text(sn);
+    s.add_s_fp(sn);
     return fp;
 }
 
@@ -608,6 +617,7 @@ static bool SMB_E_LABEL(parse &s)
     if(it->second != ltype)
         return false;
     s.add_text(name);
+    s.add_s_var(name);
     s.emit_word(s.label_prefix + name);
     return true;
 }
@@ -634,6 +644,7 @@ static bool SMB_E_LABEL_CREATE(parse &s)
         return s.loop_error("new label, got label already defined '" + name + "'");
     // Store variable name
     s.add_text(name);
+    s.add_s_var(name);
     s.last_label = name;
     s.current_params = 0;
     return true;

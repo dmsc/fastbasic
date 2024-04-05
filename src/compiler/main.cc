@@ -123,6 +123,11 @@ int main(int argc, char **argv)
         }
         else if(arg == "-l")
             comp.show_text = true;
+        else if(arg == "-ls")
+        {
+            comp.show_text = true;
+            comp.short_text = true;
+        }
         else if(arg == "-h")
             return show_help();
         else if(arg == "-keep")

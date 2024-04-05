@@ -86,7 +86,7 @@ static int readLine(std::string &r, std::istream &is)
 
 // Parses one source line
 static bool parse_line(std::string line, int ln, parse &s, bool show_text,
-                       const syntax::sm_list &sl)
+                       bool short_text, const syntax::sm_list &sl, std::string &short_line)
 {
     s.new_line(line, ln);
     while(s.pos != line.length())
@@ -115,8 +115,30 @@ static bool parse_line(std::string line, int ln, parse &s, bool show_text,
             }
             throw parse_error(msg, s.max_pos);
         }
-        else if(show_text)
-            std::cout << s.expand.get() << "\n";
+        else
+        {
+            if(short_text)
+            {
+                auto txt = s.expand.get_short();
+                if(txt.size())
+                {
+                    if(!short_line.size())
+                        short_line = txt;
+                    else if(short_line.size() + 1 + txt.size() < 120)
+                    {
+                        short_line += ':';
+                        short_line += txt;
+                    }
+                    else
+                    {
+                        std::cout << short_line << '\x9B';
+                        short_line = txt;
+                    }
+                }
+            }
+            else if(show_text)
+                std::cout << s.expand.get() << "\n";
+        }
 
         s.expect(':');
     }
@@ -145,6 +167,7 @@ compiler::compiler()
     segname = "BYTECODE";
     show_stats = false;
     show_text = false;
+    short_text = false;
     do_debug = false;
 }
 
@@ -166,6 +189,7 @@ int compiler::compile_file(std::string iname, std::string output_filename,
     s.set_input_file(iname);
 
     int ln = 1;
+    std::string sprog;
     while(1)
     {
         try
@@ -176,7 +200,7 @@ int compiler::compile_file(std::string iname, std::string output_filename,
                 break;
             if(do_debug)
                 std::cout << iname << ": parsing line " << ln << "\n";
-            parse_line(line, ln, s, show_text, sl);
+            parse_line(line, ln, s, show_text, short_text, sl, sprog);
             ln += lines;
         }
         catch(parse_error &e)
@@ -216,6 +240,10 @@ int compiler::compile_file(std::string iname, std::string output_filename,
         std::cout << "parse end:\n";
         std::cout << "MAX LEVEL: " << s.maxlvl << "\n";
     }
+    // Show short line
+    if(short_text && sprog.size())
+        std::cout << sprog << '\x9B';
+
     // Check unclosed loops
     auto loop_error = s.check_loops();
     if(loop_error.size())

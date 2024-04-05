@@ -72,7 +72,7 @@ static std::string ucase(std::string s)
 static bool parse_literal(parse &s, std::string lit)
 {
     s.error("'" + ucase(lit) + "'");
-    for(auto &ch : lit)
+    for(auto ch : lit)
     {
         if(ch >= 'a' && ch <= 'z')
         {
@@ -90,6 +90,15 @@ static bool parse_literal(parse &s, std::string lit)
     }
     s.debug("GOT '" + lit + "'");
     s.add_text(ucase(lit));
+    for(auto c: lit)
+    {
+        if(c >= 'a' && c <= 'z')
+        {
+            s.add_s_lit('.');
+            break;
+        }
+        s.add_s_lit(c);
+    }
     return true;
 }
 

@@ -64,6 +64,7 @@ class parse
         size_t pos;
         size_t opos;
         size_t tpos;
+        size_t spos;
     };
     class jump
     {
@@ -95,8 +96,14 @@ class parse
     struct expand_line
     {
         std::string text;
+        std::string stext;
         int indent = 0;
         int next_indent = 0;
+        void clear()
+        {
+            text.clear();
+            stext.clear();
+        }
         // Returns expanded line
         std::string get()
         {
@@ -104,6 +111,15 @@ class parse
             ret += text;
             indent = next_indent;
             text.clear();
+            return ret;
+        }
+        // Returns shortened line
+        std::string get_short()
+        {
+            auto ret = stext;
+            stext.clear();
+            while(ret.size() && ret.back() == ' ')
+                ret.pop_back();
             return ret;
         }
         void add_space(char c, size_t num)
@@ -230,11 +246,11 @@ class parse
         var_stk.clear();
         str = l;
         saved_errors.clear();
-        expand.text.clear();
+        expand.clear();
         linenum = ln;
     }
 
-    saved_pos save() { return saved_pos{pos, code->size(), expand.text.size()}; }
+    saved_pos save() { return saved_pos{pos, code->size(), expand.text.size(), expand.stext.size()}; }
 
     // Checks if we are too depth into the recursion and bail out
     void check_level()
@@ -284,6 +300,7 @@ class parse
         pos = s.pos;
         code->resize(s.opos, codew::ctok("TOK_END", 0));
         expand.text.resize(s.tpos);
+        expand.stext.resize(s.spos);
     }
 
     codew remove_last()
@@ -421,6 +438,62 @@ class parse
         if(s.size())
             expand.add_space(s[0], s.size());
         expand.text += s;
+    }
+    void add_s_int(int x)
+    {
+        x = x & 0xFFFF;
+        if(x > 65536 - 9999)
+            expand.stext += std::to_string(x - 65536);
+        else
+            expand.stext += std::to_string(x);
+    }
+    void add_s_fp(std::string n)
+    {
+        expand.stext += n;
+    }
+    void add_s_var(std::string n)
+    {
+        expand.stext += n;
+        expand.stext += ' '; // Signals a VAR here
+    }
+    void add_s_lit(char c)
+    {
+        if((c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_')
+            if(expand.stext.size() && expand.stext.back() == ' ')
+                expand.stext.resize(expand.stext.size()-1);
+        expand.stext += c;
+    }
+    void add_s_str(std::string s)
+    {
+        bool in = true;
+        for(auto c : s)
+        {
+            if(in)
+            {
+                if(c == '"')
+                    expand.stext += "\"\"";
+                else if(c == 155)
+                {
+                    in = false;
+                    expand.stext += std::string("\"$") + hexd(c >> 4) + hexd(c);
+                }
+                else
+                    expand.stext.push_back(c);
+            }
+            else
+            {
+                if(c == 155 || c == '"')
+                    expand.stext += std::string("$") + hexd(c >> 4) + hexd(c);
+                else
+                {
+                    in = true;
+                    expand.stext.push_back('"');
+                    expand.stext.push_back(c);
+                }
+            }
+        }
+        if(in)
+            expand.stext.push_back('"');
     }
     void add_text_str(std::string s)
     {
