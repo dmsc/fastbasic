@@ -128,11 +128,21 @@ an `:` or an `=` to separate the option from the argument.
   Enable parser debug options. This is only useful to debug parser, as it
   writes the full parsing tree with all the tried constructs.
 
-- **-l**  
-  In addition to compiling the file, also write to standard output a prettified
-  version of the input program, with all abbreviations expanded, one statement
-  per line and indented code. This is useful to examine compiler errors in heavily
-  abbreviated code.
+- **-l**  / **-l**:*extension*
+  In addition to compiling the file, also write a prettified version of the
+  input program, with all abbreviations expanded, one statement per line and
+  indented code. This listing will be saved to a file with the same name as the
+  input and given extension, or `.list` if no extension is supplied.
+  This is useful to examine compiler errors in heavily abbreviated code
+
+- **-ls**:*num*
+  Instead of writing an expanded version of the program to the listing file,
+  writes a short, minimized and abbreviated version, joining all statements in
+  one big line so that each line is of *num* characters or less. This is useful
+  to write short BASIC programs for size coding.
+  **WARNING**: You should always verify that the minimized version compiles to
+  the same as the original version, as the parser does not examine the full
+  code when minimizing and it could write invalid code.
 
 - **-h**  
   Shows available compiler options.
