@@ -462,7 +462,6 @@ comp:
 xit:    rts
 
 ::laddr_search_start:
-        ldx     last_label_num
         lda     laddr_buf
         ldy     laddr_buf+1
         sty     tmp1+1
@@ -506,6 +505,7 @@ xit:    rts
         jsr     push_codep
 
         ; Search in the label list
+        ldx     last_label_num
         jsr     laddr_search_start
         bcs     nfound
 
@@ -540,7 +540,6 @@ nfound:
         ; Check if we have a valid name - this exits on error!
         jsr     label_search
         bcs     xit
-        stx     last_label_num
 
         ; Check if type is compatible
         cmp     tmp3
@@ -555,6 +554,7 @@ xit:    rts
 ::E_DO_EXEC:
 
         ; Emits a label, searching the label address in the label list
+        ldx     last_label_num
 start_searching:
         jsr     laddr_search_start
         bcs     nfound

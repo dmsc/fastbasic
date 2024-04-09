@@ -1,0 +1,6 @@
+Name: Test for using a DATA array in EXEC parameter
+Test: run
+Output:
+1234
+5678
+Ok
