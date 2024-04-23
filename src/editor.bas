@@ -813,8 +813,10 @@ PROC DoDeleteKey
     exec SaveLine
     ' Manually delete the EOL
     ptr = ScrAdr(scrLine+1)
-    move ptr, ptr - 1, MemEnd - ptr
-    MemEnd = MemEnd - 1
+    if ptr <> MemEnd
+      move ptr, ptr - 1, MemEnd - ptr
+      MemEnd = MemEnd - 1
+    endif
     ' Redraw
     exec MoveLineUp
   endif
