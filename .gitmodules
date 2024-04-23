@@ -3,4 +3,4 @@
 	url = https://github.com/dmsc/mini65-sim
 [submodule "mkatr"]
 	path = mkatr
-	url = git@github.com:dmsc/mkatr.git
+	url = https://github.com/dmsc/mkatr
