@@ -1,3 +1,6 @@
 [submodule "testsuite/mini65"]
 	path = testsuite/mini65
 	url = https://github.com/dmsc/mini65-sim
+[submodule "mkatr"]
+	path = mkatr
+	url = git@github.com:dmsc/mkatr.git

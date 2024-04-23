@@ -106,11 +106,15 @@ FASTBASIC_HOST=build/bin/fastbasic$(HOST_EXT)
 CA65_HOST=build/bin/ca65$(HOST_EXT)
 LD65_HOST=build/bin/ld65$(HOST_EXT)
 AR65_HOST=build/bin/ar65$(HOST_EXT)
+MKATR_HOST=build/bin/mkatr$(HOST_EXT)
+LSATR_HOST=build/bin/lsatr$(HOST_EXT)
 
 FASTBASIC_TARGET=build/compiler/fastbasic$(TGT_EXT)
 CA65_TARGET=build/compiler/ca65$(TGT_EXT)
 LD65_TARGET=build/compiler/ld65$(TGT_EXT)
 AR65_TARGET=build/compiler/ar65$(TGT_EXT)
+MKATR_TARGET=build/compiler/mkatr$(TGT_EXT)
+LSATR_TARGET=build/compiler/lsatr$(TGT_EXT)
 
 LIB_INT=build/compiler/fastbasic-int.lib
 LIB_FP=build/compiler/fastbasic-fp.lib
@@ -566,6 +570,25 @@ AR65_SRC=\
 	cc65/ar65/objdata.c\
 	cc65/ar65/objfile.c\
 
+MKATR_SRC=\
+	mkatr/src/atr.c\
+	mkatr/src/compat.c\
+	mkatr/src/crc32.c\
+	mkatr/src/darray.c\
+	mkatr/src/flist.c\
+	mkatr/src/mkatr.c\
+	mkatr/src/msg.c\
+	mkatr/src/spartafs.c\
+
+LSATR_SRC=\
+	mkatr/src/atr.c\
+	mkatr/src/compat.c\
+	mkatr/src/lsatr.c\
+	mkatr/src/lsdos.c\
+	mkatr/src/lsextra.c\
+	mkatr/src/lssfs.c\
+	mkatr/src/msg.c\
+
 # Syntax file parser
 SYNTAX_PARSER_SRC=\
 	synt-emit-asm.cc\
@@ -600,6 +623,8 @@ COMPILER_HOST=\
 	 $(CA65_HOST)\
 	 $(LD65_HOST)\
 	 $(AR65_HOST)\
+	 $(MKATR_HOST)\
+	 $(LSATR_HOST)\
 	 $(FASTBASIC_HOST)\
 	 build/bin/fb$(HOST_EXT)\
 
@@ -608,6 +633,8 @@ COMPILER_TARGET=\
 	 $(CA65_TARGET)\
 	 $(LD65_TARGET)\
 	 $(AR65_TARGET)\
+	 $(MKATR_TARGET)\
+	 $(LSATR_TARGET)\
 	 $(FASTBASIC_TARGET)\
 	 build/compiler/fb$(TGT_EXT)\
 

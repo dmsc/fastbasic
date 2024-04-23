@@ -46,9 +46,9 @@ distclean: clean
 		test -d $$folder && rmdir $$folder || true ; done
 
 # Build an ATR disk image using "mkatr".
-$(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | build
+$(ATR): $(DOS:%=$(DOSDIR)/%) $(FILES) | $(MKATR_HOST) build
 	$(ECHO) "Creating ATR disk image"
-	$(Q)mkatr $@ $(DOSDIR) -b $^
+	$(Q)$(MKATR_HOST) $@ $(DOSDIR) -b $^
 
 # Build compiler ZIP file.
 $(ZIPFILE): $(COMPILER_COMMON) $(COMPILER_TARGET) $(COMPILER_MANIFESTS) | build
@@ -105,6 +105,18 @@ $(AR65_HOST): $(AR65_SRC) | build/bin
 	$(ECHO) "Compile AR65"
 	$(Q)$(CC) $(HOST_CFLAGS) $(CC65_CFLAGS) -o $@ $^
 
+$(MKATR_HOST): $(MKATR_SRC) | mkatr/src build/bin
+	$(ECHO) "Compile MKATR"
+	$(Q)$(CC) $(HOST_CFLAGS) -o $@ $^
+
+$(LSATR_HOST): $(LSATR_SRC) | mkatr/src build/bin
+	$(ECHO) "Compile LSATR"
+	$(Q)$(CC) $(HOST_CFLAGS) -o $@ $^
+
+# Update mkatr submodule if not found
+mkatr/src:
+	$(Q)git submodule update --init mkatr
+
 # Target compiler build
 ifeq ($(CROSS),)
 # No cross-compilation, just copy host tools to target tools:
@@ -131,6 +143,14 @@ $(LD65_TARGET): $(LD65_SRC) | build/compiler
 $(AR65_TARGET): $(AR65_SRC) | build/compiler
 	$(ECHO) "Compile target AR65"
 	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) $(CC65_CFLAGS) -o $@ $^
+
+$(MKATR_TARGET): $(MKATR_SRC) | mkatr/src build/compiler
+	$(ECHO) "Compile target MKATR"
+	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) -o $@ $^
+
+$(LSATR_TARGET): $(LSATR_SRC) | mkatr/src build/compiler
+	$(ECHO) "Compile target LSATR"
+	$(Q)$(CROSS)$(CC) $(TARGET_CFLAGS) -o $@ $^
 
 # Copy compatibility binaries
 build/compiler/fb$(TGT_EXT): build/compiler/fastbasic$(TGT_EXT)
