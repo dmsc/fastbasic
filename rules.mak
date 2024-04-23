@@ -114,7 +114,7 @@ $(LSATR_HOST): $(LSATR_SRC) | mkatr/src build/bin
 	$(Q)$(CC) $(HOST_CFLAGS) -o $@ $^
 
 # Update mkatr submodule if not found
-mkatr/src:
+$(sort $(MKATR_SRC) $(LSATR_SRC) mkatr/src) &:
 	$(Q)git submodule update --init mkatr
 
 # Target compiler build
