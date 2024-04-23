@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+  pull_request:
+
+jobs:
+  build-amd64:
+    name: Build and run tests on Linux amd64
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: make
+      run: make -j2
+    - name: running testsuite
+      run: make test -j2
+    - name: make dist
+      run: make dist
+    - name: Archive ZIP
+      uses: actions/upload-artifact@v4
+      with:
+       name: fastbasic.atr
+       path: build/fastbasic.atr
+    - name: Archive ZIP
+      uses: actions/upload-artifact@v4
+      with:
+       name: fastbasic-linux-amd64.zip
+       path: build/fastbasic.zip
