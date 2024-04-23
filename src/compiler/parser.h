@@ -472,7 +472,7 @@ class parse
             {
                 if(c == '"')
                     expand.stext += "\"\"";
-                else if(c == 155)
+                else if((unsigned) c == 155)
                 {
                     in = false;
                     expand.stext += std::string("\"$") + hexd(c >> 4) + hexd(c);
@@ -482,7 +482,7 @@ class parse
             }
             else
             {
-                if(c == 155 || c == '"')
+                if((unsigned) c == 155 || c == '"')
                     expand.stext += std::string("$") + hexd(c >> 4) + hexd(c);
                 else
                 {

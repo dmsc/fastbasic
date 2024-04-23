@@ -140,7 +140,7 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
 
     // Ignore INT and QUIT signals in the parent process:
     sigset_t oldmask, newmask;
-    struct sigaction sa = {SIG_IGN, 0}, oldint, oldquit;
+    struct sigaction sa = {{SIG_IGN}, 0}, oldint, oldquit;
     sigaction(SIGINT, &sa, &oldint);
     sigaction(SIGQUIT, &sa, &oldquit);
 
@@ -154,7 +154,7 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
     if(pid == 0)
     {
         // Child, reset INT, QUIT and CHLD signals to default
-        struct sigaction sa = {SIG_DFL, 0};
+        struct sigaction sa = {{SIG_DFL}, 0};
         sigaction(SIGINT, &sa, nullptr);
         sigaction(SIGQUIT, &sa, nullptr);
         sigprocmask(SIG_SETMASK, &oldmask, nullptr);
