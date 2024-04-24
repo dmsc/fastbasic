@@ -19,13 +19,34 @@ jobs:
       run: make test -j2
     - name: make dist
       run: make dist
-    - name: Archive ZIP
+    - name: Archive ATR
       uses: actions/upload-artifact@v4
       with:
        name: fastbasic.atr
        path: build/fastbasic.atr
-    - name: Archive ZIP
+    - name: Archive ZIP Linux amd64
       uses: actions/upload-artifact@v4
       with:
        name: fastbasic-linux-amd64.zip
+       path: build/fastbasic.zip
+
+  build-macos-M1:
+    name: Build and run tests on MacOS M1 (ARM64)
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - name: make
+      run: |
+        gcc -v
+        make -j2
+    - name: running testsuite
+      run: make test -j2
+    - name: make dist
+      run: make dist
+    - name: Archive ZIP MacOS ARM
+      uses: actions/upload-artifact@v4
+      with:
+       name: fastbasic-macos-arm64.zip
        path: build/fastbasic.zip
