@@ -20,7 +20,7 @@
 MINI65=testsuite/mini65
 TEST_CFLAGS=-g -O2 -Wall -I$(MINI65)/src/ -I$(MINI65)/ccan/
 TEST_LDLIBS=-lm
-RUNTEST=build/bin/fbtest
+RUNTEST=build/bin/fbtest$(HOST_EXT)
 
 MINI65_SRC=\
   atari.c\
@@ -37,9 +37,9 @@ TESTS := $(sort $(wildcard testsuite/tests/*.chk))
 # The tests need to be rerun if any of this files change:
 TESTS_DEPS=\
 	build/bin/fbc.xex\
-	build/bin/fastbasic\
-	build/bin/ca65\
-	build/bin/ld65\
+	build/bin/fastbasic$(HOST_EXT)\
+	build/bin/ca65$(HOST_EXT)\
+	build/bin/ld65$(HOST_EXT)\
         $(COMPILER_COMMON)\
 
 TESTS_XEX=$(TESTS:testsuite/%.chk=build/%.xex)
@@ -56,7 +56,7 @@ RUNTEST_OBJS=build/obj/tests/fbtest.o $(MINI65_SRC:%.c=build/obj/tests/%.o)
 .PHONY: test
 test: $(TESTS_STAMP) $(RUNTEST)
 
-build/%.stamp: testsuite/%.chk testsuite/%.bas $(RUNTEST) $(TESTS_DEPS) | build/tests
+build/tests/%.stamp: testsuite/tests/%.chk testsuite/tests/%.bas $(RUNTEST) $(TESTS_DEPS) | build/tests
 	$(Q)$(RUNTEST) $<
 	@touch $@
 
