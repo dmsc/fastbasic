@@ -710,6 +710,12 @@ and the abbreviated syntax.
   second in NTSC systems or 50 times
   per second in PAL systems. Use
   `TIMER` statement to reset to 0.
+  Remember that this function returns
+  an integer, so the maximum value is
+  32767, or about 9 minutes in NTSC, and
+  a little less than 11 minutes in PAL,
+  after this the value will become
+  negative.
   Note: TIME is special, and does not
   need parentheses.
 
