@@ -304,6 +304,7 @@ A800_FP_AS_SRC=\
     src/interp/atarifp/fp_str.asm\
     src/interp/atarifp/fp_sub.asm\
     src/interp/atarifp/fp_val.asm\
+    src/interp/atarifp/fp_time.asm\
     src/interp/atarifp/fpmain.asm\
     src/interp/atarifp/mul6.asm\
 

@@ -87,6 +87,12 @@ PA.1              ' PAUSE
 PA.               ' PAUSE 0
 PRI.T.            ' PRINT TIME
 
+T.
+POKE 18,1
+?%T.
+PA.0
+?%TIME
+
 R.                ' REPEAT
  ? "R"
 U.1               ' UNTIL

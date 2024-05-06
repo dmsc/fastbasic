@@ -23,7 +23,7 @@ TOKENS {
  TOK_FP_DIV, TOK_FP_MUL, TOK_FP_SUB, TOK_FP_ADD, TOK_FP_STORE, TOK_FP_LOAD
  TOK_FP_EXP, TOK_FP_EXP10, TOK_FP_LOG, TOK_FP_LOG10, TOK_FP_INT, TOK_FP_CMP
  TOK_FP_IPOW, TOK_FP_RND, TOK_FP_SQRT, TOK_FP_SIN, TOK_FP_COS, TOK_FP_ATN
- TOK_FP_STR
+ TOK_FP_STR, TOK_FP_TIME
  # Used for floating point array access
  TOK_MUL6
 }
@@ -82,6 +82,7 @@ FP_FUNCS:
         "COs"   FP_T_EXPR emit TOK_FP_COS
         "Val"   STR_EXPR emit TOK_FP_VAL
         "RNd()" emit TOK_FP_RND
+        "%Time" emit TOK_FP_TIME
         "%"     PAR_EXPR emit TOK_FP_LOAD
 
 ADR_EXPR:

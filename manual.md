@@ -715,7 +715,9 @@ and the abbreviated syntax.
   32767, or about 9 minutes in NTSC, and
   a little less than 11 minutes in PAL,
   after this the value will become
-  negative.
+  negative. If you need to measure more
+  than this amount, consider using the
+  floating-point version `%TIME`
   Note: TIME is special, and does not
   need parentheses.
 
@@ -859,6 +861,15 @@ will return an invalid value, and the
 
 - SQR(_n_) / SQ.(_n_) :
   Square root of _n_.
+
+- %TIME / %T. :
+  This is the same as the `TIME` integer
+  function, but returning a 24 bit
+  number that does not wrap until more
+  than 3 days.
+  Note: Don't use the  `TIMER` statement
+  if you are using this function, as the
+  returned value will be invalid.
 
 
 String Functions
