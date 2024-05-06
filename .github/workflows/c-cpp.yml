@@ -74,7 +74,7 @@ jobs:
     - name: make
       run: |
         i686-w64-mingw32-gcc -v
-        make -j2
+        make OPTFLAGS="-O2 -static" -j2
       shell: bash
     - name: running testsuite
       run: make test -j2
@@ -97,7 +97,7 @@ jobs:
     - name: make
       run: |
         x86_64-w64-mingw32-gcc -v
-        make -j2
+        make OPTFLAGS="-O2 -static" -j2
       shell: bash
     - name: running testsuite
       run: make test -j2
