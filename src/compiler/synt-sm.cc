@@ -358,8 +358,6 @@ bool statemachine::tail_call(const statemachine &from)
 
 bool statemachine::inline_call(std::string tab, const statemachine &from)
 {
-    if(complete)
-        return p.error("table '" + _name + "' was already completed");
     if(from.complete)
         return p.error("table '" + from._name + "' was already completed");
 
