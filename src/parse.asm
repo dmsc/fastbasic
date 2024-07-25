@@ -51,11 +51,11 @@
 buf_ptr:.res 2
 end_ptr:.res 2
 bmax:   .res 1
-opos:   .res 1
 pptr:   .res 2
 
 ; This variables are cleared in one loop:
 zp_clear_start:
+opos:           .res 1
 linenum:        .res 2
 loop_sp:        .res 1
 var_sp:         .res 1
@@ -265,7 +265,6 @@ parse_start:
         ; Parse statement, A=0 on input
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
-        sta     opos
         pha
 
         ; Parser sub

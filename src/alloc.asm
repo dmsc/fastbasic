@@ -172,7 +172,9 @@ loop:
         .importzp       opos
         ; Move from "prog_ptr", up by "alloc_size"
         ldx     #prog_ptr - mem_start
+        .assert prog_ptr = mem_start, error, "Prog Ptr should be at mem start"
         lda     opos
+        stx     opos
         bne     alloc_area_8
         rts
 .endproc
