@@ -149,9 +149,9 @@ ENDPROC
 PROC CompileAndSave
   exec ClrTopLine
   ' Pass the relocation offset, the compiled code
-  ' is run at "BYTECODE_ADDR" instead of "MemEnd + 1",
+  ' is run at "BYTECODE_ADDR" instead of "MemEnd",
   ' the output buffer.
-  dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd - 1
+  dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd
   exec CompileFile
 ENDPROC
 
@@ -160,8 +160,7 @@ ENDPROC
 PROC CompileFile
   ' Compile main file
   ? "Parsing: ";
-  poke MemEnd, $9B
-  if USR( @compile_buffer, Adr(MemStart), MemEnd+1)
+  if USR( @compile_buffer, Adr(MemStart), MemEnd)
     ' Parse error, go to error line
     topLine = dpeek(@@linenum) - 11
     column = peek( @@bmax )
@@ -645,9 +644,10 @@ ENDPROC
 '-------------------------------------
 ' Fix empty buffer
 PROC CheckEmptyBuf
-  if MemEnd = adr(MemStart)
-    poke adr(MemStart), $9b
+  poke MemEnd, $9B
+  if peek(MemEnd-1) <> $9B
     MemEnd = MemEnd + 1
+    poke MemEnd, $9b
   endif
 ENDPROC
 
