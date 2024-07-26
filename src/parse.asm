@@ -116,23 +116,9 @@ SM_EMIT_N=      SM_EMIT_28 + 1
 ; Now, the rest of the code
         .code
 
-.proc parse_eof
-        ; Check if parser stack is empty
-        ldy     #ERR_NO_ELOOP
-        lda     loop_sp
-        bne     parser_error
-
         .importzp       laddr_ptr, laddr_buf
-; Check if all labels are defined
-        ldy     #1
-        .assert ERR_LABEL = 1, error, "Parser depends on ERR_LABEL = 1"
-        lda     laddr_buf
-lbl_chk_start:
-        cmp     laddr_ptr
-        lda     laddr_buf+1
-        sbc     laddr_ptr+1
-        beq     ok
 
+lbl_chk_nxt:
         lda     (laddr_buf), y
         beq     parser_error    ; unresolved label, return with Y=1 : ERR_LABEL
 
@@ -140,17 +126,31 @@ lbl_chk_start:
         lda     laddr_buf
         adc     #4
         sta     laddr_buf
-        bcc     lbl_chk_start
+        bcc     :+
         inc     laddr_buf+1
-        bcs     lbl_chk_start
+:
 
-ok:     ;lda     #TOK_END       ; Already A=0 from above
+; Check if all labels are defined
+parse_eof:
+        ldy     #1
+        .assert ERR_LABEL = 1, error, "Parser depends on ERR_LABEL = 1"
+        lda     laddr_buf
+        cmp     laddr_ptr
+        lda     laddr_buf+1
+        sbc     laddr_ptr+1
+        bne     lbl_chk_nxt
+
+        ; Check if parser stack is empty
+        ldy     #ERR_NO_ELOOP
+        lda     loop_sp
+        bne     parser_error
+
+        ;lda     #TOK_END       ; Already A=0 from above
         .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
         jsr     emit_const
         jsr     alloc_prog
         clc
         bcc     parse_end       ; exit
-.endproc
 
 .proc parser_fetch
         inc     pptr
@@ -264,10 +264,11 @@ parse_start:
         ; Parse statement, A=0 on input
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
-        pha
 
         ; Parser sub
 parser_sub:
+        pha
+        lda     pptr
         pha
         stx     pptr
         sty     pptr+1
@@ -277,6 +278,8 @@ parser_sub:
         ; Always skip WS at start of new token
         jsr     parser_skipws
 
+        ; Process one line of the parser definition
+ploop_line:
         ; Store input and output position
         lda     bpos
         pha
@@ -334,8 +337,6 @@ pcall:
 
         tay
         lda     pptr+1
-        pha
-        lda     pptr
         bcs     parser_sub      ; Jump always
 
 pemit_ret:
@@ -415,9 +416,6 @@ ploop_nextline:
         sta     opos
         pla
         sta     bpos
-        pha
-        lda     opos
-        pha
 
         ldy     #0
 
@@ -450,7 +448,7 @@ go_ploop:
         sta     pptr
         bcc     :+
         inc     pptr+1
-:       jmp     ploop
+:       jmp     ploop_line
 
 set_parse_error:
         ldy     #ERR_PARSE
