@@ -160,7 +160,8 @@ ENDPROC
 PROC CompileFile
   ' Compile main file
   ? "Parsing: ";
-  if USR( @compile_buffer, Adr(MemStart), MemEnd)
+  dpoke @@BUF_PTR, Adr(MemStart)
+  if USR( @compile_buffer, MemEnd)
     ' Parse error, go to error line
     topLine = dpeek(@@linenum) - 11
     column = peek( @@bmax )

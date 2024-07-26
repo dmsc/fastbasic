@@ -24,39 +24,33 @@
 ; linked into a combine executable.)
 
 
-; Memory functions
-; ----------------
+; Parser Memory Areas
+; -------------------
 
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
-        .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr
+        .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr, end_ptr
 
         .zeropage
 
-        ; Note that the memory pointers are shared between parser and runtime,
-        ; so that less zeropage memory is used.
-        ;
-        ;           During Parsing           During Execution
-        ;           ---------------------------------------------
-        ; Pointer to program buffer        / UNUSED
-mem_start:
+        ; End of program to parse
+end_ptr:        .res    2
+        ; Pointer to end of program buffer
 prog_ptr:       .res    2
-        ; Pointer to variable name table   / variable value table
+        ; Pointers to start / end of variable name table
 var_buf:        .res    2
-var_ptr=        array_buf
-        ; Pointer to labels name table     / strings/arrays table
-array_buf:      .res    2
-label_buf=      array_buf
-array_ptr=      laddr_buf
+var_ptr=        label_buf
+        ; Pointers to start / end of labels name table
+label_buf:      .res    2
 label_ptr=      laddr_buf
-        ; Pointer to labels address table  / end of string/arrays table,
-        ;                                    top of used memory
+        ; Pointers to start / end of labels address table
 laddr_buf:      .res    2
 laddr_ptr=      mem_end
-        ; End of used memory
+        ; End of parser memory
 mem_end:        .res    2
 
-        ; Used from BASIC code
+        ; Share this to BASIC runtime, to use less ZP memory
         .exportzp       BASIC_TOP
+array_ptr=      laddr_buf
 BASIC_TOP= array_ptr
 
 ; vi:syntax=asm_ca65

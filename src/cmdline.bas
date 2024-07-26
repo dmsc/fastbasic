@@ -122,7 +122,8 @@ PROC CompileFile
   poke MemEnd, $9B
   ? "Compiling..."
   dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd
-  if USR( @compile_buffer, Adr(MemStart), MemEnd)
+  dpoke @@BUF_PTR, Adr(MemStart)
+  if USR( @compile_buffer, MemEnd)
     ' Parse error, show
     ? " at line "; dpeek(@@linenum); " column "; peek( @@bmax )
   else

@@ -42,8 +42,9 @@
         ; Exported to CMDLINE.BAS
 BMAX=bmax
 LINENUM=linenum
-        .exportzp RELOC_OFFSET
+        .exportzp RELOC_OFFSET, BUF_PTR
 RELOC_OFFSET = reloc_addr
+BUF_PTR = buf_ptr
 
         .code
         ; Called from editor
@@ -51,16 +52,9 @@ COMPILE_BUFFER:
 
         ; Buffer end pointer
         pla
-        sta     end_ptr+1
         tay
         pla
-        sta     end_ptr
         jsr     parser_alloc_init
-        ; Buffer address
-        pla
-        sta     buf_ptr+1
-        pla
-        sta     buf_ptr
 
         ; Save our CPU return stack
         lda     saved_cpu_stack

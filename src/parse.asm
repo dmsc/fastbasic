@@ -21,7 +21,7 @@
 
         .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; Parser state
-        .exportzp       bptr, bpos, bmax, linenum, buf_ptr, end_ptr
+        .exportzp       bptr, bpos, bmax, linenum, buf_ptr
         .exportzp       loop_sp, var_sp
         ; Output state
         .exportzp       opos
@@ -32,7 +32,7 @@
         .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
         ; From alloc.asm
         .import         alloc_prog
-        .importzp       prog_ptr, BASIC_TOP
+        .importzp       prog_ptr, end_ptr, BASIC_TOP
         ; From vars.asm
         .exportzp       var_count, label_count
         ; From runtime.asm
@@ -49,7 +49,6 @@
 
         .zeropage
 buf_ptr:.res 2
-end_ptr:.res 2
 bmax:   .res 1
 pptr:   .res 2
 

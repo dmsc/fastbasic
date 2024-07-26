@@ -64,7 +64,7 @@
         .export         alloc_prog, alloc_laddr
         .export         parser_alloc_init, alloc_area_8
 
-        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1
+        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1, end_ptr
         .import         move_dwn, err_nomem
         .importzp       move_dwn_src, move_dwn_dst
 
@@ -82,6 +82,16 @@ alloc_size=     tmp1
 ;----------------------------------------------------------
 ; Following routines are part of the parser/editor
         .code
+
+        ; Increase program memory area by "opos" (size in bytes)
+.proc alloc_prog
+        .importzp       opos
+        lda     opos
+        ldx     #prog_ptr - mem_start
+        .assert prog_ptr = mem_start, error, "Prog Ptr should be at mem start"
+        stx     opos
+        .byte   $2C   ; Skip 2 bytes over next "LDX"
+.endproc        ; Fall through
 
 .proc   alloc_laddr
         ldx     #laddr_ptr - mem_start
@@ -152,30 +162,19 @@ skip:
 ;----------------------------------------------------------
 ; Parser initialization here:
 .proc   parser_alloc_init
-        ; Init all pointers to AY
-        ldx     #(mem_end-mem_start)
+        ; Init all pointers to AY, starting from "end_ptr"
+        ldx     #(mem_end-end_ptr)
         ; Adds 256 bytes as program buffer
         iny
 loop:
-        sta     mem_start, x
-        sty     mem_start+1, x
+        sta     end_ptr, x
+        sty     end_ptr+1, x
         dex
         dex
         bpl     loop
-        ; Remove 256 bytes at program start
+        ; Restore correct value of program start and end of source
         dec     prog_ptr+1
-        rts
-.endproc
-
-        ; Increase program memory area by "opos" (size in bytes)
-.proc alloc_prog
-        .importzp       opos
-        ; Move from "prog_ptr", up by "alloc_size"
-        ldx     #prog_ptr - mem_start
-        .assert prog_ptr = mem_start, error, "Prog Ptr should be at mem start"
-        lda     opos
-        stx     opos
-        bne     alloc_area_8
+        dec     end_ptr+1
         rts
 .endproc
 
