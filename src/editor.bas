@@ -1070,7 +1070,7 @@ PROC SaveCompiledFile
     bput #1, @@ZP_INTERP_LOAD, @@ZP_INTERP_SIZE
     bput #1, @__PREHEAD_RUN__, @COMP_RT_SIZE
     ' Note, the compiler writes to "NewPtr" the end of program code
-    bput #1, MemEnd + 1, NewPtr - MemEnd
+    bput #1, MemEnd, NewPtr - MemEnd
     if err() = 1
       ' Save ok, close
       close #1
