@@ -58,40 +58,6 @@ class parse
             return lvl < b.lvl || (lvl == b.lvl && msg < b.msg);
         }
     };
-    class saved_pos
-    {
-      public:
-        size_t pos;
-        size_t opos;
-        size_t tpos;
-        size_t spos;
-    };
-    class jump
-    {
-      public:
-        LoopType type;
-        std::string label;
-        int linenum;
-    };
-    bool do_debug = false;
-    std::string in_fname;
-    std::vector<codew> var_stk;
-    int lvl, maxlvl;
-    std::string str;
-    size_t pos;
-    size_t max_pos;
-    std::set<saved_error> saved_errors;
-    int linenum;
-    std::map<std::string, std::vector<codew>> procs;
-    std::vector<std::string> proc_stack;
-    std::map<std::string, int> vars;
-    std::map<std::string, labelType> labels;
-    std::vector<jump> jumps;
-    int label_num;
-    bool finalized;
-    std::vector<codew> *code;
-    std::string last_label; // Last label to be referenced in an EXEC
-    int current_params;     // Number of parameters in PROC/EXEC being parsed
     // Used to store an un-abbreviated line
     struct expand_line
     {
@@ -162,7 +128,41 @@ class parse
 
             text += ' ';
         }
-    } expand;
+    };
+    class saved_pos
+    {
+      public:
+        size_t pos;
+        size_t opos;
+        struct expand_line expand;
+    };
+    class jump
+    {
+      public:
+        LoopType type;
+        std::string label;
+        int linenum;
+    };
+    bool do_debug = false;
+    std::string in_fname;
+    std::vector<codew> var_stk;
+    int lvl, maxlvl;
+    std::string str;
+    size_t pos;
+    size_t max_pos;
+    std::set<saved_error> saved_errors;
+    int linenum;
+    std::map<std::string, std::vector<codew>> procs;
+    std::vector<std::string> proc_stack;
+    std::map<std::string, int> vars;
+    std::map<std::string, labelType> labels;
+    std::vector<jump> jumps;
+    int label_num;
+    bool finalized;
+    std::vector<codew> *code;
+    std::string last_label; // Last label to be referenced in an EXEC
+    int current_params;     // Number of parameters in PROC/EXEC being parsed
+    expand_line expand;
 
     parse(bool do_debug)
         : do_debug(do_debug), lvl(0), maxlvl(0), pos(0), max_pos(0), linenum(0),
@@ -250,7 +250,7 @@ class parse
         linenum = ln;
     }
 
-    saved_pos save() { return saved_pos{pos, code->size(), expand.text.size(), expand.stext.size()}; }
+    saved_pos save() { return saved_pos{pos, code->size(), expand}; }
 
     // Checks if we are too depth into the recursion and bail out
     void check_level()
@@ -299,8 +299,7 @@ class parse
             debug("restore pos=" + std::to_string(pos) + " <= " + std::to_string(s.pos));
         pos = s.pos;
         code->resize(s.opos, codew::ctok("TOK_END", 0));
-        expand.text.resize(s.tpos);
-        expand.stext.resize(s.spos);
+        expand = s.expand;
     }
 
     codew remove_last()
