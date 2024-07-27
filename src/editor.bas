@@ -645,10 +645,9 @@ ENDPROC
 '-------------------------------------
 ' Fix empty buffer
 PROC CheckEmptyBuf
-  poke MemEnd, $9B
   if peek(MemEnd-1) <> $9B
-    MemEnd = MemEnd + 1
     poke MemEnd, $9b
+    MemEnd = MemEnd + 1
   endif
 ENDPROC
 
