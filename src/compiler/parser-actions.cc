@@ -238,6 +238,9 @@ static bool SMB_E_CONST_STRING(parse &s)
 static bool SMB_E_REM(parse &s)
 {
     s.debug("E_REM");
+    // Remove "REM" from the shorted text
+    if(s.expand.stext == ".")
+        s.expand.stext = "";
     while(!s.eos() && !s.expect('\n') && !s.expect('\x9b'))
     {
         s.expand.text.push_back(s.str[s.pos]);
