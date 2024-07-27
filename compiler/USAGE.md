@@ -142,7 +142,9 @@ an `:` or an `=` to separate the option from the argument.
   to write short BASIC programs for size coding.
   **WARNING**: You should always verify that the minimized version compiles to
   the same as the original version, as the parser does not examine the full
-  code when minimizing and it could write invalid code.
+  code when minimizing and it could write invalid code. Also, the minimizer
+  does nor remove extra parenthesis or joins data statements, you should
+  manually do those transformations before.
 
 - **-h**  
   Shows available compiler options.
