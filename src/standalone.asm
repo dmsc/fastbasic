@@ -24,33 +24,16 @@
 ; linked into a combine executable.)
 
 
-; Standalone interpreter
-; ----------------------
+; Standalone interpreter variables
+; --------------------------------
 
-        ; Main symbol
-        .export         start
+        ; Main bytecode symbol
         .exportzp       array_ptr, BASIC_TOP
-        ; From intrepreter.asm
-        .import         interpreter_run
-        ; From bytecode
-        .import         bytecode_start
-        ; Linker vars
-        .import         __HEAP_RUN__
-
-        .include "atari.inc"
 
         .zeropage
 
         ; Zero page variables:
 array_ptr:      .res    2       ; Top of array memory
 BASIC_TOP=      array_ptr
-
-        .code
-start:
-        lda     #<bytecode_start
-        ldx     #>bytecode_start
-
-        jsr     interpreter_run
-        jmp     (DOSVEC)
 
 ; vi:syntax=asm_ca65

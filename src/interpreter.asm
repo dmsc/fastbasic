@@ -27,6 +27,7 @@
 ; The opcode interpreter
 ; ----------------------
 
+        .export         start
         .export         interpreter_run, stack_l, stack_h
         .export         pushAX, stack_end
 
@@ -139,6 +140,12 @@ move_ins        =       move_loop::ins
 
         ; Rest of interpreter is in runtime segment
         .segment        "RUNTIME"
+        .import bytecode_start
+        ; Main start for a compiled program, runs the
+        ; bytecode from the bytecode segment.
+start:
+        lda     #<bytecode_start
+        ldx     #>bytecode_start
 
         ; Main interpreter call
         ;  AX : address of code start

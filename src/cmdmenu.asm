@@ -35,9 +35,6 @@
         ; From alloc.asm
         .importzp  prog_ptr
         .import parser_alloc_init
-        ; From bytecode
-        .import bytecode_start
-        .importzp NUM_VARS
 
         ; Exported to CMDLINE.BAS
 BMAX=bmax

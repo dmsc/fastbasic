@@ -39,8 +39,6 @@
         ; From alloc.asm
         .importzp  prog_ptr
         .import parser_alloc_init
-        ; From bytecode
-        .import bytecode_start
 
         .include "atari.inc"
 

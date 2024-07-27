@@ -27,7 +27,7 @@
 ; Startup and support code for the Atari 5200 port
 ; ------------------------------------------------
 
-        .import         interpreter_run, set_grmode, bytecode_start, get_key
+        .import         start, set_grmode, get_key
         ; Linker vars
         .import         __CART_PAL__
         .import         __BSS_RUN__, __BSS_SIZE__
@@ -178,9 +178,7 @@ copy_interpreter:
         jsr     set_grmode
 
         ; Starts interpreter
-        lda     #<bytecode_start
-        ldx     #>bytecode_start
-        jsr     interpreter_run
+        jsr     start
 
         ; Waits for key press
         jsr     get_key

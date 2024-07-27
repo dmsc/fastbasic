@@ -19,9 +19,7 @@
 ; Compiled header written from the IDE
 ; ------------------------------------
 
-        .export start
         .export BYTECODE_ADDR
-
         .exportzp ZP_INTERP_LOAD, ZP_INTERP_SIZE
 
         .include "atari.inc"
@@ -31,7 +29,7 @@
         .import __JUMPTAB_RUN__, __RUNTIME_RUN__, __RUNTIME_SIZE__
         .import __DATA_SIZE__
 
-        .import interpreter_run, bytecode_start
+        .import bytecode_start, start
 
         ; Interpreter locations exported as ZP to the BASIC sources
 ZP_INTERP_LOAD = < __INTERP_START__
@@ -50,10 +48,10 @@ BYTECODE_ADDR=  __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __DATA_SIZE__
 COMP_HEAD_1:
         ; Atari binary header
         .byte   255, 255
-        ; Chunk 1: Run address at "compiled_start"
+        ; Chunk 1: Run address at "start"
         .word   RUNAD
         .word   RUNAD+1
-        .word   compiled_start
+        .word   start
         ; Chunk 2: interpreter at page 0
         .word   __INTERP_START__
         .word   __INTERP_START__ + __INTERP_SIZE__- 1
@@ -69,17 +67,5 @@ COMP_HEAD_2:
         ; Number of bytes to write in RUNTIME + JUMPTAB segments
         .export COMP_RT_SIZE
 COMP_RT_SIZE = __RUNTIME_RUN__ + __RUNTIME_SIZE__ + __DATA_SIZE__ - __JUMPTAB_RUN__ + 4
-
-        ; This is the runtime startup code, loads the editor.
-        ; Note that this code is patched before writing to a file
-        ; and copied into the resulting executables.
-        .segment        "RUNTIME"
-start:
-compiled_start:
-        lda     #<BYTECODE_ADDR
-        ldx     #>BYTECODE_ADDR
-
-        jsr     interpreter_run
-        jmp     (DOSVEC)
 
 ; vi:syntax=asm_ca65
