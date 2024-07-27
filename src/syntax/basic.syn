@@ -285,35 +285,31 @@ STRING_FUNCTIONS:
         ARRAY_STRING_ADDR emit TOK_DPEEK
 
 # PRINT statement:
-# - PRINT separator or an end-of-line if not given:
-PRINT_SEP_EOL:
+# - PRINT separators
+PRINT_SEP:
         "Tab" T_EXPR emit TOK_PRINT_TAB
         # Right-TAB and COLOR are complicated because we need to apply it to the *next*
         # parameter, so we read that parameter and the next optional separator:
-        "RTab" T_EXPR emit { TOK_BYTE_POKE, PRINT_RTAB_ARG } PRINT_ONE emit { TOK_PRINT_RTAB } PRINT_SEP_EOL
-        "Color" T_EXPR emit { TOK_BYTE_POKE, PRINT_COLOR } PRINT_MORE emit { TOK_0, TOK_BYTE_POKE, PRINT_COLOR }
+        "RTab" T_EXPR emit { TOK_BYTE_POKE, PRINT_RTAB_ARG } PRINT_ONE emit { TOK_PRINT_RTAB } PRINT_EOL
+        "Color" T_EXPR emit { TOK_BYTE_POKE, PRINT_COLOR } PRINT_NO_EOL emit { TOK_0, TOK_BYTE_POKE, PRINT_COLOR }
         "," emit { TOK_BYTE, 10, TOK_PRINT_TAB }
         ";"
-        E_EOL emit { TOK_BYTE_PUT, ATEOL }
-
-# - One item to print, converted to string:
-PRINT_ONE_STR:
-        PRINT_ONE emit TOK_PRINT_STR
-        pass
 
 # - One item to print, followed by a separator:
 PRINT_ONE:
         EXPR emit { TOK_INT_STR }
         STR_EXPR
 
-# - PRINT expression, including the optional I/O channel
-PRINT_EXPR:
-        IO_CHAN_OPT PRINT_SEP_EOL PRINT_MORE
-        IO_CHAN_OPT PRINT_MORE
+# - PRINT expression without adding an EOL at the end
+PRINT_NO_EOL:
+        E_EOL
+        PRINT_SEP PRINT_NO_EOL
+        PRINT_ONE emit TOK_PRINT_STR PRINT_EOL
 
-PRINT_MORE:
-        E_EOL IO_CHAN0
-        PRINT_ONE_STR PRINT_SEP_EOL PRINT_MORE
+# - PRINT expression adding an EOL at the end
+PRINT_EOL:
+        E_EOL emit { TOK_BYTE_PUT, ATEOL }
+        PRINT_NO_EOL
 
 # Parse multi-line IF
 THEN_OR_MULTILINE: 'THEN'
@@ -380,7 +376,7 @@ DIM_MORE: comma
 
 # INPUT
 INPUT_STR:
-        "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP_EOL # Prints a given string
+        "\"" emit TOK_CSTRING E_CONST_STRING emit TOK_PRINT_STR PRINT_SEP # Prints a given string
         ";"                                         # If starts with ';' don't print anyting
         emit { TOK_BYTE_PUT, 63 }                   # Prints a '?' by default
 
@@ -497,8 +493,8 @@ OPT_PROC_VAR:
 # Parse a line
 STATEMENT: statement
         "." E_REM
-        "?" PRINT_EXPR
-        "PRInt" PRINT_EXPR
+        "?" IO_CHAN_OPT PRINT_EOL IO_CHAN0
+        "PRInt" IO_CHAN_OPT PRINT_EOL IO_CHAN0
         "INput" INPUT_STR INPUT_VAR_LIST IO_CHAN0
         "GEt" GETK_EXPR
         "PUt" IO_CHAN_OPT EXPR emit TOK_PUT IO_CHAN0
