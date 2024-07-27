@@ -90,6 +90,17 @@ static bool parse_literal(parse &s, std::string lit)
     }
     s.debug("GOT '" + lit + "'");
     s.add_text(ucase(lit));
+    // Convert some simple alternatives
+    if(lit == "EXEc")
+        lit = "@";
+    else if(lit == "PRInt")
+        lit = "?";
+    else if(lit == "ADR(")
+    {
+        lit = "&";
+        s.expand.remove_parens++;
+    }
+
     for(auto c: lit)
     {
         if(c >= 'a' && c <= 'z')

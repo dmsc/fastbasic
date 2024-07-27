@@ -65,6 +65,7 @@ class parse
         std::string stext;
         int indent = 0;
         int next_indent = 0;
+        int remove_parens = 0;
         void clear()
         {
             text.clear();
@@ -84,6 +85,7 @@ class parse
         {
             auto ret = stext;
             stext.clear();
+            remove_parens = 0;
             while(ret.size() && ret.back() == ' ')
                 ret.pop_back();
             return ret;
@@ -457,6 +459,11 @@ class parse
     }
     void add_s_lit(char c)
     {
+        if(c == ')' && expand.remove_parens)
+        {
+            expand.remove_parens--;
+            return;
+        }
         if((c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_')
             if(expand.stext.size() && expand.stext.back() == ' ')
                 expand.stext.resize(expand.stext.size()-1);
