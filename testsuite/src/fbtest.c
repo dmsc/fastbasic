@@ -627,8 +627,10 @@ int fbtest(const char *fname)
     char *basname = source_fname(base_name, "bas");
     // atbname: BASIC file converted to ATASCII
     char *atbname = build_fname(tag_name, "atb");
-    // xexname: XEX file name
+    // xexname: XEX file name (compiled from the cross-compiler)
     char *xexname = build_fname(tag_name, "xex");
+    // comname: COM file name (compiled from the native compiler)
+    char *comname = build_fname(tag_name, "com");
     // romname: ROM file name
     char *romname = build_fname(tag_name, "rom");
     // asmname: Assembler file name
@@ -650,7 +652,7 @@ int fbtest(const char *fname)
             if (verbose)
                 fprintf(stderr, "%s: compile fp native\n", fname);
             // Floating Point: native
-            if (compile_native(atbname, xexname, error_data))
+            if (compile_native(atbname, comname, error_data))
                 break;
 
             if (test & test_run)
@@ -658,7 +660,7 @@ int fbtest(const char *fname)
                 if (verbose)
                     fprintf(stderr, "%s: run fp native\n", fname);
                 // Now, runs and checks XEX
-                if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
+                if (run_test_xex(comname, input_buf, expected_out, max_cycles, 0))
                     break;
             }
         }

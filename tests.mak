@@ -42,7 +42,7 @@ TESTS_DEPS=\
 	build/bin/ld65$(HOST_EXT)\
         $(COMPILER_COMMON)\
 
-TESTS_XEX=$(TESTS:testsuite/%.chk=build/%.xex)
+TESTS_XEX=$(TESTS:testsuite/%.chk=build/%.xex) $(TESTS:testsuite/%.chk=build/%.com)
 TESTS_ROM=$(TESTS:testsuite/%.chk=build/%.rom)
 TESTS_ASM=$(TESTS:testsuite/%.chk=build/%.asm)
 TESTS_OBJ=$(TESTS:testsuite/%.chk=build/%.o)
