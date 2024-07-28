@@ -819,14 +819,12 @@ class peephole
                 if(mtok(0, "TOK_BYTE") && mtok(2, "TOK_SADDR") &&
                    mtok(3, "TOK_VAR_LOAD") && mtok(5, "TOK_POKE"))
                 {
-                    copy(4, 1, 1);
-                    copy(1, 5, 1);
-                    del(6);
-                    set_tok(0, "TOK_VAR_LOAD");
-                    set_tok(3, "TOK_BYTE_POKE");
+                    copy(0, 3, 2);
+                    set_tok(2, "TOK_BYTE_POKE");
+                    del(7);
                     del(6);
                     del(5);
-                    del(2);
+                    del(4);
                     i--;
                     continue;
                 }

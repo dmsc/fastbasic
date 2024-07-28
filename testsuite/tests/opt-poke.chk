@@ -1,0 +1,14 @@
+Name: Test statement "POKE"/"DPOKE"
+Test: run-int
+Output:
+Start
+10
+52
+10
+52
+10
+500
+21554
+10
+500
+21554
