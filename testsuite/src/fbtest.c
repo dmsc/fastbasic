@@ -104,7 +104,7 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     if (!s)
         return -1;
     // sim65_set_debug(s, sim65_debug_trace);
-    atari_init(s, 0, str_get_char, str_put_char, 1);
+    atari_init(s, str_get_char, str_put_char, 1);
     // Use 0 as left-margin value, to normalize results
     unsigned char val = 0;
     sim65_add_data_ram(s, 0x52, &val, 1); // LMARGN
@@ -115,7 +115,7 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     if( is_rom )
         e = atari_rom_load(s, 0xA000, progname);
     else
-        e = atari_xex_load(s, progname);
+        e = atari_xex_load(s, progname, 1);
     if (e == sim65_err_user)
     {
         fprintf(stderr, "%s: error reading XEX/ROM file\n", progname);
