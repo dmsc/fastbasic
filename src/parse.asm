@@ -148,7 +148,6 @@ parse_eof:
         ;lda     #TOK_END       ; Already A=0 from above
         .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
         jsr     emit_const
-        jsr     alloc_prog
         clc
         bcc     parse_end       ; exit
 
