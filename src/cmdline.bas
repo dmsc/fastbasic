@@ -33,7 +33,7 @@ FileName$ = ""
 dim MemStart(-1) byte
 ' MemEnd: the end of the current file, initialized to MemStart.
 MemEnd = Adr(MemStart)
-NewPtr = 0
+DIM NewPtr
 
 '-------------------------------------
 ' Shows file error
@@ -119,7 +119,6 @@ ENDPROC
 ' Compile file
 PROC CompileFile
   ' Compile main file
-  poke MemEnd, $9B
   ? "Compiling..."
   dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd
   dpoke @@BUF_PTR, Adr(MemStart)
