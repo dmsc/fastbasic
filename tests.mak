@@ -24,6 +24,7 @@ RUNTEST=build/bin/fbtest$(HOST_EXT)
 
 MINI65_SRC=\
   atari.c\
+  ataridos.c\
   atcio.c\
   atsio.c\
   dosfname.c\

@@ -89,7 +89,7 @@ static int str_get_char(void)
 // Runs atari XEX file capturing the output
 static int run_atari_prog(const char *progname, char *output, size_t *output_len,
                           const char *input, size_t input_len, uint64_t max_cycles,
-                          int is_rom)
+                          int is_rom, const char *cmdline)
 {
     // Init input/output
     str_in = input;
@@ -105,6 +105,12 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
         return -1;
     // sim65_set_debug(s, sim65_debug_trace);
     atari_init(s, str_get_char, str_put_char, 1);
+    // Add command line
+    atari_dos_add_cmdline(s, progname);
+    if (cmdline)
+        atari_dos_add_cmdline(s, cmdline);
+    // Set DOS path
+    atari_dos_set_root(s, output_dir);
     // Use 0 as left-margin value, to normalize results
     unsigned char val = 0;
     sim65_add_data_ram(s, 0x52, &val, 1); // LMARGN
@@ -143,12 +149,6 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     return x;
 }
 
-static int run_atari_xex(const char *xexname, char *output, size_t *output_len,
-                         const char *input, size_t input_len, uint64_t max_cycles)
-{
-    return run_atari_prog(xexname, output, output_len, input, input_len, max_cycles, 0);
-}
-
 // Run's an XEX file testing if the output matches the expected output
 int run_test_xex(const char *fname, const char *input, const char *expected_out,
                  uint64_t max_cycles, int rom)
@@ -156,7 +156,7 @@ int run_test_xex(const char *fname, const char *input, const char *expected_out,
     size_t len = strlen(expected_out) + 128;
     char *out = calloc(len + 1, 1);
 
-    int e = run_atari_prog(fname, out, &len, input, strlen(input), max_cycles, rom);
+    int e = run_atari_prog(fname, out, &len, input, strlen(input), max_cycles, rom, 0);
     if (!e)
     {
         // Check
@@ -225,8 +225,13 @@ static int compile_native(const char *atbname, const char *xexname, const char *
     char *err = 0;
     size_t len = 2047;
     unlink(xexname);
-    sprintf(cmd, "%s\x9b%s\x9b\x9b", atbname, xexname);
-    int e = run_atari_xex(fb_atari_compiler, out, &len, cmd, strlen(cmd), MAX_FPC_CYCLES);
+    // Remove output dir from paths
+    const size_t l = strlen(output_dir);
+    if (strncmp(atbname, output_dir, l) || strncmp(xexname, output_dir, l))
+        sprintf(cmd, "%s %s", atbname, xexname);
+    else
+        sprintf(cmd, "%s %s", atbname + l, xexname + l);
+    int e = run_atari_prog(fb_atari_compiler, out, &len, 0, 0, MAX_FPC_CYCLES, 0, cmd);
 
     if (e)
         fprintf(stderr, "%s: can't execute compiler.\n", fb_atari_compiler);
