@@ -424,8 +424,9 @@ enum tests {
     test_run = 1,
     test_fp = 2,
     test_int = 4,
-    test_native = 8,
-    test_compile_error = 16
+    test_cross = 8,
+    test_native = 16,
+    test_compile_error = 32
 };
 
 // Runs one test from the test-file
@@ -471,32 +472,28 @@ int fbtest(const char *fname)
             name = strdup(buf);
         else if (!strcasecmp(key, "test"))
         {
-            if (!strcasecmp(buf, "run"))
-                test = test_run | test_fp | test_int | test_native;
-            else if (!strcasecmp(buf, "run-cross"))
-                test = test_run | test_fp | test_int;
-            else if (!strcasecmp(buf, "run-fp"))
-                test = test_run | test_fp | test_native;
-            else if (!strcasecmp(buf, "run-int"))
-                test = test_run | test_int | test_native;
-            else if (!strcasecmp(buf, "compile"))
-                test = test_fp | test_int | test_native;
-            else if (!strcasecmp(buf, "compile-fp"))
-                test = test_fp | test_native;
-            else if (!strcasecmp(buf, "compile-int"))
-                test = test_int | test_native;
-            else if (!strcasecmp(buf, "compile-error"))
-                test = test_compile_error | test_fp | test_int | test_native;
-            else if (!strcasecmp(buf, "compile-error-native"))
-                test = test_compile_error | test_native;
-            else if (!strcasecmp(buf, "compile-error-fp"))
-                test = test_compile_error | test_fp | test_native;
-            else if (!strcasecmp(buf, "compile-error-int"))
-                test = test_compile_error | test_int | test_native;
-            else
+            // Split into words by ',' '-' or spaces
+            for( char *p = buf, *tok; (tok = strtok(p, " \t-,")) ; p = NULL)
             {
-                fprintf(stderr, "%s:%d: error, unknown test '%s'\n", fname, line, buf);
-                return -1;
+                if (!strcasecmp(tok, "run"))
+                    test = test_cross | test_native | test_fp | test_int | test_run;
+                else if (!strcasecmp(tok, "fp"))
+                    test = (test | test_fp) & ~test_int;
+                else if (!strcasecmp(tok, "int"))
+                    test = (test | test_int) & ~test_fp;
+                else if (!strcasecmp(tok, "cross"))
+                    test = test & ~test_native;
+                else if (!strcasecmp(tok, "native"))
+                    test = test & ~test_cross;
+                else if (!strcasecmp(tok, "compile"))
+                    test = test_cross | test_native | test_fp | test_int;
+                else if (!strcasecmp(tok, "error"))
+                    test |= test_compile_error;
+                else
+                {
+                    fprintf(stderr, "%s:%d: error, unknown test '%s'\n", fname, line, buf);
+                    return -1;
+                }
             }
         }
         else if (!strcasecmp(key, "error"))
@@ -691,7 +688,7 @@ int fbtest(const char *fname)
                     break;
             }
         }
-        if (0 != (test & test_fp))
+        if (0 != (test & test_fp) && 0 != (test & test_cross))
         {
             // XEX version:
             if (verbose)
@@ -729,7 +726,7 @@ int fbtest(const char *fname)
                     break;
             }
         }
-        if (0 != (test & test_int))
+        if (0 != (test & test_int) && 0 != (test & test_cross))
         {
             // XEX version:
             if (verbose)
