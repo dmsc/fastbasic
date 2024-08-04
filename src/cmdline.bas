@@ -49,10 +49,28 @@ PROC FileError
 ENDPROC
 
 '-------------------------------------
-' Adds "D:" and extension to file name
+' Gets a file name from command line or input
 '
 PROC InputFileName
-  input " File Name? "; FileName$
+  ' Clear file name
+  poke &FileName$, 0
+  ? " File Name ";
+  ' Detect Sparta compatible DOS
+  if peek($700) = $53
+    ' Try to get file name from command line
+    i = usr(dpeek(10)+3)
+    for i=0 to 27
+      if peek(dpeek(10)+33+i) = $9B then Exit
+    next
+    if i >= 4
+      move dpeek(10)+33, &FileName$ + 1, 28
+      poke &FileName$,i
+      ? FileName$
+    endif
+  endif
+  ' No file name, input from console
+  if not Len(FileName$) then input FileName$
+  ' Adds "D:" and extension to file name if not there
   if Len(FileName$) < 3 OR (Asc(FileName$[2]) <> $3A AND Asc(FileName$[3]) <> $3A)
     ' Don't use string operations to avoid allocations!!!
     -move Adr(FileName$) + 1, Adr(FileName$) + 3, Len(FileName$)

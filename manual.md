@@ -186,11 +186,11 @@ distribute them alone without the IDE.
 
 You can also compile a program directly
 from DOS by using the included command
-line compiler `FBC.COM`. The compiler
-prompts for the input file name, loads
-the BASIC source, compiles it, and
-prompts for a executable output filename
-to write the compiled program to.
+line compiler `FBC.COM`. You can provide
+the BASIC source and the compiled output
+file names in the command line; if not
+given the compiler will prompt you to
+input a file name.
 
 
 Advanced Editor Usage
