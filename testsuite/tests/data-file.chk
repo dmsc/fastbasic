@@ -1,5 +1,5 @@
 Name: Test DATA FILE inclusion
-Test: run-int
+Test: run-cross
 Output:
 Start
 39        32

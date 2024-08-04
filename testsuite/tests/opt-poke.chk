@@ -1,5 +1,5 @@
 Name: Test statement "POKE"/"DPOKE"
-Test: run-int
+Test: run-cross
 Output:
 Start
 10

@@ -1,5 +1,5 @@
 Name: Test DATA ROM
-Test: run-int
+Test: run-cross
 Output:
 Start
 1         2

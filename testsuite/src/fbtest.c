@@ -43,7 +43,8 @@ static char *strndup(const char *s, size_t n)
 
 // Flags
 static int verbose;
-static const char *fb_atari_compiler = "build/bin/fbc.xex";
+static const char *fb_atari_comp_int = "build/bin/fbci.xex";
+static const char *fb_atari_comp_fp  = "build/bin/fbc.xex";
 static const char *fb_compiler       = "build" PATH_SEP "bin" PATH_SEP "fastbasic";
 static const char *ca65_path         = "build" PATH_SEP "bin" PATH_SEP "ca65";
 static const char *ld65_path         = "build" PATH_SEP "bin" PATH_SEP "ld65";
@@ -218,8 +219,10 @@ static int atascii_convert(const char *infile, const char *outfile)
 }
 
 // Compile file using native (emulated) compiler
-static int compile_native(const char *atbname, const char *xexname, const char *error_data)
+static int compile_native(const char *atbname, const char *xexname, const char *error_data,
+                          int do_fp)
 {
+    const char *compiler = do_fp ? fb_atari_comp_fp : fb_atari_comp_int;
     char *cmd = calloc(strlen(atbname) + strlen(xexname) + 16, 1);
     char *out = calloc(2048, 1);
     char *err = 0;
@@ -231,10 +234,10 @@ static int compile_native(const char *atbname, const char *xexname, const char *
         sprintf(cmd, "%s %s", atbname, xexname);
     else
         sprintf(cmd, "%s %s", atbname + l, xexname + l);
-    int e = run_atari_prog(fb_atari_compiler, out, &len, 0, 0, MAX_FPC_CYCLES, 0, cmd);
+    int e = run_atari_prog(compiler, out, &len, 0, 0, MAX_FPC_CYCLES, 0, cmd);
 
     if (e)
-        fprintf(stderr, "%s: can't execute compiler.\n", fb_atari_compiler);
+        fprintf(stderr, "%s: can't execute compiler.\n", compiler);
     else if (0 != (err = strstr(out, "FILE ERROR")))
     {
         for (char *eol = err; *eol && !(*eol == '\n' && (*eol = 0)); eol ++);
@@ -470,16 +473,18 @@ int fbtest(const char *fname)
         {
             if (!strcasecmp(buf, "run"))
                 test = test_run | test_fp | test_int | test_native;
+            else if (!strcasecmp(buf, "run-cross"))
+                test = test_run | test_fp | test_int;
             else if (!strcasecmp(buf, "run-fp"))
                 test = test_run | test_fp | test_native;
             else if (!strcasecmp(buf, "run-int"))
-                test = test_run | test_int;
+                test = test_run | test_int | test_native;
             else if (!strcasecmp(buf, "compile"))
                 test = test_fp | test_int | test_native;
             else if (!strcasecmp(buf, "compile-fp"))
                 test = test_fp | test_native;
             else if (!strcasecmp(buf, "compile-int"))
-                test = test_int;
+                test = test_int | test_native;
             else if (!strcasecmp(buf, "compile-error"))
                 test = test_compile_error | test_fp | test_int | test_native;
             else if (!strcasecmp(buf, "compile-error-native"))
@@ -487,7 +492,7 @@ int fbtest(const char *fname)
             else if (!strcasecmp(buf, "compile-error-fp"))
                 test = test_compile_error | test_fp | test_native;
             else if (!strcasecmp(buf, "compile-error-int"))
-                test = test_compile_error | test_int;
+                test = test_compile_error | test_int | test_native;
             else
             {
                 fprintf(stderr, "%s:%d: error, unknown test '%s'\n", fname, line, buf);
@@ -652,18 +657,35 @@ int fbtest(const char *fname)
 
     do
     {
-        if (0 != (test & test_native))
+        if (0 != (test & test_native) && 0 != (test & test_fp))
         {
             if (verbose)
                 fprintf(stderr, "%s: compile fp native\n", fname);
             // Floating Point: native
-            if (compile_native(atbname, comname, error_data))
+            if (compile_native(atbname, comname, error_data, 1))
                 break;
 
             if (test & test_run)
             {
                 if (verbose)
                     fprintf(stderr, "%s: run fp native\n", fname);
+                // Now, runs and checks XEX
+                if (run_test_xex(comname, input_buf, expected_out, max_cycles, 0))
+                    break;
+            }
+        }
+        if (0 != (test & test_native) && 0 != (test & test_int))
+        {
+            if (verbose)
+                fprintf(stderr, "%s: compile int native\n", fname);
+            // Integer: native
+            if (compile_native(atbname, comname, error_data, 0))
+                break;
+
+            if (test & test_run)
+            {
+                if (verbose)
+                    fprintf(stderr, "%s: run int native\n", fname);
                 // Now, runs and checks XEX
                 if (run_test_xex(comname, input_buf, expected_out, max_cycles, 0))
                     break;
@@ -771,7 +793,7 @@ int fbtest(const char *fname)
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "hvc:i:f:l:a:k:")) != -1)
+    while ((opt = getopt(argc, argv, "hvc:i:f:l:a:k:C:")) != -1)
     {
         switch (opt)
         {
@@ -780,12 +802,13 @@ int main(int argc, char **argv)
                         "Options:\n"
                         " -h: Show this help\n"
                         " -v: Verbose execution\n"
-                        " -c <compiler.xex>: Sets path of Atari compiler [%s]\n"
+                        " -c <compiler.xex>: Sets path of fp Atari compiler [%s]\n"
+                        " -C <compiler.xex>: Sets path of int Atari compiler [%s]\n"
                         " -f <fp-compiler>: Sets path of cross-compiler [%s]\n"
                         " -l <lib-path>: Sets path for the libraries and includes [%s]\n"
                         " -a <ca65-path>: Sets path for the CA65 assembler [%s]\n"
                         " -k <ld65-path>: Sets path for the LD65 linker [%s]\n",
-                        argv[0], fb_atari_compiler, fb_compiler,
+                        argv[0], fb_atari_comp_fp, fb_atari_comp_int, fb_compiler,
                         fb_lib_path, ca65_path, ld65_path);
                 return 0;
             case 'v': // verbose
@@ -798,7 +821,10 @@ int main(int argc, char **argv)
                 ld65_path = optarg;
                 break;
             case 'c': // atari compiler path
-                fb_atari_compiler = optarg;
+                fb_atari_comp_fp = optarg;
+                break;
+            case 'C': // atari compiler path
+                fb_atari_comp_int = optarg;
                 break;
             case 'f': // cross-compiler path
                 fb_compiler = optarg;
