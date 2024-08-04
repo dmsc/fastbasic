@@ -46,7 +46,7 @@ Currently, FastBasic supports:
 - Available as a full version `FB.COM`,
   as a smaller integer-only `FBI.COM`,
   and as a command-line compiler
-  `FBC.COM`.
+  `FBC.COM` and `FBCI.COM`.
 
 
 First Steps
@@ -191,6 +191,10 @@ the BASIC source and the compiled output
 file names in the command line; if not
 given the compiler will prompt you to
 input a file name.
+
+If you don't use floating point, using
+the integer versions (`FBI` and `FBCI`)
+will compile to a smaller file.
 
 
 Advanced Editor Usage

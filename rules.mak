@@ -40,6 +40,7 @@ distclean: clean
 	    build/gen/int/editor.asm build/gen/fp/editor.asm \
 	    $(CMD_BAS_SRC) \
 	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/fp/%.asm) \
+	    $(CMD_BAS_SRC:build/gen/%.bas=build/gen/int/%.asm) \
 	    $(COMPILER_HOST) $(COMPILER_TARGET) $(COMPILER_COMMON) \
 	    $(COMPILER_MANIFESTS)
 	$(Q)printf "%s\n" $(BUILD_FOLDERS) | sort -r | while read folder; do \
@@ -190,6 +191,13 @@ build/bin/fbc.xex: $(CMD_OBJS_FP) $(A800_FP_OBJS) $(CMD_BAS_OBJS_FP) | build/bin
 	@$(SED) -n -e 's/^[^ ]* 00\([0-9A-F]*\) .*HEAP_RUN.*/\1/p' $(@:.xex=.lbl)
 	@printf "\e[0m"
 
+build/bin/fbci.xex: $(CMD_OBJS_INT) $(A800_OBJS) $(CMD_BAS_OBJS_INT) | build/bin $(LD65_HOST)
+	$(ECHO) "Linking command line integer compiler"
+	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
+	@printf "\e[1;33mCOMMAND LINE INTEGER COMPILER HEAP START: "
+	@$(SED) -n -e 's/^[^ ]* 00\([0-9A-F]*\) .*HEAP_RUN.*/\1/p' $(@:.xex=.lbl)
+	@printf "\e[0m"
+
 build/bin/fbi.xex: $(IDE_OBJS_INT) $(A800_OBJS) $(IDE_BAS_OBJS_INT) | build/bin $(LD65_HOST)
 	$(ECHO) "Linking integer IDE"
 	$(Q)$(LD65_HOST) $(LD65_FLAGS) -Ln $(@:.xex=.lbl) -vm -m $(@:.xex=.map) -o $@ $^
@@ -210,6 +218,10 @@ build/bin/%.xex: build/obj/int/%.o $(LIB_INT) | build/bin $(LD65_HOST)
 build/gen/fp/%.asm: build/gen/%.bas $(FASTBASIC_HOST) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"
 	$(Q)$(FASTBASIC_HOST) $(FB_FP_FLAGS) -o $@ -c $<
+
+build/gen/int/%.asm: build/gen/%.bas $(FASTBASIC_HOST) | build/gen/int
+	$(ECHO) "Compiling INT BASIC $<"
+	$(Q)$(FASTBASIC_HOST) $(FB_INT_FLAGS) -o $@ -c $<
 
 build/gen/fp/%.asm: src/%.bas $(FASTBASIC_HOST) | build/gen/fp
 	$(ECHO) "Compiling FP BASIC $<"

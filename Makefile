@@ -98,7 +98,7 @@ include version.mk
 
 ATR=build/fastbasic.atr
 ZIPFILE=build/fastbasic.zip
-PROGS=build/bin/fb.xex build/bin/fbi.xex build/bin/fbc.xex
+PROGS=build/bin/fb.xex build/bin/fbi.xex build/bin/fbc.xex build/bin/fbci.xex
 
 # To allow cross-compilation (ie, from Linux to Windows), we build two versions
 # of the compiler, one for the host (build machine) and one for the target.
@@ -146,6 +146,7 @@ SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)
 FILES=\
     build/disk/fb.com \
     build/disk/fbc.com \
+    build/disk/fbci.com \
     build/disk/fbi.com \
     build/disk/readme \
     build/disk/manual.txt \
@@ -334,9 +335,11 @@ CMD_BAS_SRC=\
 RT_OBJS_FP=$(RT_AS_SRC:src/%.asm=build/obj/fp/%.o)
 IDE_OBJS_FP=$(IDE_AS_SRC:src/%.asm=build/obj/fp/%.o)
 CMD_OBJS_FP=$(CMD_AS_SRC:src/%.asm=build/obj/fp/%.o)
+CMD_OBJS_INT=$(CMD_AS_SRC:src/%.asm=build/obj/int/%.o)
 A800_FP_OBJS=$(A800_FP_AS_SRC:src/%.asm=build/obj/fp/%.o)
 IDE_BAS_OBJS_FP=$(IDE_BAS_SRC:src/%.bas=build/obj/fp/%.o)
 CMD_BAS_OBJS_FP=$(CMD_BAS_SRC:build/gen/%.bas=build/obj/fp/%.o)
+CMD_BAS_OBJS_INT=$(CMD_BAS_SRC:build/gen/%.bas=build/obj/int/%.o)
 RT_OBJS_ROM_FP=$(RT_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
 A800_FP_ROM_OBJS=$(A800_FP_AS_SRC:src/%.asm=build/obj/rom-fp/%.o)
 
@@ -649,6 +652,7 @@ OBJS=$(RT_OBJS_FP) \
      $(A5200_OBJS) \
      $(RT_OBJS_ROM_FP) $(A800_FP_ROM_OBJS) \
      $(CMD_OBJS_FP) $(CMD_BAS_OBJS_FP) \
+     $(CMD_OBJS_INT) $(CMD_BAS_OBJS_INT) \
      $(RT_OBJS_INT) \
      $(IDE_OBJS_INT) $(IDE_BAS_OBJS_INT) \
      $(A800_OBJS) \
