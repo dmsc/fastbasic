@@ -587,9 +587,11 @@ MKATR_SRC=\
 LSATR_SRC=\
 	mkatr/src/atr.c\
 	mkatr/src/compat.c\
+	mkatr/src/crc32.c\
 	mkatr/src/lsatr.c\
 	mkatr/src/lsdos.c\
 	mkatr/src/lsextra.c\
+	mkatr/src/lshowfen.c\
 	mkatr/src/lssfs.c\
 	mkatr/src/msg.c\
 
