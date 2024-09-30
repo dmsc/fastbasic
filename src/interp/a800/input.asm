@@ -55,7 +55,7 @@ line_buf        = LBUFF
         lda     ICBLL, x
 
         sty     IOERROR
-        sta     line_buf - 1    ; Assume that this location is available
+        tax
         beq     no_eol          ; No characters read
         ; Error 136: end of file, keep last character
         cpy     #$88
@@ -65,8 +65,9 @@ line_buf        = LBUFF
         ;       bmi     no_eol
 
         ; Remove EOL at end of buffer
-        dec     line_buf - 1
+        dex
 no_eol:
+        stx     line_buf - 1    ; Assume that this location is available
         lda     #<(line_buf-1)
         ldx     #>(line_buf-1)
         jmp     next_instruction
