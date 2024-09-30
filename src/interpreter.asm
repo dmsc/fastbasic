@@ -224,4 +224,14 @@ start:
 ;        jmp     next_instruction
 ;.endproc
 
+
+        ; Manually define TOK_END to ensure it is token 0
+        .segment "JUMPTAB"
+        .exportzp TOK_END
+        .import   EXE_END
+        .import   __JUMPTAB_RUN__
+
+TOK_END = <(* - __JUMPTAB_RUN__)
+         .word   EXE_END
+
 ; vi:syntax=asm_ca65

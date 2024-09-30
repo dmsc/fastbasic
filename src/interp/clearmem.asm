@@ -135,28 +135,17 @@ nxt:    dex
         rts
 .endproc
 
-memory_error_msg:
-        .byte $9b, "rorrE yromeM", $9b
-memory_error_len=    * - memory_error_msg
+        .import interpreter_jump_ax
+        .importzp TOK_CSTRING, TOK_PRINT_STR, TOK_END
+
+; Code for printing memory error message
+memory_error_code:
+        .byte   TOK_CSTRING, 14, $9b, "Memory Error", $9b
+        .byte   TOK_PRINT_STR, TOK_END
 
 err_nomem:
-        ; Show message and end program
-        ldy     #memory_error_len-1
-loop:   lda     memory_error_msg, y
-        jsr     putc
-        dey
-        bpl     loop
-        ; Fall through
-
-.proc   EXE_END ; EXIT from interpreter
-        ldx     saved_cpu_stack
-        txs
-        rts
-.endproc
-
-        .include "deftok.inc"
-        deftoken "END"
-
-        .assert	TOK_END = 0, error, "TOK_END must be 0"
+        lda     #<memory_error_code
+        ldx     #>memory_error_code
+        jmp     interpreter_jump_ax
 
 ; vi:syntax=asm_ca65
