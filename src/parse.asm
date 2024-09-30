@@ -147,9 +147,8 @@ parse_eof:
 
         ;lda     #TOK_END       ; Already A=0 from above
         .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
-        jsr     emit_const
         clc
-        bcc     parse_end       ; exit
+        jmp     emit_const      ; Exit after emit
 
 .proc parser_fetch
         inc     pptr
@@ -184,7 +183,7 @@ ploop:  lda     error_msg_list, y
         plp     ; Restore C
         bcc     ploop
         ; C is set at end, signaling error
-::parse_end:
+        ; Exit restoring stack, allowing calls from depth into the parser
         jmp     EXE_END
 .endproc
 
