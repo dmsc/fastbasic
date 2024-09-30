@@ -673,9 +673,6 @@ PROC ReturnKey
   ' Split current line at this point
   newPtr = ScrAdr(scrLine) + column + 1
 
-  ' Save current screen line
-  y = scrLine
-
   ' Go to next line
   inc scrLine
 
@@ -688,19 +685,16 @@ PROC ReturnKey
   ' Go to column 0
   column = 0
 
-  ' Redraw old line up to the new EOL
-  hDraw = 0
-  exec DrawLineOrig
-
   ' Move screen down!
   ' poke @CRSINH, 1  ' Not needed, as cursor is already in this line
   pos. 0, scrLine + 1
   put 157
 
-  ' And redraw new line to be edited
-  lDraw = scrLine
+  ' And redraw old and new line to be edited
+  lDraw = scrLine - 1
   hDraw = 1
   exec ChgLine
+  exec ForceDrawCurrentLine
 ENDPROC
 
 '-------------------------------------
