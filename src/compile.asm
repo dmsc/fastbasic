@@ -86,9 +86,6 @@ COMPILE_BUFFER:
         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
         ; C = clear and X = $FE on enter
 sto_loop:
-        ; Save low ending address into Y register, needed after the loop
-        tay
-
         ; Also save BRKKY vector and instal our own vector
         lda     BRKKY - $FE, x
         sta     brkky_save - $FE, x
@@ -105,11 +102,11 @@ sto_loop:
         inx
         bne     sto_loop
 
-        ; AY = end of program code + 1, start of heap
+        ; AY = end of program code, start of heap
         ; Align up to 256 bytes
-        cpy     #1
-        adc     #0
-        sta     compiled_var_page
+        tay
+        iny
+        sty     compiled_var_page
 
         lda     var_count
         sta     compiled_num_vars

@@ -66,8 +66,6 @@ COMPILE_BUFFER:
         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
         ; C = clear and X = $FE on enter
 sto_loop:
-        ; Save low ending address into Y register, needed after the loop
-        tay
         ; Copy program pointer to the "NEWPTR" editor variable
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
         sta     fb_var_NEWPTR - $FE,x
@@ -78,11 +76,11 @@ sto_loop:
         inx
         bne     sto_loop
 
-        ; AY = end of program code + 1, start of heap
+        ; AY = end of program code, start of heap
         ; Align up to 256 bytes
-        cpy     #1
-        adc     #0
-        sta     compiled_var_page
+        tay
+        iny
+        sty     compiled_var_page
 
         lda     var_count
         sta     compiled_num_vars
