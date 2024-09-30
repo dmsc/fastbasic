@@ -342,7 +342,7 @@ ENDPROC
 '
 PROC FileError
   pos. 0,0
-  ? err(); " ERROR, press a keyý";
+  ? err(); " I/O ERROR!"$FD;
   close #1
   get key
   exec ShowInfo
