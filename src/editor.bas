@@ -500,7 +500,7 @@ PROC CountLines
 '    if peek(nptr-1) = $9b then exit
 '  wend
   ptr = nptr
-  nptr = USR(@Count_Lines, ptr, MemEnd - ptr)
+  nptr = USR(@Count_Lines, ptr, MemEnd)
 ENDPROC
 
 '-------------------------------------

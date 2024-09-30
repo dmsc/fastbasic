@@ -24,26 +24,23 @@
 
 
 .proc   COUNT_LINES
-sizeH   = tmp1
+bend    = tmp1
 ptr     = tmp2
         pla
-        sta     sizeH
-        pla
         tax
+        pla
+        sta     bend
         pla
         sta     ptr+1
         pla
         tay
-        inx
-        inc     sizeH
-
         lda     #0
         sta     ptr
 
 loop:   lda     (ptr), y
-        dex
+        cpy     bend
         bne     :+
-        dec     sizeH
+        cpx     ptr+1
         beq     end
 :       iny
         bne     :+
