@@ -105,7 +105,10 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     if (!s)
         return -1;
     // sim65_set_debug(s, sim65_debug_trace);
-    atari_init(s, str_get_char, str_put_char, 1);
+    emu_options opts = {
+        .get_char = str_get_char, .put_char = str_put_char, .flags = atari_opt_cycletime
+    };
+    atari_init(s, &opts);
     // Add command line
     atari_dos_add_cmdline(s, progname);
     if (cmdline)
