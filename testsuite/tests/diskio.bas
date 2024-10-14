@@ -33,3 +33,29 @@ bget #2, adr(A$) + 1, 32
 close #2
 ? ERR()
 ? A$
+
+' Write a big string
+open #1, 8, 0, "D:XXX"
+? #1, "Big 1: ";
+FOR I=0 TO 19
+  ? #1, "<STRING ";I; ">";
+NEXT
+? #1,
+? #1, "Big 2: ";
+FOR I=0 TO 25
+  ? #1, "<STRING ";I+20; ">";
+NEXT
+? #1,
+close #1
+
+? "BIG INPUT"
+open #2, 4, 0, "D:XXX"
+input #2, A$
+? ERR()
+? A$, LEN(A$)
+input #2, A$
+? ERR()
+? A$, LEN(A$)
+close #2
+? ERR()
+

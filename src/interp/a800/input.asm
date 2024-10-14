@@ -47,22 +47,22 @@ line_buf        = LBUFF
         lda     #<line_buf
         sta     ICBAL, x
 .assert (<line_buf) = $80, error, "invalid optimization"
-        ;lda     #$80
-        sta     ICBLL, x
-        lda     #0
+        asl     ; Use ASL instead of LDA #0, one byte less
         sta     ICBLH, x
+        lda     #$FF
+        sta     ICBLL, x
         jsr     CIOV
         lda     ICBLL, x
 
         sty     IOERROR
         tax
         beq     no_eol          ; No characters read
-        ; Error 136: end of file, keep last character
-        cpy     #$88
-        beq     no_eol
-        ; TODO: do we need to handle other errors?
-        ;       tya
-        ;       bmi     no_eol
+
+        ; Error 136: end of file
+        ; Error 137: out of buffer space
+        ; Also, in case of any other error, keep last character
+        tya
+        bmi     no_eol
 
         ; Remove EOL at end of buffer
         dex
