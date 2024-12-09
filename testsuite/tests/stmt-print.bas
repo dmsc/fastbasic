@@ -83,6 +83,12 @@ exec print1
 ? rtab(4) "x"; rtab(4) "yy";
 ? "e"
 
+' Test without separators (extension)
+?1"-"2
+A=123
+?1A
+?"x"A"y"
+
 proc print1
  ? "in proc"
 endproc

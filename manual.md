@@ -1166,6 +1166,12 @@ Console Print and Input Statements
   with the value of each character in
   the original string before printing.
 
+  *Advanced:* When writing abbreviated
+  code, you can omit the semicolon in
+  almost all places, and just join the
+  values together. Avoid doing this in
+  common code for better readability.
+
 
 **Writes A Character To Screen**  
 **PUT _num_ / PU.**
