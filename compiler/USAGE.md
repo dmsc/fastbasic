@@ -89,7 +89,12 @@ The compilation is a three step process:
 
 - The compiler calls the `CA65` assembler to produce an object file.
 
-- The compiler calls the `LD65` linker to join the object file with the runtime library, generating the `XEX`, `ROM` or `BIN` depending on the target.
+- The compiler calls the `LD65` linker to join the object file with the runtime
+  library, generating the `XEX`, `ROM` or `BIN` depending on the target.
+
+- To search the target, syntax, libraries and other tools, the compiler
+  searches in the installation path and in the path in the `FASTBASIC_HOME`
+  environment variable.
 
 
 Advanced Usage
@@ -187,11 +192,18 @@ an `:` or an `=` to separate the option from the argument.
   target will produce a 16kB cartridge binary instead of the 32kB default.
 
 - **-target-path**:*path*  
-  Sets the path where the target definition files are searched. The default is
-  to search in the same folder as the compiler executable.
+  Sets the list of paths where the target definition files are searched, as a
+  list of folder names separated by `:`.
+
+  The default is to search in the same folder as the compiler executable, and
+  in the path in the `FASTBASIC_HOME` environment variable.
 
 - **-syntax-path**:*path*  
-  Sets the path where the syntax grammar files are searched.
+  Sets the list of paths where the syntax grammar files are searched, as a list
+  of folder names separated by `:`.
+
+  The default path is the same as the target path with `syntax` folder at the
+  end.
 
 - **-keep**  
   Do not remove the intermediate files on compilation.

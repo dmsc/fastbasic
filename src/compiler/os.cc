@@ -19,6 +19,7 @@
 // os.cc: Host OS functions
 #include "os.h"
 #include <memory>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,7 +34,7 @@ static const char *path_sep = "\\/";
 static const char *path_sep = "/";
 #endif
 
-static std::string compiler_search_path;
+static std::vector<std::string> compiler_search_path;
 
 bool os::path_absolute(const std::string &path)
 {
@@ -110,13 +111,49 @@ void os::init(const std::string &prog)
 #else
     // No init needed.
 #endif
-    // Store out program name
-    compiler_search_path = dir_name(prog);
+    // Initialize the compiler search path:
+    // The FASTBASIC_HOME environment variable:
+    const char *env = getenv("FASTBASIC_HOME");
+    if(env)
+        compiler_search_path.emplace_back(env);
+    // The directory of the invoked program
+    compiler_search_path.emplace_back(dir_name(prog));
+    // And on Linux systems, the instalation path
+#ifndef _WIN32
+    compiler_search_path.emplace_back("/usr/local/share/fastbasic");
+    compiler_search_path.emplace_back("/usr/share/fastbasic");
+#endif
+}
+
+std::string os::search_path(const std::vector<std::string> &paths,
+                            const std::string &filename)
+{
+    // Check each possible path:
+    for(auto &path : paths)
+    {
+        struct stat st;
+        auto f = full_path(path, filename);
+        auto e = stat(f.c_str(), &st);
+        if(0 == e)
+            return f;
+    }
+    // Not found, return only file name
+    return filename;
 }
 
 std::string os::compiler_path(const std::string &filename)
 {
-    return full_path(compiler_search_path, filename);
+    return search_path(compiler_search_path, filename);
+}
+
+std::vector<std::string> os::get_search_path(const std::string &filename)
+{
+    if(filename.empty())
+        return compiler_search_path;
+    std::vector<std::string> ret;
+    for(auto &path : compiler_search_path)
+        ret.emplace_back(full_path(path, filename));
+    return ret;
 }
 
 int os::prog_exec(std::string exe, std::vector<std::string> &args)

@@ -39,7 +39,8 @@ class target
 
   public:
     target();
-    void load(std::string target_folder, std::string syntax_folder, std::string fname);
+    void load(std::vector<std::string> target_folder,
+              std::vector<std::string> syntax_folder, std::string fname);
     const syntax::sm_list &sl() const { return s; }
     std::string lib() const { return lib_name; }
     std::string cfg() const { return cfg_name; }

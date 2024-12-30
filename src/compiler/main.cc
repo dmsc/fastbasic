@@ -75,14 +75,32 @@ static std::string to_lower(std::string in)
     return ret;
 }
 
+// Parse path list into a vector of strings
+static std::vector<std::string> parse_path_list(const std::string &str)
+{
+    std::vector<std::string> ret;
+    size_t pos = 0;
+    while(1)
+    {
+        auto nxt = str.find(':', pos);
+        if(nxt == str.npos)
+        {
+            ret.emplace_back(str.substr(pos));
+            return ret;
+        }
+        ret.emplace_back(str.substr(pos, nxt - pos));
+        pos = nxt + 1;
+    }
+}
+
 int main(int argc, char **argv)
 {
     // OS specific initializations
     os::init(argv[0]);
 
     // Default folders for target and syntax files
-    auto syntax_folder = os::compiler_path("syntax");
-    auto target_folder = os::compiler_path("");
+    auto syntax_folder = os::get_search_path("syntax");
+    auto target_folder = os::get_search_path("");
     std::vector<std::string> args(argv + 1, argv + argc);
     std::string out_name;
     std::string exe_name;
@@ -217,11 +235,11 @@ int main(int argc, char **argv)
         }
         else if(arg.rfind("-syntax-path:", 0) == 0 || arg.rfind("-syntax-path=", 0) == 0)
         {
-            syntax_folder = arg.substr(13);
+            syntax_folder = parse_path_list(arg.substr(13));
         }
         else if(arg.rfind("-target-path:", 0) == 0 || arg.rfind("-target-path=", 0) == 0)
         {
-            target_folder = arg.substr(13);
+            target_folder = parse_path_list(arg.substr(13));
         }
         else if(arg[0] == '-')
             return show_error("invalid option '" + arg + "', try -h for help");

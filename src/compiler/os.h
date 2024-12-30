@@ -24,11 +24,16 @@
 
 namespace os
 {
+// Returns the current compiler search path for the given base
+std::vector<std::string> get_search_path(const std::string &filename);
 // Locates a file or folder in the compiler data and
 // returns the path
 std::string compiler_path(const std::string &filename);
 // Appends a file name to a path
 std::string full_path(const std::string &path, const std::string &filename);
+// Search a file in a list of paths
+std::string search_path(const std::vector<std::string> &paths,
+                        const std::string &filename);
 // Returns the file name from a full path
 std::string file_name(const std::string &path);
 // Returns the directory name from a full path

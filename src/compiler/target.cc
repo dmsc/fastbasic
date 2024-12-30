@@ -31,13 +31,13 @@
 class target_file
 {
   public:
-    std::string target_folder;
+    std::vector<std::string> target_path;
     std::vector<std::string> slist;
     std::vector<std::string> ca65_args;
     std::string lib_name;
     std::string cfg_name;
     std::string bin_ext;
-    target_file(std::string target_folder) : target_folder(target_folder) {}
+    target_file(std::vector<std::string> target_path) : target_path(target_path) {}
     void read_file(std::string fname);
 };
 
@@ -61,7 +61,7 @@ void target_file::read_file(std::string fname)
         fname = os::add_extension(fname, ".tgt");
 
     if(!os::path_absolute(fname))
-        fname = os::full_path(target_folder, fname);
+        fname = os::search_path(target_path, fname);
 
     std::ifstream f;
     f.open(fname);
@@ -127,10 +127,11 @@ void target_file::read_file(std::string fname)
 
 target::target() {}
 
-void target::load(std::string target_folder, std::string syntax_folder, std::string fname)
+void target::load(std::vector<std::string> target_path,
+                  std::vector<std::string> syntax_path, std::string fname)
 {
     // Read target file
-    target_file f(target_folder);
+    target_file f(target_path);
     f.read_file(fname);
     lib_name = f.lib_name;
     cfg_name = f.cfg_name;
@@ -143,7 +144,7 @@ void target::load(std::string target_folder, std::string syntax_folder, std::str
     for(auto &name : f.slist)
     {
         std::ifstream ifile;
-        ifile.open(os::full_path(syntax_folder, name));
+        ifile.open(os::search_path(syntax_path, name));
         if(!ifile.is_open())
             throw std::runtime_error("can't open syntax file: '" + name + "'");
         auto data = pre.read_input(ifile);
