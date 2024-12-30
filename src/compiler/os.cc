@@ -33,6 +33,8 @@ static const char *path_sep = "\\/";
 static const char *path_sep = "/";
 #endif
 
+static std::string compiler_search_path;
+
 bool os::path_absolute(const std::string &path)
 {
     if(path.find_first_of(path_sep) == 0)
@@ -100,7 +102,7 @@ std::string os::get_extension_lower(std::string name)
     return ret;
 }
 
-void os::init()
+void os::init(const std::string &prog)
 {
 #ifdef _WIN32
     // On windows, we need to set console output to UTF-8:
@@ -108,6 +110,13 @@ void os::init()
 #else
     // No init needed.
 #endif
+    // Store out program name
+    compiler_search_path = dir_name(prog);
+}
+
+std::string os::compiler_path(const std::string &filename)
+{
+    return full_path(compiler_search_path, filename);
 }
 
 int os::prog_exec(std::string exe, std::vector<std::string> &args)

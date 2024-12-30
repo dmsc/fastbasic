@@ -24,6 +24,9 @@
 
 namespace os
 {
+// Locates a file or folder in the compiler data and
+// returns the path
+std::string compiler_path(const std::string &filename);
 // Appends a file name to a path
 std::string full_path(const std::string &path, const std::string &filename);
 // Returns the file name from a full path
@@ -41,7 +44,7 @@ std::string get_extension_lower(std::string name);
 // Execute external program, waiting for the result
 int prog_exec(std::string exe, std::vector<std::string> &args);
 // OS specific initializations
-void init();
+void init(const std::string &prog);
 // Remove a file
 void remove_file(const std::string &path);
 

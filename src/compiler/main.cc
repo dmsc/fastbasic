@@ -78,13 +78,11 @@ static std::string to_lower(std::string in)
 int main(int argc, char **argv)
 {
     // OS specific initializations
-    os::init();
+    os::init(argv[0]);
 
-    auto program_name = std::string(argv[0]);
-    // Tries to guess install folder given the program name
-    auto install_folder = os::dir_name(program_name);
-    auto syntax_folder = os::full_path(install_folder, "syntax");
-    auto target_folder = install_folder;
+    // Default folders for target and syntax files
+    auto syntax_folder = os::compiler_path("syntax");
+    auto target_folder = os::compiler_path("");
     std::vector<std::string> args(argv + 1, argv + argc);
     std::string out_name;
     std::string exe_name;
@@ -283,9 +281,9 @@ int main(int argc, char **argv)
         std::cerr << e.what() << "\n";
         return 1;
     }
-    std::string lib_name = os::full_path(install_folder, tgt.lib());
+    std::string lib_name = os::compiler_path(tgt.lib());
     std::string cfg_file =
-        cfg_file_def.size() ? cfg_file_def : os::full_path(install_folder, tgt.cfg());
+        cfg_file_def.size() ? cfg_file_def : os::compiler_path(tgt.cfg());
     asm_opts.insert(asm_opts.end(), tgt.ca65_args().begin(), tgt.ca65_args().end());
 
     // Guess final exe file name
@@ -308,13 +306,13 @@ int main(int argc, char **argv)
     }
     for(auto &f : asm_files)
     {
-        auto ca65 = os::full_path(install_folder, "ca65");
+        auto ca65 = os::compiler_path("ca65");
         auto asm_name = std::get<0>(f), obj_name = std::get<1>(f);
         auto lst_name = os::add_extension(obj_name, ".lst");
 
         std::cerr << "ASM assemble '" << asm_name << "' to '" << obj_name << "'\n";
         std::vector<std::string> args{
-            "ca65", "-I",    os::full_path(install_folder, "asminc"), "-o", obj_name};
+            "ca65", "-I",    os::compiler_path("asminc"), "-o", obj_name};
         if(do_listing)
             args.insert(args.end(), {"-l",   lst_name});
         for(auto &o : asm_opts)
@@ -328,7 +326,7 @@ int main(int argc, char **argv)
     }
     if(link_files.size())
     {
-        auto ld65 = os::full_path(install_folder, "ld65");
+        auto ld65 = os::compiler_path("ld65");
         //$LD65" -C "$CFGFILE" "$@" -o "$XEX" -Ln "$LBL" "$FB.lib"
         std::cerr << "LINK " << exe_name << "\n";
         std::vector<std::string> args{"ld65",
