@@ -31,13 +31,13 @@
 class target_file
 {
   public:
-    std::string install_folder;
+    std::string target_folder;
     std::vector<std::string> slist;
     std::vector<std::string> ca65_args;
     std::string lib_name;
     std::string cfg_name;
     std::string bin_ext;
-    target_file(std::string install_folder) : install_folder(install_folder) {}
+    target_file(std::string target_folder) : target_folder(target_folder) {}
     void read_file(std::string fname);
 };
 
@@ -61,7 +61,7 @@ void target_file::read_file(std::string fname)
         fname = os::add_extension(fname, ".tgt");
 
     if(!os::path_absolute(fname))
-        fname = os::full_path(install_folder, fname);
+        fname = os::full_path(target_folder, fname);
 
     std::ifstream f;
     f.open(fname);
