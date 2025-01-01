@@ -58,7 +58,7 @@ prompt. This will load the IDE and
 present you with a little help text:
 
     --D:HELP.TXT-------------------0--
-    '  FastBasic %VERSION% - (c) 2024 dmsc
+    '  FastBasic %VERSION% - (c) 2025 dmsc
     '
     ' Editor Help
     ' -----------

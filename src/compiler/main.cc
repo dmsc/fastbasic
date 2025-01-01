@@ -1,6 +1,6 @@
 /*
  * FastBasic - Fast basic interpreter for the Atari 8-bit computers
- * Copyright (C) 2017-2024 Daniel Serpell
+ * Copyright (C) 2017-2025 Daniel Serpell
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 static int show_version()
 {
-    std::cerr << "FastBasic " VERSION " - (c) 2024 dmsc\n";
+    std::cerr << "FastBasic " VERSION " - (c) 2025 dmsc\n";
     return 0;
 }
 

@@ -1,5 +1,5 @@
 '
-'  FastBasic %VERSION% - (c) 2024 dmsc
+'  FastBasic %VERSION% - (c) 2025 dmsc
 '
 ' Editor Help
 ' -----------
