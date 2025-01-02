@@ -2398,6 +2398,9 @@ operation.
 FujiNet Statements
 ------------------
 
+*NOTE:* The FujiNet Statements are not
+available in the integer-only version.
+
 These are statements that talk to the
 FujiNet network adapter, and can be
 used to open network connections, using
