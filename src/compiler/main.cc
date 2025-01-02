@@ -324,7 +324,6 @@ int main(int argc, char **argv)
     }
     for(auto &f : asm_files)
     {
-        auto ca65 = os::compiler_path("ca65");
         auto asm_name = std::get<0>(f), obj_name = std::get<1>(f);
         auto lst_name = os::add_extension(obj_name, ".lst");
 
@@ -336,7 +335,7 @@ int main(int argc, char **argv)
         for(auto &o : asm_opts)
             args.push_back(o);
         args.push_back(asm_name);
-        auto e = os::prog_exec(ca65, args);
+        auto e = os::prog_exec("ca65", args);
         if(e)
             return show_error("can't assemble file\n");
         if(!one_step)
@@ -344,7 +343,6 @@ int main(int argc, char **argv)
     }
     if(link_files.size())
     {
-        auto ld65 = os::compiler_path("ld65");
         //$LD65" -C "$CFGFILE" "$@" -o "$XEX" -Ln "$LBL" "$FB.lib"
         std::cerr << "LINK " << exe_name << "\n";
         std::vector<std::string> args{"ld65",
@@ -359,7 +357,7 @@ int main(int argc, char **argv)
         for(auto &f : link_files)
             args.push_back(f);
         args.push_back(lib_name);
-        auto e = os::prog_exec(ld65, args);
+        auto e = os::prog_exec("ld65", args);
         if(e)
             return show_error("can't assemble file\n");
     }

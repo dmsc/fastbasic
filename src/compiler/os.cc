@@ -160,6 +160,7 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
 {
     std::vector<const char *> pargs;
 #ifdef _WIN32
+    auto exe_path = os::compiler_path(exe + ".exe");
     // Escape any string with spaces in it:
     std::vector<std::string> esc_args;
     for(const auto &s : args)
@@ -175,8 +176,9 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
     pargs.push_back(nullptr);
     // win32 has the "spawn" function that calls the program and waits
     // for termination:
-    return _spawnv(_P_WAIT, exe.c_str(), (char **)pargs.data());
+    return _spawnv(_P_WAIT, exe_path.c_str(), (char **)pargs.data());
 #else
+    auto exe_path = os::compiler_path(exe);
     // Create a vector with C pointers
     for(const auto &s : args)
         pargs.push_back(s.c_str());
@@ -205,7 +207,7 @@ int os::prog_exec(std::string exe, std::vector<std::string> &args)
         sigaction(SIGQUIT, &sa, nullptr);
         sigprocmask(SIG_SETMASK, &oldmask, nullptr);
         // Exec process
-        execv(exe.c_str(), (char **)pargs.data());
+        execv(exe_path.c_str(), (char **)pargs.data());
         // If we got here, it is an error
         _exit(127);
     }
