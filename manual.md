@@ -535,10 +535,11 @@ Arrays can be of four types:
 - `WORD` arrays (the default if no type
   is given) use two bytes of memory for
   each element, and works like normal
-  numeric integer variables.
+  numeric integer variables:
+  -32768 to 32767 (signed).
 - `BYTE` arrays use only one byte for
   each element, so the numeric range
-  is reduced from 0 to 255.
+  is reduced from 0 to 255 (unsigned).
 - Floating point arrays, works like any
   floating point variable, and use six
   bytes of memory for each element.
@@ -579,7 +580,6 @@ constant, see this example:
 Will print:
 
     Hello
-
     world..
 
 
@@ -638,7 +638,7 @@ while this will print "GOOD"
 
 
 String Variables
----------------
+----------------
 
 The naming convention for string
 variables is the same as for numeric
@@ -740,7 +740,9 @@ and the abbreviated syntax.
 - RAND(_num_) / R.(_num_) :
   Returns a random, non negative
   number, a maximum of 1 less than
-  _num_.
+  _num_. (e.g., `RAND(3)` will result
+  in 0, 1, or 2.)
+  (See also `RND()`.)
 
 - FRE() / F. :
   Returns the free memory available in
@@ -860,6 +862,7 @@ will return an invalid value, and the
 - RND() / RN. :
   Returns a random positive number
   strictly less than 1.
+  (See also `RAND()`.)
 
 - SIN(_n_) / SI.(_n_) : Sine of _n_.
 
@@ -999,7 +1002,27 @@ Console Print and Input Statements
   Waits for a keypress and writes the
   key value to _var_, which can be a
   variable name or an array position
-  (like "array(123)")
+  (like "array(123)").
+
+  Note: Some keys on the Atari -- the
+  console keys `START`, `SELECT`, and
+  `OPTION`; modifiers `SHIFT` and
+  `CONTROL`; and the `HELP`, `BREAK`,
+  and `RESET` keys -- are not handled
+  in the same way as the main keyboard,
+  and cannot be read by `GET`.
+
+  Hints: The status of all three console
+  keys may be read via the GTIA `CONSOL`
+  register, `PEEK(53279)`.
+
+  Whether the `HELP` key is pressed
+  can be detected via the POKEY `KBCODE`
+  register, `PEEK(53769)`.
+
+  Whether either `SHIFT` key is pressed
+  can be detected via the POKEY `SKCTL`
+  register, `PEEK(53775)`.
 
 
 **Input Variable Or String**  
@@ -1206,7 +1229,7 @@ Control Statements
 
 
 **Calls A Subroutine**  
-**EXEC _name_ _num1_, ... / EXE. / @**
+**EXEC _name_ _num1_, ... / EXE. / @ **
 
   Calls the subroutine _name_, with the
   optional parameters _num1_ and so on,
