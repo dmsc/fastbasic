@@ -85,6 +85,9 @@ x_pos:  sta     tmp3
         ldy     #16
         lda     #0
         sta     tmp2+1
+        ; Detect we are dividing by numbers < 256 and use a faster algorithm.
+        ; The assumption is that smaller divisors are much more common than
+        ; larger ones, so this pays off.
         ldx     tmp1+1
         beq     udiv16x8
 
@@ -111,11 +114,15 @@ L1:     txa
         rts
 
 udiv16x8:
-        ldx     tmp1
-        beq     L0
+;       This is needed to return modulo > 255 on division by 0.  We could also
+;       set an error flag, but it is simpler to just return an invalid value.
+;        ldx     tmp1
+;        beq     L0
 L2:     asl     tmp3
         rol     tmp3+1
         rol
+        ; When the current modulo is > 255, we always need to subtract the
+        ; divisor, and we already have C=1.
         bcs     L3
 
         cmp     tmp1
