@@ -129,6 +129,7 @@ SAMPLE_FP_BAS=\
     fp/fedora.bas \
     fp/mastodon.bas \
     fp/nc.bas \
+    fp/randfp.bas \
 
 SAMPLE_INT_BAS=\
     int/carrera3d.bas \
@@ -138,6 +139,7 @@ SAMPLE_INT_BAS=\
     int/pi.bas \
     int/pmtest.bas \
     int/sieve.bas \
+    int/randint.bas \
 
 SAMPLE_BAS=$(SAMPLE_INT_BAS) $(SAMPLE_FP_BAS)
 SAMPLE_X_BAS=$(SAMPLE_FP_BAS:fp/%=%) $(SAMPLE_INT_BAS:int/%=%)

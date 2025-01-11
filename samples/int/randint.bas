@@ -1,0 +1,3 @@
+WHILE (1)
+  PRINT RAND(10)
+WEND
