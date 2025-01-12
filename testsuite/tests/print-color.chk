@@ -41,3 +41,43 @@ SCREEN: plot 0,0  color 155
 NORMAL  инжерсе.
 NORMAL       инжерсе.
 3         lowercase also      NORMAL
+SCREEN: plot 0,3  color 78
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 82
+SCREEN: plot 0,3  color 77
+SCREEN: plot 0,3  color 65
+SCREEN: plot 0,3  color 76
+SCREEN: plot 0,3  color 32
+SCREEN: plot 0,3  color 88
+SCREEN: plot 0,3  color 155
+SCREEN: plot 0,3  color 67
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 76
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 82
+SCREEN: plot 0,3  color 51
+SCREEN: plot 0,3  color 50
+SCREEN: plot 0,3  color 32
+SCREEN: plot 0,3  color 120
+SCREEN: plot 0,3  color 155
+SCREEN: plot 0,3  color 78
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 82
+SCREEN: plot 0,3  color 77
+SCREEN: plot 0,3  color 65
+SCREEN: plot 0,3  color 76
+SCREEN: plot 0,3  color 32
+SCREEN: plot 0,3  color 65
+SCREEN: plot 0,3  color 66
+SCREEN: plot 0,3  color 155
+SCREEN: plot 0,3  color 67
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 76
+SCREEN: plot 0,3  color 79
+SCREEN: plot 0,3  color 82
+SCREEN: plot 0,3  color 51
+SCREEN: plot 0,3  color 50
+SCREEN: plot 0,3  color 32
+SCREEN: plot 0,3  color 97
+SCREEN: plot 0,3  color 98
+SCREEN: plot 0,3  color 155

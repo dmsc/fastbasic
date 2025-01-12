@@ -295,10 +295,20 @@ class peephole
     // Transforms print of small constant strings to sequence of BYTE_PUT
     void print_chars()
     {
+        int print_color = 0;
         for(size_t i = 0; i < code.size(); i++)
         {
             current = i;
-            if(mtok(0, "TOK_CSTRING") && mstring(1) < 3 && mtok(2, "TOK_PRINT_STR"))
+            // Track current print color
+            if(mtok(2, "TOK_BYTE_POKE") && mcbyte(3, "PRINT_COLOR"))
+            {
+                if(mtok(0, "TOK_NUM") && mword(1))
+                    print_color = val(1);
+                else
+                    print_color = -1;
+            }
+            if(print_color >= 0 && mtok(0, "TOK_CSTRING") && mstring(1) < 3 &&
+               mtok(2, "TOK_PRINT_STR"))
             {
                 auto s = str(1);
                 del(2);
@@ -307,7 +317,7 @@ class peephole
                 for(char c : s)
                 {
                     ins_tok(0, "TOK_BYTE_PUT");
-                    ins_b(1, c & 0xFF);
+                    ins_b(1, (c ^ print_color) & 0xFF);
                     current += 2;
                 }
             }
@@ -1481,27 +1491,28 @@ class peephole
                     del(1);
                     continue;
                 }
-                // Join print constant strings with a PUT, except if
-                // the color is non-zero.
+                // Join print constant strings with a PUT, except if the color
+                // is not known.
                 // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_NUM / X / TOK_PUT
                 //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
                 if(mtok(0, "TOK_CSTRING") && mstring(1) < 255 &&
                    mtok(2, "TOK_PRINT_STR") && mtok(3, "TOK_NUM") && mword(4) &&
-                   mtok(5, "TOK_PUT") && print_color == 0)
+                   mtok(5, "TOK_PUT") && print_color >= 0)
                 {
-                    set_string(1, str(1) + char(val(4)));
+                    set_string(1, str(1) + char(val(4) ^ print_color));
                     del(5);
                     del(4);
                     del(3);
                 }
-                // Join print constant strings with a PUT
+                // Join print constant strings with a PUT, except if the color
+                // is not known.
                 // TOK_CSTRING / STR / TOK_PRINT_STR / TOK_BYTE_PUT / x
                 //   -> TOK_CSTRING / STR+X / TOK_PRINT_STR
                 if(mtok(0, "TOK_CSTRING") && mstring(1) < 255 &&
                    mtok(2, "TOK_PRINT_STR") && mtok(3, "TOK_BYTE_PUT") &&
-                   (mbyte(4) || mword(4)) && print_color == 0)
+                   (mbyte(4) || mword(4)) && print_color >= 0)
                 {
-                    set_string(1, str(1) + char(val(4)));
+                    set_string(1, str(1) + char(val(4) ^ print_color));
                     del(4);
                     del(3);
                 }

@@ -16,3 +16,9 @@ GR.1
 
 ? 3, COLOR(32) "LOWERCASE" , "ALSO" ,
 ? "NORMAL"
+
+' Test small strings
+? #6, "NORMAL "; COLOR(0); "X"
+? #6, "COLOR32 "; COLOR(32); "X"
+? #6, "NORMAL "; COLOR(0); "AB"
+? #6, "COLOR32 "; COLOR(32); "AB"
