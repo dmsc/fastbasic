@@ -2498,7 +2498,7 @@ The general flow of use is:
 **NGET _unit_, _addr_, _len_ / NG.**
 
 **Write bytes to Network from _addr_**  
-**NPUT _unit_, _addr_, _len_ / NG.**
+**NPUT _unit_, _addr_, _len_ / NP.**
 
   These two functions are complements
   of each other, reading and writing
