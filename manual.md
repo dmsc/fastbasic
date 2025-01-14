@@ -171,14 +171,14 @@ Press the `CONTROL` and `W` key and
 type a filename for your compiled
 program.  It is common practice to name
 your compiled programs with an
-extension of ".COM" or ".XEX." With
-".COM" extension files you don't need
+extension of `.COM` or `.XEX`. With
+`.COM` extension files you don't need
 to type the extension in some versions
-of DOS on the Atari.  The ".XEX" name is
+of DOS on the Atari.  The `.XEX` name is
 common in modern times to distinguish
 Atari executables from MSDOS/Windows
-programs (which are usually ".EXE" or
-sometimes ".COM")
+programs (which are usually `.EXE` or
+sometimes `.COM`)
 
 Compiled programs include the full
 FastBasic runtime, so you can
@@ -201,7 +201,7 @@ Advanced Editor Usage
 =====================
 
 The editor includes a few commands,
-most of those are already explainded
+most of those are already explained
 above.
 
 - `CONTROL-A` and `CONTROL-E`
@@ -283,7 +283,7 @@ the following main rules:
    - a statement followed by its
      parameters,
    - a variable assignment, this is a
-     name followed by `=` and a the
+     name followed by `=` and the
      expression for the new value.
      For string variables, there is
      also a concatenation operator,
@@ -624,12 +624,12 @@ for the new string, you can't compare
 two values without first assigning one
 of them to a new string variable.
 
-This will print "ERROR":
+This will print `ERROR`:
 
     A$="Don't Work"
     IF A$[2,2] = A$[3,3] THEN ? "ERROR"
 
-while this will print "GOOD"
+While this will print `GOOD`:
 
     A$="Long string"
     B$=A$[2,2]
@@ -722,7 +722,7 @@ and the abbreviated syntax.
   negative. If you need to measure more
   than this amount, consider using the
   floating-point version `%TIME`
-  Note: TIME is special, and does not
+  Note: `TIME` is special, and does not
   need parentheses.
 
 - ABS(_num_) / A.(_num_) :
@@ -806,7 +806,7 @@ graphics.
 
 - KEY() / K. :
   Returns 0 if no key was pressed, or a
-  keycode. The returned value only goes
+  key code. The returned value only goes
   to 0 after reading the key in the OS
   (via a `GET` or `POKE 764, 255`
   statement).
@@ -874,7 +874,7 @@ will return an invalid value, and the
   function, but returning a 24 bit
   number that does not wrap until more
   than 3 days.
-  Note: Don't use the  `TIMER` statement
+  Note: Don't use the `TIMER` statement
   if you are using this function, as the
   returned value will be invalid.
 
@@ -948,10 +948,10 @@ with the hardware. Use with care!
   HIGH part of the last parameter, and
   so on.
 
-  The value of the A and X registers is
-  used as a return value of the
-  function, with A the low part and X
-  the high part.
+  The value of `A` and `X` registers
+  is used as a return value of the
+  function, with `A` the low part and
+  `X` the high part.
 
   This is a sample usage code snippet:
 
@@ -968,7 +968,7 @@ with the hardware. Use with care!
   This is the inverse of `ADR()`, and
   can be used to create arbitrary
   strings in memory. For example, the
-  following code prints "AB":
+  following code prints `AB`:
 
       DATA x() byte = 2, $41, $42
       ? $( ADR(x) )
@@ -999,7 +999,7 @@ Console Print and Input Statements
 **Reads Key From Keyboard**  
 **GET _var_ / GE.**
 
-  Waits for a keypress and writes the
+  Waits for a key press and writes the
   key value to _var_, which can be a
   variable name or an array position
   (like "array(123)").
@@ -1046,13 +1046,13 @@ Console Print and Input Statements
 
   If the value can't be read because
   input errors, the error is stored in
-  ERR variable. Valid errors are 128 if
+  `ERR()`. Valid errors are 128 if
   BREAK key is pressed and 136 if
   CONTROL-3 is pressed.
 
   In case of a numeric variable, if the
   value can't be converted to a number,
-  the value 18 is stored in ERR().
+  the value 18 is stored in `ERR()`.
 
   See the _Device Input and Output
   Statements_ section for the `INPUT #`
@@ -1064,8 +1064,8 @@ Console Print and Input Statements
 
   Moves the screen cursor position to
   the given _column_ and _row_, so the
-  next PRINT statement outputs at that
-  position.
+  next `PRINT` statement outputs at
+  that position.
 
   Rows and columns are numerated from
   0.
@@ -1220,12 +1220,12 @@ Control Statements
 **LOOP / L.**
 
   Starts and ends an endless
-  repetition. When reaching the LOOP
-  statement the program begins again, 
+  repetition. When reaching the `LOOP`
+  statement the program begins again,
   executing from the DO statement.
 
   The only way to terminate the loop is
-  via an EXIT statement.
+  via an `EXIT` statement.
 
 
 **Calls A Subroutine**  
@@ -1235,10 +1235,9 @@ Control Statements
   optional parameters _num1_ and so on,
   separated by commas.
 
-  Note that the subroutine must be
-  defined with PROC with the same number
-  of parameters, but can be defined
-  before or after the call.
+  Note that you must use the same
+  number of parameters in the `PROC`
+  definition, before or after the call.
 
   Instead of `EXEC` you can simply use
   a `@` in front of the procedure name.
@@ -1246,7 +1245,7 @@ Control Statements
   `EXEC GAMEOVER` and `@GAMEOVER`.)
 
 
-**Exits From Loop Or PROC**  
+**Exits From Loop Or Procedure**  
 **EXIT / EX.**
 
   Exits current loop or subroutine by
@@ -1254,15 +1253,15 @@ Control Statements
 
   In case of loops, the program
   continues after the last statement of
-  the loop. In case of PROC, the
-  program returns to the calling EXEC.
+  the loop. In case of `PROC`, the
+  program returns to the calling `EXEC`
 
 
 **Loop Over Values Of A Variable**  
 **FOR _var_=_value_ TO _end_ [STEP _step_] / F. T. S.**  
 **NEXT _var_ / N.**
 
-  FOR loop allows performing a loop a
+  `FOR` loop allows performing a loop a
   specified number of times while
   keeping a counting variable.
 
@@ -1277,11 +1276,11 @@ Control Statements
   it terminates the loop.
 
   At the end of the loop, _var_ is
-  incremented by _step_ (or 1 if STEP
+  incremented by _step_ (or 1 if `STEP`
   is omitted) and the loops repeats.
 
-  An EXIT statement also terminates the
-  loop and skips to the end.
+  An `EXIT` statement also terminates
+  the loop and skips to the end.
 
   Note that if _step_ is positive, the
   iteration ends when the value of
@@ -1300,14 +1299,15 @@ Control Statements
   completely skipped.
 
   A slightly modified usage of the
-  FOR/NEXT loop allows for excluding
-  the variable name from NEXT; this
-  is required if _var_ is an array.
+  `FOR` / `NEXT` loop allows for
+  excluding the variable name from
+  `NEXT`; this is required if _var_ is
+  an array.
 
-  This is an example of NEXT without
+  This is an example of `NEXT` without
   variable:
 
-      ' sample of FOR/NEXT loop without
+      ' Sample of FOR/NEXT loop without
       ' NEXT variable name
       FOR i=0 to 1000 step 100
         ? i
@@ -1321,37 +1321,40 @@ Control Statements
 **ELSE / EL.**  
 **ENDIF / E.**
 
-  The first form (with THEN) executes
+  The first form (with `THEN`) executes
   one _statement_ if the condition is
   true.
 
   This differs from Atari BASIC,
   TurboBASIC XL, and others, which will
-  execute all statements after THEN until
-  the end of the line.  For example:
+  execute all statements after `THEN`
+  until the end of the line.
+
+  For example:
 
       A=1
       IF A=0 THEN ? "ZERO":? "THE END"
 
-  Results in "THE END" being printed in
+  Results in `THE END` being printed in
   FastBasic, whereas nothing would be
   printed in Atari BASIC.
 
   The second form executes all
-  statements following the IF (up until
-  an ELIF, ELSE, or ENDIF) only if
-  condition is true.
+  statements following the `IF` (up
+  until an `ELIF`, `ELSE`, or `ENDIF`)
+  only if the condition is true.
 
   If the condition is false, optional
-  statements following the ELSE (until
-  an ENDIF) are executed.
+  statements following the `ELSE`
+  (until an `ENDIF`) are executed.
 
-  In case of an ELIF, the new condition
-  is tested and acts like a nested IF
-  until an ELSE or ENDIF.
+  In case of an `ELIF`, the new
+  condition is tested and acts like a
+  nested `IF` until an `ELSE` or
+  `ENDIF`.
 
-  This is an example of a multiple
-  IF/ELIF/ELSE/ENDIF statement:
+  This is an example of a multi-line
+  `IF` statement:
 
     IF _condition-1_
       ' Statements executed if
@@ -1374,27 +1377,27 @@ Control Statements
 **PROC _name_ _var1_ .../ PR.**  
 **ENDPROC / ENDP.**
 
-  PROC statement starts the definition
-  of a subroutine that can be called
-  via EXEC or `@`.
+  `PROC` statement starts the
+  definition of a subroutine that can
+  be called via `EXEC` or `@`.
 
   You can pass a list of integer
   variables separated by spaces after
-  the PROC name to specify a number of
-  parameters, the variables will be set
-  to the values passed by the EXEC call.
-  Those variable names are always
-  global, so the values set are seen
-  outside the PROC.
+  the `PROC` name to specify a number
+  of parameters, the variables will be
+  set to the values passed by the
+  `EXEC` call.  Those variable names
+  are always global, so the values set
+  are seen outside the `PROC`.
 
-  The number of parameters in the PROC
-  definition and in all the EXEC calls
-  must be the same.
+  The number of parameters in the
+  `PROC` definition and in all the
+  `EXEC` calls must be the same.
 
-  Note that if the PROC statement is
+  Note that if the `PROC` statement is
   encountered while executing
   surrounding code, the full subroutine
-  is skipped, so PROC / ENDPROC can
+  is skipped, so `PROC` / `ENDPROC` can
   appear any place in the program.
 
 
@@ -1402,18 +1405,18 @@ Control Statements
 **REPEAT / R.**  
 **UNTIL _condition_ / U.**
 
-  The REPEAT loop allows looping with a
-  condition evaluated at the end of
+  The `REPEAT` loop allows looping with
+  a condition evaluated at the end of
   each iteration.
 
-  Executes statements between REPEAT
-  and UNTIL once, then evaluates the
+  Executes statements between `REPEAT`
+  and `UNTIL` once, then evaluates the
   _condition_. If false, the loop is
   executed again, if true the loop
   ends.
 
-  An EXIT statement also terminates the
-  loop and skips to the end.
+  An `EXIT` statement also terminates
+  the loop and skips to the end.
 
 **Loop while condition is true**  
 **WHILE _condition_ / W.**  
@@ -1430,8 +1433,8 @@ Control Statements
   and returns to the top to test the
   condition again.
 
-  An EXIT statement also terminates the
-  loop and skips to the end.
+  An `EXIT` statement also terminates
+  the loop and skips to the end.
 
 
 Graphic and Sound Statements
@@ -1505,7 +1508,7 @@ Bitmapped graphics modes:[^5]
 [^1]: `GRAPHICS 0` and `GRAPHICS 8`
 offer two colors, where the "on"
 pixels may be a different shade
-(luminence) of the background color's
+(luminance) of the background color's
 hue, but cannot have its own hue.
 (Television color artifacting effects
 can be utilized to simulate two
@@ -1531,7 +1534,7 @@ a character set (font) -- 64 shapes --
 may normally be used.  See
 `PRINT COLOR()`.
 
-[^4]: Modes 12 and 13 are mutlicolor
+[^4]: Modes 12 and 13 are multicolor
 text modes, where every pair of
 two bits in a character's bitmap data
 are used to represent one of four
@@ -1580,7 +1583,7 @@ respectively.
   modes (and modes 9, 10 and 11 utilize
   a feature managed by the GTIA chip),
   as well as other features (blank
-  scanlines, fine scrolling, Display
+  scan-lines, fine scrolling, Display
   List Interrupts, etc.) Consult
   _De Re Atari_ chapter 2, "ANTIC and
   the Display List" for more details.
@@ -1801,8 +1804,9 @@ Device Input and Output Statements
   put a comma after the channel number,
   not a semicolon.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
   Note that you can only read the error
   for the last element printed.
@@ -1813,8 +1817,9 @@ Device Input and Output Statements
   Outputs one byte _num_ to the channel
   _iochn_.
 
-  On any error, ERR() will hold an
-  error code, on success ERR() reads 1.
+  On any error, `ERR()` will hold an
+  error code, on success `ERR()` reads
+  1.
 
 
 **Generic I/O Operation**  
@@ -1823,17 +1828,17 @@ Device Input and Output Statements
   Performs a general input/output
   operation on device *dev*, over
   channel _ioc_, with the command _cmd_
-  ,and auxiliary bytes _aux1_ and
+  and auxiliary bytes _aux1_ and
   _aux2_.
 
-  Note that the arguments of XIO
+  Note that the arguments of `XIO`
   statements are in different order
   than Atari BASIC, for consistency
   with other statements the _iochn_ is
   the first argument.
 
   Example: to delete the file
-  "FILE.TXT" from disk, you can do:
+  `"FILE.TXT"` from disk, you can do:
 
       XIO #1, 33, 0, 0, "D:FILE.TXT"
 
@@ -1846,7 +1851,7 @@ General Statements
 
   Any line starting with a dot or an
   apostrophe will be ignored. This is
-  analogous to REM in Atari BASIC.
+  analogous to `REM` in Atari BASIC.
 
 
 **Clears variables and free memory**  
@@ -1890,7 +1895,7 @@ General Statements
 
   *Advanced Usage*
 
-  Byte DATA arrays can be used to
+  Byte `DATA` arrays can be used to
   include assembler routines (to call
   via `USR`, see the example above),
   display lists and any other type of
@@ -1898,11 +1903,11 @@ General Statements
 
   To facilitate this, you can include
   constant strings and the address of
-  other byte DATA array by name.
+  other byte `DATA` array by name.
 
   All the bytes of the string, including
   the initial length byte are included
-  into the DATA array.
+  into the `DATA` array.
 
   Example:
 
@@ -1976,7 +1981,7 @@ General Statements
   integers from -32768 to 32767.
 
   If the name _arr_ ends with a `$` or
-  a '%' symbol, this defines a string
+  a `%` symbol, this defines a string
   array or floating point array
   respectively, in this case you can't
   specify a type.
@@ -2012,7 +2017,7 @@ General Statements
 **Ends Program**  
 **END : Ends program.**
 
-  Terminates current program. END is
+  Terminates current program. `END` is
   only valid at end of input.
 
 
@@ -2119,7 +2124,8 @@ modify memory. Use with care!
         POKE b+I, PEEK(a+I)
       NEXT I
 
-  but `-MOVE a, b, c` is instead:
+  On the other hand, `-MOVE a, b, c` is
+  instead:
 
       FOR I=c-1 to 0 STEP -1
         POKE b+I, PEEK(a+I)
@@ -2194,11 +2200,12 @@ statement:
   _address_ is a memory location to
   modify.
 
-  If _data_ is a DATA array, the first
-  element (at index 0) will be used at
-  the first line with DLI active in the
-  screen, the second element at the
-  second active line, etc.
+  If _data_ is a `DATA` array, the
+  first element (at index 0) will be
+  used at the first line with DLI
+  active in the screen, the second
+  element at the second active line,
+  etc.
 
   The `WSYNC` word advances one line in
   the display area (this is done by
@@ -2227,7 +2234,7 @@ statement:
   activate the DLI afterwards.
 
   You can split a DLI definition over
-  multiple lines, just like DATA by
+  multiple lines, just like `DATA` by
   ending a line with a comma and
   starting the next line with `DLI =`
 
@@ -2250,9 +2257,9 @@ statement:
   List_, see the example at the end of
   the section.
 
-  You can also pass the name of a DATA
-  BYTE array with a custom machine
-  language routine to the `DLI`
+  You can also pass the name of a
+  `DATA BYTE` array with a custom
+  machine language routine to the `DLI`
   statement, the routine must begin with
   a _PHA_ and end with _PLA_ and _RTI_.
 
