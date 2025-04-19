@@ -571,6 +571,19 @@ $endif$
 %
 
 $if(listings)$
+\lstdefinelanguage{Assembler}{%
+  morekeywords={%
+ADC,AND,ASL,BCC,BCS,BEQ,BIT,BMI,BNE,BPL,BRA,BRK,BVC,BVS,CLC,CLD,%
+CLI,CLV,CMP,CPX,CPY,DEA,DEC,DEX,DEY,EOR,INA,INC,INX,INY,JMP,JSR,%
+LDA,LDX,LDY,LSR,NOP,ORA,PHA,PHP,PHX,PHY,PLA,PLP,PLX,PLY,ROL,ROR,%
+RTI,RTS,SBC,SEC,SED,SEI,STA,STP,STX,STY,STZ,TAX,TAY,TRB,TSB,TSX,%
+TXA,TXS,TYA},%
+   sensitive=false,%
+   morecomment=[l]*,%
+   morecomment=[l];%
+   }[keywords,comments,strings]
+
+
 \lstdefinestyle{eisvogel_listing_style}{
     language         = [Visual]Basic,
   numbers          = left,

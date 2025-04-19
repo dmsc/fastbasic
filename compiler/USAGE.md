@@ -229,6 +229,7 @@ From the FastBasic source, you can reference any symbol via `@name`, for example
 
 The ASM file must export the `ADD_10` (always uppercase) symbol, for example:
 
+```Assembler
     ; Assembly module
       .export ADD_10
 
@@ -244,6 +245,7 @@ The ASM file must export the `ADD_10` (always uppercase) symbol, for example:
       ; Return value in A/X registers
       rts
     .endproc
+```
 
 You can also export ZP symbols, to import them use `@@name`.
 
@@ -401,6 +403,7 @@ the screen.
 
 The simple assembly version of this statement would be:
 
+```Assembler
     .export DO_WAIT
     .include "atari.inc"
 
@@ -410,6 +413,7 @@ The simple assembly version of this statement would be:
         cmp VCOUNT
         bcc loop
         rts
+```
 
 Save this file as `wait.asm`.
 
@@ -458,7 +462,7 @@ There some parts of the syntax file that needs explanation:
   symbol value, this means the value will be filled by the linker.
 
 - Then, we are expecting an `EXPR`. This syntax specifies an integer
-  expression, the parser will parse any expresion that gives am integer number
+  expression, the parser will parse any expression that gives am integer number
   here, and the result will be placed in the `A` and `X` registers.
 
 
@@ -477,8 +481,8 @@ of commands is the following:
              file name given does not have an extension, `.tgt` is added.
 
 - `library`: Gives the name of the library to link with a compiled FastBasic
-             program for this target. Only one library file is alowed, the last
-             one read takes precendence.
+             program for this target. Only one library file is allowed, the last
+             one read takes precedence.
 
 - `config`: Gives the name of the linker configuration file used for this
             target.
