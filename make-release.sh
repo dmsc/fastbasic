@@ -88,7 +88,8 @@ compile_osx
 make build/compiler/MANUAL.md
 pandoc build/compiler/MANUAL.md -o "${out}-manual.pdf" \
        --from markdown-raw_tex --template template.tex \
-       --listings --toc --number-sections
+       --listings --toc --number-sections \
+       -V colorlinks=true -V toccolor=MidnightBlue
 
 make build/compiler/USAGE.md
 pandoc build/compiler/USAGE.md -o "${out}-cross-compiler.pdf" \
