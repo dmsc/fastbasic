@@ -35,4 +35,8 @@ DEG
 ? INT(ATN(1)   * 1000000  - 45000000)
 ? INT(SIN(100) * 10000000 -  9848078)
 ? INT(COS(100) * 10000000 +  1736482)
+' Parsing of FP print
+? .1, 1.E1, (1E2)
+' Parsing of FP comparison
+? 1 < 1.1, 1.1 > 1
 
