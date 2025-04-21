@@ -95,7 +95,7 @@ endproc
 PROC ClrTopLine
   exec SaveLine
   pos. 0,0
-  ? "úù";
+  ? ""$9C$9D"";
 ENDPROC
 
 '-------------------------------------
