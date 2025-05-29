@@ -1878,6 +1878,14 @@ General Statements
   (abbreviated `W.`). If no type is
   given, a word data is assumed.
 
+  If the name _arr_ ends with a `%`
+  symbol, this defines a floating point
+  array, in this case you can't specify
+  a type. It is important that at least
+  the first element of each line in the
+  data has a decimal point to force
+  storing the data as floating point.
+
   If you end the `DATA` statement with
   a comma, the following line must be
   another `DATA` statement without the

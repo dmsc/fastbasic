@@ -88,6 +88,7 @@ FP_FUNCS:
 ADR_EXPR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"
+        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%"
 
 INT_FUNCTIONS:
         "Int"    FP_T_EXPR emit TOK_FP_INT
@@ -134,6 +135,16 @@ DIM_VAR_TYPE:<
 
 DIM_VAR:
         emit { VT_FLOAT  } E_VAR_SEARCH "%" E_PUSH_VAR
+
+DATA_FLOATS: data number
+        "," E_NUMBER_FP DATA_FLOATS
+        pass
+
+DATA_TYPE:
+        emit { VT_ARRAY_FLOAT } DATA_EXT_TYPE EQUAL E_LABEL_SET_TYPE E_NUMBER_FP DATA_FLOATS
+
+DATA_VAR:
+        E_LABEL_CREATE "%()" emit { TOK_JUMP } E_LABEL_DEF DATA_TYPE
 
 # Can create Float variables now
 VAR_CREATE_TYPE:

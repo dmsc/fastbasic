@@ -117,6 +117,8 @@ void labelType::set_type(std::string str)
         type = 128;
     else if(str == "VT_ARRAY_BYTE")
         type = 129;
+    else if(str == "VT_ARRAY_FLOAT")
+        type = 130;
     else
         throw std::runtime_error("invalid label type " + str);
 }
