@@ -10,7 +10,9 @@ jobs:
   build-amd64:
     name: Build and run tests on Linux amd64
     runs-on: ubuntu-22.04
-
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
     - uses: actions/checkout@v4
       with:
@@ -35,6 +37,9 @@ jobs:
   build-macos-M1:
     name: Build and run tests on MacOS M1 (ARM64)
     runs-on: macos-14
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
     - uses: actions/checkout@v4
       with:
@@ -56,6 +61,9 @@ jobs:
   build-windows:
     name: Build and run tests on Windows
     runs-on: windows-2019
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
     - uses: actions/checkout@v4
       with:
