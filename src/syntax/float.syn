@@ -83,7 +83,6 @@ FP_FUNCS:
         "Val"   STR_EXPR emit TOK_FP_VAL
         "RNd()" emit TOK_FP_RND
         "%Time" emit TOK_FP_TIME
-        "%"     PAR_EXPR emit TOK_FP_LOAD
 
 ADR_EXPR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
@@ -129,6 +128,7 @@ INPUT_VAR:
 ARRAY_FLOAT_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
         emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
+        "%"     PAR_EXPR
 
 # This is added at start of current table (<)
 DIM_VAR_TYPE:<

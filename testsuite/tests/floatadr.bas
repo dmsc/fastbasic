@@ -11,7 +11,8 @@ ENDPROC
 DIM A%(2)
 A%(0) = 0.125
 A%(1) = 0.0625
-A%(2) = 0.03125
+' Test storing into pointer
+%(&A%+12)= 0.03125
 
 @SUM &A%, 3
 ? SUM%

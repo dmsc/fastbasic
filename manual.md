@@ -984,6 +984,14 @@ with the hardware. Use with care!
   This returns the floating-point
   value stored at memory address _n_.
 
+  This function is special, as it is
+  possible to use it also at the left
+  side of an assignment, to store a
+  floating point into an address:
+
+      %(1536) = 0.1234
+      ? %(1536)
+
 
 List Of Statements
 ==================
