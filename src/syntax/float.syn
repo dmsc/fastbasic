@@ -65,7 +65,6 @@ FP_T_EXPR: floating point constant, variable or function
         FP_FUNCS
         "(" FP_EXPR ")"
         ARRAY_FLOAT_ADDR emit TOK_FP_LOAD
-        emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%" emit TOK_FP_LOAD
         INT_FUNCTIONS emit TOK_INT_FP
 
 FP_FUNCS:
@@ -85,7 +84,7 @@ FP_FUNCS:
         "%Time" emit TOK_FP_TIME
 
 ADR_EXPR:
-        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT  } E_VAR_SEARCH "%"
+        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%"
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"
         emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%"
 
@@ -109,7 +108,7 @@ COMP_OR_BOOL:
         emit TOK_INT_FP COMP_FP_RIGHT COMP_EXPR_MORE
 
 TEST_BOOL_EXPR:
-        emit TOK_INT_FP COMP_FP_RIGHT  OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
+        emit TOK_INT_FP COMP_FP_RIGHT OR_EXPR_MORE AND_EXPR_MORE COMP_EXPR_MORE
 
 EXPR:
         FP_EXPR COMP_FP_RIGHT
@@ -122,10 +121,11 @@ PRINT_ONE:
         FP_EXPR emit { TOK_FP_STR }
 
 INPUT_VAR:
-        VAR_FP_LVALUE_SADDR    emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
+        VAR_FP_LVALUE_SADDR emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
 
 # Arrays
 ARRAY_FLOAT_ADDR:
+        emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
         emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
         "%"     PAR_EXPR
@@ -135,7 +135,7 @@ DIM_VAR_TYPE:<
         "%" PAR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_MUL6, VT_ARRAY_FLOAT }
 
 DIM_VAR:
-        emit { VT_FLOAT  } E_VAR_SEARCH "%" E_PUSH_VAR
+        emit { VT_FLOAT } E_VAR_SEARCH "%" E_PUSH_VAR
 
 DATA_FLOATS: data number
         "," E_NUMBER_FP DATA_FLOATS
