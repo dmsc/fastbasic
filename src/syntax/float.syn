@@ -128,6 +128,7 @@ INPUT_VAR:
 # Arrays
 ARRAY_FLOAT_ADDR:
         emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
+        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
 
 # This is added at start of current table (<)
 DIM_VAR_TYPE:<
