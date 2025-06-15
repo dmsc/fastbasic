@@ -35,7 +35,7 @@
         .import         __DATA_LOAD__, __DATA_RUN__, __DATA_SIZE__
         ; Move
         .import         move_dwn
-        .importzp       move_dwn_src, move_dwn_dst
+        .importzp       move_source, move_dest
 
         .exportzp       COLRSH, DINDEX, COLCRS, ROWCRS, SAVMSC
         .exportzp       BASIC_TOP, array_ptr
@@ -154,12 +154,12 @@ copy_interpreter:
         ; Copy the DATA segment
         lda     #<__DATA_LOAD__
         ldx     #>__DATA_LOAD__
-        sta     move_dwn_src
-        stx     move_dwn_src+1
+        sta     move_source
+        stx     move_source+1
         lda     #<__DATA_RUN__
         ldx     #>__DATA_RUN__
-        sta     move_dwn_dst
-        stx     move_dwn_dst+1
+        sta     move_dest
+        stx     move_dest+1
         lda     #<__DATA_SIZE__
         ldx     #>__DATA_SIZE__
         jsr     move_dwn

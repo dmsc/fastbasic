@@ -29,11 +29,7 @@
 
         .export         move_dwn, move_get_ptr
         .import         stack_l, stack_h, next_ins_incsp_2
-
-        .exportzp       move_dwn_src, move_dwn_dst
         .importzp       tmp3, move_source, move_dest, move_ins, move_loop
-move_dwn_src= move_source
-move_dwn_dst= move_dest
 
         .segment        "RUNTIME"
 
@@ -62,8 +58,8 @@ move_dwn_dst= move_dest
 
         ; On input:
         ;    Length:            AX
-        ;    Source Pointer:    move_dwn_src
-        ;    Destination Ptr:   move_dwn_dst
+        ;    Source Pointer:    move_source
+        ;    Destination Ptr:   move_dest
         ;
         ; Copy 255 bytes at a time, in total X * 255 + Y bytes, with
         ; 0 <= X < 255, 0 <= Y < 255; so we need:

@@ -66,7 +66,7 @@
 
         .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1, end_ptr
         .import         move_dwn, err_nomem
-        .importzp       move_dwn_src, move_dwn_dst
+        .importzp       move_source, move_dest
 
 .zeropage
 save_x:  .res 1
@@ -122,13 +122,13 @@ mem_ok:
 
         ;       Setup pointers
         lda     mem_start, x
-        sta     move_dwn_src
+        sta     move_source
         adc     alloc_size
-        sta     move_dwn_dst
+        sta     move_dest
         lda     mem_start+1, x
-        sta     move_dwn_src+1
+        sta     move_source+1
         adc     #0
-        sta     move_dwn_dst+1
+        sta     move_dest+1
 
         ; Get LEN into AX
         lda     mem_end
