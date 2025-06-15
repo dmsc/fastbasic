@@ -108,7 +108,7 @@ loop_stk        =       $400
 var_stk         =       $480
 
 ;----------------------------------------------------------
-        .zeropage
+        .segment "IDEZP": zeropage
         ; Relocation amount
 reloc_addr:     .res    2
 last_label_num: .res    1

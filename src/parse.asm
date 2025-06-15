@@ -47,7 +47,7 @@
         .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
 
-        .zeropage
+        .segment "IDEZP": zeropage
 buf_ptr:.res 2
 bmax:   .res 1
 pptr:   .res 2

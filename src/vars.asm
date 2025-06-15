@@ -40,7 +40,7 @@ CIX     = $F2
 INBUFF  = $F3
 
 ; Our internal pointers:
-        .zeropage
+        .segment "IDEZP": zeropage
 name:   .res 2
 var:    .res 2
 len:    .res 1

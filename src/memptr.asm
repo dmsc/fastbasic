@@ -30,7 +30,7 @@
         .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
         .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr, end_ptr
 
-        .zeropage
+        .segment "IDEZP": zeropage
 
         ; End of program to parse
 end_ptr:        .res    2
