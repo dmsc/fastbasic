@@ -58,10 +58,7 @@ break_irq:
         sta     interpreter_jump_fixup
         ; Jump to original handler
 brkky_save = *+1
-        jmp     $FFFF
-
-new_brkky:
-        .word   break_irq
+        jmp     break_irq
 
         ; Compile current buffer, called from the editor
         .code
@@ -80,18 +77,15 @@ COMPILE_BUFFER:
         ; Parse
         jsr     parser_start
 
+        ; Save BRKKY vector and instal our own vector
+        jsr     swap_brkky
+
         ldx     #$FE
         bcs     load_editor_stack ; On error, exit returning <> 0 (0xFEFE)
 
         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
         ; C = clear and X = $FE on enter
 sto_loop:
-        ; Also save BRKKY vector and instal our own vector
-        lda     BRKKY - $FE, x
-        sta     brkky_save - $FE, x
-        lda     new_brkky - $FE, x
-        sta     BRKKY - $FE, x
-
         ; Copy program pointer to the "NEWPTR" editor variable
         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
         sta     fb_var_NEWPTR - $FE,x
@@ -113,10 +107,10 @@ sto_loop:
 
         ; Check if need to run program, only if not relocated
         lda     reloc_addr + 1
-        bne     restore_break ; Exit returning X = 0 (from loop above)
+        bne     load_editor_stack ; Exit returning X = 0 (from loop above)
 
         ; Runs current parsed program
-run_program:
+
         ; Save interpreter position
         ; Current EDITOR.BAS does not need saving of stack
         lda     sptr
@@ -144,31 +138,31 @@ run_program:
         lda     #>__HEAP_RUN__
         sta     var_page
 
-restore_break:
-        ; Restore original BREAK key handler and sets X = 0
-        ldx     #2
-rbreak_loop:
-        lda     brkky_save-1, x
-        sta     BRKKY-1, x
-        dex
-        bne     rbreak_loop
-
-        ; Restore JUMP on interpreter
-        lda     #$4C    ; JMP abs
-        sta     interpreter_jump_fixup
-
         ; Restore saved CPU stack
 load_editor_stack:
         pla
         sta     saved_cpu_stack
 
+        ; Restore original BREAK key handler
+swap_brkky:
+        ldy     #2
+swap_loop:
+        lda     brkky_save-1, y
+        pha
+        lda     BRKKY-1, y
+        sta     brkky_save-1, y
+        pla
+        sta     BRKKY-1, y
+        dey
+        bne     swap_loop
+
+        ; Restore JUMP on interpreter
+        lda     #$4C    ; JMP abs
+        sta     interpreter_jump_fixup
+
+        ; Returns to the editor
         ; X = result, copy to A also
         txa
-
-        ; Load all pointer to execute the editor
-        ; Does not modify A/X
-load_editor:
         rts
-
 
 ; vi:syntax=asm_ca65
