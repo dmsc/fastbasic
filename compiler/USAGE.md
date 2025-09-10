@@ -21,7 +21,7 @@ Basic Usage
 ===========
 
 For simple compilation of BAS files to XEX (Atari DOS executable), call the
-`fastbasic` program, passing the basic source file as the first parameter.
+`fastbasic` program, passing the BASIC source file as the first parameter.
 
 - On Linux:
 
@@ -31,10 +31,11 @@ For simple compilation of BAS files to XEX (Atari DOS executable), call the
 
       C:\path\to\fastbasic myprog.bas
 
-
-The compiler supports multiple possible targets, with different capabilities,
-you can select between the target with the `-t:` compiler option, between the
-following:
+Compiler targets
+----------------
+The compiler supports multiple possible targets, with different capabilities.
+You can select the target with the `-t:` compiler option, from the following
+list:
 
 - `atari-fp`: Compile to an Atari 8-bit executable (`.xex`) with floating-point
   support. This is the default if no other target is selected.
@@ -57,6 +58,8 @@ This example produces a cartridge image for the Atari 8-bit computers:
 
      fastbasic -t:atari-cart-fp myprog.bas
 
+Output files
+------------
 
 The compiler generates various files from the basic source:
 
@@ -83,6 +86,9 @@ compilation, except on errors or when the `-keep` options is enabled:
 - `ASM` file, the assembly source. Each FastBasic source file produces one
   assembly file with the compiled program.
 
+Advanced Usage
+==============
+
 The compilation is a three step process:
 
 - The compiler reads the basic source and produces an assembly file.
@@ -95,10 +101,6 @@ The compilation is a three step process:
 - To search the target, syntax, libraries and other tools, the compiler
   searches in the installation path and in the path in the `FASTBASIC_HOME`
   environment variable.
-
-
-Advanced Usage
-==============
 
 Passing options to the compiler
 -------------------------------
@@ -117,20 +119,20 @@ an `:` or an `=` to separate the option from the argument.
   Shows the compiler version.
 
 - **-n**  
-  Disable all the optimizations, the produced code will be the same as the
-  native IDE. This is useful to debug problems with the optimizations passes,
-  should not be used normally.
+  Disable all optimizations. The produced code will be the same as that
+  produced by the native IDE. This is useful to debug problems with the
+  optimizations passes. This option should not be used normally.
 
 - **-prof**  
-  Helps profiling the compiler generated code. Outputs statistics of the most
-  used tokens and token pairs.
+  Helps in profiling the compiler generated code. Outputs statistics of
+  the most used tokens and token pairs.
 
 - **-g**  
   Generates a label file (`.lbl`) and an assembly listing for each source
   (`BAS` or `ASM`).
 
 - **-d**  
-  Enable parser debug options. This is only useful to debug parser, as it
+  Enable parser debug options. This is only useful to debug the parser, as it
   writes the full parsing tree with all the tried constructs.
 
 - **-l**  / **-l**:*extension*
@@ -148,14 +150,14 @@ an `:` or an `=` to separate the option from the argument.
   **WARNING**: You should always verify that the minimized version compiles to
   the same as the original version, as the parser does not examine the full
   code when minimizing and it could write invalid code. Also, the minimizer
-  does nor remove extra parenthesis or joins data statements, you should
-  manually do those transformations before.
+  does not remove extra parenthesis or join data statements. You should
+  manually do those transformations beforehand.
 
 - **-h**  
   Shows available compiler options.
 
 - **-C**:*linker-file.cfg*  
-  Use a different linker configuration file than the default.
+  Use a different linker configuration file. The default ia `fastbasic.cfg`.
 
 - **-S**:*address*  
   Sets the start address of the compiled binary. The default value is `$2000`,
@@ -163,6 +165,9 @@ an `:` or an `=` to separate the option from the argument.
   address to allow for a bigger DOS, or to have more memory available if you
   don't use a DOS. The address can be specified as decimal or hexadecimal with
   `0x` at front. This option is ignored when producing cartridge images.
+
+- **-c**  
+  Emit bytecode. See section "Extending the language".
 
 - **-X**:*ca65-option*  
   Passes the given option to the CA65 assembler. See the CA65 documentation for
@@ -175,13 +180,14 @@ an `:` or an `=` to separate the option from the argument.
   - **-X:-D***symbol*  
     Define an assembly symbol, used in custom ASM sources.
 
-  When using `-X:` you can't leave spaces for the option, use multiple `-X:`
-  for each space separated argument. For example, you can use `-X:-I -X:path `
-  as two options or `-X:-Ipath`, as both will pass the same option and value.
+  When using `-X:` you can't use spaces between assembler options. Use multiple
+  `-X:` for each space separated argument. For example, you can use
+  `-X:-I -X:path ` as two options or `-X:-Ipath`, as both will pass the same
+  option and value.
 
 - **-s:**:*segment_name*  
   Sets the name of the "section" where the compiler will place the generated
-  code. The default segment is `BYTECODE`, if you change the segment you must
+  code. The default segment is `BYTECODE`. If you change the segment you must
   ensure that there is a segment with that name in the linker configuration.
 
 - **-DL:***symbol=value*  
@@ -211,14 +217,14 @@ an `:` or an `=` to separate the option from the argument.
 Linking other assembly files
 ----------------------------
 
-The compiler support linking to external assembly modules, you can pass them to
-the `fastbasic` command line:
+The compiler supports linking to external assembly modules. You can pass them
+on the `fastbasic` command line:
 
     fastbasic myprog.bas myasm.asm
 
 This will compile `myprog.bas` to `myprog.asm` and then assemble the two files
-together using CA65 and LD65. You can pass multiple `.asm` (or `.o`) files to the
-command line, all the files will be assembled and linked together.
+together using CA65 and LD65. You can pass multiple `.asm` (or `.o`) files on
+the command line. All the files will be assembled and linked together.
 
 From the FastBasic source, you can reference any symbol via `@name`, for example:
 
@@ -253,12 +259,12 @@ You can also export ZP symbols, to import them use `@@name`.
 Extending the language
 ----------------------
 
-The FastBasic compiler is extensible, the syntax is read at compilation time
+The FastBasic compiler is extensible. The syntax is read at compilation time
 from various files with the grammar and compilation rules (the `.syn` files in
 the `syntax` folder).
 
 The following sections show how to add simple functions and statements to the
-language, you can look at the existing syntax files for more advanced usage.
+language. You can look at the existing syntax files for more advanced usage.
 
 
 ### Adding new functions
@@ -287,11 +293,11 @@ following contents:
     include atari-fp
     syntax console.syn
 
-The first line simply reads the `atari-fp` target, so the new target will have
+The first line reads the `atari-fp` target, so the new target will have
 all the definitions already in the standard target.
 
-The second line, adds a new syntax, from the file `console.syn`, this will be
-appended to the syntax in the standard `atari-fp`.
+The second line adds a new syntax from the file `console.syn`. This will be
+appended to the syntax in the standard `atari-fp` target.
 
 #### 2. Create a new syntax file
 
@@ -303,12 +309,13 @@ content inside:
          "CSELECT()"
          "COPTION()"
 
-This defines three new functions, without parameters, and without any coed
+This defines three new functions, without parameters, and without any code
 generated. You could now compile a simple program, but the resulting executable
 will not run because the code for the functions is missing.
 
-To add the code, you need to use the `emit` keyword, and inspect the code
-generated for our test examples.
+To add the code, you need to inspect the code generated for our test examples
+and then use the `emit` keyword in the `console.syn` file to generate bytecode
+based on what you found.
 
 #### 3. Adding code for the new functions
 
@@ -316,7 +323,7 @@ Compile to assembler a simple basic source:
 
     PRINT NOT (PEEK(53279) & 1)
 
-Using `fastbasic -c simple.bas`, and examine the generated assembly file, you
+Use `fastbasic -c simple.bas` and examine the generated assembly file. You
 will see the following bytecode at the end:
 
     TOK_NUM
@@ -332,7 +339,7 @@ will see the following bytecode at the end:
 You can see that the code is similar to the basic source:
 
 - Load number `53279`
-- `PEEK` from that location
+- `PEEK` into that location
 - Load number `1`
 - Perform the `&` operation
 - Compare the result with `0`
@@ -347,8 +354,8 @@ the `console.syn` file, and add the emitted code:
          "CSELECT()"  emit { TOK_NUM, &53279, TOK_PEEK, TOK_PUSH, TOK_BYTE, 2, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
          "COPTION()"  emit { TOK_NUM, &53279, TOK_PEEK, TOK_PUSH, TOK_BYTE, 4, TOK_BIT_AND, TOK_COMP_0, TOK_L_NOT }
 
-Note that the `emit` code needs to be in one line, and the `&` symbol before
-the `53279` indicates a word value (two bytes) instead of a simple byte.
+Note that the `emit` code needs to be on one line. The `&` symbol before
+the `53279` indicates a 16-bit word value (two bytes) instead of a single byte.
 
 #### 4. Testing the new language extensions
 
@@ -368,7 +375,7 @@ Compile with:
 
     fastbasic -t:atari-extra myprog.bas
 
-#### 5. Factorizing the code
+#### 5. Refactoring the code
 
 Instead of writing the full code for each function, you can rearrange the code
 to make the syntax smaller, and use constants to make it more generic, by
@@ -387,7 +394,9 @@ defining a new syntax table:
          "COPTION"  emit { TOK_BYTE, 4 } READ_CONSOLE
 
 Note the use of the symbol `CONSOL` instead of the number, and the rearranging
-of the code to allow factorization.
+of the code to be more concise. 
+
+Read more about bytecode in "Understanding the syntax files".
 
 
 ### Adding new statements
@@ -395,7 +404,7 @@ of the code to allow factorization.
 To add new statements, instead of expanding the table `INT_FUNCTIONS`, you need
 to expand the table `STATEMENT`, but the logic is the same.
 
-Also, to interface the interpreter with new assembly functions, you can emit
+Also, to interface the interpreter with new assembly functions, you can `emit`
 code similar to an `USR()` call, and process the parameters in the assembly.
 
 Let's implement a new statement, `WAIT` that can wait for a vertical line in
@@ -423,7 +432,7 @@ to it:
     include atari-fp
     syntax console.syn wait.syn
 
-And same as the first example, just add a new syntax file, `wait.syn`, with
+And same as the first example, add a new syntax file, `wait.syn`, with
 this content:
 
     SYMBOLS {
@@ -446,7 +455,7 @@ The command line to compile should be:
 
     fastbasic -t:atari-extra testw.bas wait.asm
 
-Testing the resulting file, you should be three color zones in the screen.
+Testing the resulting file, you should see three color zones on the screen.
 
 There some parts of the syntax file that needs explanation:
 
@@ -454,21 +463,21 @@ There some parts of the syntax file that needs explanation:
   denote "optional" part of the name, so you can abbreviate this new statement
   as "WA." or "WAI.".
 
-- We are loafing the `DO_WAIT` address into the `USR` calling address as the
+- We are loading the `DO_WAIT` address into the `USR` calling address as the
   first step in the generated code. This is needed to be able to call the
-  assembly code with out parameter in the accumulator.
+  assembly code without a parameter in the accumulator.
 
 - To get the value of the symbol `DO_WAIT`, we need to specify `import` as the
-  symbol value, this means the value will be filled by the linker.
+  symbol value. This means the value will be filled by the linker.
 
 - Then, we are expecting an `EXPR`. This syntax specifies an integer
-  expression, the parser will parse any expression that gives am integer number
+  expression. The parser will parse any expression that gives am integer number
   here, and the result will be placed in the `A` and `X` registers.
 
 
 ### Syntax of the Target files
 
-The target files (with `.tgt` extension) allows changing many aspects of the
+The target files (with `.tgt` extension) allow us to change many aspects of the
 compilation process.
 
 The syntax of the files is line oriented, with one command per line. The list
@@ -481,8 +490,8 @@ of commands is the following:
              file name given does not have an extension, `.tgt` is added.
 
 - `library`: Gives the name of the library to link with a compiled FastBasic
-             program for this target. Only one library file is allowed, the last
-             one read takes precedence.
+             program for this target. Only one library file is allowed. The
+             last one read takes precedence.
 
 - `config`: Gives the name of the linker configuration file used for this
             target.
@@ -490,7 +499,7 @@ of commands is the following:
 - `extension`: Gives the extension of the compiled file for this target.
 
 - `ca65`: Gives a list of options to pass to the `CA65` assembler. Multiple
-          options are simply added after the previous.
+          options are appended after existing assembler options.
 
 - `syntax`: Gives a list of syntax files to read, defining the syntax of all
             the language. Multiple files are read in the order given, and
@@ -500,7 +509,7 @@ of commands is the following:
 ### Understanding the Syntax files
 
 The syntax files (with `.syn` extension) define the full parsing rules of the
-FastBasic language - there are no predefined rules in the parser, all the
+FastBasic language. There are no predefined rules in the parser. The whole
 language is defined in the included `.syn` files.
 
 In the top level, the syntax files are composed of *tokens*, *symbols*,
@@ -508,7 +517,7 @@ In the top level, the syntax files are composed of *tokens*, *symbols*,
 
 The *tokens* are a list of bytecode language instructions available to the
 parser for the compiled code. The FastBasic interpreter supports up to 128
-tokens, mos implements core functionality (like adding two numbers, or loading
+tokens. Most implement core functionality (like adding two numbers, or loading
 the value of a variable, etc.). The tokens are listed in a special `TOKENS`
 section:
 
@@ -519,7 +528,7 @@ section:
     }
 
 The *external routines* are routines that can be called from the parser to
-parse special constructs, or modify compiler state outside the parser, examples
+parse special constructs, or modify compiler state outside the parser. Examples
 are adding a variable to the list of variables, checking if a variable name is
 already defined, parsing a number or string, etc. The external routines are
 listed in a special `EXTERN` section:
@@ -534,13 +543,13 @@ There is an important external rule `E_EOL` that matches at the end of the
 input line.
 
 All external routines used in the parser needs to be implemented in the
-compiler in C++ and in the 6502 compiler in assembly, or the parser will fail.
+compiler in C++ *and* in the 6502 compiler in assembly, or the parser will fail.
 
 The *symbols* are a list of symbols available to the parser to use for the
-compiled code, this allows the parser to include names instead of numeric
+compiled code. This allows the parser to include names instead of numeric
 constants for the compiled code, and allows using symbols from the library.
 
-The named *rules* define a part of the syntax that the parser understand, and
+The named *rules* define a part of the syntax that the parser understands. They
 are defined using a name followed by a colon:
 
     NAME: rule description
@@ -549,11 +558,11 @@ are defined using a name followed by a colon:
         ...
 
 The *NAME* of the rule must start with a letter, and can contain any number of
-letters, numbers or underscores, on the other hand the *rule description* is
+letters, numbers or underscores. On the other hand the *rule description* is
 one line of any text that is shown when the parser encounters a syntax error
 when expecting this rule.
 
-Each *pattern* define a posible parsing for this rule. Each pattern is tried
+Each *pattern* defines a posible parsing for this rule. Each pattern is tried
 from the first to the last, and the first pattern that matches allows the rule
 to match. If after trying all the patterns, the last one does not match, the
 rule fails to match.
@@ -585,8 +594,8 @@ The patterns can contain the following:
   You can also follow the `emit` with a list of symbols enclosed in curly
   braces ( `{` and `}` ).
 
-The last pattern in a rule can also be the special word `pass`, this makes the
-parser to accept the rule even if no other pattern matched, effectively making
+The last pattern in a rule can also be the special word `pass`. This makes the
+parser accept the rule even if no other pattern matched, effectively making
 the rule optional.
 
 Finally, there is a special rule named `PARSE_START` that the parser calls for
