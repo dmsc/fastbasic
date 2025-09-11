@@ -60,7 +60,7 @@ jobs:
 
   build-windows:
     name: Build and run tests on Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     permissions:
       contents: read
       pull-requests: read
@@ -74,10 +74,10 @@ jobs:
         echo "C:\msys64\usr\bin" >> $GITHUB_PATH
         echo "CC=i686-w64-mingw32-gcc" >> "$GITHUB_ENV"
       shell: bash
-    - name: Install ZIP
+    - name: Install packages
       run: |
         export
-        pacman -Sy --noconfirm --noprogressbar --needed zip
+        pacman -Sy --noconfirm --noprogressbar --needed zip mingw-w64-i686-gcc mingw-w64-x86_64-gcc
       shell: bash
     - name: make
       run: |

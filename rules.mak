@@ -26,12 +26,24 @@ dist: $(ATR) $(ZIPFILE)
 
 .PHONY: clean
 clean:
-	$(Q)rm -f $(OBJS) $(LSTS) $(FILES) $(ATR) $(ZIPFILE) $(XEXS) $(MAPS) \
-	      $(LBLS) $(SYNTP) $(COMPILER_HOST) $(FASTBASIC_TARGET_OBJ) \
-	      $(FASTBASIC_HOST_DEPS) $(FASTBASIC_TARGET_DEPS) $(SYNTAX_PARSER_DEPS)\
-	      $(SAMPLE_BAS:%.bas=build/gen/%.asm) \
-	      $(FASTBASIC_HOST_OBJ) $(SYNTAX_PARSER_OBJ)
-	$(Q)rm -f $(TESTS_XEX) $(TESTS_ROM) $(TESTS_ASM) $(TESTS_OBJ) $(TESTS_ATB) $(TESTS_LBL) $(RUNTEST_OBJS) $(RUNTEST) $(TESTS_STAMP) $(RUNTEST_OBJS:.o=.d)
+	$(Q)rm -f $(OBJS)
+	$(Q)rm -f $(LSTS)
+	$(Q)rm -f $(FILES)
+	$(Q)rm -f $(ATR) $(ZIPFILE)
+	$(Q)rm -f $(XEXS) $(MAPS) $(LBLS)
+	$(Q)rm -f $(SYNTP) $(COMPILER_HOST)
+	$(Q)rm -f $(FASTBASIC_TARGET_OBJ) $(FASTBASIC_HOST_OBJ)
+	$(Q)rm -f $(SYNTAX_PARSER_OBJ) $(SYNTAX_PARSER_DEPS)
+	$(Q)rm -f $(FASTBASIC_HOST_DEPS) $(FASTBASIC_TARGET_DEPS)
+	$(Q)rm -f $(SAMPLE_BAS:%.bas=build/gen/%.asm)
+	$(Q)rm -f $(TESTS_XEX)
+	$(Q)rm -f $(TESTS_ROM)
+	$(Q)rm -f $(TESTS_ASM)
+	$(Q)rm -f $(TESTS_OBJ)
+	$(Q)rm -f $(TESTS_ATB)
+	$(Q)rm -f $(TESTS_LBL)
+	$(Q)rm -f $(TESTS_STAMP)
+	$(Q)rm -f $(RUNTEST_OBJS) $(RUNTEST) $(RUNTEST_OBJS:.o=.d)
 
 .PHONY: distclean
 distclean: clean
