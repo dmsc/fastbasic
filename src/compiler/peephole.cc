@@ -196,6 +196,10 @@ class peephole
     {
         for(size_t i = 0; i < code.size(); i++)
         {
+            // Skip non-tokens
+            if(!code[i].is_tok())
+                continue;
+
             current = i;
             // Sequences:
             //   TOK_BYTE / x
@@ -226,6 +230,10 @@ class peephole
     {
         for(size_t i = 0; i < code.size(); i++)
         {
+            // Skip non-tokens
+            if(!code[i].is_tok())
+                continue;
+
             current = i;
             // Sequences:
             //   TOK_NUM / x == 0
@@ -259,6 +267,10 @@ class peephole
     {
         for(size_t i = 0; i < code.size(); i++)
         {
+            // Skip non-tokens
+            if(!code[i].is_tok())
+                continue;
+
             current = i;
             if(mtok(0, "TOK_PUSH_BYTE"))
             {
@@ -405,7 +417,13 @@ class peephole
         int ioch = 0;
         for(current = 0; current < code.size(); current++)
         {
-            if(mlabel(0) || mtok(0, "TOK_CALL"))
+            if(!code[current].is_tok())
+            {
+                if(mlabel(0))
+                    ioch = 0; // Assume 0 after any label or CALL
+                continue;
+            }
+            if(mtok(0, "TOK_CALL"))
                 ioch = 0; // Assume 0 after any label or CALL
             else if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_IOCHN"))
             {
@@ -468,6 +486,9 @@ class peephole
         {
             for(current = 0; current < code.size(); current++)
             {
+                if(!code[current].is_tok())
+                    continue;
+
                 if((mtok(0, "TOK_CJUMP") || mtok(0, "TOK_CNJUMP") ||
                     mtok(0, "TOK_JUMP")) &&
                    mlblw(1) && tgt.find(wlbl(1)) != tgt.end())
@@ -511,10 +532,36 @@ class peephole
             replace_label_targets();
             trace_iochn();
             int print_color = 0;
+            // Tracks last top-of-stack value, if known
+            int last_TOS_value = -1;
 
             for(size_t i = 0; i < code.size(); i++)
             {
+
+                // Only go through tokens
+                if(!code[i].is_tok())
+                {
+                    // Invalidate TOS after a label
+                    if(code[i].is_label())
+                        last_TOS_value = -1;
+                    continue;
+                }
+
                 current = i;
+
+                // Track current print color
+                if(mtok(0, "TOK_BYTE_POKE") && mcbyte(1, "PRINT_COLOR"))
+                {
+                    print_color = last_TOS_value;
+                    last_TOS_value = -1;
+                    continue;
+                }
+
+                // Track TOS value
+                if(mtok(0, "TOK_NUM") && mword(1))
+                    last_TOS_value = val(1);
+                else
+                    last_TOS_value = -1;
 
                 // Remove extra PRINT COLOR
                 if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_BYTE_POKE") &&
@@ -530,15 +577,6 @@ class peephole
                         i--;
                         continue;
                     }
-                }
-
-                // Track current print color
-                if(mtok(2, "TOK_BYTE_POKE") && mcbyte(3, "PRINT_COLOR"))
-                {
-                  if(mtok(0, "TOK_NUM") && mword(1))
-                      print_color = val(1);
-                  else
-                      print_color = -1;
                 }
 
                 // Sequences:
