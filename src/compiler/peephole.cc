@@ -1480,7 +1480,11 @@ class peephole
                 // Remove dead code after a RET or END
                 if((mtok(0, "TOK_RET") || mtok(0, "TOK_END")) && !mlabel(1))
                 {
-                    del(1);
+                    int last = 1;
+                    while(current + last < code.size() && !mlabel(last))
+                        last++;
+                    while(--last >= 1)
+                        del(last);
                     continue;
                 }
                 // Convert PRINT CHR$(X) to PUT X
