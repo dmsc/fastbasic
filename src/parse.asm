@@ -148,7 +148,7 @@ parse_eof:
         ;lda     #TOK_END       ; Already A=0 from above
         .assert TOK_END = 0, error, "Parser depends on TOK_END = 0"
         clc
-        jmp     emit_const      ; Exit after emit
+        bcc     emit_const      ; Exit after emit
 
 .proc parser_fetch
         inc     pptr

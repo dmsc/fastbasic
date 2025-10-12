@@ -660,11 +660,8 @@ ret:    rts
         sta     loop_stk - 1, y
         pla
         asl     ; Check BIT 6
-        bmi     xit
-::inc_opos_2:
-        jsr     parser_inc_opos
-        jsr     parser_inc_opos
-xit:    clc
+        bpl     emit_AX
+        clc
         rts     ; C is cleared on exit!
 .endproc
 
@@ -759,10 +756,11 @@ move:
 .endproc
 
 .proc   E_POP_WHILE
+        ; Skip over jump (position + 2)
+        jsr     emit_AX
         ; Pop saved "jump to end" position
         lda     #LT_WHILE_2
-        ; Save current position + 2 (skip over jump)
-        jsr     inc_opos_2
+        ; Save current position
         jsr     pop_patch_codep
         ; Pop saved "loop reentry" position
         lda     #LT_WHILE_1

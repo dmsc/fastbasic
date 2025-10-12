@@ -120,16 +120,14 @@ saved_cpu_stack:
         tya
         inx
         ldy     alloc_size
-        beq     nxt
-;        .byte   $2C   ; Skip 2 bytes over next "DEC"
-        bne     loop    ; Prefer branch, is faster
+        jmp     nxt     ; Start loop
 
 pgloop: dec     move_dest+1
 loop:   dey
         sta     (move_dest), y
-        bne     loop
+nxt:    bne     loop
 
-nxt:    dex
+        dex
         bne     pgloop
 
         rts
