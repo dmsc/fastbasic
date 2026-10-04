@@ -375,7 +375,7 @@ class parse
         if(pos < str.length())
         {
             char p = str[pos];
-            if(p >= 'a' && p >= 'z')
+            if(p >= 'a' && p <= 'z')
                 p = p - ('a' - 'A');
             if(c >= 'a' && c <= 'z')
                 c = c - ('a' - 'A');
