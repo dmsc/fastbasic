@@ -1,0 +1,12 @@
+Name: Test statement "INPUT" into DATA arrays
+Test: run
+Input:
+7
+2345
+9
+.
+Output:
+Start
+?1        173
+Word:     1         1000      2345
+?1        9
