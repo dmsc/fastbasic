@@ -1,0 +1,3 @@
+Name: Check detection of lines too long for the native compiler
+Test: compile-error-native
+Error: too long at line 3 column 0

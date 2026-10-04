@@ -230,6 +230,8 @@ loop_redo:
         sta     (bptr), y
         cmp     #$9B
         beq     ucase_end       ; End upper-casing, C=1
+        cpy     #$FF
+        beq     too_long        ; Line longer than 255 characters
 
         cmp     #'"'
         bne     skip_str        ; Skip string constants
