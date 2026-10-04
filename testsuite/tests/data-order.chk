@@ -1,0 +1,6 @@
+Name: Test order of DATA arrays in one line
+Test: run
+Output:
+1
+8
+8

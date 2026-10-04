@@ -155,6 +155,7 @@ class parse
     std::set<saved_error> saved_errors;
     int linenum;
     std::map<std::string, std::vector<codew>> procs;
+    std::vector<std::string> proc_order; // procs in order of creation
     std::vector<std::string> proc_stack;
     std::map<std::string, int> vars;
     std::map<std::string, labelType> labels;
@@ -584,6 +585,8 @@ class parse
     void push_proc(std::string l)
     {
         proc_stack.push_back(l);
+        if(!procs.count(l))
+            proc_order.push_back(l);
         code = &procs[l];
     }
     void pop_proc(std::string l)
@@ -609,11 +612,11 @@ class parse
                 p.push_back(codew::ctok("TOK_END", 0));
             // To emit procs sorted by line number, copy to a vector
             std::vector<std::vector<codew> *> sprocs;
-            for(auto &c : procs)
-                if(!c.first.empty() && c.second.size())
-                    sprocs.push_back(&c.second);
-            // Sort by line number
-            std::sort(std::begin(sprocs), std::end(sprocs),
+            for(auto &l : proc_order)
+                if(procs[l].size())
+                    sprocs.push_back(&procs[l]);
+            // Sort by line number, keeping the source order of blocks in one line
+            std::stable_sort(std::begin(sprocs), std::end(sprocs),
                       [](const std::vector<codew> *a, const std::vector<codew> *b)
                       { return (*a)[0].linenum() < (*b)[0].linenum(); });
             // Emit into code
