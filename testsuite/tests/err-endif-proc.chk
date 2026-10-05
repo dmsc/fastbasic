@@ -1,0 +1,4 @@
+Name: Check detection of ENDIF without IF inside PROC
+Test: compile-error
+Error: bad loop at line 3 column 4
+Error-pos: 3:4

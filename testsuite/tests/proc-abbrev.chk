@@ -1,0 +1,12 @@
+Name: Test abbreviations of ENDPROC and ENDIF
+Test: run
+Output:
+Start
+1
+BIG 5
+ONE
+TWO
+MANY
+THREE
+P4
+IF

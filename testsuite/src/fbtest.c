@@ -29,14 +29,16 @@
 
 #ifdef _WIN32
 # define PATH_SEP "\\"
-// Implement missing "strndup"
-static char *strndup(const char *s, size_t n)
+// Implement "strndup", missing in older MinGW versions. Use another name, as
+// newer MinGW versions declare it in <string.h>.
+static char *fbtest_strndup(const char *s, size_t n)
 {
     char *ret = malloc(n + 1);
     strncpy(ret, s, n);
     ret[n] = 0;
     return ret;
-};
+}
+# define strndup fbtest_strndup
 #else
 # define PATH_SEP "/"
 #endif

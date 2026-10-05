@@ -44,7 +44,7 @@
         ; From parser.asm
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
-        .importzp       ERR_LOOP
+        .importzp       ERR_LOOP, parse_err
 
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
@@ -801,6 +801,24 @@ move:
 .endproc
 
 .proc   E_POP_IF
+        ; Check that there is an IF or ELSE to close. If not, don't give the
+        ; error now: fail, so the parser tries the next statements (ENDIF and
+        ; ENDPROC share the "EN." abbreviation), and report a loop error only
+        ; if none matches. The cross compiler does the same.
+        ldy     loop_sp
+        beq     no_if
+        lda     loop_stk-3, y
+        .assert LT_ELSE = LT_IF + 1, error, "LT_ELSE must be LT_IF + 1"
+        ; C=0 on entry, so this is A - LT_IF: 0 for IF, 1 for ELSE
+        sbc     #LT_IF-1
+        cmp     #2
+        bcc     is_if
+no_if:
+        lda     #ERR_LOOP
+        sta     parse_err
+        sec
+        rts
+is_if:
         ; Patch IF/ELSE with current position
         lda     #LT_ELSE
 check_elif:

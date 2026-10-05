@@ -22,7 +22,7 @@
         .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; Parser state
         .exportzp       bptr, bpos, bmax, linenum, buf_ptr
-        .exportzp       loop_sp, var_sp
+        .exportzp       loop_sp, var_sp, parse_err
         ; Output state
         .exportzp       opos
         ; From actions.asm
@@ -51,6 +51,7 @@
 buf_ptr:.res 2
 bmax:   .res 1
 pptr:   .res 2
+parse_err:      .res 1  ; Error to report if the statement does not parse
 
 ; This variables are cleared in one loop:
 zp_clear_start:
@@ -260,6 +261,8 @@ ucase_end:
         lda     #0
 parse_start:
         ; Parse statement, A=0 on input
+        ldx     #ERR_PARSE
+        stx     parse_err
         ldx     #<(PARSE_START-1)
         ldy     #>(PARSE_START-1)
 
@@ -449,7 +452,7 @@ go_ploop:
 :       jmp     ploop_line
 
 set_parse_error:
-        ldy     #ERR_PARSE
+        ldy     parse_err
         jmp     parser_error
 
 ; vi:syntax=asm_ca65
