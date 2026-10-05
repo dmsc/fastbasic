@@ -1113,6 +1113,19 @@ class peephole
                     i--;
                     continue;
                 }
+                //  VAR = VAR + 1 (or 1 + VAR), after the rules above   ==>  INC VAR
+                //   TOK_NUM / 1 / TOK_ADD_VAR / x / TOK_VAR_STORE / x -> TOK_INCVAR / x
+                if(mtok(0, "TOK_NUM") && mword(1) && val(1) == 1 &&
+                   mtok(2, "TOK_ADD_VAR") && mtok(4, "TOK_VAR_STORE") && varn(3) == varn(5))
+                {
+                    set_tok(2, "TOK_INCVAR");
+                    del(5);
+                    del(4);
+                    del(1);
+                    del(0);
+                    i--;
+                    continue;
+                }
                 //  VAR = VAR + 1   ==>  INC VAR
                 //   TOK_VAR / x / TOK_PUSH / TOK_NUM / 1 / TOK_ADD / TOK_VAR_STORE / x
                 //        -> TOK_INCVAR / x

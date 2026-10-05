@@ -125,7 +125,7 @@ static bool parse_line(std::string line, int ln, parse &s, bool show_text,
                 {
                     if(!short_line.size())
                         short_line = txt;
-                    else if(short_line.size() + 1 + txt.size() < short_text)
+                    else if(short_line.size() + 1 + txt.size() <= short_text)
                     {
                         short_line += ':';
                         short_line += txt;

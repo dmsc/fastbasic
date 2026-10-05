@@ -123,6 +123,12 @@ PRINT_ONE:
 INPUT_VAR:
         VAR_FP_LVALUE_SADDR emit { TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
 
+# Floating point DATA, added at start of the table (<): VAR_WORD_LVALUE_SADDR
+# would create a variable with the same name, and accept it
+INPUT_VAR:<
+        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR \
+             emit { TOK_MUL6, TOK_ADD, TOK_SADDR, TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
+
 # Arrays
 ARRAY_FLOAT_ADDR:
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"

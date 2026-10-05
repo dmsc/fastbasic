@@ -1,0 +1,8 @@
+Name: Test statement "INPUT" into floating point DATA arrays
+Test: run-fp
+Input:
+0.25
+.
+Output:
+Start
+?1        1.5       0.25
