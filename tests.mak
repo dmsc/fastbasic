@@ -61,7 +61,10 @@ RUNTEST_OBJS=build/obj/tests/fbtest.o $(MINI65_SRC:%.c=build/obj/tests/%.o)
 .PHONY: test
 test: $(TESTS_STAMP) $(RUNTEST)
 
-build/tests/%.stamp: testsuite/tests/%.chk testsuite/tests/%.bas $(RUNTEST) $(TESTS_DEPS) | build/tests
+.SECONDEXPANSION:
+build/tests/%.stamp: testsuite/tests/%.chk $$(wildcard testsuite/tests/$$*.bas) \
+                     $(wildcard testsuite/tests/fixtures/*) \
+                     $(RUNTEST) $(TESTS_DEPS) | build/tests
 	$(Q)$(RUNTEST) $<
 	@touch $@
 
