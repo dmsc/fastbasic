@@ -73,6 +73,7 @@ converted to ATASCII EOL `$9B`).
 | `<DOWN>`     | Cursor down (`$1D`).                                  |
 | `<LEFT>`     | Cursor left (`$1E`).                                  |
 | `<RIGHT>`    | Cursor right (`$1F`).                                 |
+| `<RETURN>`   | Return / ATASCII EOL (`$9B`).                         |
 | `<CLS>`      | Clear screen (`$7D`).                                 |
 | `<BACKSP>`   | Backspace (`$7E`).                                    |
 | `<TAB>`      | Tab (`$7F`).                                          |
@@ -98,7 +99,7 @@ Example — the following types "HELLO", runs the program, saves as
 For normal (non-editor) tests, every line break in `Input:` is passed to the
 program.  In editor tests, the line break immediately before the terminating
 `.` is treated as a section separator, not as a RETURN key press.  Use an
-explicit `\x9b` or an empty line before `.` when the script needs a final
+`<RETURN>` or an empty line before `.` when the script needs a final
 RETURN.
 
 

@@ -578,7 +578,8 @@ static char *expand_notation(char *input, size_t *len_out)
 {
     static const struct { const char *name; int code; } keys[] = {
         { "ESC", 0x1B }, { "UP", 0x1C }, { "DOWN", 0x1D },
-        { "LEFT", 0x1E }, { "RIGHT", 0x1F }, { "CLS", 0x7D },
+        { "LEFT", 0x1E }, { "RIGHT", 0x1F }, { "RETURN", 0x9B },
+        { "CLS", 0x7D },
         { "BACKSP", 0x7E }, { "TAB", 0x7F }, { "DELLN", 0x9C },
         { "INSLN", 0x9D }, { "DELTAB", 0x9E }, { "SETTAB", 0x9F },
         { "BELL", 0xFD }, { "DEL", 0xFE }, { "INS", 0xFF },
