@@ -3,5 +3,5 @@ Test: run
 Output:
 Start
 SCREEN: set graphics 1 with text window
-}SCREEN: plot 1,1  color 125
+}SCREEN: plot 0,0  color 125
 Ok

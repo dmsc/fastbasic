@@ -26,6 +26,7 @@ MINI65_SRC=\
   atari.c\
   ataridos.c\
   atcio.c\
+  atedit.c\
   atsio.c\
   dosfname.c\
   hw.c\
@@ -37,6 +38,8 @@ TESTS := $(sort $(wildcard testsuite/tests/*.chk))
 
 # The tests need to be rerun if any of this files change:
 TESTS_DEPS=\
+	build/bin/fb.xex\
+	build/bin/fbi.xex\
 	build/bin/fbc.xex\
 	build/bin/fbci.xex\
 	build/bin/fastbasic$(HOST_EXT)\
