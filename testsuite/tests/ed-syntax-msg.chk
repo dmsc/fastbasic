@@ -1,0 +1,36 @@
+Name: ed syntax msg
+Test: editor
+Max-cycles: 800000000
+Document:
+A = 1
+? B
+.
+Input:
+^R
+.
+Screen:
+Parsing: parse error\xa0
+A = 1
+? B
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+.
