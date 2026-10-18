@@ -1,0 +1,15 @@
+Name: assert plumbing
+Test: editor
+Max-cycles: 800000000
+Document:
+' assert-plumbing help document
+
+.
+Input:
+? "MARKERXYZ"
+^R ^WT2.XEX
+^Q^C
+.
+Expect-out: Parsing
+Expect-out: MARKERXYZ
+Exists: T2.XEX
