@@ -1,3 +1,5 @@
+# TODO: Ctrl-G 0 currently lands on line 02 because of abs(topLine - 1).
+# Expected is line 01; keep this test documenting the bug for now.
 Name: ed goto 0
 Test: editor
 Max-cycles: 800000000
@@ -31,3 +33,4 @@ line 22
 line 23
 line 24
 .
+Cursor: 1,0

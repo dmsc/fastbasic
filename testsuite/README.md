@@ -19,7 +19,8 @@ declared explicitly with the `Document:` key, so the same `.bas` file is never
 silently used as both program source and editor buffer.
 
 The `.chk` file is a sequence of `Key: value` lines, followed by multi-line
-sections terminated by a line containing only `.`.  Recognised keys:
+sections terminated by a line containing only `.`.  Lines starting with `#` in
+the header are comments.  Recognised keys:
 
 | Key             | Value                                                          |
 |:----------------|:---------------------------------------------------------------|
@@ -32,6 +33,7 @@ sections terminated by a line containing only `.`.  Recognised keys:
 | `Input:`        | Keystrokes fed to the running program (section, terminated by `.`). |
 | `Output:`       | Expected captured output stream (rest of file, exact match).   |
 | `Screen:`       | Expected screen state, up to 24 lines of up to 40 chars (section). |
+| `Cursor:`       | Expected cursor position as `row,col` (editor tests, from ROWCRS/COLCRS). |
 | `Expect-out:`   | Substring that must appear in the captured output.             |
 | `Exists:`       | Filename that must exist after the run (in the test's DOS root).|
 | `Check <file>:` | Section with expected content of a file written during the run.|
@@ -173,6 +175,11 @@ inverse space, `<CLS>` for `$7D`, UTF-8 characters like `𝗔` for inverse A, et
 When a comparison fails, the actual screen row is also printed using UTF-8
 characters with ANSI inverse-video escapes, so you can visually see what the
 Atari screen looks like.
+
+A `Cursor: row,col` line asserts the cursor position after the run; coordinates
+are zero-based and are read from the emulated `ROWCRS` and `COLCRS` OS
+variables.  This complements the cursor glyph in `Screen:` and is useful for
+navigation tests.
 
 The simulation is terminated when the input feeder reaches EOF, so the screen
 snapshot captures the state at that point.

@@ -162,7 +162,7 @@ static void print_screen_row_utf8(FILE *fp, int row)
 static int run_atari_prog(const char *progname, char *output, size_t *output_len,
                           const char *input, size_t input_len, uint64_t max_cycles,
                           int is_rom, const char *cmdline, int fix_margins,
-                          const char *dos_root)
+                          const char *dos_root, int *out_row, int *out_col)
 {
     // Init input/output
     str_in = input;
@@ -231,6 +231,12 @@ static int run_atari_prog(const char *progname, char *output, size_t *output_len
     // TODO: this should depend on actual compiled value, we currently expect the
     //       value to be constant.
     int x = 0x28 != (sim65_get_byte(s, 0x8E) & 0xFF);
+    // Read the OS cursor variables before freeing the simulator.
+    if (out_row)
+        *out_row = sim65_get_byte(s, ROWCRS);
+    if (out_col)
+        *out_col = sim65_get_byte(s, COLCRS) |
+                   (sim65_get_byte(s, COLCRS + 1) << 8);
     // Update output length
     *output_len = str_out_pos;
     free(s);
@@ -271,7 +277,7 @@ int run_test_xex(const char *fname, const char *input, const char *expected_out,
     size_t len = strlen(expected_out) + 128;
     char *out = calloc(len + 1, 1);
 
-    int e = run_atari_prog(fname, out, &len, input, strlen(input), max_cycles, rom, 0, 1, NULL);
+    int e = run_atari_prog(fname, out, &len, input, strlen(input), max_cycles, rom, 0, 1, NULL, NULL, NULL);
     if (!e)
     {
         // Check
@@ -363,7 +369,7 @@ static int compile_native(const char *atbname, const char *xexname, const char *
         sprintf(cmd, "%s %s", atbname, xexname);
     else
         sprintf(cmd, "%s %s", atbname + l, xexname + l);
-    int e = run_atari_prog(compiler, out, &len, 0, 0, MAX_FPC_CYCLES, 0, cmd, 1, NULL);
+    int e = run_atari_prog(compiler, out, &len, 0, 0, MAX_FPC_CYCLES, 0, cmd, 1, NULL, NULL, NULL);
 
     if (e)
         fprintf(stderr, "%s: can't execute compiler.\n", compiler);
@@ -753,6 +759,8 @@ int fbtest(const char *fname)
     // Expected screen content (24 rows of up to 40 cols)
     char *expected_screen[24];
     int screen_lines = 0;
+    // Expected cursor position, read from ROWCRS/COLCRS after the run
+    int cursor_set = 0, cursor_row = 0, cursor_col = 0;
     int error_pos_line = 0, error_pos_column = 0;
     int test = 0, n = 0, line = 0;
     uint64_t max_cycles = 20000000;
@@ -761,6 +769,9 @@ int fbtest(const char *fname)
     {
         line ++;
         if ( !*lbuf || *lbuf == '\n' )
+            continue;
+        // Header comments
+        if (lbuf[0] == '#')
             continue;
 
         char key[48], buf[256];
@@ -823,6 +834,23 @@ int fbtest(const char *fname)
                         fname, line, buf);
                 return -1;
             }
+        }
+        else if (!strcasecmp(key, "cursor"))
+        {
+            if (cursor_set)
+            {
+                fprintf(stderr, "%s:%d: more than one CURSOR entry.\n", fname, line);
+                return -1;
+            }
+            if (2 != sscanf(buf, " %i , %i", &cursor_row, &cursor_col) ||
+                cursor_row < 0 || cursor_row >= 24 ||
+                cursor_col < 0 || cursor_col >= 40)
+            {
+                fprintf(stderr, "%s:%d: error, invalid value for CURSOR '%s'\n",
+                        fname, line, buf);
+                return -1;
+            }
+            cursor_set = 1;
         }
         else if (!strcasecmp(key, "document"))
         {
@@ -1059,6 +1087,11 @@ int fbtest(const char *fname)
         fprintf(stderr, "%s: error, DOCUMENT is only valid for editor tests\n", fname);
         return -1;
     }
+    if (cursor_set && !(test & test_editor))
+    {
+        fprintf(stderr, "%s: error, CURSOR is only valid for editor tests\n", fname);
+        return -1;
+    }
     if (!expected_out)
         expected_out = strdup("");
     if (!input_buf)
@@ -1203,17 +1236,18 @@ int fbtest(const char *fname)
             // Run the IDE with the keystroke script
             size_t len = 65536;
             char *out = calloc(len + 1, 1);
+            int cur_row = 0, cur_col = 0;
             if (!e)
             {
                 str_stop_on_eof = 1;
                 e = run_atari_prog(ide, out, &len, input_buf, input_len,
-                                   max_cycles, 0, 0, 0, test_root);
+                                   max_cycles, 0, 0, 0, test_root,
+                                   &cur_row, &cur_col);
                 str_stop_on_eof = 0;
             }
-            // Cursor state is exposed for diagnostics only: the screen
-            // accessor already includes the visible cursor glyph.
-            int cur_row, cur_col;
-            atario_cursor_get(&cur_row, &cur_col);
+            // Cursor state from ROWCRS/COLCRS is used for Cursor: checks and
+            // diagnostics.  The screen accessor already includes the visible
+            // cursor glyph, so it must not be XORed again.
 
             // Dump final E: screen state as raw ATASCII bytes for hex analysis.
             if (getenv("FB_DUMP_SCREEN"))
@@ -1262,6 +1296,13 @@ int fbtest(const char *fname)
                         e = -1;
                     }
                 }
+            }
+            if (!e && cursor_set &&
+                (cur_row != cursor_row || cur_col != cursor_col))
+            {
+                fprintf(stderr, "%s: CURSOR mismatch: expected %d,%d, got %d,%d\n",
+                        fname, cursor_row, cursor_col, cur_row, cur_col);
+                e = -1;
             }
             if (!e && *expected_out)
                 e = check_output(fname, expected_out, out);

@@ -1,3 +1,4 @@
+# DEL at EOF must not crash.  The screen is intentionally unchanged.
 Name: ed del eof
 Test: editor
 Max-cycles: 800000000
