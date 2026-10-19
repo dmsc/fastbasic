@@ -1,0 +1,36 @@
+Name: ed quit prompt
+Test: editor
+Max-cycles: 800000000
+Document:
+abc
+.
+Input:
+X^Q
+.
+Expect-out: Save
+Screen:
+Save? D:\xa0
+Xabc
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+\xfd
+.
