@@ -1,0 +1,4 @@
+Name: Check detection of ENDPROC without PROC
+Test: compile-error
+Error: bad loop at line 3 column 3
+Error-pos: 3:3

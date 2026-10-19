@@ -1383,11 +1383,16 @@ Control Statements
 
 **Define A Subroutine.**  
 **PROC _name_ _var1_ .../ PR.**  
-**ENDPROC / ENDP.**
+**ENDPROC / EN.**
 
   `PROC` statement starts the
   definition of a subroutine that can
   be called via `EXEC` or `@`.
+
+  `EN.` is also an abbreviation of
+  `ENDIF`: if there is an `IF` open,
+  `EN.` closes the `IF`, if not, it
+  closes the `PROC`.
 
   You can pass a list of integer
   variables separated by spaces after
