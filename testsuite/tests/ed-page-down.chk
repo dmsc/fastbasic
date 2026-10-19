@@ -1,0 +1,35 @@
+# Current code moves 20 lines; manual.md says 19.  Document current behavior.
+Name: ed-page-down
+Test: editor
+Max-cycles: 800000000
+Document: fixtures/lines40.txt
+Input:
+^I
+.
+Screen:
+\x92\x92\xc4\xba\xc8\xc5\xcc\xd0\xae\xd4\xd8\xd4\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\x92\xb2\xb1\x92\x92\x92\x92\x92\x92
+line 01
+line 02
+line 03
+line 04
+line 05
+line 06
+line 07
+line 08
+line 09
+line 10
+line 11
+line 12
+line 13
+line 14
+line 15
+line 16
+line 17
+line 18
+line 19
+line 20
+\xecine 21
+line 22
+line 23
+.
+Cursor: 21,0
