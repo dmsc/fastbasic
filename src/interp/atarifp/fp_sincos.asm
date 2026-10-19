@@ -78,8 +78,7 @@ FPNORM=$DC00
         lda     DEGFLAG
         beq     do_rad
         ldx     #<fp_90
-        ; TODO: in the case of the assert bellow, you could add an "INY"
-        .assert (>fp_pi1_2) = (>fp_90), error, "PI/2 and 90 fp constants in different pages"
+        ldy     #>fp_90
 do_rad:
 
         jsr     FLD1R
