@@ -228,6 +228,28 @@ Both dump variables are switches; the files are always written under
 `build/tests/`.
 
 
+Cleanup
+-------
+
+Each test writes a cleanup manifest derived from its `.chk` declarations:
+
+    build/tests/.fbtest-manifest-<test-name>
+
+For editor tests the manifest contains `HELP.TXT` (from `Document:`), every
+`Files:` copy, every `Check:` and `Exists:` file, and the test directory.  For
+normal tests it contains the `Check:` and `Exists:` files.  The opt-in
+`.screen` / `.output` debug dumps are also listed.
+
+`make clean` reads those manifests and removes only the listed files.
+Editor test directories are removed with `rmdir`, so a directory that still
+contains user files is left in place.  Manifests are written in binary mode so
+the same cleanup works on Windows with the MSYS shell tools used by the rest of
+the Makefile.
+
+Every file written by a test must therefore be declared with `Document:`,
+`Files:`, `Check:`, or `Exists:`.
+
+
 Architecture
 ------------
 

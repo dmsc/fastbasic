@@ -43,6 +43,19 @@ clean:
 	$(Q)rm -f $(TESTS_ATB)
 	$(Q)rm -f $(TESTS_LBL)
 	$(Q)rm -f $(TESTS_STAMP)
+	$(Q)if [ -d build/tests ]; then \
+		for manifest in build/tests/.fbtest-manifest-*; do \
+			[ -f "$$manifest" ] || continue; \
+			while read -r kind path; do \
+				case "$$kind" in \
+					F) rm -f "$$path" ;; \
+					D) rmdir "$$path" 2>/dev/null || true ;; \
+				esac; \
+			done < "$$manifest"; \
+			rm -f "$$manifest"; \
+		done; \
+	fi
+	$(Q)rmdir build/tests 2>/dev/null || true
 	$(Q)rm -f $(RUNTEST_OBJS) $(RUNTEST) $(RUNTEST_OBJS:.o=.d)
 
 .PHONY: distclean

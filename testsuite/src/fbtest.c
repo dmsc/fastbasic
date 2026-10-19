@@ -325,6 +325,120 @@ static void unlink_in(const char *dir, const char *name)
     }
 }
 
+// A manifest lists the paths created by one test.  make clean reads these
+// manifests and removes only the listed files; directories are removed with
+// rmdir, so user files left in a test directory are preserved.
+static FILE *manifest_open(const char *tag_name)
+{
+    char *path;
+    if (asprintf(&path, "%s/.fbtest-manifest-%s", output_dir, tag_name) < 0)
+        return NULL;
+    FILE *f = fopen(path, "wb");
+    free(path);
+    return f;
+}
+
+static void manifest_add(FILE *f, char kind, const char *path)
+{
+    fprintf(f, "%c %s\n", kind, path);
+}
+
+static void manifest_add_file(FILE *f, const char *dir, const char *name)
+{
+    char *path;
+    if (asprintf(&path, "%s/%s", dir, name) >= 0)
+    {
+        manifest_add(f, 'F', path);
+        free(path);
+    }
+}
+
+// Debug dumps use fixed names derived from the test tag.
+static void manifest_add_debug(FILE *f, const char *tag_name)
+{
+    char *path;
+    if (asprintf(&path, "%s/%s.screen", output_dir, tag_name) >= 0)
+    {
+        manifest_add(f, 'F', path);
+        free(path);
+    }
+    if (asprintf(&path, "%s/%s.output", output_dir, tag_name) >= 0)
+    {
+        manifest_add(f, 'F', path);
+        free(path);
+    }
+}
+
+struct file_check
+{
+    char *name;
+    char *data;
+    size_t len;
+};
+
+// Checks Check:/Exists: files in the given DOS root.
+static int check_test_files(const char *fname, const char *dir,
+                            const struct file_check *checks, int nchecks,
+                            char **exists, int nexists)
+{
+    for (int i = 0; i < nchecks; i++)
+    {
+        char *path;
+        if (asprintf(&path, "%s/%s", dir, checks[i].name) < 0)
+            exit(1);
+        FILE *fc = fopen(path, "rb");
+        free(path);
+        char *got = 0;
+        size_t rlen = 0;
+        if (fc)
+        {
+            fseek(fc, 0, SEEK_END);
+            long sz = ftell(fc);
+            fseek(fc, 0, SEEK_SET);
+            got = calloc(sz + 1, 1);
+            rlen = fread(got, 1, sz, fc);
+            fclose(fc);
+        }
+        if (!got)
+        {
+            fprintf(stderr, "%s: can't open checked file '%s'.\n",
+                    fname, checks[i].name);
+            return -1;
+        }
+        else if (rlen != checks[i].len || memcmp(got, checks[i].data, rlen))
+        {
+            size_t d = 0;
+            while (d < rlen && d < checks[i].len &&
+                   got[d] == checks[i].data[d])
+                d++;
+            fprintf(stderr,
+                    "%s: file '%s' does not match: %lu bytes vs %lu "
+                    "expected, first difference at byte %lu.\n",
+                    fname, checks[i].name, (unsigned long)rlen,
+                    (unsigned long)checks[i].len, (unsigned long)d);
+            free(got);
+            return -1;
+        }
+        free(got);
+    }
+
+    for (int i = 0; i < nexists; i++)
+    {
+        char *path;
+        if (asprintf(&path, "%s/%s", dir, exists[i]) < 0)
+            exit(1);
+        FILE *fx = fopen(path, "rb");
+        free(path);
+        if (!fx)
+        {
+            fprintf(stderr, "%s: file '%s' not created.\n", fname, exists[i]);
+            return -1;
+        }
+        fclose(fx);
+    }
+    return 0;
+}
+
 // Converts ASCII file to ATASCII
 static int atascii_convert(const char *infile, const char *outfile)
 {
@@ -742,13 +856,8 @@ int fbtest(const char *fname)
     char *doc_filename = 0, *doc_data = 0;
     size_t doc_len = 0;
     size_t input_len = 0;
-    // Expected content of files written during an editor session
-    struct
-    {
-        char *name;
-        char *data;
-        size_t len;
-    } checks[16];
+    // Expected content of files written during the run
+    struct file_check checks[16];
     int nchecks = 0;
     // Names of files that must exist after the run
     char *exists[16];
@@ -1161,6 +1270,21 @@ int fbtest(const char *fname)
     int test_ok = 0;
     char *cmd_out = calloc(65536, 1);
 
+    // Write the cleanup manifest from the declarations in the .chk file.
+    if (!(test & test_editor))
+    {
+        FILE *manifest = manifest_open(tag_name);
+        if (manifest)
+        {
+            for (int i = 0; i < nchecks; i++)
+                manifest_add_file(manifest, output_dir, checks[i].name);
+            for (int i = 0; i < nexists; i++)
+                manifest_add_file(manifest, output_dir, exists[i]);
+            manifest_add_debug(manifest, tag_name);
+            fclose(manifest);
+        }
+    }
+
     do
     {
         if (0 != (test & test_editor))
@@ -1178,6 +1302,23 @@ int fbtest(const char *fname)
             char *help_txt;
             if (asprintf(&help_txt, "%s/HELP.TXT", test_root) < 0)
                 exit(1);
+
+            // Write the cleanup manifest from the declarations in the .chk
+            // file, before running anything.
+            FILE *manifest = manifest_open(tag_name);
+            if (manifest)
+            {
+                manifest_add(manifest, 'F', help_txt);
+                for (int i = 0; i < nfiles; i++)
+                    manifest_add_file(manifest, test_root, files[i]);
+                for (int i = 0; i < nchecks; i++)
+                    manifest_add_file(manifest, test_root, checks[i].name);
+                for (int i = 0; i < nexists; i++)
+                    manifest_add_file(manifest, test_root, exists[i]);
+                manifest_add_debug(manifest, tag_name);
+                manifest_add(manifest, 'D', test_root);
+                fclose(manifest);
+            }
 
             // Setup the initial document and extra files in the DOS root.
             int e = 0;
@@ -1333,70 +1474,15 @@ int fbtest(const char *fname)
                 }
             }
 
-            // Check the contents of files written during the session
-            for (int i = 0; !e && i < nchecks; i++)
-            {
-                char *path;
-                if (asprintf(&path, "%s/%s", test_root, checks[i].name) < 0)
-                    exit(1);
-                FILE *fc = fopen(path, "rb");
-                free(path);
-                char *got = 0;
-                size_t rlen = 0;
-                if (fc)
-                {
-                    fseek(fc, 0, SEEK_END);
-                    long sz = ftell(fc);
-                    fseek(fc, 0, SEEK_SET);
-                    got = calloc(sz + 1, 1);
-                    rlen = fread(got, 1, sz, fc);
-                    fclose(fc);
-                }
-                if (!got)
-                {
-                    fprintf(stderr, "%s: can't open checked file '%s'.\n",
-                            fname, checks[i].name);
-                    e = -1;
-                }
-                else if (rlen != checks[i].len ||
-                         memcmp(got, checks[i].data, rlen))
-                {
-                    size_t d = 0;
-                    while (d < rlen && d < checks[i].len &&
-                           got[d] == checks[i].data[d])
-                        d++;
-                    fprintf(stderr,
-                            "%s: file '%s' does not match: %lu bytes vs %lu "
-                            "expected, first difference at byte %lu.\n",
-                            fname, checks[i].name, (unsigned long)rlen,
-                            (unsigned long)checks[i].len, (unsigned long)d);
-                    e = -1;
-                }
-                free(got);
-            }
-
-            // Check that files were created during the session
-            for (int i = 0; !e && i < nexists; i++)
-            {
-                char *path;
-                if (asprintf(&path, "%s/%s", test_root, exists[i]) < 0)
-                    exit(1);
-                FILE *fx = fopen(path, "rb");
-                free(path);
-                if (!fx)
-                {
-                    fprintf(stderr, "%s: file '%s' not created.\n",
-                            fname, exists[i]);
-                    e = -1;
-                }
-                else
-                    fclose(fx);
-            }
+            if (!e)
+                e = check_test_files(fname, test_root, checks, nchecks,
+                                     exists, nexists);
 
             if (e > 0)
                 fprintf(stderr, "%s: unexpected stack value.\n", fname);
             else if (e < 0)
                 fprintf(stderr, "%s: error on editor execution.\n", fname);
+
             free(out);
             free(help_txt);
             free(test_root);
@@ -1418,6 +1504,8 @@ int fbtest(const char *fname)
                 // Now, runs and checks XEX
                 if (run_test_xex(comname, input_buf, expected_out, max_cycles, 0))
                     break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
+                    break;
             }
         }
         if (0 != (test & test_native) && 0 != (test & test_int))
@@ -1434,6 +1522,8 @@ int fbtest(const char *fname)
                     fprintf(stderr, "%s: run int native\n", fname);
                 // Now, runs and checks XEX
                 if (run_test_xex(comname, input_buf, expected_out, max_cycles, 0))
+                    break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
                     break;
             }
         }
@@ -1455,6 +1545,8 @@ int fbtest(const char *fname)
                 // Now, runs and checks XEX
                 if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
                     break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
+                    break;
             }
 
             // CARTRIDGE version:
@@ -1472,6 +1564,8 @@ int fbtest(const char *fname)
                     fprintf(stderr, "%s: run cartridge fp cross\n", fname);
                 // Now, runs and checks ROM
                 if (run_test_xex(romname, input_buf, expected_out, max_cycles, 1))
+                    break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
                     break;
             }
         }
@@ -1493,6 +1587,8 @@ int fbtest(const char *fname)
                 // Now, runs and checks XEX
                 if (run_test_xex(xexname, input_buf, expected_out, max_cycles, 0))
                     break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
+                    break;
             }
 
             // CARTRIDGE version:
@@ -1510,6 +1606,8 @@ int fbtest(const char *fname)
                     fprintf(stderr, "%s: run cartridge int cross\n", fname);
                 // Now, runs and checks ROM
                 if (run_test_xex(romname, input_buf, expected_out, max_cycles, 1))
+                    break;
+                if (check_test_files(fname, output_dir, checks, nchecks, exists, nexists))
                     break;
             }
         }
