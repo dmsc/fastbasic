@@ -100,6 +100,7 @@ ENDPROC
 
 '-------------------------------------
 ' Edit top line for input
+' Returns 1 if the line was accepted, 0 if cancelled.
 '
 PROC InputLine
   do
@@ -111,27 +112,29 @@ PROC InputLine
     elif key = 155
       pos. 6, 0
       poke @CH, 12: ' Force ENTER
-      key = 0
-      exit
+      return 1
     else
     ' Otherwise simply exit
       exec ShowInfo
       exit
     endif
   loop
+  return 0
 ENDPROC
 
 '-------------------------------------
 ' Gets a filename with minimal line editing
+' Returns 1 if a filename was accepted, 0 if cancelled.
 '
 PROC InputFilename
   ' Show current filename:
   ? "? "; FileName$;
-  exec InputLine
-  if not key
+  if @InputLine()
     input ; FileName$
     exec ShowInfo
+    return 1
   endif
+  return 0
 ENDPROC
 
 '-------------------------------------
@@ -322,8 +325,7 @@ ENDPROC
 PROC AskSaveFile
   exec ClrTopLine
   ? "Save";
-  exec InputFileName
-  if key
+  if not @InputFileName()
     ' Don't save
     exit
   endif
@@ -372,22 +374,21 @@ PROC ShowInfo
 ENDPROC
 
 '-------------------------------------
-' Ask to save a file if it is changed
-' from last save.
-PROC AskSaveFileChanged
-  key = 0
+' Ask to save a file if it is changed from last save.
+' Returns 1 if the caller may continue, 0 to cancel the operation.
+PROC CheckUnsavedChanges
   while not fileSaved
    exec AskSaveFile
    ' ESC means "don't save, cancel operation"
    if key = 27
-     exit
+     return 0
    endif
    ' CONTROL-C means "don't save, lose changes"
    if key = 3
-     key = 0
      exit
    endif
   wend
+  return 1
 ENDPROC
 
 '-------------------------------------
@@ -975,8 +976,7 @@ PROC ProcessKeys
   '
   '--------- Control-Q (exit) -----
   elif key = $11
-    exec AskSaveFileChanged
-    if not key
+    if @CheckUnsavedChanges()
       cls
       poke @@LMARGN, OldMargin
       end
@@ -996,19 +996,16 @@ PROC ProcessKeys
   '
   '--------- Control-N (new) -----
   elif key = $0E
-    exec AskSaveFileChanged
-    if not key
+    if @CheckUnsavedChanges()
       exec NewFile
     endif
   '
   '--------- Control-L (load) -----
   elif key = $0C
-    exec AskSaveFileChanged
-    if not key
+    if @CheckUnsavedChanges()
       exec ClrTopLine
       ? "Load";
-      exec InputFileName
-      if not key
+      if @InputFileName()
         exec LoadFile
       endif
     endif
@@ -1017,8 +1014,7 @@ PROC ProcessKeys
   elif key = $07
     exec ClrTopLine
     ? "Line? ";
-    exec InputLine
-    if not key
+    if @InputLine()
       input ; topLine
       topLine = abs(topLine - 1)
       scrLine = 0
@@ -1055,8 +1051,7 @@ PROC SaveCompiledFile
   exec DefaultFileName
 
   ? "Name";
-  exec InputFileName
-  if key
+  if not @InputFileName()
     ' Don't save
     exit
   endif
