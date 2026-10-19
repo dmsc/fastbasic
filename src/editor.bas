@@ -300,6 +300,14 @@ PROC CopyToEdit
     column = linLen
   endif
 
+  ' Falls through into 'CopyLine' (must be the next PROC)
+  exec CopyLine
+ENDPROC
+
+'-------------------------------------
+' Copy line at 'ptr' with length 'linLen' to edit buffer
+'
+PROC CopyLine
   ' Copy line to 'Edit' buffer, if not too long
   if linLen > 255
     linLen = 255
@@ -852,10 +860,7 @@ PROC CopyFromMark
 
     ' Copy our source line to the edit buffer, simulating an edit
     linLen = nptr - ptr - 1
-    if linLen > 255
-      linLen = 255
-    endif
-    move ptr, EditBuf, linLen
+    exec CopyLine
     edited = 1
     exec SaveLine
     exec ForceDrawCurrentLine
