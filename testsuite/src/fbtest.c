@@ -33,18 +33,25 @@
 # include <direct.h>
 # define MKDIR(path) _mkdir(path)
 # define PATH_SEP "\\"
-// Implement missing "strndup"
-static char *strndup(const char *s, size_t n)
-{
-    char *ret = malloc(n + 1);
-    strncpy(ret, s, n);
-    ret[n] = 0;
-    return ret;
-};
 #else
 # define MKDIR(path) mkdir(path, 0777)
 # define PATH_SEP "/"
 #endif
+
+// Private strndup replacement: avoid conflicting with libc/POSIX strndup,
+// which newer MinGW headers now declare.
+static char *xstrndup(const char *s, size_t n)
+{
+    size_t len = 0;
+    while (len < n && s[len])
+        len++;
+    char *ret = malloc(len + 1);
+    if (!ret)
+        return NULL;
+    memcpy(ret, s, len);
+    ret[len] = 0;
+    return ret;
+}
 
 // Flags
 static int verbose;
@@ -1233,7 +1240,7 @@ int fbtest(const char *fname)
         ext = fname + strlen(fname);
 
     // base_name: file name without extension
-    char *base_name = strndup(fname, ext - fname);
+    char *base_name = xstrndup(fname, ext - fname);
 
     // tag_name: file name without directory and extension
     char *tag_name = strrchr(base_name, '/');
@@ -1244,7 +1251,7 @@ int fbtest(const char *fname)
 
     // srcdir: directory containing the test files
     char *srcdir = (tag_name != base_name) ?
-        strndup(fname, tag_name - base_name - 1) : strdup(".");
+        xstrndup(fname, tag_name - base_name - 1) : strdup(".");
 
     // basname: input basic file name
     char *basname = source_fname(base_name, "bas");
