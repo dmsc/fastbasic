@@ -389,6 +389,60 @@ class peephole
             }
         }
     }
+    // Remove SADDR save/restore pairs around calls when no lvalue address is
+    // pending.  A push starts a region where SADDR is already saved, so nested
+    // calls inside its arguments do not need their own save/restore.
+    void remove_saddr_saves()
+    {
+        struct saved
+        {
+            size_t pos;
+            bool live;
+        };
+        std::vector<saved> stack;
+        std::vector<bool> remove(code.size(), false);
+        bool live = false;
+        for(size_t i = 0; i < code.size(); i++)
+        {
+            if(code[i].is_label())
+            {
+                live = false;
+                continue;
+            }
+            if(!code[i].is_tok())
+                continue;
+            auto tok = code[i].get_tok();
+            if(tok == "TOK_SADDR" || tok == "TOK_VAR_SADDR")
+                live = true;
+            else if(tok == "TOK_POKE" || tok == "TOK_DPOKE" ||
+                    tok == "TOK_NUM_POKE" || tok == "TOK_BYTE_POKE" ||
+                    tok == "TOK_FP_STORE" || tok == "TOK_COPY_STR" ||
+                    tok == "TOK_INC" || tok == "TOK_DEC" || tok == "TOK_END")
+                live = false;
+            else if(tok == "TOK_PUSH_SADDR")
+            {
+                stack.push_back({i, live});
+                if(!live)
+                    remove[i] = true;
+                // Inside the saved region, nested calls do not need to save it.
+                live = false;
+            }
+            else if(tok == "TOK_POP_SADDR")
+            {
+                if(stack.empty())
+                    continue;
+                auto saved = stack.back();
+                stack.pop_back();
+                if(!saved.live)
+                    remove[i] = true;
+                live = saved.live;
+            }
+        }
+        for(size_t i = code.size(); i-- > 0;)
+            if(remove[i])
+                code.erase(code.begin() + i);
+    }
+
     // Unused labels removal
     void remove_unused_labels()
     {
@@ -1589,6 +1643,7 @@ class peephole
         shorten_numbers();
         fold_push();
         fold_saddr();
+        remove_saddr_saves();
     }
 };
 

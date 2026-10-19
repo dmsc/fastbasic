@@ -1,0 +1,12 @@
+Name: Function calls preserve SADDR for POKE and DPOKE
+Test: run
+Output:
+1
+2
+4
+12
+2
+5
+6
+YES
+1
