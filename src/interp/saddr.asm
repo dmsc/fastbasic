@@ -44,8 +44,31 @@ EXE_VAR_SADDR:     ; SADDR = VAR address
         jmp     next_instruction
 .endproc
 
+; Save and restore the SADDR pointer around calls used as expressions.
+; POP_SADDR must preserve A and X, as they hold the function result.  Y is
+; clobbered, but next_instruction reloads it from sptr.
+.proc   EXE_PUSH_SADDR
+        lda     saddr
+        pha
+        lda     saddr+1
+        pha
+        jmp     next_instruction
+.endproc
+
+.proc   EXE_POP_SADDR
+        tay
+        pla
+        sta     saddr+1
+        pla
+        sta     saddr
+        tya
+        jmp     next_instruction
+.endproc
+
         .include "deftok.inc"
         deftoken "SADDR"
         deftoken "VAR_SADDR"
+        deftoken "PUSH_SADDR"
+        deftoken "POP_SADDR"
 
 ; vi:syntax=asm_ca65
