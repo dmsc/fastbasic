@@ -63,8 +63,4 @@ FUNC_MARK:<
 MARK_RETURN:<
         E_MARK_RETURN
 
-# Count function arguments, without adding an action to the native parser
-FUNC_ARG_OK:<
-        E_COUNT_PARAM
-
 # vi:syntax=perl

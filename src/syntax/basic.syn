@@ -159,7 +159,7 @@ T_EXPR: integer constant, variable or function
 
 # This is an integer terminal that can't be parsed as a floating point:
 INT_FUNCTIONS: integer variable or function
-        "@"      E_LABEL_CREATE FUNC_MARK emit TOK_PUSH_SADDR "(" FUNC_ARG_LIST ")" emit { TOK_CALL } E_DO_EXEC emit TOK_POP_SADDR
+        "@"      E_LABEL_CREATE FUNC_MARK emit TOK_PUSH_SADDR "(" OPT_EXEC_PARAM ")" emit { TOK_CALL } E_DO_EXEC emit TOK_POP_SADDR
         "Not" NOT_EXPR emit TOK_L_NOT
         # Special (predefined) variables
         "Time"   emit TOK_TIME
@@ -190,17 +190,6 @@ INT_FUNCTIONS: integer variable or function
         "ASc"    STR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
 
 FUNC_MARK:
-        pass
-
-FUNC_ARG_OK:
-        pass
-
-FUNC_ARG_LIST:
-        EXPR emit TOK_PUSH FUNC_ARG_OK FUNC_ARG_MORE
-        pass
-
-FUNC_ARG_MORE:
-        "," EXPR emit TOK_PUSH FUNC_ARG_OK FUNC_ARG_MORE
         pass
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
