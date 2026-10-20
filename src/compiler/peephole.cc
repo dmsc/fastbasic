@@ -131,15 +131,16 @@ static std::vector<peep_rule> make_peephole_rules()
             [](const peep_match &m, peep_builder &b) {
                 b.write("TOK_VAR_LOAD $v TOK_BYTE_POKE $a", m);
             }},
-        {"TOK_NUM %W:a TOK_SADDR TOK_NUM %w:v TOK_POKE",
+        // Constant word address with an arbitrary value expression.
+        {"TOK_NUM %W:a TOK_SADDR %e:value:TOK_POKE TOK_POKE",
             [](const peep_match &m, peep_builder &b) {
-                b.write("TOK_NUM %w", m.word("v") & 255);
+                if(!b.valid_span(m, "value"))
+                {
+                    b.keep();
+                    return;
+                }
+                b.raw(m, "value");
                 b.write("TOK_NUM_POKE $a", m);
-            }},
-        {"TOK_NUM %w:a TOK_SADDR TOK_VAR_LOAD %v:v TOK_POKE",
-            [](const peep_match &m, peep_builder &b) {
-                b.write("TOK_VAR_LOAD $v", m);
-                b.write("TOK_NUM_POKE %w", m.word("a"));
             }},
         // Constant arithmetic operations.
         {"TOK_NUM %w:x TOK_PUSH TOK_NUM %w:y TOK_MUL",
