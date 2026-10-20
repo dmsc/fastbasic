@@ -160,6 +160,8 @@ class parse
     std::map<std::string, int> vars;
     std::map<std::string, labelType> labels;
     std::vector<jump> jumps;
+    std::vector<int> param_stack; // saved current_params around label contexts
+    std::vector<std::string> label_stack; // saved last_label around label contexts
     int label_num;
     bool finalized;
     std::vector<codew> *code;

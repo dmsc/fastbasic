@@ -53,4 +53,8 @@ OPT_PROC_VAR:<
 OPT_PROC_VAR:
         E_PROC_CHECK
 
+# Count function arguments, without adding an action to the native parser
+FUNC_ARG_OK:<
+        E_COUNT_PARAM
+
 # vi:syntax=perl

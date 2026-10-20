@@ -41,10 +41,13 @@
 .endproc        ; Fall through
 
 .proc   EXE_RET
+        ; Preserve the return value in A, popping the address clobbers it.
+        tay
         pla
         sta     cptr+1
         pla
         sta     cptr
+        tya
 ::skip:
         jmp     next_instruction
 .endproc

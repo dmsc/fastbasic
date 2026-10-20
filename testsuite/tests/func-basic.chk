@@ -1,0 +1,9 @@
+Name: Test integer functions
+Test: run
+Output:
+5
+6
+15
+7
+5
+42

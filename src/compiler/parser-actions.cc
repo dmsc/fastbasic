@@ -127,6 +127,15 @@ static bool get_asm_word_constant(parse &s)
         // Reads ASM constant
         if(s.get_ident(name))
         {
+            // A following '(' means a user function call, not an ASM symbol.
+            auto ident_end = s.pos;
+            s.skipws();
+            if(s.pos < s.str.size() && s.str[s.pos] == '(')
+            {
+                s.pos = start;
+                return false;
+            }
+            s.pos = ident_end;
             s.add_text("@" + name);
             s.add_s_var("@" + name);
             s.emit_word(name);
@@ -623,6 +632,12 @@ static bool SMB_E_LABEL_DEF(parse &s)
         return s.loop_error("new label, got label already defined '" + name + "'");
     s.current_params = 0;
     s.emit_label(s.label_prefix + name);
+    // The label remains current for E_PROC_CHECK / E_LABEL_SET_TYPE; discard
+    // the saved outer context.
+    if(!s.label_stack.empty())
+        s.label_stack.pop_back();
+    if(!s.param_stack.empty())
+        s.param_stack.pop_back();
     return true;
 }
 
@@ -670,6 +685,8 @@ static bool SMB_E_LABEL_CREATE(parse &s)
     // Store variable name
     s.add_text(name);
     s.add_s_var(name);
+    s.label_stack.push_back(s.last_label);
+    s.param_stack.push_back(s.current_params);
     s.last_label = name;
     s.current_params = 0;
     return true;
@@ -686,6 +703,12 @@ static bool SMB_E_DO_EXEC(parse &s)
                               std::to_string(pnum),
                           s.pos);
     s.emit_word(s.label_prefix + s.last_label);
+    if(s.label_stack.empty() || s.param_stack.empty())
+        return false;
+    s.last_label = s.label_stack.back();
+    s.label_stack.pop_back();
+    s.current_params = s.param_stack.back();
+    s.param_stack.pop_back();
     return true;
 }
 

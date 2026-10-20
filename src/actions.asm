@@ -108,14 +108,14 @@ read_fp = AFP
 ;----------------------------------------------------------
 ; Use cassette buffer for loop stack, max 128 bytes
 loop_stk        =       $400
-; And at $480 store the "variable" stack, used procedure parameters
+; At $480 store the "variable" stack, used for variable IDs and the current
+; function label around nested function calls.
 var_stk         =       $480
 
 ;----------------------------------------------------------
         .segment "IDEZP": zeropage
         ; Relocation amount
 reloc_addr:     .res    2
-last_label_num: .res    1
 laddr_search_num: .res  1
 loop_exit_comp = laddr_search_num
 
@@ -509,7 +509,10 @@ xit:    rts
         jsr     push_codep
 
         ; Search in the label list
-        ldx     last_label_num
+        dec     var_sp
+        ldx     var_sp
+        lda     var_stk, x
+        tax
         jsr     laddr_search_start
         bcs     nfound
 
@@ -558,7 +561,10 @@ xit:    rts
 ::E_DO_EXEC:
 
         ; Emits a label, searching the label address in the label list
-        ldx     last_label_num
+        dec     var_sp
+        ldx     var_sp
+        lda     var_stk, x
+        tax
 start_searching:
         jsr     laddr_search_start
         bcs     nfound
@@ -583,7 +589,10 @@ ret:    rts
 ; Label search and create if not exists
 .proc   E_LABEL_CREATE
         jsr     label_search
-        stx     last_label_num
+        ldy     var_sp
+        txa
+        sta     var_stk, y
+        inc     var_sp
         ; Already defined, just store index
         bcc     ret
 

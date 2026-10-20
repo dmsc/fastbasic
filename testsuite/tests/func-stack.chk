@@ -1,0 +1,5 @@
+Name: Function call inside DIM uses stack correctly
+Test: run
+Output:
+7
+3

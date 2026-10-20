@@ -1,0 +1,6 @@
+Name: Function calls preserve SADDR for array assignment
+Test: run
+Output:
+15
+22
+17
