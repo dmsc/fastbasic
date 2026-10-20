@@ -37,6 +37,7 @@ error_msg_list = * - 1
         def_error ERR_LOOP,     "bad loop"
         def_error ERR_PARSE,    "parse error"
         def_error ERR_NO_ELOOP, "no end loop/proc/if"
+        def_error ERR_RETURN,     "bad RETURN"
 
 .if (* - error_msg_list) > 255
         .error  "Error, too many error messages"

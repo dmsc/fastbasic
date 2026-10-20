@@ -399,6 +399,28 @@ static bool SMB_E_POP_PROC_DATA(parse &s)
     return true;
 }
 
+static bool SMB_E_RETURN(parse &s)
+{
+    s.debug("E_RETURN");
+    int proc = -1;
+    for(int i = (int)s.jumps.size() - 1; i >= 0; i--)
+    {
+        if(s.jumps[i].type == LT_PROC_2)
+        {
+            proc = i;
+            break;
+        }
+    }
+    if(proc < 0)
+        return s.loop_error("return outside proc");
+    for(int i = (int)s.jumps.size() - 1; i > proc; i--)
+    {
+        if(s.jumps[i].type == LT_FOR_1)
+            s.emit_tok("TOK_FOR_EXIT");
+    }
+    return true;
+}
+
 static bool SMB_E_POP_PROC_2(parse &s)
 {
     // nothing to do!
@@ -769,6 +791,7 @@ static std::map<std::string, bool (*)(parse &s)> actions = {
     {"E_PUSH_LT", SMB_E_PUSH_LT},
     {"E_PUSH_VAR", SMB_E_PUSH_VAR},
     {"E_REM", SMB_E_REM},
+    {"E_RETURN", SMB_E_RETURN},
     {"E_VAR_CREATE", SMB_E_VAR_CREATE},
     {"E_VAR_SEARCH", SMB_E_VAR_SEARCH},
     {"E_VAR_SET_TYPE", SMB_E_VAR_SET_TYPE},

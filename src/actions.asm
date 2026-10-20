@@ -23,6 +23,7 @@
         .export         E_PUSH_LT, E_POP_LOOP, E_POP_REPEAT
         .export         E_POP_IF, E_ELSEIF, E_EXIT_LOOP
         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_DATA, E_POP_PROC_2
+        .export         E_RETURN
         .export         E_CONST_STRING
         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
         .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
@@ -45,6 +46,9 @@
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
         .importzp       ERR_LOOP, parse_err
+        .importzp       ERR_RETURN
+        ; From for_exit.asm
+        .importzp       TOK_FOR_EXIT
 
 .ifdef FASTBASIC_FP
         ; Exported only in Floating Point version
@@ -693,6 +697,28 @@ rtsclc: clc
         rts     ; C is cleared on exit!
 .endproc
 
+.proc   E_RETURN
+        ; Find the enclosing PROC, removing any active FOR state.
+        ldx     loop_sp
+        beq     bad_return
+loop:
+        lda     loop_stk-3, x
+        cmp     #LT_PROC_2
+        beq     pop_codep::rtsclc
+        cmp     #LT_FOR_1
+        bne     next
+        lda     #TOK_FOR_EXIT
+        jsr     parser_emit_byte
+next:
+        dex
+        dex
+        dex
+        bne     loop
+bad_return:
+        ldy     #ERR_RETURN
+        jmp     parser_error
+.endproc
+
 .proc   E_POP_PROC_2
         ; Pop saved position, store
         lda     #LT_PROC_2
@@ -725,7 +751,6 @@ retry:  dey
         bmi     retry           ; FOR(2)/WHILE(2)/IF/ELSE/ELIF are > 127
         cpx     #LT_PROC_DATA+1 ; PROC(1)/DATA
         bcc     loop_error
-ok:
         ; Store slot
         sty     loop_exit_comp
         ; Check if enough stack

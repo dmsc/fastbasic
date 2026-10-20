@@ -1,0 +1,4 @@
+Name: RETURN outside PROC (cross)
+Test: compile-error cross
+Error: return outside proc
+Error-pos: 2:8

@@ -1414,6 +1414,50 @@ Control Statements
   appear any place in the program.
 
 
+**Return From A Subroutine**
+**RETURN [_expression_] / RET.**
+
+  Ends the current `PROC`.  With an
+  _expression_, returns its integer value
+  as the function result.  Without an
+  expression, returns immediately with no
+  result; this is useful as an early exit
+  from nested loops.
+
+  `RETURN` is only valid inside a `PROC`.
+  Using it outside a `PROC` gives the `bad
+  RETURN` compiler error.
+
+  Subroutines that return a value can
+  be called in integer expressions with
+  `@name(...)`:
+
+      PROC Square X
+        RETURN X*X
+      ENDPROC
+
+      ? @Square(5)
+      A(1) = @Square(4)
+
+  Function arguments use the same syntax
+  as `EXEC` arguments, but the call must
+  use parentheses in an expression, so it
+  is distinct from the cross-compiler
+  `@symbol` address syntax.  The function
+  result is an integer.  A function should
+  contain at least one value-returning
+  `RETURN`; a bare `RETURN` does not
+  count.  The cross compiler reports an
+  error if it does not.  It does not
+  require every control-flow path to
+  return.
+
+  `RETURN` inside an `IF` is allowed.
+  `RETURN` inside a `FOR` loop is also
+  allowed; any active `FOR` state is
+  removed before returning.
+
+
 **Loop Until Condition Is True**  
 **REPEAT / R.**  
 **UNTIL _condition_ / U.**

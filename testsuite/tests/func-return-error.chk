@@ -1,0 +1,4 @@
+Name: RETURN outside PROC (native)
+Test: compile-error native
+Error: bad RETURN
+Error-pos: 2:8
