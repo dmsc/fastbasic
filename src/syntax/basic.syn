@@ -483,6 +483,14 @@ DATA_VAR: new data array name
         DATA_TYPE
         E_LABEL_CREATE "()" emit { TOK_JUMP } E_LABEL_DEF DATA_TYPE
 
+# Optional value returned by RETURN
+RETURN_VALUE:
+        INT_EXPR MARK_RETURN
+        pass
+
+MARK_RETURN:
+        pass
+
 # Optional number after PAUSE
 PAUSE_OPT:
         EXPR
@@ -543,7 +551,7 @@ STATEMENT: statement
         "DEc" VAR_WORD_LVALUE_SADDR emit TOK_DEC
         "PRoc" E_LABEL_CREATE emit { TOK_JUMP } E_LABEL_DEF emit LT_PROC_2 E_PUSH_LT OPT_PROC_VAR
         "ENdproc" E_POP_PROC_2 emit TOK_RET E_POP_PROC_DATA
-        "Return" INT_EXPR E_RETURN emit TOK_RET
+        "Return" RETURN_VALUE E_RETURN emit TOK_RET
         EXEC_CALL E_LABEL_CREATE OPT_EXEC_PARAM emit { TOK_CALL } E_DO_EXEC
         "DAta" DATA_VAR DATA_END
         "END" emit TOK_END

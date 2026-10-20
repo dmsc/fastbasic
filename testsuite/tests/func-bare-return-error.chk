@@ -1,0 +1,3 @@
+Name: Bare RETURN does not make a function
+Test: compile-error cross
+Error: function 'Bare' does not return a value

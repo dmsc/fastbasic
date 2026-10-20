@@ -422,12 +422,6 @@ static bool SMB_E_RETURN(parse &s)
     }
     if(proc < 0)
         return s.loop_error("return outside proc");
-    if(!s.proc_stack.empty())
-    {
-        auto name = s.proc_names.find(s.proc_stack.back());
-        if(name != s.proc_names.end())
-            s.labels[name->second].mark_return();
-    }
     for(int i = (int)s.jumps.size() - 1; i > proc; i--)
     {
         if(s.jumps[i].type == LT_FOR_1)
@@ -683,6 +677,18 @@ static bool SMB_E_MARK_FUNCTION(parse &s)
     return true;
 }
 
+static bool SMB_E_MARK_RETURN(parse &s)
+{
+    s.debug("E_MARK_RETURN");
+    if(!s.proc_stack.empty())
+    {
+        auto name = s.proc_names.find(s.proc_stack.back());
+        if(name != s.proc_names.end())
+            s.labels[name->second].mark_return();
+    }
+    return true;
+}
+
 // Called in EXEC, creates a label if not exists, if already exists checks
 // that it is a PROC.
 static bool SMB_E_LABEL_CREATE(parse &s)
@@ -803,6 +809,7 @@ static std::map<std::string, bool (*)(parse &s)> actions = {
     {"E_CONST_STRING", SMB_E_CONST_STRING},
     {"E_COUNT_PARAM", SMB_E_COUNT_PARAM},
     {"E_MARK_FUNCTION", SMB_E_MARK_FUNCTION},
+    {"E_MARK_RETURN", SMB_E_MARK_RETURN},
     {"E_DATA_FILE", SMB_E_DATA_FILE},
     {"E_DO_EXEC", SMB_E_DO_EXEC},
     {"E_ELSEIF", SMB_E_ELSEIF},

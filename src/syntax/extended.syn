@@ -25,6 +25,7 @@ EXTERN {
  E_COUNT_PARAM
  E_PROC_CHECK
  E_MARK_FUNCTION
+ E_MARK_RETURN
 }
 
 # Reda DATA statements from a file:
@@ -57,6 +58,10 @@ OPT_PROC_VAR:
 # Mark labels used as functions in expressions
 FUNC_MARK:<
         E_MARK_FUNCTION
+
+# Mark only value-returning RETURN statements
+MARK_RETURN:<
+        E_MARK_RETURN
 
 # Count function arguments, without adding an action to the native parser
 FUNC_ARG_OK:<
