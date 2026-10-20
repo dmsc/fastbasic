@@ -509,10 +509,7 @@ xit:    rts
         jsr     push_codep
 
         ; Search in the label list
-        dec     var_sp
-        ldx     var_sp
-        lda     var_stk, x
-        tax
+        jsr     pop_var
         jsr     laddr_search_start
         bcs     nfound
 
@@ -561,10 +558,7 @@ xit:    rts
 ::E_DO_EXEC:
 
         ; Emits a label, searching the label address in the label list
-        dec     var_sp
-        ldx     var_sp
-        lda     var_stk, x
-        tax
+        jsr     pop_var
 start_searching:
         jsr     laddr_search_start
         bcs     nfound
@@ -589,10 +583,8 @@ ret:    rts
 ; Label search and create if not exists
 .proc   E_LABEL_CREATE
         jsr     label_search
-        ldy     var_sp
         txa
-        sta     var_stk, y
-        inc     var_sp
+        jsr     push_var        ; Does not modify C
         ; Already defined, just store index
         bcc     ret
 
@@ -635,6 +627,7 @@ ret:    rts
 ; PUSH/POP variables
 .proc   E_PUSH_VAR
         jsr     get_last_tok    ; Get variable ID from last token
+::push_var:                     ; Push A in the variable stack, C is not modified
         ldx     var_sp
         sta     var_stk, x
         inc     var_sp
@@ -642,10 +635,17 @@ ret:    rts
         rts
 .endproc
 
-.proc   E_POP_VAR
+; Pops the variable stack to X, clobbers Y
+.proc   pop_var
         dec     var_sp
-        ldx     var_sp
-        lda     var_stk, x
+        ldy     var_sp
+        ldx     var_stk, y
+        rts
+.endproc
+
+.proc   E_POP_VAR
+        jsr     pop_var
+        txa
         jmp     parser_emit_byte
 .endproc
 
