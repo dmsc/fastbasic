@@ -24,6 +24,7 @@ EXTERN {
  E_DATA_SET_SEGMENT
  E_COUNT_PARAM
  E_PROC_CHECK
+ E_MARK_FUNCTION
 }
 
 # Reda DATA statements from a file:
@@ -52,6 +53,10 @@ OPT_PROC_VAR:<
 # Check number of parameters after PROC
 OPT_PROC_VAR:
         E_PROC_CHECK
+
+# Mark labels used as functions in expressions
+FUNC_MARK:<
+        E_MARK_FUNCTION
 
 # Count function arguments, without adding an action to the native parser
 FUNC_ARG_OK:<

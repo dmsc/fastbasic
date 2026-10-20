@@ -1,0 +1,4 @@
+PROC Bad
+ENDPROC
+
+? @Bad()

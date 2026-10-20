@@ -58,9 +58,15 @@ class labelType
     void set_type(std::string);
     void set_segment(std::string);
     std::string get_segment();
+    void mark_function_call() { function_call = true; }
+    bool is_function_call() const { return function_call; }
+    void mark_return() { returns_value = true; }
+    bool has_return() const { return returns_value; }
     bool operator!=(const labelType &l) const { return type != l.type; }
 
   private:
     std::string segment;
-    int type;
+    int type = 0;
+    bool function_call = false;
+    bool returns_value = false;
 };

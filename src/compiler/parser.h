@@ -159,6 +159,7 @@ class parse
     std::vector<std::string> proc_stack;
     std::map<std::string, int> vars;
     std::map<std::string, labelType> labels;
+    std::map<std::string, std::string> proc_names; // internal loop label -> name
     std::vector<jump> jumps;
     std::vector<int> param_stack; // saved current_params around label contexts
     std::vector<std::string> label_stack; // saved last_label around label contexts
@@ -241,6 +242,19 @@ class parse
                        std::to_string(j.linenum);
         }
         return "EXIT without loop";
+    }
+
+    std::string validate_functions()
+    {
+        // Cross-compiler diagnostic: a procedure used as a function must
+        // contain at least one RETURN.  We deliberately do not try to prove
+        // that every control-flow path returns.
+        for(auto &l : labels)
+        {
+            if(l.second.is_function_call() && !l.second.has_return())
+                return "function '" + l.first + "' does not return a value";
+        }
+        return std::string();
     }
 
     void set_input_file(std::string fn) { in_fname = fn; }

@@ -422,6 +422,12 @@ static bool SMB_E_RETURN(parse &s)
     }
     if(proc < 0)
         return s.loop_error("return outside proc");
+    if(!s.proc_stack.empty())
+    {
+        auto name = s.proc_names.find(s.proc_stack.back());
+        if(name != s.proc_names.end())
+            s.labels[name->second].mark_return();
+    }
     for(int i = (int)s.jumps.size() - 1; i > proc; i--)
     {
         if(s.jumps[i].type == LT_FOR_1)
@@ -628,6 +634,7 @@ static bool SMB_E_LABEL_DEF(parse &s)
     s.debug("E_LABEL_DEF");
     auto &v = s.labels;
     auto name = s.last_label;
+    s.proc_names[l] = name;
     if(v[name].is_defined())
         return s.loop_error("new label, got label already defined '" + name + "'");
     s.current_params = 0;
@@ -667,6 +674,13 @@ static bool SMB_E_COUNT_PARAM(parse &s)
     s.debug("E_COUNT_PARAM");
     s.current_params++;
     return false;
+}
+
+static bool SMB_E_MARK_FUNCTION(parse &s)
+{
+    s.debug("E_MARK_FUNCTION");
+    s.labels[s.last_label].mark_function_call();
+    return true;
 }
 
 // Called in EXEC, creates a label if not exists, if already exists checks
@@ -788,6 +802,7 @@ static bool SMB_E_DATA_FILE(parse &s)
 static std::map<std::string, bool (*)(parse &s)> actions = {
     {"E_CONST_STRING", SMB_E_CONST_STRING},
     {"E_COUNT_PARAM", SMB_E_COUNT_PARAM},
+    {"E_MARK_FUNCTION", SMB_E_MARK_FUNCTION},
     {"E_DATA_FILE", SMB_E_DATA_FILE},
     {"E_DO_EXEC", SMB_E_DO_EXEC},
     {"E_ELSEIF", SMB_E_ELSEIF},

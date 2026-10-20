@@ -261,6 +261,14 @@ int compiler::compile_file(std::string iname, std::string output_filename,
         return 1;
     }
 
+    // Check functions used in expressions return a value somewhere.
+    auto function_error = s.validate_functions();
+    if(function_error.size())
+    {
+        std::cerr << iname << ": " << function_error << "\n";
+        return 1;
+    }
+
     s.emit_tok("TOK_END");
     // Optimize
     if(optimize)

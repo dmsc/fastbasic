@@ -1,0 +1,3 @@
+Name: Function call without RETURN (cross)
+Test: compile-error cross
+Error: function 'Bad' does not return a value
