@@ -1,0 +1,13 @@
+Name: Conditional RETURN 0 optimization
+Test: run
+Output:
+0
+1
+1
+0
+1
+0
+1
+0
+1
+0

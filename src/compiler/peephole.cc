@@ -1509,6 +1509,23 @@ class peephole
                     del(0);
                     continue;
                 }
+                // Bypass CJUMP/CNJUMP over a RETURN 0
+                //   TOK_CJUMP / x / TOK_NUM / 0 / TOK_RET / LABEL x
+                //     -> TOK_CNRET / LABEL x
+                //   TOK_CNJUMP / x / TOK_NUM / 0 / TOK_RET / LABEL x
+                //     -> TOK_CRET / LABEL x
+                if((mtok(0, "TOK_CJUMP") || mtok(0, "TOK_CNJUMP")) &&
+                   mtok(2, "TOK_NUM") && mword(3) && val(3) == 0 &&
+                   mtok(4, "TOK_RET") && mlabel(5) && lbl(5) == wlbl(1))
+                {
+                    bool cjump = mtok(0, "TOK_CJUMP");
+                    set_tok(0, cjump ? "TOK_CNRET" : "TOK_CRET");
+                    del(4);
+                    del(3);
+                    del(2);
+                    del(1);
+                    continue;
+                }
                 // Bypass CJUMP over another JUMP
                 //   TOK_CJUMP / x / TOK_JUMP / y / LABEL x
                 //     -> TOK_CNJUMP / y / LABEL x
