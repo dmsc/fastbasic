@@ -1,0 +1,4 @@
+Name: POKE symbolic byte address with complex values
+Test: run-cross
+Output:
+10
