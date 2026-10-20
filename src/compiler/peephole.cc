@@ -111,14 +111,15 @@ static std::vector<peep_rule> make_peephole_rules()
             }},
         {"TOK_BYTE %B:x TOK_PEEK", "TOK_BYTE_PEEK $x"},
         // Constant-address POKE variants.
-        {"TOK_NUM %c:a TOK_SADDR TOK_NUM %w:v TOK_POKE",
+        // Constant byte address with an arbitrary value expression.
+        {"TOK_NUM %c:a TOK_SADDR %e:value:TOK_POKE TOK_POKE",
             [](const peep_match &m, peep_builder &b) {
-                b.write("TOK_NUM %w", m.word("v") & 255);
-                b.write("TOK_BYTE_POKE %b", m.word("a"));
-            }},
-        {"TOK_NUM %c:a TOK_SADDR TOK_VAR_LOAD %v:v TOK_POKE",
-            [](const peep_match &m, peep_builder &b) {
-                b.write("TOK_VAR_LOAD $v", m);
+                if(!b.valid_span(m, "value"))
+                {
+                    b.keep();
+                    return;
+                }
+                b.raw(m, "value");
                 b.write("TOK_BYTE_POKE %b", m.word("a"));
             }},
         {"TOK_BYTE %B:a TOK_SADDR TOK_NUM %w:v TOK_POKE",
