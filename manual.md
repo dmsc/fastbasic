@@ -1132,6 +1132,16 @@ Console Print and Input Statements
       S = 1234
       ? #6, "SCORE: "; COLOR(32) S
 
+  A function called from within a
+  `PRINT` statement must only compute
+  and return its value. It must not
+  perform its own output or change the
+  I/O channel: the channel and print
+  color are statement-local, so a
+  nested `PRINT` changes the state
+  expected by the rest of the outer
+  statement.
+
   The `TAB` function advances the
   position to a column multiple of the
   argument, so that `TAB(10)` is the
