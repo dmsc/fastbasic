@@ -361,14 +361,18 @@ NEXT_VARNAME:
 POSITION:
         EXPR C_EXPR emit TOK_POSITION
 
+# Index of a word or string array: address = base + 2 * index
+ARRAY_WORD_INDEX:
+        emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
+
 # Word Arrays
 ARRAY_WORD_ADDR:
-        emit { TOK_VAR_LOAD, VT_ARRAY_WORD } E_VAR_SEARCH emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
-        emit { TOK_NUM, VT_ARRAY_WORD } E_LABEL emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
+        emit { TOK_VAR_LOAD, VT_ARRAY_WORD } E_VAR_SEARCH ARRAY_WORD_INDEX
+        emit { TOK_NUM, VT_ARRAY_WORD } E_LABEL ARRAY_WORD_INDEX
 
 # String Arrays
 ARRAY_STRING_ADDR:
-        emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH "$" emit TOK_PUSH PAR_EXPR emit { TOK_USHL, TOK_ADD }
+        emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH "$" ARRAY_WORD_INDEX
 
 # Byte Arrays
 ARRAY_BYTE_ADDR: variable name
