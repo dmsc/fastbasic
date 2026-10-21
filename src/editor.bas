@@ -106,7 +106,8 @@ PROC InputLine
   do
     get key
     ' Accept left/right arrows, backspace and standard characters
-    if key >= 30 and key <= 124 or key = 126
+    ' Same as: key >= 30 and key <= 124
+    if abs(key - 77) < 48 or key = 126
       put key
     ' Process ENTER
     elif key = 155
@@ -228,8 +229,7 @@ PROC DrawCurrentLine
   endif
   lDraw = scrLine
 
-  pos. scrColumn, scrLine
-  put 29
+  exec PutCursor
 ENDPROC
 
 '-------------------------------------
@@ -368,7 +368,14 @@ PROC ShowInfo
   repeat : put $92 : until peek(@@RMARGN) = peek(@@COLCRS)
   ' Fill last character
   poke @@OLDCHR, $D2
-  ' Go to cursor position
+  ' Go to cursor position, falls through into 'PutCursor' (must be the next PROC)
+  exec PutCursor
+ENDPROC
+
+'-------------------------------------
+' Moves the cursor to the current edit position
+'
+PROC PutCursor
   pos. scrColumn, scrLine
   put 29
 ENDPROC
@@ -894,7 +901,8 @@ PROC ProcessKeys
   if key = $9B
     exec ReturnKey
 
-  elif (escape or ( ((key & 127) >= $20) and ((key & 127) < 125)) )
+  ' Normal key if (key & 127) is in the range $20 to 124: abs(k - 78) < 47
+  elif (escape or abs((key & 127) - 78) < 47)
     exec InsertNormalKey
   '--------------------------------
   ' Command keys handling
