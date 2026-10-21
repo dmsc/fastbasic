@@ -364,6 +364,178 @@ static std::vector<peep_rule> make_peephole_rules()
     };
 }
 
+static std::vector<peep_rule> make_expand_number_rules()
+{
+    return {
+        {"TOK_BYTE %b:x",
+            [](const peep_match &m, peep_builder &b) {
+                b.write("TOK_NUM %w", m.word("x"));
+            }},
+        {"TOK_1",
+            [](const peep_match &, peep_builder &b) {
+                b.write("TOK_NUM %w", 1);
+            }},
+        {"TOK_0",
+            [](const peep_match &, peep_builder &b) {
+                b.write("TOK_NUM %w", 0);
+            }},
+    };
+}
+
+static std::vector<peep_rule> make_shorten_number_rules()
+{
+    return {
+        {"TOK_NUM %w:x", "TOK_0",
+            [](const peep_match &m) { return m.word("x") == 0; }},
+        {"TOK_NUM %w:x", "TOK_1",
+            [](const peep_match &m) { return m.word("x") == 1; }},
+        {"TOK_NUM %w:x", "TOK_1 TOK_NEG",
+            [](const peep_match &m) { return m.word("x") == -1; }},
+        {"TOK_NUM %w:x",
+            [](const peep_match &m, peep_builder &b) {
+                b.write("TOK_BYTE %b", m.word("x"));
+            },
+            [](const peep_match &m) {
+                return 0 == (m.word("x") & ~0xFF);
+            }},
+    };
+}
+
+static std::vector<peep_rule> make_expand_push_rules()
+{
+    return {
+        {"TOK_PUSH_BYTE", "TOK_PUSH TOK_BYTE"},
+        {"TOK_PUSH_NUM", "TOK_PUSH TOK_NUM"},
+        {"TOK_PUSH_0", "TOK_PUSH TOK_0"},
+        {"TOK_PUSH_1", "TOK_PUSH TOK_1"},
+        {"TOK_PUSH_VAR_LOAD", "TOK_PUSH TOK_VAR_LOAD"},
+        {"TOK_VAR_SADDR %v:x", "TOK_VAR_ADDR $x TOK_SADDR"},
+    };
+}
+
+static std::vector<peep_rule> make_fold_push_rules()
+{
+    return {
+        {"TOK_PUSH TOK_BYTE", "TOK_PUSH_BYTE"},
+        {"TOK_PUSH TOK_NUM", "TOK_PUSH_NUM"},
+        {"TOK_PUSH TOK_1", "TOK_PUSH_1"},
+        {"TOK_PUSH TOK_0", "TOK_PUSH_0"},
+        {"TOK_PUSH TOK_VAR_LOAD", "TOK_PUSH_VAR_LOAD"},
+    };
+}
+
+static std::vector<peep_rule> make_fold_saddr_rules()
+{
+    return {
+        {"TOK_VAR_ADDR %v:x TOK_SADDR", "TOK_VAR_SADDR $x"},
+    };
+}
+
+static bool can_retarget(const peep_match &m)
+{
+    auto it = m.state.tgt.find(m.text("target"));
+    return it != m.state.tgt.end() && it->second != m.text("target");
+}
+
+static void retarget(const peep_match &m, peep_builder &b,
+                     const char *jump, const char *ret)
+{
+    auto it = m.state.tgt.find(m.text("target"));
+    if(it == m.state.tgt.end())
+        return;
+    if(it->second == "__TOK_RET__")
+        b.tok(ret);
+    else
+    {
+        b.tok(jump);
+        b.symbol(it->second);
+    }
+}
+
+static std::vector<peep_rule> make_label_target_rules()
+{
+    return {
+        {"TOK_JUMP %l:target",
+            [](const peep_match &m, peep_builder &b) {
+                retarget(m, b, "TOK_JUMP", "TOK_RET");
+            },
+            can_retarget},
+        {"TOK_CJUMP %l:target",
+            [](const peep_match &m, peep_builder &b) {
+                retarget(m, b, "TOK_CJUMP", "TOK_CRET");
+            },
+            can_retarget},
+        {"TOK_CNJUMP %l:target",
+            [](const peep_match &m, peep_builder &b) {
+                retarget(m, b, "TOK_CNJUMP", "TOK_CNRET");
+            },
+            can_retarget},
+    };
+}
+
+static std::vector<peep_rule> make_print_char_rules()
+{
+    return {
+        {"TOK_NUM %w:x TOK_BYTE_POKE %B:color",
+            [](const peep_match &m, peep_builder &b) {
+                m.state.print_color = m.word("x");
+                m.state.color_pending = true;
+                b.keep();
+            },
+            [](const peep_match &m) {
+                return m.text("color") == "PRINT_COLOR";
+            }},
+        {"TOK_BYTE_POKE %B:color",
+            [](const peep_match &m, peep_builder &b) {
+                if(m.state.color_pending)
+                    m.state.color_pending = false;
+                else
+                    m.state.print_color = -1;
+                b.keep();
+            },
+            [](const peep_match &m) {
+                return m.text("color") == "PRINT_COLOR";
+            }},
+        {"TOK_CSTRING %s:s TOK_PRINT_STR",
+            [](const peep_match &m, peep_builder &b) {
+                for(char c : m.text("s"))
+                    b.write("TOK_BYTE_PUT %b", c ^ m.state.print_color);
+            },
+            [](const peep_match &m) {
+                return m.text("s").size() < 3 && m.state.print_color >= 0;
+            }},
+    };
+}
+
+static std::vector<peep_rule> make_iochn_rules()
+{
+    return {
+        {"TOK_CALL",
+            [](const peep_match &m, peep_builder &b) {
+                m.state.ioch = 0;
+                m.state.ioch_pending = false;
+                b.keep();
+            }},
+        {"TOK_NUM %w:x TOK_IOCHN",
+            [](const peep_match &m, peep_builder &b) {
+                int x = m.word("x");
+                if(x == m.state.ioch)
+                    return;
+                m.state.ioch = x;
+                m.state.ioch_pending = true;
+                b.keep();
+            }},
+        {"TOK_IOCHN",
+            [](const peep_match &m, peep_builder &b) {
+                if(m.state.ioch_pending)
+                    m.state.ioch_pending = false;
+                else
+                    m.state.ioch = -1;
+                b.keep();
+            }},
+    };
+}
+
 // Implements a simple peephole optimizer
 class peephole
 {
@@ -371,353 +543,48 @@ class peephole
     bool changed;
     std::vector<codew> &code;
     peep_rules rules;
-    size_t current;
-    // Matching functions for the peephole opt
-    bool mtok(size_t idx, std::string tok)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_tok(tok);
-    }
-    bool mcbyte(size_t idx, std::string name)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_sbyte(name);
-    }
-    bool mcword(size_t idx, std::string name)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_sword(name);
-    }
-    bool mlabel(size_t idx)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_label();
-    }
-    bool mlblw(size_t idx)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_sword() &&
-               code[idx].get_str().find("lbl") != std::string::npos;
-    }
-    bool mword(size_t idx)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_word();
-    }
-    bool mbyte(size_t idx)
-    {
-        idx += current;
-        return idx < code.size() && code[idx].is_byte();
-    }
-    // Returns 256 if not a string
-    unsigned mstring(size_t idx)
-    {
-        idx += current;
-        if(idx < code.size() && code[idx].is_string())
-            return code[idx].get_str().size();
-        else
-            return 256;
-    }
-    std::string lbl(size_t idx)
-    {
-        idx += current;
-        if(idx < code.size() && code[idx].is_label())
-            return code[idx].get_str();
-        else
-            return std::string();
-    }
-    std::string wlbl(size_t idx)
-    {
-        if(mlblw(idx))
-            return code[idx + current].get_str();
-        else
-            return std::string();
-    }
-    int16_t val(size_t idx)
-    {
-        idx += current;
-        if(idx < code.size())
-            return code[idx].get_val();
-        else
-            return 0x8000;
-    }
-    int varn(size_t idx)
-    {
-        idx += current;
-        if(idx < code.size())
-            return code[idx].get_varn();
-        else
-            return 0x8000;
-    }
-    std::string str(size_t idx)
-    {
-        idx += current;
-        if(idx < code.size())
-            return code[idx].get_str();
-        else
-            return std::string();
-    }
-    void del(size_t idx)
-    {
-        if(idx + current < code.size())
-        {
-            changed = true;
-            code.erase(code.begin() + idx + current);
-        }
-    }
-    void ins_w(size_t idx, int16_t x)
-    {
-        int lnum = 0;
-        changed = true;
-        if(code.size() > idx + current)
-            lnum = code[idx + current].linenum();
-        code.insert(code.begin() + idx + current, codew::cword(x, lnum));
-    }
-    void ins_b(size_t idx, int16_t x)
-    {
-        int lnum = 0;
-        changed = true;
-        if(code.size() > idx + current)
-            lnum = code[idx + current].linenum();
-        code.insert(code.begin() + idx + current, codew::cbyte(x & 0xFF, lnum));
-    }
-    void ins_tok(size_t idx, std::string tok)
-    {
-        int lnum = 0;
-        changed = true;
-        if(code.size() > idx + current)
-            lnum = code[idx + current].linenum();
-        code.insert(code.begin() + idx + current, codew::ctok(tok, lnum));
-    }
-    void set_ws(size_t idx, std::string str)
-    {
-        changed = true;
-        code[idx + current] = codew::cword(str, code[idx + current].linenum());
-    }
-    void set_w(size_t idx, int16_t x)
-    {
-        changed = true;
-        code[idx + current] = codew::cword(x & 0xFFFF, code[idx + current].linenum());
-    }
-    void set_b(size_t idx, int16_t x)
-    {
-        changed = true;
-        code[idx + current] = codew::cbyte(x & 0xFF, code[idx + current].linenum());
-    }
-    void set_tok(size_t idx, std::string tok)
-    {
-        changed = true;
-        code[idx + current] = codew::ctok(tok, code[idx + current].linenum());
-    }
-    void set_string(size_t idx, std::string str)
-    {
-        changed = true;
-        code[idx + current] = codew::cstring(str, code[idx + current].linenum());
-    }
+    peep_rules expand_push_rules;
+    peep_rules expand_rules;
+    peep_rules shorten_rules;
+    peep_rules fold_push_rules;
+    peep_rules fold_saddr_rules;
+    peep_rules label_target_rules;
+    peep_rules print_char_rules;
+    peep_rules iochn_rules;
     void replace_range(size_t begin, size_t end, std::vector<codew> &&replacement)
     {
         changed = true;
         code.erase(code.begin() + begin, code.begin() + end);
         code.insert(code.begin() + begin, replacement.begin(), replacement.end());
     }
-    // Transforms all "numeric" tokens to TOK_NUM, so that the next phases can
-    // optimize
-    void expand_numbers()
+    void apply_rules_at(size_t &i, peep_rules &table, peep_state &state)
+    {
+        std::vector<codew> replacement;
+        size_t begin, end;
+        bool modified;
+        if(!table.apply(code, i, state, replacement, begin, end, modified))
+            return;
+        if(modified)
+        {
+            replace_range(begin, end, std::move(replacement));
+            i--;
+        }
+    }
+    void run_rules(peep_rules &table, peep_state &state)
     {
         for(size_t i = 0; i < code.size(); i++)
         {
-            // Skip non-tokens
+            if(code[i].is_label())
+                state.on_label();
             if(!code[i].is_tok())
                 continue;
-
-            current = i;
-            // Sequences:
-            //   TOK_BYTE / x
-            if(mtok(0, "TOK_BYTE") && mbyte(1))
-            {
-                set_tok(0, "TOK_NUM");
-                set_w(1, val(1));
-                i++;
-            }
-            //   TOK_1
-            else if(mtok(0, "TOK_1"))
-            {
-                set_tok(0, "TOK_NUM");
-                ins_w(1, 1);
-                i++;
-            }
-            //   TOK_0
-            else if(mtok(0, "TOK_0"))
-            {
-                set_tok(0, "TOK_NUM");
-                ins_w(1, 0);
-                i++;
-            }
+            apply_rules_at(i, table, state);
         }
     }
-    // Transforms small "numeric" tokens to TOK_BYTE, TOK_1 and TOK_0
-    void shorten_numbers()
+    void run_rules(peep_rules &table)
     {
-        for(size_t i = 0; i < code.size(); i++)
-        {
-            // Skip non-tokens
-            if(!code[i].is_tok())
-                continue;
-
-            current = i;
-            // Sequences:
-            //   TOK_NUM / x == 0
-            if(mtok(0, "TOK_NUM") && mword(1) && val(1) == 0)
-            {
-                del(1);
-                set_tok(0, "TOK_0");
-            }
-            //   TOK_NUM / x == 1
-            else if(mtok(0, "TOK_NUM") && mword(1) && val(1) == 1)
-            {
-                del(1);
-                set_tok(0, "TOK_1");
-            }
-            //   TOK_NUM / x == -1
-            else if(mtok(0, "TOK_NUM") && mword(1) && val(1) == -1)
-            {
-                set_tok(0, "TOK_1");
-                set_tok(1, "TOK_NEG");
-            }
-            //   TOK_NUM / x < 256
-            else if(mtok(0, "TOK_NUM") && mword(1) && 0 == (val(1) & ~0xFF))
-            {
-                set_tok(0, "TOK_BYTE");
-                set_b(1, val(1));
-            }
-        }
-    }
-    // Expands PUSH and SADDR tokens
-    void expand_push()
-    {
-        for(size_t i = 0; i < code.size(); i++)
-        {
-            // Skip non-tokens
-            if(!code[i].is_tok())
-                continue;
-
-            current = i;
-            if(mtok(0, "TOK_PUSH_BYTE"))
-            {
-                set_tok(0, "TOK_BYTE");
-                ins_tok(0, "TOK_PUSH");
-            }
-            else if(mtok(0, "TOK_PUSH_NUM"))
-            {
-                set_tok(0, "TOK_NUM");
-                ins_tok(0, "TOK_PUSH");
-            }
-            else if(mtok(0, "TOK_PUSH_0"))
-            {
-                set_tok(0, "TOK_0");
-                ins_tok(0, "TOK_PUSH");
-            }
-            else if(mtok(0, "TOK_PUSH_1"))
-            {
-                set_tok(0, "TOK_1");
-                ins_tok(0, "TOK_PUSH");
-            }
-            else if(mtok(0, "TOK_PUSH_VAR_LOAD"))
-            {
-                set_tok(0, "TOK_VAR_LOAD");
-                ins_tok(0, "TOK_PUSH");
-            }
-            else if(mtok(0, "TOK_VAR_SADDR"))
-            {
-                set_tok(0, "TOK_VAR_ADDR");
-                ins_tok(2, "TOK_SADDR");
-            }
-        }
-    }
-    // Transforms print of small constant strings to sequence of BYTE_PUT
-    void print_chars()
-    {
-        int print_color = 0;
-        for(size_t i = 0; i < code.size(); i++)
-        {
-            current = i;
-            // Track current print color
-            if(mtok(2, "TOK_BYTE_POKE") && mcbyte(3, "PRINT_COLOR"))
-            {
-                if(mtok(0, "TOK_NUM") && mword(1))
-                    print_color = val(1);
-                else
-                    print_color = -1;
-            }
-            if(print_color >= 0 && mtok(0, "TOK_CSTRING") && mstring(1) < 3 &&
-               mtok(2, "TOK_PRINT_STR"))
-            {
-                auto s = str(1);
-                del(2);
-                del(1);
-                del(0);
-                for(char c : s)
-                {
-                    ins_tok(0, "TOK_BYTE_PUT");
-                    ins_b(1, (c ^ print_color) & 0xFF);
-                    current += 2;
-                }
-            }
-        }
-    }
-    // Folds PUSH followed by known sequences
-    void fold_push()
-    {
-        for(size_t i = 0; i < code.size(); i++)
-        {
-            current = i;
-            if(mtok(0, "TOK_PUSH"))
-            {
-                //   TOK_BYTE
-                if(mtok(1, "TOK_BYTE"))
-                {
-                    set_tok(1, "TOK_PUSH_BYTE");
-                    del(0);
-                }
-                //   TOK_NUM
-                else if(mtok(1, "TOK_NUM"))
-                {
-                    set_tok(1, "TOK_PUSH_NUM");
-                    del(0);
-                }
-                //   TOK_1
-                else if(mtok(1, "TOK_1"))
-                {
-                    set_tok(1, "TOK_PUSH_1");
-                    del(0);
-                }
-                //   TOK_0
-                else if(mtok(1, "TOK_0"))
-                {
-                    set_tok(1, "TOK_PUSH_0");
-                    del(0);
-                }
-                //   TOK_VAR_LOAD / x
-                if(mtok(1, "TOK_VAR_LOAD"))
-                {
-                    set_tok(1, "TOK_PUSH_VAR_LOAD");
-                    del(0);
-                }
-            }
-        }
-    }
-    // Folds SADDR after known sequences
-    void fold_saddr()
-    {
-        for(size_t i = 0; i < code.size(); i++)
-        {
-            current = i;
-            if(mtok(0, "TOK_VAR_ADDR") && mtok(2, "TOK_SADDR"))
-            {
-                set_tok(0, "TOK_VAR_SADDR");
-                del(2);
-            }
-        }
+        peep_state state;
+        run_rules(table, state);
     }
     // Remove SADDR save/restore pairs around calls when no lvalue address is
     // pending.  A push starts a region where SADDR is already saved, so nested
@@ -786,119 +653,42 @@ class peephole
         // And go through code removing labels not in the list
         for(size_t i = 0; i < code.size(); i++)
         {
-            current = i;
-            if(mlabel(0) && !labels.count(lbl(0)))
+            if(code[i].is_label() && !labels.count(code[i].get_str()))
             {
-                del(0);
+                changed = true;
+                code.erase(code.begin() + i);
                 i--;
             }
         }
     }
-    // Remove extra IOCHN0 tokens
-    void trace_iochn()
-    {
-        // This is the calculated current I/O channel
-        int ioch = 0;
-        for(current = 0; current < code.size(); current++)
-        {
-            if(!code[current].is_tok())
-            {
-                if(mlabel(0))
-                    ioch = 0; // Assume 0 after any label or CALL
-                continue;
-            }
-            if(mtok(0, "TOK_CALL"))
-                ioch = 0; // Assume 0 after any label or CALL
-            else if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_IOCHN"))
-            {
-                if(ioch == val(1))
-                {
-                    // Remove redundant set IOCHN
-                    del(2);
-                    del(1);
-                    del(0);
-                    current--;
-                }
-                else
-                {
-                    ioch = val(1);
-                    current += 2;
-                }
-            }
-            else if(mtok(0, "TOK_IOCHN"))
-            {
-                ioch = -1;
-            }
-            else if(mtok(0, "TOK_NUM") && mword(1) && mtok(2, "TOK_IOCHN") &&
-                    mtok(3, "TOK_NUM") && mword(4) && mtok(5, "TOK_IOCHN"))
-            {
-                // Setting I/O channel just after IOCHN, delete redundant one
-                del(2);
-                del(1);
-                del(0);
-                current--;
-            }
-        }
-    }
-
     // Jump threading optimization.
     // Replace JUMP to RET or another JUMP with a direct jump to target.
-    void replace_label_targets()
+    void build_label_targets(peep_state &state)
     {
-        // Build a MAP of label that go to another target
-        std::map<std::string, std::string> tgt;
-        for(current = 0; current < code.size(); current++)
+        state.tgt.clear();
+        // Map each label to the instruction it falls through to.
+        for(size_t current = 0; current < code.size(); current++)
         {
-            if(mlabel(0))
+            if(code[current].is_label())
             {
-                std::string l = lbl(0);
-                size_t i;
+                std::string l = code[current].get_str();
+                size_t i = current + 1;
                 // Search target - next "normal" instruction
-                for(i = 1; i < code.size() - current; i++)
-                    if(!mlabel(i))
+                for(; i < code.size(); i++)
+                    if(!code[i].is_label())
                         break;
                     else
-                        tgt[l] = lbl(i);
-                if(mtok(i, "TOK_RET"))
-                    tgt[l] = "__TOK_RET__";
-                else if(mtok(i, "TOK_JUMP") && mlblw(i + 1))
-                    tgt[l] = wlbl(i + 1);
-            }
-        }
-        // Now, replace JUMPS
-        if(tgt.size())
-        {
-            for(current = 0; current < code.size(); current++)
-            {
-                if(!code[current].is_tok())
-                    continue;
-
-                if((mtok(0, "TOK_CJUMP") || mtok(0, "TOK_CNJUMP") ||
-                    mtok(0, "TOK_JUMP")) &&
-                   mlblw(1) && tgt.find(wlbl(1)) != tgt.end())
+                        state.tgt[l] = code[i].get_str();
+                if(i < code.size())
                 {
-                    std::string t = tgt[wlbl(1)];
-                    if(t == "__TOK_RET__")
-                    {
-                        // We can only replace JUMP to RET with RET, not ConditionalJUMP
-                        if(mtok(0, "TOK_JUMP"))
-                        {
-                            set_tok(0, "TOK_RET");
-                            del(1);
-                        }
-                        else if(mtok(0, "TOK_CJUMP"))
-                        {
-                            set_tok(0, "TOK_CRET");
-                            del(1);
-                        }
-                        else if(mtok(0, "TOK_CNJUMP"))
-                        {
-                            set_tok(0, "TOK_CNRET");
-                            del(1);
-                        }
-                    }
-                    else if(wlbl(1) != t)
-                        set_ws(1, t);
+                    auto &next = code[i];
+                    if(next.is_tok("TOK_RET"))
+                        state.tgt[l] = "__TOK_RET__";
+                    else if(next.is_tok("TOK_JUMP") && i + 1 < code.size() &&
+                            code[i + 1].is_sword() &&
+                            code[i + 1].get_str().find("lbl") !=
+                                std::string::npos)
+                        state.tgt[l] = code[i + 1].get_str();
                 }
             }
         }
@@ -906,49 +696,32 @@ class peephole
 
   public:
     peephole(std::vector<codew> &code)
-        : code(code), rules("main", make_peephole_rules()), current(0)
+        : code(code), rules("main", make_peephole_rules()),
+          expand_push_rules("expand-push", make_expand_push_rules()),
+          expand_rules("expand-number", make_expand_number_rules()),
+          shorten_rules("shorten-number", make_shorten_number_rules()),
+          fold_push_rules("fold-push", make_fold_push_rules()),
+          fold_saddr_rules("fold-saddr", make_fold_saddr_rules()),
+          label_target_rules("label-target", make_label_target_rules()),
+          print_char_rules("print-char", make_print_char_rules()),
+          iochn_rules("iochn", make_iochn_rules())
     {
-        expand_push();
-        expand_numbers();
+        run_rules(expand_push_rules);
+        run_rules(expand_rules);
         do
         {
             changed = false;
             remove_unused_labels();
-            replace_label_targets();
-            trace_iochn();
             peep_state state;
-
-            for(size_t i = 0; i < code.size(); i++)
-            {
-                // Only go through tokens
-                if(!code[i].is_tok())
-                    continue;
-
-                current = i;
-
-                // Apply compiled token-rewrite rules.
-                {
-                    std::vector<codew> replacement;
-                    size_t begin, end;
-                    bool modified;
-                    if(rules.apply(code, i, state, replacement, begin, end,
-                                   modified))
-                    {
-                        if(modified)
-                        {
-                            replace_range(begin, end, std::move(replacement));
-                            i--;
-                        }
-                        continue;
-                    }
-                }
-
-            }
+            build_label_targets(state);
+            run_rules(label_target_rules, state);
+            run_rules(iochn_rules);
+            run_rules(rules, state);
         } while(changed);
-        print_chars();
-        shorten_numbers();
-        fold_push();
-        fold_saddr();
+        run_rules(print_char_rules);
+        run_rules(shorten_rules);
+        run_rules(fold_push_rules);
+        run_rules(fold_saddr_rules);
         remove_saddr_saves();
     }
 };
