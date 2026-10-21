@@ -75,6 +75,8 @@ static std::vector<peep_rule> make_peephole_rules()
                        "TOK_GET TOK_VAR_STORE $v"},
         {"TOK_VAR_ADDR %v:v TOK_SADDR TOK_GETKEY TOK_DPOKE",
                        "TOK_GETKEY TOK_VAR_STORE $v"},
+        {"TOK_VAR_ADDR %v:v TOK_SADDR TOK_INPUT_STR TOK_VAL TOK_DPOKE",
+                       "TOK_INPUT_STR TOK_VAL TOK_VAR_STORE $v"},
         {"TOK_NUM %w:x TOK_PUT",
             [](const peep_match &m, peep_builder &b) {
                 b.write("TOK_BYTE_PUT %b", m.word("x"));
