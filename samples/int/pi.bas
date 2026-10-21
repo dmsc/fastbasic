@@ -85,7 +85,7 @@ PROC ARCTAN AS AT
   EXEC DIV AT
   EXEC DIV AT
   EXEC SAVE_T
-  EXEC CHKZERO
+  ZERO=@CHKZERO()
   N=N+2
   EXEC DIV N
   PRINT ".";
@@ -109,7 +109,7 @@ PROC ARCTAN_SMALL AS AT
   EXEC RESTORE_T
   N=N+2
   EXEC DIV AT
-  EXEC CHKZERO
+  ZERO=@CHKZERO()
   EXEC SAVE_T
   EXEC DIV N
   PRINT ".";
@@ -131,17 +131,14 @@ PROC ADDSUB
 ENDPROC
 
 '-------------------------------------
-' Checks if T() is zero, to stop
-' the series.
+' Returns the index of the first non-zero
+' digit, or -1 if T() is all zero.
 '
 PROC CHKZERO
- ZERO=-1
  FOR I=0 TO Q
-  IF T(I)
-   ZERO=I
-   EXIT
-  ENDIF
+  IF T(I) THEN RETURN I
  NEXT
+ RETURN -1
 ENDPROC
 
 '-------------------------------------

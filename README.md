@@ -13,7 +13,7 @@ The current features are:
 - Fast execution (currently, 2 times faster than compiled TurboBasicXL in the
   "sieve.bas" benchmark, 6 times faster than OSS Integer Basic);
 - Modern syntax (no line numbers, many control structures);
-- Procedures with parameters and short calling syntax;
+- Procedures and integer functions with parameters and short calling syntax;
 - Feels "alike" TurboBasicXL, with many of the extended statements;
 - Integrated editor and compiler running in the Atari 8-bit;
 - A cross-compiler is available that directly compiles sources to Atari

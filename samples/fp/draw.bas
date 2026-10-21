@@ -10,7 +10,11 @@ next i
 
 ' Plotting a function (in FP)
 for i=120 to 300
- y% = i * 0.05 - 11
- y% = y% * y% * (y% + 5)
- plot i, 160 - int(y%)
+ plot i, @Curve(i)
 next i
+
+' A user function returns an integer, and is called as @name(...)
+PROC Curve X
+ Y% = X * 0.05 - 11
+ RETURN 160 - INT(Y% * Y% * (Y% + 5))
+ENDPROC
