@@ -55,11 +55,31 @@ TESTS_ATB=$(TESTS:testsuite/%.chk=build/%.atb)
 TESTS_LBL=$(TESTS:testsuite/%.chk=build/%.lbl)
 TESTS_STAMP=$(TESTS:testsuite/%.chk=build/%.stamp)
 
+# Files created by testsuite/peephole-coverage.sh.  The coverage run uses the
+# normal test sources, but writes both target outputs into its own directory.
+PEEPHOLE_COVERAGE_BAS := $(sort $(wildcard testsuite/tests/*.bas))
+PEEPHOLE_COVERAGE_DIR := build/peephole-coverage
+PEEPHOLE_COVERAGE_ASM = \
+	$(PEEPHOLE_COVERAGE_BAS:testsuite/tests/%.bas=$(PEEPHOLE_COVERAGE_DIR)/%.atari-int.asm) \
+	$(PEEPHOLE_COVERAGE_BAS:testsuite/tests/%.bas=$(PEEPHOLE_COVERAGE_DIR)/%.atari-fp.asm)
+PEEPHOLE_COVERAGE_FILES = \
+	$(PEEPHOLE_COVERAGE_DIR)/debug.log \
+	$(PEEPHOLE_COVERAGE_DIR)/patterns \
+	$(PEEPHOLE_COVERAGE_DIR)/matches \
+	$(PEEPHOLE_COVERAGE_DIR)/applied \
+	$(PEEPHOLE_COVERAGE_DIR)/missing \
+	$(PEEPHOLE_COVERAGE_ASM)
+
 RUNTEST_OBJS=build/obj/tests/fbtest.o $(MINI65_SRC:%.c=build/obj/tests/%.o)
 
 # Runs the test suite
 .PHONY: test
 test: $(TESTS_STAMP) $(RUNTEST)
+
+# Checks that the test sources reach every peephole optimizer rule.
+.PHONY: peephole-coverage
+peephole-coverage: $(FASTBASIC_HOST)
+	$(Q)$(SHELL) testsuite/peephole-coverage.sh
 
 .SECONDEXPANSION:
 build/tests/%.stamp: testsuite/tests/%.chk $$(wildcard testsuite/tests/$$*.bas) \

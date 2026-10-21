@@ -188,12 +188,6 @@ static std::vector<peep_rule> make_peephole_rules()
                        [](const peep_match &m) {
                            return m.word("one") == 1 && m.varn("x") == m.varn("y");
                        }},
-        {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_NUM %w:one TOK_ADD "
-                       "TOK_VAR_STORE %v:y",
-                       "TOK_INCVAR $x",
-                       [](const peep_match &m) {
-                           return m.word("one") == 1 && m.varn("x") == m.varn("y");
-                       }},
         {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_NUM %w:one TOK_SUB "
                        "TOK_VAR_STORE %v:y",
                        "TOK_DECVAR $x",
@@ -210,7 +204,6 @@ static std::vector<peep_rule> make_peephole_rules()
         {"TOK_NEQ TOK_L_NOT", "TOK_EQ"},
         {"TOK_CALL %l:target TOK_RET", "TOK_JUMP $target"},
         {"TOK_L_NOT TOK_CJUMP", "TOK_CNJUMP"},
-        {"TOK_L_NOT TOK_CNJUMP", "TOK_CJUMP"},
         {"TOK_CJUMP %l:from TOK_JUMP %l:to %L:end",
                        "TOK_CNJUMP $to $end",
                        [](const peep_match &m) {
@@ -241,8 +234,6 @@ static std::vector<peep_rule> make_peephole_rules()
                        [](const peep_match &m) {
                            return m.word("v") == 0 && m.text("from") == m.text("end");
                        }},
-        {"TOK_L_NOT TOK_CRET", "TOK_CNRET"},
-        {"TOK_L_NOT TOK_CNRET", "TOK_CRET"},
         {"TOK_NUM %w:x TOK_COMP_0",
             [](const peep_match &m, peep_builder &b) {
                 b.write("TOK_NUM %w", m.word("x") ? 1 : 0);
@@ -412,9 +403,7 @@ static std::vector<peep_rule> make_expand_push_rules()
     return {
         {"TOK_PUSH_BYTE", "TOK_PUSH TOK_BYTE"},
         {"TOK_PUSH_NUM", "TOK_PUSH TOK_NUM"},
-        {"TOK_PUSH_0", "TOK_PUSH TOK_0"},
         {"TOK_PUSH_1", "TOK_PUSH TOK_1"},
-        {"TOK_PUSH_VAR_LOAD", "TOK_PUSH TOK_VAR_LOAD"},
         {"TOK_VAR_SADDR %v:x", "TOK_VAR_ADDR $x TOK_SADDR"},
     };
 }

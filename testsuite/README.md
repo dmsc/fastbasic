@@ -228,6 +228,25 @@ Both dump variables are switches; the files are always written under
 `build/tests/`.
 
 
+Peephole optimizer coverage
+---------------------------
+
+The cross-compiler can report every peephole rule and every successful match
+when `FASTBASIC_PEEPHOLE_DEBUG` is set.  The coverage check compiles all test
+sources for both targets, then fails if any rule was not reached:
+
+    make peephole-coverage
+
+The report lists matched and rewritten rule counts.  It treats a rule as
+covered when its pattern plus guard matched, not only when it produced a
+rewrite, because some rules deliberately only update optimizer state.  The
+full compiler output is kept in `build/peephole-coverage/debug.log`.
+
+When adding or changing an optimizer rule, add a test that exercises its
+transformation and checks the program's output.  A rule that cannot be reached
+from the grammar should be removed rather than left uncovered.
+
+
 Cleanup
 -------
 

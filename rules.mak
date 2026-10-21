@@ -43,6 +43,8 @@ clean:
 	$(Q)rm -f $(TESTS_ATB)
 	$(Q)rm -f $(TESTS_LBL)
 	$(Q)rm -f $(TESTS_STAMP)
+	$(Q)rm -f $(PEEPHOLE_COVERAGE_FILES)
+	$(Q)rmdir $(PEEPHOLE_COVERAGE_DIR) 2>/dev/null || true
 	$(Q)if [ -d build/tests ]; then \
 		for manifest in build/tests/.fbtest-manifest-*; do \
 			[ -f "$$manifest" ] || continue; \
