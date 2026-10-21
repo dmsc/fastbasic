@@ -595,9 +595,12 @@ class peephole
                 // Only go through tokens
                 if(!code[i].is_tok())
                 {
-                    // Invalidate TOS after a label
+                    // Invalidate TOS and print color after a label
                     if(code[i].is_label())
+                    {
                         last_TOS_value = -1;
+                        print_color = 0;
+                    }
                     continue;
                 }
 
