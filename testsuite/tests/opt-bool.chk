@@ -7,3 +7,15 @@ Output:
 or
 ne
 done
+and-eq
+and-ne
+done2
+call-ok
+array-ok
+0
+1
+0
+1
+1
+neq-cret
+neq-cret

@@ -19,3 +19,20 @@ DPOKE @RUNAD, 10   : ? DPEEK(@RUNAD)
 DPOKE @RUNAD, 500  : ? DPEEK(@RUNAD)
 DPOKE @RUNAD, I    : ? DPEEK(@RUNAD)
 
+' Consecutive constant word-address pokes with the same low byte share one
+' value load.  The high byte of the first value must not affect the result.
+POKE 1000, 1 : POKE 1001, 1
+? PEEK(1000); " "; PEEK(1001)
+POKE 1002, 257 : POKE 1003, 1
+? PEEK(1002); " "; PEEK(1003)
+POKE 1004, 1 : POKE 1005, 2
+? PEEK(1004); " "; PEEK(1005)
+
+' Comparing a variable with a constant byte read reverses the comparison so
+' that PUSH+VAR_LOAD folds to PUSH_VAR_LOAD.
+I = 3
+POKE @@TMPCHR, 5
+? I < PEEK(@@TMPCHR)
+? I > PEEK(@@TMPCHR)
+? I = PEEK(@@TMPCHR)
+? I <> PEEK(@@TMPCHR)

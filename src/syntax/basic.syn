@@ -41,7 +41,7 @@ TOKENS {
  # Boolean operators
  TOK_L_NOT, TOK_L_OR, TOK_L_AND
  # Comparisons
- TOK_LT, TOK_GT, TOK_NEQ, TOK_EQ
+ TOK_LT, TOK_GT, TOK_NEQ, TOK_EQ, TOK_EQ_BYTE
  # Convert from int to bool
  TOK_COMP_0
  # Low level statements

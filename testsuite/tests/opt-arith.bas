@@ -19,3 +19,7 @@ C = 2
 ? A - 2 - 3
 A = A - 1
 ? A
+' Reassociate a constant added after a subtraction or another addition.
+? A - B + 7
+? A + B + 7
+? A + B + 300

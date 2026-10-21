@@ -28,7 +28,7 @@
 ; --------------------------------
 
         .import         stack_l, stack_h, pushAX
-        .importzp       next_ins_incsp, sptr, tmp3
+        .importzp       next_ins_incsp, sptr, tmp3, cptr
 
         .segment        "RUNTIME"
 
@@ -147,6 +147,14 @@ positive:
         beq     set0
 .endproc
 
+.proc   EXE_EQ_BYTE  ; AX = AX == immediate byte
+        jsr     pushAX
+        dey             ; Y = new stack pointer
+        ldx     #0
+        lda     (cptr,x)
+        inc     cptr
+.endproc        ; Fall through
+
 .proc   EXE_EQ  ; AX = AX == (SP+)
         cmp     stack_l, y
         bne     set0
@@ -160,6 +168,7 @@ positive:
         deftoken "LT"
         deftoken "GT"
         deftoken "EQ"
+        deftoken "EQ_BYTE"
         deftoken "NEQ"
         deftoken "FOR"
         deftoken "FOR_NEXT"

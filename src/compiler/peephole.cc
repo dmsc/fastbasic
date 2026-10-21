@@ -82,6 +82,19 @@ static std::vector<peep_rule> make_peephole_rules()
                 b.write("TOK_BYTE_PUT %b", m.word("x"));
             }},
         {"TOK_BYTE %B:x TOK_PUT", "TOK_BYTE_PUT $x"},
+        // A constant byte poke preserves A.  If two consecutive NUM_POKEs use
+        // the same low byte, the second value load is redundant.
+        {"TOK_NUM %w:x TOK_NUM_POKE %W:a TOK_NUM %w:y TOK_NUM_POKE %W:b",
+            [](const peep_match &m, peep_builder &b) {
+                b.write("TOK_NUM %w", m.word("x"));
+                b.tok("TOK_NUM_POKE");
+                b.raw(m, "a");
+                b.tok("TOK_NUM_POKE");
+                b.raw(m, "b");
+            },
+            [](const peep_match &m) {
+                return (m.word("x") & 0xFF) == (m.word("y") & 0xFF);
+            }},
         // Track PRINT_COLOR and remove redundant color changes.
         {"TOK_NUM %w:x TOK_BYTE_POKE %B:color",
             [](const peep_match &m, peep_builder &b) {
@@ -204,6 +217,18 @@ static std::vector<peep_rule> make_peephole_rules()
         {"TOK_NEQ TOK_L_NOT", "TOK_EQ"},
         {"TOK_CALL %l:target TOK_RET", "TOK_JUMP $target"},
         {"TOK_L_NOT TOK_CJUMP", "TOK_CNJUMP"},
+        // De Morgan: NOT A AND B  ->  NOT (A OR NOT B).
+        // The RHS must be a plain variable comparison: this guarantees the
+        // PUSH after L_NOT is the AND left-operand push, not, for example, a
+        // call-argument or arithmetic push inside the left expression.
+        {"TOK_L_NOT TOK_PUSH TOK_VAR_LOAD %v:r1 TOK_PUSH TOK_VAR_LOAD %v:r2 "
+         "TOK_EQ TOK_L_AND TOK_CJUMP %l:target",
+            "TOK_PUSH TOK_VAR_LOAD $r1 TOK_PUSH TOK_VAR_LOAD $r2 "
+            "TOK_NEQ TOK_L_OR TOK_CNJUMP $target"},
+        {"TOK_L_NOT TOK_PUSH TOK_VAR_LOAD %v:r1 TOK_PUSH TOK_VAR_LOAD %v:r2 "
+         "TOK_NEQ TOK_L_AND TOK_CJUMP %l:target",
+            "TOK_PUSH TOK_VAR_LOAD $r1 TOK_PUSH TOK_VAR_LOAD $r2 "
+            "TOK_EQ TOK_L_OR TOK_CNJUMP $target"},
         {"TOK_CJUMP %l:from TOK_JUMP %l:to %L:end",
                        "TOK_CNJUMP $to $end",
                        [](const peep_match &m) {
@@ -262,12 +287,30 @@ static std::vector<peep_rule> make_peephole_rules()
             "TOK_PUSH TOK_NUM $a TOK_PUSH TOK_VAR_LOAD $b TOK_ADD TOK_SUB"},
         {"TOK_PUSH TOK_NUM %w:a TOK_SUB TOK_PUSH TOK_NUM %w:b TOK_SUB",
             "TOK_PUSH TOK_NUM $a TOK_PUSH TOK_NUM $b TOK_ADD TOK_SUB"},
+        // (A - B) + C  ->  (A + C) - B: adding the constant to A first folds
+        // the separate PUSH/CONST/ADD into one NUM+ADD_VAR.
+        {"TOK_VAR_LOAD %v:a TOK_PUSH TOK_VAR_LOAD %v:b TOK_SUB "
+         "TOK_PUSH TOK_NUM %w:c TOK_ADD",
+            "TOK_NUM $c TOK_ADD_VAR $a TOK_PUSH TOK_VAR_LOAD $b TOK_SUB"},
+        // (A + B) + C  ->  (C + A) + B
+        {"TOK_VAR_LOAD %v:x TOK_ADD_VAR %v:a TOK_PUSH TOK_NUM %w:c TOK_ADD",
+            "TOK_NUM $c TOK_ADD_VAR $x TOK_ADD_VAR $a"},
         // VAR + VAR * 2  ->  VAR * 2 + VAR
         {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_VAR_LOAD %v:y TOK_USHL TOK_ADD",
             "TOK_VAR_LOAD $y TOK_USHL TOK_ADD_VAR $x"},
         // Array indexing: ARR(VAR + X) with a word index.
         {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_NUM %w:n TOK_ADD_VAR %v:y TOK_USHL TOK_ADD",
             "TOK_NUM $n TOK_ADD_VAR $y TOK_USHL TOK_ADD_VAR $x"},
+        // Compare a variable with a constant byte read, reversing the
+        // comparison so that PUSH+VAR_LOAD folds into PUSH_VAR_LOAD.
+        {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_BYTE_PEEK %B:b TOK_LT",
+            "TOK_BYTE_PEEK $b TOK_PUSH_VAR_LOAD $x TOK_GT"},
+        {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_BYTE_PEEK %B:b TOK_GT",
+            "TOK_BYTE_PEEK $b TOK_PUSH_VAR_LOAD $x TOK_LT"},
+        {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_BYTE_PEEK %B:b TOK_EQ",
+            "TOK_BYTE_PEEK $b TOK_PUSH_VAR_LOAD $x TOK_EQ"},
+        {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_BYTE_PEEK %B:b TOK_NEQ",
+            "TOK_BYTE_PEEK $b TOK_PUSH_VAR_LOAD $x TOK_NEQ"},
         // VAR = VAR +/- 1 through the address/DPOKE sequence.
         {"TOK_VAR_ADDR %v:x TOK_SADDR TOK_VAR_LOAD %v:y TOK_PUSH TOK_NUM %w:one "
          "TOK_ADD TOK_DPOKE",
@@ -416,6 +459,11 @@ static std::vector<peep_rule> make_fold_push_rules()
         {"TOK_PUSH TOK_1", "TOK_PUSH_1"},
         {"TOK_PUSH TOK_0", "TOK_PUSH_0"},
         {"TOK_PUSH TOK_VAR_LOAD", "TOK_PUSH_VAR_LOAD"},
+        // Fuse a byte constant compared with EQ into a single token.
+        {"TOK_PUSH_BYTE %b:x TOK_EQ", "TOK_EQ_BYTE $x"},
+        // NEQ+CRET returns when equal, so use EQ_BYTE+CNRET instead.
+        {"TOK_PUSH_BYTE %b:x TOK_NEQ TOK_CRET",
+                       "TOK_EQ_BYTE $x TOK_CNRET"},
     };
 }
 
