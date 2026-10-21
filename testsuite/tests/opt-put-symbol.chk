@@ -1,0 +1,4 @@
+Name: Test byte-symbol PUT peephole rule
+Test: run-cross
+Output:
+P!

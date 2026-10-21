@@ -1,0 +1,5 @@
+Name: Test peephole address increment/decrement rules
+Test: run
+Output:
+11
+10

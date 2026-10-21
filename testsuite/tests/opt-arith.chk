@@ -1,0 +1,15 @@
+Name: Test peephole arithmetic rules
+Test: run
+Output:
+5
+-3
+10
+10
+40
+2560
+10
+5
+5
+5
+5
+9

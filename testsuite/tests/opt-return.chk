@@ -1,0 +1,6 @@
+Name: Test peephole conditional-return rules
+Test: run
+Output:
+q
+p
+done

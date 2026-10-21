@@ -1,0 +1,9 @@
+Name: Test peephole boolean rules
+Test: run
+Output:
+0
+0
+0
+or
+ne
+done
