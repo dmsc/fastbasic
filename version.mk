@@ -1,1 +1,1 @@
-VERSION=4.8beta
+VERSION=4.8
