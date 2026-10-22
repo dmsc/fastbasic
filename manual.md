@@ -2549,6 +2549,22 @@ The general flow of use is:
   - 2: Change LF to ATASCII EOL.
   - 3: Change CR and LF to EOL.
 
+  *Note:* the _url_ is passed to the
+  FujiNet device without a terminating
+  zero byte, so any characters after
+  the string in memory can be read as
+  part of the URL. End the URL with a
+  zero byte, using the `$0` escape:
+
+      NOPEN 1,12,3,"N:http://www.example.com/"$0
+
+  A string variable needs the zero byte
+  added explicitly, for example:
+
+      URL$ = "N:http://www.example.com/"
+      URL$ =+ CHR$(0)
+      NOPEN 1,12,3,URL$
+
 **Close a Network Connection**  
 **NCLOSE _unit_ / NC.**
 
