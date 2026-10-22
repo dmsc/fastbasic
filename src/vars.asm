@@ -20,7 +20,6 @@
 ; --------------------------------------------
 
         .export         var_search, label_search, name_new
-        .exportzp       var_namelen
 
         ; From alloc.asm
         .importzp       var_buf, prog_ptr, label_count, var_count, label_buf
@@ -46,9 +45,6 @@ var:    .res 2
 len:    .res 1
 search_count:
         .res 1
-
-; Use a longer name for external references
-var_namelen=    len
 
 ;----------------------------------------------------------
         .code
@@ -204,17 +200,13 @@ exit_2:
 
         ; Common proc to add a new label or variable
         ; X = ZP address of label/var table pointer
+        ; Always called after var_search/label_search with C=1 and "var"
+        ; already pointing to the end of the table.
 .proc   name_new
-        ; Pointer to end of var/label list to "var"
-        lda     prog_ptr, x
-        sta     var
-        lda     prog_ptr+1, x
-        sta     var+1
         ; Allocate memory for name
         lda     len
         beq     var_getlen::exit_2
-        clc
-        adc     #1
+        adc     #0              ; C=1 on entry, so A = len + 1
         jsr     alloc_area_8
 
         ; Set type to 0 initially

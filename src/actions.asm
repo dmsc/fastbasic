@@ -38,7 +38,7 @@
         .import         read_word
         ; From vars.asm
         .import         var_search, name_new, label_search
-        .importzp       var_namelen, label_count, var_count
+        .importzp       label_count, var_count
         ; From alloc.asm
         .import         alloc_laddr
         .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
