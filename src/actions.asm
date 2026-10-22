@@ -483,19 +483,17 @@ xit:    rts
         lda     #4
         jsr     alloc_laddr
 
-        ldy     #0
-        lda     laddr_search_num
-        sta     (tmp2), y
-
-        pla
-
-        iny
-        sta     (tmp2), y
         jsr     get_codep
         ldy     #3
         sta     (tmp2), y
         dey
         txa
+        sta     (tmp2), y
+        dey
+        pla
+        sta     (tmp2), y
+        dey
+        lda     laddr_search_num
         sta     (tmp2), y
       ; clc     ; get_codep clears carry
 xit:    rts
@@ -575,7 +573,6 @@ cloop:
 nfound: lda     #0
         jsr     add_laddr_list
         bcc     emit_addr
-ret:    rts
 .endproc
 
 ; Label search and create if not exists
