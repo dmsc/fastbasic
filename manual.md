@@ -40,8 +40,9 @@ Currently, FastBasic supports:
   255 characters.
 - Arrays of "word", "byte", floating
   point and strings.
-- User defined procedures, with integer
-  parameters.
+- User defined procedures and
+  functions, with integer parameters;
+  functions return an integer value.
 - Compilation to binary loadable files.
 - Available as a full version `FB.COM`,
   as a smaller integer-only `FBI.COM`,
