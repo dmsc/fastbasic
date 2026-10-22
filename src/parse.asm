@@ -50,11 +50,12 @@
         .segment "IDEZP": zeropage
 buf_ptr:.res 2
 bmax:   .res 1
-pptr:   .res 2
 parse_err:      .res 1  ; Error to report if the statement does not parse
+pptr:   .res 1
 
 ; This variables are cleared in one loop:
 zp_clear_start:
+        .res 1          ; pptr+1
 opos:           .res 1
 linenum:        .res 2
 loop_sp:        .res 1
@@ -260,9 +261,8 @@ ucase_end:
         inc     buf_ptr+1
 :
 
-        lda     #0
 parse_start:
-        ; Parse statement, A=0 on input
+        ; Parse statement, pptr+1=0 on input
         ldx     #ERR_PARSE
         stx     parse_err
         ldx     #<(PARSE_START-1)
@@ -270,6 +270,7 @@ parse_start:
 
         ; Parser sub
 parser_sub:
+        lda     pptr+1
         pha
         lda     pptr
         pha
@@ -339,7 +340,6 @@ pcall:
         bcc     pcall_ml
 
         tay
-        lda     pptr+1
         bcs     parser_sub      ; Jump always
 
 pemit_ret:
@@ -362,14 +362,14 @@ pexit_ok:
         inc     bpos
         lda     (bptr), y
         eor     #':'            ; Colon: continue parsing line
-        beq     parse_start     ; jump with A=0
+        beq     parse_start
 
         ; Current syntax file always checks for EOL at the end of parsing,
         ; no need to check here
 ;        eor     #$9B^':'
 ;        bne     set_parse_error
 
-        ; End parsing of current line, jump with A=0
+        ; End parsing of current line
         jmp     parse_line
 
         ; Calls a machine-language subroutine
