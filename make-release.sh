@@ -97,8 +97,10 @@ make build/compiler/MANUAL.md
 make_pdf build/compiler/MANUAL.md "${out}-manual.pdf" \
          --lua-filter pdf-headings.lua \
          --toc --toc-depth=2 --number-sections \
-         -V colorlinks=true -V toccolor=MidnightBlue
+         -V colorlinks=true -V toccolor=MidnightBlue \
+         -V cover=native -V cover-footer="Programmer's Manual"
 
 make build/compiler/USAGE.md
-make_pdf build/compiler/USAGE.md "${out}-cross-compiler.pdf"
+make_pdf build/compiler/USAGE.md "${out}-cross-compiler.pdf" \
+         -V cover=cross -V cover-footer="Cross Compiler Manual"
 
