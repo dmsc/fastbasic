@@ -742,7 +742,7 @@ bad_return:
         jsr     pop_codep::get
         jsr     patch_codep
         ; And check for more possible EXIT's
-        jmp     check_loop_exit
+        bcc     check_loop_exit
 .endproc
 
 .proc   E_EXIT_LOOP
@@ -794,16 +794,13 @@ move:
         lda     #LT_WHILE_2
         ; Save current position
         jsr     pop_patch_codep
-        ; Pop saved "loop reentry" position
-        lda     #LT_WHILE_1
         ; And store
         dec     opos
         dec     opos
-        jsr     pop_emit_addr
-        ; Checks for an "EXIT"
-        jmp     check_loop_exit
-.endproc
-
+        ; Pop saved "loop reentry" position
+        lda     #LT_WHILE_1
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
 .proc   E_POP_LOOP
         ; Pop saved position, store
         lda     #LT_DO_LOOP
@@ -814,7 +811,7 @@ move:
         lda     #LT_REPEAT
         jsr     pop_emit_addr
         ; Checks for an "EXIT"
-        jmp     check_loop_exit
+        bcc     check_loop_exit
 .endproc
 
 .proc   E_POP_FOR
@@ -829,7 +826,7 @@ move:
         ; Save current position
         jsr     pop_patch_codep
         ; Checks for an "EXIT"
-        jmp     check_loop_exit
+        bcc     check_loop_exit
 .endproc
 
 .proc   E_POP_IF
