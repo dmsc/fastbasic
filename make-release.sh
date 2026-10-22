@@ -3,13 +3,12 @@
 # Script to build release tarballs
 # --------------------------------
 #
-# Compiles for three different platforms:
-# - For Win32, using the mingw-w64 compiler,
-# - For OSX 32 and 64 bits, using osxcross and GCC
-# - For Linux 64bit PC, using GCC,
-# - For Linux 32bit PC, using GCC.
+# Compiles for three platforms:
+# - Win32, using the mingw-w64 compiler,
+# - macOS 64 bits, using osxcross and GCC,
+# - Linux 64 bits, using GCC.
 #
-# Uses link-time-optimizations and disable asserts.
+# Uses link-time optimizations and disables asserts.
 
 set -e
 
@@ -84,14 +83,21 @@ compile_lin64
 compile_win32
 compile_osx
 
-# Makes PDF using "pandoc"
+# Make PDFs using "pandoc" and "lualatex"
+make_pdf() {
+    src="$1"
+    dst="$2"
+    shift 2
+    pandoc "$src" -o "$dst" \
+           --from markdown-raw_tex --template template.tex \
+           --pdf-engine=lualatex --listings "$@"
+}
+
 make build/compiler/MANUAL.md
-pandoc build/compiler/MANUAL.md -o "${out}-manual.pdf" \
-       --from markdown-raw_tex --template template.tex \
-       --listings --toc --number-sections \
-       -V colorlinks=true -V toccolor=MidnightBlue
+make_pdf build/compiler/MANUAL.md "${out}-manual.pdf" \
+         --toc --number-sections \
+         -V colorlinks=true -V toccolor=MidnightBlue
 
 make build/compiler/USAGE.md
-pandoc build/compiler/USAGE.md -o "${out}-cross-compiler.pdf" \
-       --from markdown-raw_tex --template template.tex --listings
+make_pdf build/compiler/USAGE.md "${out}-cross-compiler.pdf"
 
