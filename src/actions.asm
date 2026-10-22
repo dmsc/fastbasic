@@ -312,49 +312,6 @@ loop:
 .endproc
 .endif ; FASTBASIC_FP
 
-; Variable matching.
-; The parser calls the routine to check if there is a variable
-; with the correct type
-.proc   E_VAR_SEARCH
-        jsr     get_last_tok    ; Get variable TYPE from last token
-        .byte   $2C   ; Skip 2 bytes over next "LDA"
-.endproc        ; Fall through
-.proc   E_VAR_WORD
-        lda     #VT_WORD
-        sta     tmp3    ; Store variable type
-        ; Check if we have a valid name - this exits on error!
-        ; Search existing var
-        jsr     var_search
-        bcs     exit
-        cmp     tmp3
-        beq     emit_varn
-not_found:
-        sec
-exit:
-        rts
-.endproc
-
-; Creates a new variable, with no type (the type will be set by parser next)
-.proc   E_VAR_CREATE
-        ; Check if we have a valid name - this exits on error!
-        ; Search existing var
-        jsr     var_search
-        bcc     E_VAR_WORD::not_found ; Exit with error if already exists
-        ; Create new variable - exits on error
-        ldx     #var_ptr - prog_ptr
-        jsr     name_new
-        ldx     var_count
-        inc     var_count
-        ; Fall through
-.endproc
-        ; Emits the variable, advancing pointers.
-.proc   emit_varn
-        ; Store VARN
-        txa
-        clc
-        jmp     parser_emit_byte
-.endproc
-
 ; Sets the type of a variable - variable number and new type must be in the stack:
 .proc   E_VAR_SET_TYPE
         jsr     get_last_tok    ; Get variable TYPE from last token
@@ -473,30 +430,48 @@ xit:    rts
         bne     comp            ; Assume laddr_buf+1 is never 0
 .endproc
 
-; Adds a label address pointer to the list
-; Note: relies on alloc_laddr expanding laddr_ptr = mem_end, where move_dwn is
-; called with length = 0 and returns with move_source unchanged (pointing to
-; the newly allocated 4-byte slot).
-.proc   add_laddr_list
-        pha
+; Variable matching.
+; The parser calls the routine to check if there is a variable
+; with the correct type
+.proc   E_VAR_SEARCH
+        jsr     get_last_tok    ; Get variable TYPE from last token
+        .byte   $2C   ; Skip 2 bytes over next "LDA"
+.endproc        ; Fall through
+.proc   E_VAR_WORD
+        lda     #VT_WORD
+        sta     tmp3    ; Store variable type
+        ; Check if we have a valid name - this exits on error!
+        ; Search existing var
+        jsr     var_search
+        bcs     exit
+        cmp     tmp3
+        beq     emit_varn
+::xit_label_err:
+not_found:
+        sec
+exit:
+        rts
+.endproc
 
-        lda     #4
-        jsr     alloc_laddr
-
-        jsr     get_codep
-        ldy     #3
-        sta     (move_source), y
-        dey
+; Creates a new variable, with no type (the type will be set by parser next)
+.proc   E_VAR_CREATE
+        ; Check if we have a valid name - this exits on error!
+        ; Search existing var
+        jsr     var_search
+        bcc     E_VAR_WORD::not_found ; Exit with error if already exists
+        ; Create new variable - exits on error
+        ldx     #var_ptr - prog_ptr
+        jsr     name_new
+        ldx     var_count
+        inc     var_count
+        ; Fall through
+.endproc
+        ; Emits the variable, advancing pointers.
+.proc   emit_varn
+        ; Store VARN
         txa
-        sta     (move_source), y
-        dey
-        pla
-        sta     (move_source), y
-        dey
-        lda     laddr_search_num
-        sta     (move_source), y
-      ; clc     ; get_codep clears carry
-xit:    rts
+        clc
+        jmp     parser_emit_byte
 .endproc
 
 ; Pushes the PROC/DATA loop, search, create a label and define the location
@@ -529,7 +504,49 @@ cloop:  bmi     xit_label_err
         ; No more entries, adds our address as a "definition" (A = 128)
 nfound:
         lda     #128
-        bmi     add_laddr_list
+.endproc        ; Fall through
+
+; Adds a label address pointer to the list
+; Note: relies on alloc_laddr expanding laddr_ptr = mem_end, where move_dwn is
+; called with length = 0 and returns with move_source unchanged (pointing to
+; the newly allocated 4-byte slot).
+.proc   add_laddr_list
+        pha
+
+        lda     #4
+        jsr     alloc_laddr
+
+        jsr     get_codep
+        ldy     #3
+        sta     (move_source), y
+        dey
+        txa
+        sta     (move_source), y
+        dey
+        pla
+        sta     (move_source), y
+        dey
+        lda     laddr_search_num
+        sta     (move_source), y
+      ; clc     ; get_codep clears carry
+xit:    rts
+.endproc
+
+; Label search and create if not exists
+.proc   E_LABEL_CREATE
+        jsr     label_search
+        txa
+        jsr     push_var        ; Does not modify C
+        ; Already defined, just store index
+        bcc     E_VAR_WORD::exit
+
+do_create:
+        ; Create a new label
+        ldx     #label_ptr - prog_ptr
+        jsr     name_new
+        inc     label_count
+        clc
+        rts
 .endproc
 
 ; Label search on use
@@ -539,15 +556,14 @@ nfound:
 
         ; Check if we have a valid name - this exits on error!
         jsr     label_search
-        bcs     xit
+        bcs     E_VAR_WORD::exit
 
         ; Check if type is compatible
         cmp     tmp3
-        beq     start_searching
-::xit_label_err:
-        sec
-xit:    rts
+        bne     xit_label_err
 
+        ; Search the label address in the label list (X = label index)
+        beq     start_searching
 ; Get EXEC label address and store - this is split because we first parse the
 ; label (and create it if needed), then parse arguments and at last emit the
 ; call address
@@ -573,24 +589,6 @@ cloop:
 nfound: lda     #0
         jsr     add_laddr_list
         bcc     emit_addr
-.endproc
-
-; Label search and create if not exists
-.proc   E_LABEL_CREATE
-        jsr     label_search
-        txa
-        jsr     push_var        ; Does not modify C
-        ; Already defined, just store index
-        bcc     ret
-
-do_create:
-        ; Create a new label
-        ldx     #label_ptr - prog_ptr
-        jsr     name_new
-        inc     label_count
-        clc
-ret:    rts
-
 .endproc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
