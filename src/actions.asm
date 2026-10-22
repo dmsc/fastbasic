@@ -300,15 +300,13 @@ cbyte:  stx     tmp2+1
 .proc   E_NUMBER_FP
         jsr     read_fp
         bcs     E_CONST_STRING::xrts
-        lda     FR0
-        ldx     FR0+1
-        jsr     emit_AX
-        lda     FR0+2
-        ldx     FR0+3
-        jsr     emit_AX
-        lda     FR0+4
-        ldx     FR0+5
-        jmp     emit_AX
+        ldx     #256-6
+loop:
+        lda     <(FR0 - 250), x
+        jsr     parser_emit_byte
+        inx
+        bne     loop
+        rts
 .endproc
 .endif ; FASTBASIC_FP
 
