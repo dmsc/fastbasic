@@ -44,7 +44,7 @@
         ldx     move_dest+1
 .endproc        ;  Fall through
 
-.proc   EXE_VAR_STORE  ; DPOKE (VAR), AX
+.proc   EXE_VAR_STORE  ; DPOKE (VAR), AX    - AX is preserved
         pha
         stx     tmp2+1
         jsr     get_op_var
@@ -52,19 +52,21 @@
         sta     tmp2
         lda     tmp2+1
         stx     tmp2+1
+        tax                     ; Restore X
         ldy     #1
         sta     (tmp2),y
         dey
         pla
-        sta     (tmp2),y        ; 14 bytes, 29 cycles
+        sta     (tmp2),y
 .else
         stx     save_l+2
         stx     save_h+2
         tax
+        lda     tmp2+1
+save_h: sta     $FF01, x
         pla
-save_h: sta     $FF00, x
-        lda     tmp2+1          ; Restore X
-save_l: sta     $FF01, x        ; 16 bytes, 27 cycles
+save_l: sta     $FF00, x
+        ldx     tmp2+1          ; Restore X
 .endif
         jmp     next_instruction
 .endproc

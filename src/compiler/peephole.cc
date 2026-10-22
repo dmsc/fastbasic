@@ -196,6 +196,14 @@ static std::vector<peep_rule> make_peephole_rules()
         {"TOK_VAR_LOAD %v:x TOK_PUSH TOK_VAR_LOAD %v:y TOK_ADD",
                        "TOK_VAR_LOAD $x TOK_USHL",
                        [](const peep_match &m) { return m.varn("x") == m.varn("y"); }},
+        // The accumulator already holds the variable: VAR_STORE (and
+        // VAR_STORE_0) preserve AX.  Note that PUSH does *not* preserve A.
+        {"TOK_VAR_STORE %v:x TOK_VAR_LOAD %v:y",
+                       "TOK_VAR_STORE $x",
+                       [](const peep_match &m) { return m.varn("x") == m.varn("y"); }},
+        {"TOK_VAR_STORE_0 %v:x TOK_VAR_LOAD %v:y",
+                       "TOK_VAR_STORE_0 $x",
+                       [](const peep_match &m) { return m.varn("x") == m.varn("y"); }},
         {"TOK_NUM %w:one TOK_ADD_VAR %v:x TOK_VAR_STORE %v:y",
                        "TOK_INCVAR $x",
                        [](const peep_match &m) {

@@ -1,0 +1,10 @@
+Name: Test peephole store/load rules
+Test: run
+Output:
+1239
+0
+49
+0 24464
+-25536 -25536
+-25536
+14464
