@@ -1037,7 +1037,7 @@ Console Print and Input Statements
 **Input Variable Or String**  
 **INPUT _var_ / I.**  
 **INPUT "prompt"; _var_**  
-**INPUT "prompt", _var_**
+**INPUT "prompt", _var_**  
 **INPUT ; _var_**
 
   Reads from keyboard/screen and stores
@@ -1425,7 +1425,7 @@ Control Statements
   appear any place in the program.
 
 
-**Return From A Subroutine**
+**Return From A Subroutine**  
 **RETURN [_expression_] / RET.**
 
   Ends the current `PROC`.  With an
@@ -2109,7 +2109,7 @@ General Statements
 
 
 **Pauses Execution**  
-**PAUSE _num_ / PA.**
+**PAUSE _num_ / PA.**  
 **PAUSE**
 
   Stops the current execution for the

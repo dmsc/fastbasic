@@ -17,6 +17,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs,longtable,array}
 \usepackage{float}
+\usepackage{needspace}
 \usepackage{parskip}
 \usepackage[dvipsnames,svgnames,x11names,table]{xcolor}
 \usepackage{listings}
@@ -105,6 +106,14 @@ TXA,TXS,TYA},%
 }
 \lstset{style=fastbasic}
 
+% Keep a paragraph and its following code block on the same page.
+% Listings normally add a negative penalty before a display block, which
+% lets LaTeX break between the introducing paragraph and the code.
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\lst@Init}{\par\penalty-50\relax}{\par\penalty10000\relax}{}{}
+\makeatother
+
 %
 % Header and footer
 %
@@ -142,6 +151,7 @@ $endfor$
 
 $if(toc)$
 {
+\small
 $if(colorlinks)$
 \hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$Maroon$endif$}
 $endif$

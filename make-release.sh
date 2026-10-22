@@ -95,7 +95,8 @@ make_pdf() {
 
 make build/compiler/MANUAL.md
 make_pdf build/compiler/MANUAL.md "${out}-manual.pdf" \
-         --toc --number-sections \
+         --lua-filter pdf-headings.lua \
+         --toc --toc-depth=2 --number-sections \
          -V colorlinks=true -V toccolor=MidnightBlue
 
 make build/compiler/USAGE.md
