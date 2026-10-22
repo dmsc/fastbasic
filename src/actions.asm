@@ -42,6 +42,8 @@
         ; From alloc.asm
         .import         alloc_laddr
         .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
+        ; From interpreter.asm
+        .importzp       move_source
         ; From parser.asm
         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
         ; From error.asm
@@ -472,29 +474,27 @@ xit:    rts
 .endproc
 
 ; Adds a label address pointer to the list
+; Note: relies on alloc_laddr expanding laddr_ptr = mem_end, where move_dwn is
+; called with length = 0 and returns with move_source unchanged (pointing to
+; the newly allocated 4-byte slot).
 .proc   add_laddr_list
         pha
-
-        lda     laddr_ptr
-        sta     tmp2
-        lda     laddr_ptr+1
-        sta     tmp2+1
 
         lda     #4
         jsr     alloc_laddr
 
         jsr     get_codep
         ldy     #3
-        sta     (tmp2), y
+        sta     (move_source), y
         dey
         txa
-        sta     (tmp2), y
+        sta     (move_source), y
         dey
         pla
-        sta     (tmp2), y
+        sta     (move_source), y
         dey
         lda     laddr_search_num
-        sta     (tmp2), y
+        sta     (move_source), y
       ; clc     ; get_codep clears carry
 xit:    rts
 .endproc

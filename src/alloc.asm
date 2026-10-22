@@ -94,6 +94,10 @@ alloc_size=     tmp1
 .endproc        ; Fall through
 
 .proc   alloc_laddr
+        ; Note: add_laddr_list relies on laddr_ptr being at mem_end (so the
+        ; move length is 0 and move_dwn leaves move_source pointing to the old
+        ; laddr_ptr; if length != 0, move_dwn returns move_source - 1).
+        .assert laddr_ptr = mem_end, error, "laddr_ptr must be at mem_end"
         ldx     #laddr_ptr - mem_start
 .endproc        ; Fall through
 
