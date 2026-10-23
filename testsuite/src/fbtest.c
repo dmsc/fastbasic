@@ -549,6 +549,67 @@ static int run_prog(const char *prog, char *out, size_t *len)
     return pclose(f) ? 1 : 0;
 }
 
+// Returns the companion assembly file name for a BASIC source file, or NULL
+// on memory errors.
+static char *companion_asm_fname(const char *basname)
+{
+    const char *base = strrchr(basname, '/');
+#ifdef _WIN32
+    const char *base_win = strrchr(basname, '\\');
+    if (!base || (base_win && base_win > base))
+        base = base_win;
+#endif
+    const char *dot = strrchr(base ? base : basname, '.');
+    size_t stem = dot ? (size_t)(dot - basname) : strlen(basname);
+    char *ret = malloc(stem + 5);
+    if (!ret)
+        return NULL;
+    memcpy(ret, basname, stem);
+    strcpy(ret + stem, ".asm");
+    return ret;
+}
+
+// Appends an optional companion assembly file to the compiler output.  This
+// lets cross-only tests supply small 6502 helpers or page-aligned bytecode.
+// Returns 1 if a companion was appended, 0 if there is none, -1 on error.
+static int append_companion_asm(const char *basname, const char *asmname)
+{
+    char *compname = companion_asm_fname(basname);
+    if (!compname)
+        return -1;
+    if (!strcmp(compname, asmname))
+    {
+        free(compname);
+        return 0;
+    }
+
+    FILE *in = fopen(compname, "rb");
+    if (!in)
+    {
+        free(compname);
+        return 0;
+    }
+
+    FILE *out = fopen(asmname, "ab");
+    if (!out)
+    {
+        fclose(in);
+        free(compname);
+        return -1;
+    }
+
+    int c;
+    fputs("\n; ---- companion assembly ----\n", out);
+    while ((c = fgetc(in)) != EOF)
+        fputc(c, out);
+    int failed = ferror(in) || ferror(out);
+    fclose(in);
+    if (fclose(out))
+        failed = 1;
+    free(compname);
+    return failed ? -1 : 1;
+}
+
 static int compile_cross(const char *basname, const char *asmname,
                          const char *objname, const char *outname, int fp,
                          int comp_ok, int error_pos_line, int error_pos_column,
@@ -601,10 +662,17 @@ static int compile_cross(const char *basname, const char *asmname,
     else if (!e)
     {
         e = -1;
+        if (append_companion_asm(basname, asmname) < 0)
+        {
+            fprintf(stderr, "%s: error appending companion assembly.\n", basname);
+            goto xit;
+        }
+
         // Assemble to object file
         free(cmd);
-        if (asprintf(&cmd, "%s %s -o %s -I %s/asminc %s", ca65_path,
-                     CA65_OPTS, objname, fb_lib_path, asmname) < 0)
+        if (asprintf(&cmd, "%s %s %s-o %s -I %s/asminc %s", ca65_path,
+                     CA65_OPTS, fp ? "-D FASTBASIC_FP " : "", objname,
+                     fb_lib_path, asmname) < 0)
         {
             fprintf(stderr, "%s: memory error.\n", asmname);
             goto xit;

@@ -11,7 +11,11 @@ File format
 -----------
 
 Normal tests are a pair of files: `tests/<name>.chk` (the test definition)
-and `tests/<name>.bas` (the source program).
+and `tests/<name>.bas` (the source program).  A cross-only test may also have
+a companion `tests/<name>.asm`; `fbtest` appends it to the generated assembly
+before calling `ca65`.  This lets a test define a `USR` routine or page-aligned
+bytecode using the runtime `TOK_*` symbols.  See `interp-page-cross` for an
+example.
 
 Editor tests (`Test: editor`) are different: the `.chk` file is
 self-contained and **no `.bas` file is needed**.  The initial editor buffer is

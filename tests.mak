@@ -83,6 +83,7 @@ peephole-coverage: $(FASTBASIC_HOST)
 
 .SECONDEXPANSION:
 build/tests/%.stamp: testsuite/tests/%.chk $$(wildcard testsuite/tests/$$*.bas) \
+                     $$(wildcard testsuite/tests/$$*.asm) \
                      $(wildcard testsuite/tests/fixtures/*) \
                      $(RUNTEST) $(TESTS_DEPS) | build/tests
 	$(Q)$(RUNTEST) $<

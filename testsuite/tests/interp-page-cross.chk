@@ -1,0 +1,4 @@
+Name: Immediate operands at page boundary
+Test: run, cross
+Output:
+AOK
