@@ -25,7 +25,7 @@ SYMBOLS {
 #  SOUND voice
 #  SOUND
 SOUND:
-        SOUND_S1 "," EXPR emit TOK_PUSH EXPR_AB \
+        SOUND_S1 COMMA_EXPR EMIT_PUSH EXPR_AB \
               emit { TOK_SHL8, TOK_ADD, TOK_DPOKE, TOK_0, TOK_NUM_POKE, &AUDCTL, \
                      TOK_BYTE, 3, TOK_NUM_POKE, &SKCTL }
         SOUND_S1 emit { TOK_0, TOK_DPOKE }

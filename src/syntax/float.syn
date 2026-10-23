@@ -126,14 +126,14 @@ INPUT_VAR:
 # Floating point DATA, added at start of the table (<): VAR_WORD_LVALUE_SADDR
 # would create a variable with the same name, and accept it
 INPUT_VAR:<
-        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR \
+        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" EMIT_PUSH PAR_EXPR \
              emit { TOK_MUL6, TOK_ADD, TOK_SADDR, TOK_INPUT_STR, TOK_FP_VAL, TOK_FP_STORE }
 
 # Arrays
 ARRAY_FLOAT_ADDR:
         emit { TOK_VAR_ADDR, VT_FLOAT } E_VAR_SEARCH "%"
-        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
-        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" emit TOK_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
+        emit { TOK_VAR_LOAD, VT_ARRAY_FLOAT } E_VAR_SEARCH "%" EMIT_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
+        emit { TOK_NUM, VT_ARRAY_FLOAT } E_LABEL "%" EMIT_PUSH PAR_EXPR emit { TOK_MUL6, TOK_ADD }
         "%"     PAR_EXPR
 
 # This is added at start of current table (<)

@@ -18,14 +18,14 @@
 
 STATEMENT:
         "SIo" EXPR emit { TOK_NUM_POKE, &$300 } \
-          "," EXPR  emit { TOK_NUM_POKE, &$301 } \
-          "," EXPR  emit { TOK_NUM_POKE, &$302 } \
-          "," EXPR  emit { TOK_NUM_POKE, &$303 } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$301 } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$302 } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$303 } \
           "," emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
-          "," EXPR  emit { TOK_NUM_POKE, &$306 } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$306 } \
           "," emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
-          "," EXPR  emit { TOK_NUM_POKE, &$30A } \
-          "," EXPR  emit { TOK_NUM_POKE, &$30B } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$30A } \
+          COMMA_EXPR  emit { TOK_NUM_POKE, &$30B } \
           emit { TOK_NUM, &$E459, TOK_USR_ADDR, TOK_USR_CALL }
 
 INT_FUNCTIONS:

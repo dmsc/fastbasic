@@ -32,6 +32,6 @@ INT_FUNCTIONS:
                                  TOK_PEEK, TOK_SHL8, TOK_ADD }
 STATEMENT:
         "PMGraphics" EXPR emit TOK_PMGRAPHICS
-        "PMhpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } "," EXPR emit TOK_POKE
+        "PMhpos"  EXPR emit { TOK_PUSH_NUM, &HPOSP0, TOK_ADD, TOK_SADDR } COMMA_EXPR emit TOK_POKE
 
 # vi:syntax=perl

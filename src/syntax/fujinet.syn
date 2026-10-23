@@ -23,8 +23,8 @@
 
 STATEMENT:
         "NOpen" EXPR emit { TOK_NUM_POKE, &$301 } \
-            "," EXPR emit { TOK_NUM_POKE, &$30A } \
-            "," EXPR emit { TOK_NUM_POKE, &$30B } \
+            COMMA_EXPR emit { TOK_NUM_POKE, &$30A } \
+            COMMA_EXPR emit { TOK_NUM_POKE, &$30B } \
             ","      emit { TOK_NUM, &$304, TOK_SADDR } STR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_DPOKE } \
                      emit { TOK_BYTE, $71, TOK_NUM_POKE, &$300 } \
                      emit { TOK_BYTE, $4F, TOK_NUM_POKE, &$302 } \
