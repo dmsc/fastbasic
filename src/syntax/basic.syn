@@ -142,7 +142,6 @@ ADR_EXPR: string or variable
         emit { TOK_VAR_LOAD, VT_ARRAY_BYTE   } E_VAR_SEARCH
         emit { TOK_NUM, VT_ARRAY_WORD   } E_LABEL
         emit { TOK_NUM, VT_ARRAY_BYTE   } E_LABEL
-        emit { TOK_VAR_LOAD, VT_ARRAY_STRING } E_VAR_SEARCH
         emit { TOK_VAR_ADDR } E_VAR_WORD
 
 USR_EXPR_MORE:
@@ -190,7 +189,6 @@ INT_FUNCTIONS: integer variable or function
         "ASc"    STR_EXPR emit { TOK_PUSH_1, TOK_ADD, TOK_PEEK } # TODO: does not check for empty strings.
 
 FUNC_MARK:
-        pass
 
 # Used to handle PADDLE/STICK/PTRIG/STRIG
 RD_PORT:
@@ -490,7 +488,6 @@ RETURN_VALUE:
         pass
 
 MARK_RETURN:
-        pass
 
 # Optional number after PAUSE
 PAUSE_OPT:
