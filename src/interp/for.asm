@@ -153,6 +153,9 @@ positive:
         ldx     #0
         lda     (cptr,x)
         inc     cptr
+        bne     :+
+        inc     cptr+1
+:
 .endproc        ; Fall through
 
 .proc   EXE_EQ  ; AX = AX == (SP+)
