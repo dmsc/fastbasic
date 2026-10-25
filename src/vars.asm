@@ -224,7 +224,8 @@ loop:
         dey
         bpl     loop
 
-end:    rts
+end:    clc
+        rts
 .endproc
 
 ; vi:syntax=asm_ca65

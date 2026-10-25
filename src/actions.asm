@@ -444,7 +444,7 @@ xit:    rts
         ; Search existing var
         jsr     var_search
         bcs     exit
-        cmp     tmp3
+        eor     tmp3
         beq     emit_varn
 ::xit_label_err:
 not_found:
@@ -470,7 +470,6 @@ exit:
 .proc   emit_varn
         ; Store VARN
         txa
-        clc
         jmp     parser_emit_byte
 .endproc
 
@@ -545,7 +544,6 @@ do_create:
         ldx     #label_ptr - prog_ptr
         jsr     name_new
         inc     label_count
-        clc
         rts
 .endproc
 
