@@ -1,0 +1,18 @@
+Name: Test NOPEN parameters and URL termination
+Test: run, fp
+Output:
+dev=1
+unit=1
+cmd=1
+tim=1
+mode=1
+trans=1
+len=1
+first=1
+last=1
+nul=1
+serr=1
+cfirst=1
+clast=1
+ceol=1
+cserr=1
