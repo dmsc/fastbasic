@@ -16,3 +16,6 @@ cfirst=1
 clast=1
 ceol=1
 cserr=1
+empty=1
+empty0=1
+max=1

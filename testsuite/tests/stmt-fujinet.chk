@@ -1,0 +1,32 @@
+Name: Test FujiNet statement DCB setup
+Test: run, fp
+Output:
+cdev=1
+cunit=1
+ccmd=1
+cstat=1
+ctim=1
+clen=1
+sdev=1
+sunit=1
+scmd=1
+sstat=1
+stime=1
+sbuf=1
+slen=1
+gdev=1
+gunit=1
+gcmd=1
+gstat=1
+gtime=1
+gbuf=1
+glen=1
+gaux=1
+pdev=1
+punit=1
+pcmd=1
+pstat=1
+ptime=1
+pbuf=1
+plen=1
+paux=1

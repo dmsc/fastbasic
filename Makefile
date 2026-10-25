@@ -278,6 +278,7 @@ A800_AS_SRC=\
 # FP Interpreter ASM files
 A800_FP_AS_SRC=\
     $(A800_AS_SRC)\
+    src/interp/a800/fujinet.asm\
     src/interp/atarifp/fp_coef.asm\
     src/interp/atarifp/fp_abs.asm\
     src/interp/atarifp/fp_atn.asm\

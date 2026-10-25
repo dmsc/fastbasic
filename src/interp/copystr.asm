@@ -33,6 +33,8 @@
 
         .segment        "RUNTIME"
 
+        .export         get_pointers
+
 ; Store source and destination pointers, allocating destination string if needed.
 ; Returns Y=0
 .proc   get_pointers

@@ -43,6 +43,10 @@
         .import         EXE_END, PMGMODE, PMGBASE
         ; Interpreted commands
         .import         CLEAR_DATA, SOUND_OFF
+.ifdef FASTBASIC_FP
+        ; FujiNet commands
+        .import         FUJI_NOPEN, FUJI_NOPEN_CONST, FUJI_COMMON
+.endif
         ; From errors.asm
         .import         error_msg_list
         .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG

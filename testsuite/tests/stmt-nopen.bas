@@ -46,3 +46,20 @@ ERR=SERR()
 ? "clast="; B=47
 ? "ceol="; Z=$9B
 ? "cserr="; ERR=138
+
+' An uninitialized string variable must be allocated before SIO.
+DIM EMPTY$
+NOPEN 3,4,2,EMPTY$
+P=DPEEK($304)
+? "empty="; P<>0
+? "empty0="; PEEK(P)=0
+
+' A 255-byte string is truncated by one byte so it can be terminated.
+DIM LONG$
+LONG$="N:"
+FOR I=1 TO 253
+  LONG$=+ "x"
+NEXT
+NOPEN 3,4,2,LONG$
+P=DPEEK($304)
+? "max="; PEEK(P+254)=0
