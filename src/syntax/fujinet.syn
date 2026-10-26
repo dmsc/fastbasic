@@ -41,8 +41,14 @@ NOPEN_URL: NOPEN URL argument
         # Constant strings are copied to LBUFF and get an ATASCII EOL.
         emit { TOK_NUM, &FUJI_NOPEN_CONST, TOK_USR_ADDR } STR_EXPR
 
+FUJI_HEAD:
+        EXPR emit { TOK_NUM_POKE, &$301 }
+
+FUJI_TAIL:
+        emit { TOK_NUM_POKE, &$303, TOK_NUM, &FUJI_COMMON, TOK_USR_ADDR, TOK_USR_CALL }
+
 STATEMENT:
-        "NOpen" EXPR emit { TOK_NUM_POKE, &$301 } \
+        "NOpen" FUJI_HEAD \
             COMMA_EXPR emit { TOK_NUM_POKE, &$30A } \
             COMMA_EXPR emit { TOK_NUM_POKE, &$30B } \
             emit { TOK_NUM, &$308, TOK_SADDR, TOK_NUM, &$100, TOK_DPOKE } \
@@ -50,32 +56,32 @@ STATEMENT:
             emit { TOK_BYTE, $80, TOK_NUM_POKE, &$303 } \
             "," NOPEN_URL emit { TOK_USR_CALL }
 
-       "NClose" EXPR emit { TOK_NUM_POKE, &$301 } \
+       "NClose" FUJI_HEAD \
                      emit { TOK_BYTE, $43, TOK_NUM_POKE, &$302 } \
-                     emit { TOK_BYTE, $00, TOK_NUM_POKE, &$303 } \
                      emit { TOK_NUM, &$308, TOK_SADDR, TOK_0, TOK_DPOKE } \
-                     emit { TOK_NUM, &FUJI_COMMON, TOK_USR_ADDR, TOK_USR_CALL }
+                     emit { TOK_BYTE, $00 } \
+                     FUJI_TAIL
 
-      "NStatus" EXPR emit { TOK_NUM_POKE, &$301 } \
+      "NStatus" FUJI_HEAD \
                      emit { TOK_BYTE, $53, TOK_NUM_POKE, &$302 } \
-                     emit { TOK_BYTE, $40, TOK_NUM_POKE, &$303 } \
                      emit { TOK_NUM, &$304, TOK_SADDR, TOK_NUM, &$2EA, TOK_DPOKE } \
                      emit { TOK_BYTE, $04, TOK_NUM_POKE, &$308 } \
                      emit { TOK_BYTE, $00, TOK_NUM_POKE, &$309 } \
-                     emit { TOK_NUM, &FUJI_COMMON, TOK_USR_ADDR, TOK_USR_CALL }
+                     emit { TOK_BYTE, $40 } \
+                     FUJI_TAIL
 
-         "NGet" EXPR emit { TOK_NUM_POKE, &$301 } \
+         "NGet" FUJI_HEAD \
             ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
             ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
                      emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
                      emit { TOK_BYTE, $52, TOK_NUM_POKE, &$0302 } \
-                     emit { TOK_BYTE, $40, TOK_NUM_POKE, &$0303 } \
-                     emit { TOK_NUM, &FUJI_COMMON, TOK_USR_ADDR, TOK_USR_CALL }
+                     emit { TOK_BYTE, $40 } \
+                     FUJI_TAIL
 
-         "NPut" EXPR emit { TOK_NUM_POKE, &$301 } \
+         "NPut" FUJI_HEAD \
             ","      emit { TOK_NUM, &$304, TOK_SADDR } EXPR emit { TOK_DPOKE } \
             ","      emit { TOK_NUM, &$308, TOK_SADDR } EXPR emit { TOK_DPOKE } \
                      emit { TOK_NUM, &$30A, TOK_SADDR, TOK_NUM, &$308, TOK_DPEEK, TOK_DPOKE } \
                      emit { TOK_BYTE, $57, TOK_NUM_POKE, &$0302 } \
-                     emit { TOK_BYTE, $80, TOK_NUM_POKE, &$0303 } \
-                     emit { TOK_NUM, &FUJI_COMMON, TOK_USR_ADDR, TOK_USR_CALL }
+                     emit { TOK_BYTE, $80 } \
+                     FUJI_TAIL
